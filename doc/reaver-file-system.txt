@@ -1,37 +1,58 @@
-Here we are, inside world of ReaverFS, or RFS, as I reference it later. It's not complex filesystem in current version, I think some people will say that it is reinventing the wheel - maybe, maybe not, I don't really care, as I want to achievie at least two things - first is write something usable (and object-oriented, when talking about entire project, that is operating system) and to learn something. So, let's start with basic structure of RFS image. Definitions are made in assembler way.
+Here we are, inside world of ReaverFS, or RFS, as I reference it later. It's not 
+complex filesystem in current version, I think some people will say that it is 
+reinventing the wheel - maybe, maybe not, I don't really care, as I want to achievie
+ at least two things - first is write something usable (and object-oriented, when 
+talking about entire project, that is operating system) and to learn something. 
+So, let's start with basic structure of RFS image. Definitions are made in assembler way.
 
 
 I. First sector.
 
 1. Magic number.
-It's my beloved magic number, I love this one since I read book called "C++ for game developers", where it was used in memory manager. Here it is used on disc image, I hope no-one plans to use this one in his own filesystem.
+It's my beloved magic number, I love this one since I read book called "C++ for game 
+developers", where it was used in memory manager. Here it is used on disc image, I 
+hope no-one plans to use this one in his own filesystem.
 
 RFSMagicNumber dd 0xDEADCODE
 
 2. Partition/disc label.
-It's rather obvious part. One thing about this one, though. It must be exactly 32 bytes and contain ASCII characters only, as it's simply displayed as it is (maybe future extension will add some flag at start of this, we'll see). It's NOT terminated with 0x00.
+It's rather obvious part. One thing about this one, though. It must be exactly 32 bytes 
+and contain ASCII characters only, as it's simply displayed as it is (maybe future 
+extension will add some flag at start of this, we'll see). It's NOT terminated with 0x00.
 
 RFSLabel db "This is label of my floppy      "
 
 3. Version number.
-This is where fun (or not, as you want to treat this) part begins. Version number is 2 bytes long number, that uniquely identifies version of RFS used on current image. From now, we shall describe next parts on per-version basis.
+This is where fun (or not, as you want to treat this) part begins. Version number 
+is 2 bytes long number, that uniquely identifies version of RFS used on current image. 
+From now, we shall describe next parts on per-version basis.
 
 4. Disc information.
 Such as sector size, sector number etc. I shall make documentation on this soon (tm).
 
 
 II. Initrd version.
-This version is most basic of all versions. It's used on floppy drives and boot partitions. It does not provide file list, information about usage of disc et cetera - it's intended to be written once and never modified at runtime - one exception: when kernel or base drivers are supposed to be updated. This version is also unmountable as usable drive - kernel should use it as /boot and not allow any user-space or other kernel-space program - except updater - to write on it or ever read from it.
+This version is most basic of all versions. It's used on bootable floppy drives and 
+boot partitions. It does not provide file list, information about usage of disc et 
+cetera - it's intended to be written once and never modified at runtime - one 
+exception: when kernel or base drivers are supposed to be updated. This version is 
+also inmountable as usable drive - kernel should use it as /boot and not allow any 
+user-space or other kernel-space program - except updater - to write on it or even 
+read from it.
 
-RFSVersion dw 0xFD1C
-(yes, it's not a random number; you should see "RDI(S)C" here - you can see it now, right?)
+RFSVersion dw 0xFD1C (yes, it's not a random number; you should see "RDI(S)C" here 
+- you can see it now, right?)
 
-After all magic stuff in first sector, this filesystem expects first file entry in second one. It's composed of:
+After all magic stuff in first sector, this filesystem expects first file entry in 
+second one. It's composed of:
 1. File size (in sectors) - fsize dw 0x0000
-2. File name - fname db "this is pretty filename         " - exactly 32 bytes, not terminated with 0x00
+2. File name - fname db "this is pretty filename         " - exactly 32 bytes, not
+terminated with 0x00
 3. File contents
 
-IMPORTANT NOTE: There are two unnamed files on initrd, ALWAYS. It's second stage bootloader and kernel itself. However, that files should have valid file size, in order to be loaded entirely.
+IMPORTANT NOTE: There are two unnamed files on initrd, ALWAYS. It's second stage 
+bootloader and kernel itself. However, that files should have valid file size, 
+in order to be loaded entirely.
 
 Standard initrd of ReaverOS is as follows:
 1st sector: bootsector
@@ -39,7 +60,11 @@ Standard initrd of ReaverOS is as follows:
 n+1 to m sectors: kernel itself
 m+1 to o sectors: full RFS driver
 
-So, bootloader and kernelloader are first invoked (or kernel is invoked, in case of GRUB for example), then kernel initializes itself, loads and initializes RFS driver. Now, everything may be loaded from main install partition, but initrd can contain more interesting data, that system should at some point read, if it exists.
+So, bootloader and kernelloader are first invoked (or kernel is invoked, in case 
+of GRUB for example), then kernel initializes itself, loads and initializes RFS 
+driver. Now, everything may be loaded from main install partition, but initrd can 
+contain more interesting data, that system should at some point read, if it exists.
 
 
-// TO BE CONTINUED with: 0xF10F (FLOPPY, I'm sure you can see it) and 0xD18C (DISC, same again) versions
+// TO BE CONTINUED with: 0xF10F (FLOPPY, I'm sure you can see it) and 0xD18C 
+(DISC, same again) versions
