@@ -84,23 +84,17 @@ main:
 	mul		ebx
 	mov		ebx, addressr
 	add		ebx, eax
-	sub		ebx, 512
 
 	add		eax, dword [selfsize]
 	add		eax, dword [kernelsize]
 	mov		ecx, 1
+	call	read_sectors
+	
+	inc		eax
+	mov		ecx, dword [ebx]
+	add		ebx, 512
+	call	read_sectors
 
-	.initrd:
-		add		eax, 1
-		add		ebx, 512
-		call	read_sectors
-		
-		cmp		dword [ebx], 0x1117adde
-		jne		.initrd
-		
-		cmp		dword [ebx+508], 0x1117adde
-		jne		.initrd
-		
 ;**************************************************************************************************
 ;
 ;		Enter protected mode

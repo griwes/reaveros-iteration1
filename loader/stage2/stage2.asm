@@ -21,6 +21,7 @@ times 8 - ($-$$) db 0
 ;
 ;**************************************************************************************************
 kernelsize		dw 0
+initrdsize		dw 0
 selfsize		dw 0
 bootdrive		dw 0
 
@@ -79,21 +80,14 @@ main:
 	mov		si, initrd
 	call	print16
 	
-	mov		eax, kernelsize
+	mov		eax, [kernelsize]
 	mov		ebx, 4
 	mul		ebx
 	mov		ebx, addressr
 	add		ebx, eax
 
-	add		eax, dword [selfsize]
-	add		eax, dword [kernelsize]
-	mov		ecx, 1
-	call	read_sectors
-	
-	inc		eax
-	mov		ecx, dword [ebx]
-	add		ebx, 512
-	call	read_sectors
+	mov		ecx, [initrdsize]
+	call	read_sectors	
 
 ;**************************************************************************************************
 ;

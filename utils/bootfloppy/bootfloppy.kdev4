@@ -1,0 +1,4 @@
+[Project]
+Name=bootfloppy
+Manager=KDevCMakeManager
+VersionControl=
