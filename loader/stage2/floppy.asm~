@@ -68,8 +68,8 @@ read_sectors:
 
 		mov		si, fail
 		call	print16
-		int		0x19
 		int		0x16
+		int		0x19
 	.end:
 		mov		si, progress
 		call	print16

@@ -43,6 +43,7 @@ absolute_address:
 ;
 ;***********************************************************************************************************************
 read_sectors:
+	push	cx
 	.begin:
 		mov		di, 0x005
 	.loop:
@@ -80,4 +81,5 @@ read_sectors:
 		add		bx, word [sectorsize]
 		inc		ax
 		loop	.begin
+		pop		cx
 		ret

@@ -1,138 +1,177 @@
 ;**************************************************************************************************
 ;
-;		ReaverOS
-;		stage2.asm
-;		second stage bootloader
+;       ReaverOS
+;       stage2.asm
+;       second stage bootloader
 ;
 ;**************************************************************************************************
 
-bits	16			; still 16 bit mode
-org		0x0500
+bits    16          ; still 16 bit mode
+org     0x0500
 
 entry:
-	jmp		main
+    jmp     main
 
 ; add some nulls...
 times 8 - ($-$$) db 0
 
 ;**************************************************************************************************
 ;
-;		Kernel loader variables
+;       Kernel loader variables
 ;
 ;**************************************************************************************************
-kernelsize		dw 0
-initrdsize		dw 0
-selfsize		dw 0
-bootdrive		dw 0
+kernelsize      dw 0
+initrdsize      dw 0
+selfsize        dw 0
+bootdrive       dw 0
 
-%define		addressp	0x100000		; it'll reside at 1 MB address in memory (initrd just after kernel)
-%define		addressr	0x3000
+remaining       dw 0
+done            dw 0
 
-msg			db 0x0a, 0x0d, "Hello, this is ReaverOS stage 2 bootloader.", 0x0a, 0x0d, "Loading kernel...", 0
-initrd		db 0x0a, 0x0d, "Loading initrd...", 0
-fail		db 0x0a, 0x0d, "FATAL ERROR during stage 2. Press any key to reboot...", 0x0a, 0x0d, 0
-progress	db ".", 0
+%define         addressp    0x10000
+; it'll reside at 1 MB address in memory
+%define         addressr    0x0d00
 
-;**************************************************************************************************
-;
-;		Includes
-;
-;**************************************************************************************************
-%include	"stdio.asm"
-%include	"gdt.asm"
-%include	"floppy.asm"
-%include	"a20.asm"
+msg	        db 0x0a, 0x0d, "Hello, this is ReaverOS stage 2 bootloader.", 0x0a, 0x0d, "Loading kernel and initrd...", 0
+fail        db 0x0a, 0x0d, "FATAL ERROR during stage 2. Press any key to reboot...", 0x0a, 0x0d, 0
+progress    db ".", 0
+progressmv  db "###.", 0x0a, 0x0d, 0
 
 ;**************************************************************************************************
 ;
-;		main function
-;		setups gdt, a20 and loads and executes kernel
+;       Includes
+;
+;**************************************************************************************************
+%include    "stdio.asm"
+%include    "gdt.asm"
+%include    "floppy.asm"
+%include    "a20.asm"
+
+;**************************************************************************************************
+;
+;       main function
+;       setups gdt, a20 and loads and executes kernel
 ;
 ;**************************************************************************************************
 main:
-	mov		[bootdrive], ax
-	mov		[selfsize], bx
+    mov     [bootdrive], ax
+    mov     [selfsize], bx
 
-	cli
-	xor		ax, ax
-	mov		ds, ax
-	mov		es, ax
-	
-	mov		ax, 0x9000
-	mov		ss, ax
-	mov		sp, 0xffff
-	sti
-	
-	mov		si, msg
-	call	print16
-	
-	call	enable_a20
-	call	install_gdt
-	sti
-	
-	mov		ecx, [kernelsize]
-	mov		eax, 1
-	add		eax, dword [selfsize]
-	
-	mov		ebx, addressr
-	call	read_sectors
+    cli
+    xor     ax, ax
+    mov     ds, ax
+    mov     es, ax
 
-	mov		si, initrd
-	call	print16
-	
-	mov		eax, [kernelsize]
-	mov		ebx, 4
-	mul		ebx
-	mov		ebx, addressr
-	add		ebx, eax
+    mov     ax, 0x9000
+    mov     ss, ax
+    mov     sp, 0xffff
+    sti
 
-	mov		ecx, [initrdsize]
-	call	read_sectors	
+    mov     si, msg
+    call    print16
+
+    call    enable_a20
+    call    install_gdt
+    sti
+
+    xor     eax, eax
+    inc     eax
+    add     eax, dword [selfsize]
+    
+    mov     ebx, addressr
+    
+    mov     ecx, dword [kernelsize]
+    add     ecx, dword [initrdsize]
+    
+    cmp     ecx, 124
+    jnl     reset_remaining
+    
+    cut_a_bit:
+        sub     ecx, 124
+        mov     [remaining], ecx
+        mov     ecx, 124
+        jmp     read
+        
+    reset_remaining:
+        mov     [remaining], word 0
+        
+    read:
+        call    read_sectors
+        
+        ; pmode for a moment...
+        push    ds
+
+        mov     eax, cr0
+        or      eax, 1
+        mov     cr0, eax
+        push    eax
+        
+        mov     ax, 0x10
+        mov     ds, ax
+        
+        mov     eax, ecx
+        movzx   ebx, word [sectorsize]
+        mul     ebx
+        mov     ebx, 4
+        div     ebx
+        cld
+        mov     esi, addressr
+        mov     edi, addressp
+        
+        cmp     [done], word 0
+        je      move
+        
+        mov     eax, dword [done]
+        mov     edx, 512
+        mul     edx
+        add     edi, eax
+
+    move:
+        rep     movsd
+
+        cmp     [remaining], word 0
+        je      endread
+        
+        ; rmode again, for int 0x13
+        pop     eax
+        and     al, 0xFE
+        mov     cr0, eax
+        
+        pop     ds
+
+        add     [done], cx
+        mov     ecx, dword [remaining]
+        
+        cmp     ecx, 124
+        jnl     reset_remaining
+        
+        jmp     cut_a_bit
+        
+    endread:
+        cli
+        jmp     0x8:stage3
 
 ;**************************************************************************************************
 ;
-;		Enter protected mode
+;       Stage 3 entry point
+;       Setups and executes kernel
 ;
 ;**************************************************************************************************
-	cli
-	mov		eax, cr0
-	or		eax, 1
-	mov		cr0, eax
-	jmp 	0x8:stage3
-	
-;**************************************************************************************************
-;
-;		Stage 3 entry point
-;		Moves kernel to it's final address and executes it
-;
-;**************************************************************************************************
-bits	32
+bits    32
 
-msg32		db "Kernel and initrd loaded, initializing environment...", 0x0a, 0
+msg32       db "Kernel and initrd loaded, initializing environment...", 0x0a, 0
 
 stage3:
-	mov		ax, 0x10
-	mov		ds, ax
-	mov		ss, ax
-	mov		es, ax
-	mov		esp, 0x90000			; here the stack begin
+    mov     ax, 0x10
+    mov     ds, ax
+    mov     ss, ax
+    mov     es, ax
+    mov     esp, 0x90000                ; here the stack begin
 
-	call	clear_screen
-	call	movcur
-	
-	mov		ebx, msg32
-	call	print
-	
-	mov		eax, dword [kernelsize]
-	movzx	ebx, word [sectorsize]
-	mul		ebx
-	mov		ebx, 4
-	div		ebx
-	cld
-	mov		esi, addressr
-	mov		edi, addressp
-	mov		ecx, eax
-	rep		movsd
-	; kernel moved, but you need some knowledge to understand that short code :D
-	
-	hlt
+    call    clear_screen
+    call    movcur
+
+    mov     ebx, msg32
+    call    print
+    
+    jmp     addressp
