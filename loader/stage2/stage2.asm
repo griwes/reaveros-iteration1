@@ -30,12 +30,11 @@ done            dw 0
 
 %define         addressp    0x10000
 ; it'll reside at 1 MB address in memory
-%define         addressr    0x0d00
+%define         addressr    0x1000
 
-msg	        db 0x0a, 0x0d, "Hello, this is ReaverOS stage 2 bootloader.", 0x0a, 0x0d, "Loading kernel and initrd...", 0
+msg         db 0x0a, 0x0d, "Hello, this is ReaverOS stage 2 bootloader.", 0x0a, 0x0d, "Loading kernel and initrd...", 0
 fail        db 0x0a, 0x0d, "FATAL ERROR during stage 2. Press any key to reboot...", 0x0a, 0x0d, 0
 progress    db ".", 0
-progressmv  db "###.", 0x0a, 0x0d, 0
 
 ;**************************************************************************************************
 ;
@@ -62,7 +61,7 @@ main:
     mov     ds, ax
     mov     es, ax
 
-    mov     ax, 0x9000
+    mov     ax, 0x6000
     mov     ss, ax
     mov     sp, 0xffff
     sti
@@ -83,23 +82,28 @@ main:
     mov     ecx, dword [kernelsize]
     add     ecx, dword [initrdsize]
     
-    cmp     ecx, 124
+    cmp     ecx, 20
     jnl     reset_remaining
     
     cut_a_bit:
-        sub     ecx, 124
+        sub     ecx, 20
         mov     [remaining], ecx
-        mov     ecx, 124
+        mov     ecx, 20
         jmp     read
         
     reset_remaining:
         mov     [remaining], word 0
         
     read:
+        sti
+        push    eax
+        push    ecx
         call    read_sectors
-        
+        cli
+
         ; pmode for a moment...
         push    ds
+        push    es
 
         mov     eax, cr0
         or      eax, 1
@@ -108,26 +112,26 @@ main:
         
         mov     ax, 0x10
         mov     ds, ax
+        mov     es, ax
         
-        mov     eax, ecx
-        movzx   ebx, word [sectorsize]
-        mul     ebx
-        mov     ebx, 4
-        div     ebx
         cld
         mov     esi, addressr
         mov     edi, addressp
-        
+
+        mov     eax, dword [sectorsize]
+        mul     ecx
+        mov     ecx, eax
+
         cmp     [done], word 0
-        je      move
+        je      copy
         
         mov     eax, dword [done]
-        mov     edx, 512
-        mul     edx
+        mov     ebx, 512
+        mul     ebx
         add     edi, eax
 
-    move:
-        rep     movsd
+    copy:
+        rep     movsb
 
         cmp     [remaining], word 0
         je      endread
@@ -137,12 +141,16 @@ main:
         and     al, 0xFE
         mov     cr0, eax
         
+        pop     es
         pop     ds
+
+        pop     ecx
+        pop     eax
 
         add     [done], cx
         mov     ecx, dword [remaining]
         
-        cmp     ecx, 124
+        cmp     ecx, 20
         jnl     reset_remaining
         
         jmp     cut_a_bit
@@ -174,4 +182,6 @@ stage3:
     mov     ebx, msg32
     call    print
     
-    jmp     addressp
+    mov     ebx, [0x10000]
+    
+    call    addressp
