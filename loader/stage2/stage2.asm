@@ -17,24 +17,24 @@ times 8 - ($-$$) db 0
 
 ;**************************************************************************************************
 ;
-;       Kernel loader variables
+;       Booter loader variables
 ;
 ;**************************************************************************************************
-kernelsize      dw 0
-initrdsize      dw 0
-selfsize        dw 0
-bootdrive       dw 0
+size:           dw 0
+bootdrive:      dw 0
+mmap:           dw 0x7c00
 
-remaining       dw 0
-done            dw 0
+;**************************************************************************************************
+;
+;       Messages
+;
+;**************************************************************************************************
+msg1:           db "ReaverOS Bootloader v0.1a", 0x0a, 0x0d, 0
+msg2:           db "Third stage of bootloader loaded.", 0x0a, 0x0d, 0
+msg3:           db "Entering protected mode...", 0x0a, 0x0d, 0
 
-%define         addressp    0x10000
-; it'll reside at 1 MB address in memory
-%define         addressr    0x1000
-
-msg         db 0x0a, 0x0d, "Hello, this is ReaverOS stage 2 bootloader.", 0x0a, 0x0d, "Loading kernel and initrd...", 0
-fail        db 0x0a, 0x0d, "FATAL ERROR during stage 2. Press any key to reboot...", 0x0a, 0x0d, 0
-progress    db ".", 0
+msg4:           db "Protected mode entered.", 0x0a, 0
+msg5:           db "Executing third stage bootloader...", 0x0a, 0
 
 ;**************************************************************************************************
 ;
@@ -43,18 +43,18 @@ progress    db ".", 0
 ;**************************************************************************************************
 %include    "stdio.asm"
 %include    "gdt.asm"
-%include    "floppy.asm"
 %include    "a20.asm"
+%include    "mmap.asm"
 
 ;**************************************************************************************************
 ;
 ;       main function
-;       setups gdt, a20 and loads and executes kernel
+;       setups gdt, a20 and executes C++ Booter
 ;
 ;**************************************************************************************************
 main:
-    mov     [bootdrive], ax
-    mov     [selfsize], bx
+    pop     word [size]
+    pop     word [bootdrive]
 
     cli
     xor     ax, ax
@@ -64,124 +64,89 @@ main:
     mov     ax, 0x6000
     mov     ss, ax
     mov     sp, 0xffff
+    
     sti
-
-    mov     si, msg
+    
+    mov     si, msg1
     call    print16
-
+    
+    mov     si, msg2
+    call    print16
+    
+    mov     si, msg3
+    call    print16
+    
+    cli
+    
     call    enable_a20
     call    install_gdt
+    
+    mov     di, [mmap]
+    call    get_memory_map
+    
     sti
 
-    xor     eax, eax
-    inc     eax
-    add     eax, dword [selfsize]
+    ; let's enable protected mode, jump to it and then call C++ BAL
+    mov     eax, cr0
+    or      al, 1
+    mov     cr0, eax
     
-    mov     ebx, addressr
+    cli
     
-    mov     ecx, dword [kernelsize]
-    add     ecx, dword [initrdsize]
+    jmp     0x08:pmode
     
-    cmp     ecx, 20
-    jnl     reset_remaining
-    
-    cut_a_bit:
-        sub     ecx, 20
-        mov     [remaining], ecx
-        mov     ecx, 20
-        jmp     read
-        
-    reset_remaining:
-        mov     [remaining], word 0
-        
-    read:
-        sti
-        push    eax
-        push    ecx
-        call    read_sectors
-        cli
-
-        ; pmode for a moment...
-        push    ds
-        push    es
-
-        mov     eax, cr0
-        or      eax, 1
-        mov     cr0, eax
-        push    eax
-        
-        mov     ax, 0x10
-        mov     ds, ax
-        mov     es, ax
-        
-        cld
-        mov     esi, addressr
-        mov     edi, addressp
-
-        mov     eax, dword [sectorsize]
-        mul     ecx
-        mov     ecx, eax
-
-        cmp     [done], word 0
-        je      copy
-        
-        mov     eax, dword [done]
-        mov     ebx, 512
-        mul     ebx
-        add     edi, eax
-
-    copy:
-        rep     movsb
-
-        cmp     [remaining], word 0
-        je      endread
-        
-        ; rmode again, for int 0x13
-        pop     eax
-        and     al, 0xFE
-        mov     cr0, eax
-        
-        pop     es
-        pop     ds
-
-        pop     ecx
-        pop     eax
-
-        add     [done], cx
-        mov     ecx, dword [remaining]
-        
-        cmp     ecx, 20
-        jnl     reset_remaining
-        
-        jmp     cut_a_bit
-        
-    endread:
-        cli
-        jmp     0x8:stage3
-
 ;**************************************************************************************************
 ;
-;       Stage 3 entry point
-;       Setups and executes kernel
+;       Protected Mode entry point
 ;
 ;**************************************************************************************************
+
 bits    32
 
-msg32       db "Kernel and initrd loaded, initializing environment...", 0x0a, 0
-
-stage3:
-    mov     ax, 0x10
-    mov     ds, ax
-    mov     ss, ax
-    mov     es, ax
-    mov     esp, 0x90000                ; here the stack begin
-
+pmode:
     call    clear_screen
-    call    movcur
-
-    mov     ebx, msg32
+    
+    mov     ebx, msg4
     call    print
     
-    mov     ebx, [0x10000]
+    mov     ebx, msg5
+    call    print
+
+    mov     ax, 0x10
+    mov     ss, ax
+    mov     esp, 0x90000
     
-    call    addressp
+    call    get_eip
+
+    xor     edx, edx
+    mov     eax, ecx
+    ; jump to next 512-aligned address
+    ; eip += (0x200 - (i % 0x200))
+    ; eax = eip
+    mov     ebx, 0x200
+    hlt
+    div     ebx
+    ; edx = eip % 0x200
+    sub     ebx, edx
+    ; ebx = 0x200 - eip % 0x200
+    hlt
+    add     ecx, ebx
+    
+    push    dword [bootdrive]
+    
+    mov     ebx, 0x200
+    mov     eax, [size]
+    mul     ebx
+    add     eax, 0x500
+    push    eax
+    
+    push    eax
+
+    push    dword [mmap]
+    
+    ; jump to stage 3: booter
+    jmp     ecx                 ; uff, hope it's well computed
+        
+get_eip:
+    mov     ecx, dword [esp]
+    ret
