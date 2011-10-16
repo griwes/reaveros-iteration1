@@ -226,7 +226,7 @@ main:
 
     xor     ax, ax                  ; create stack
     mov     ss, ax
-    mov     sp, 0xffff
+    mov     sp, 0x7bff
     sti                             ; restore interrupts
 
     mov     [bootdrive], dl         ; save boot drive number
@@ -239,7 +239,7 @@ main:
 
     jne     extended
 
-    mov     ax, 0x0050
+    mov     ax, 0x07e0
     mov     es, ax
     mov     bx, 0x0000
     
@@ -264,7 +264,7 @@ s2jump:
     dec     ax
     push    word ax
 
-    push    word 0x0050
+    push    word 0x07e0
     push    word 0x0000
 
     mov     si, progress
