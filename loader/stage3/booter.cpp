@@ -2,10 +2,8 @@
 #include "screen.h"
 #include "physmem.h"
 
-void Booter::Initialize(int pMemoryMap, int pPlacementAddress)
+void Booter::Initialize(int pPlacementAddress)
 {
     PhysMemory::PlacementAddress = pPlacementAddress;
-    
-    Booter::DetectCPU();
 }
 

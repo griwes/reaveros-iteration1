@@ -55,7 +55,7 @@ clear_screen:
     mov     ah, attr
     mov     al, ' '
     rep     stosw
-	
+
     mov     byte [curx], 0
     mov     byte [cury], 0
     popa

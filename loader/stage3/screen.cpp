@@ -252,3 +252,14 @@ void Screen::Console::Scroll()
         base++;
     }
 }
+
+void Screen::Console::Clear()
+{
+    char * base = Screen::Console::s_pScreenMemory;
+    
+    for (int i = 0; i < Screen::Console::s_iMaxX * Screen::Console::s_iMaxY; i++)
+    {
+        base[2 * i] = ' ';
+        base[2 * i + 1] = Screen::Console::m_iAttrib;
+    }
+}

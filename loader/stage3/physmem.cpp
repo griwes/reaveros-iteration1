@@ -1,12 +1,12 @@
 #include "physmem.h"
 #include "screen.h"
-#include "bal.h"
+#include "booter.h"
 
 void * PhysMemory::Manager::Place(int iSize)
 {
     if (!PhysMemory::PlacementAddress)
     {
-        BAL::Panic();
+        Booter::Panic("");
     }
     
     void * returned = PhysMemory::PlacementAddress;

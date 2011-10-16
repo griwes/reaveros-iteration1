@@ -1,4 +1,4 @@
-#ifndef _-booter_h__
+#ifndef __booter_h__
 #define __booter_h__
 
 namespace Booter

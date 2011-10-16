@@ -35,6 +35,7 @@ namespace Screen
         void Initialize();
         void Scroll();
         void MoveCursor();
+        void Clear();
     private:
         int m_iX, m_iY;
         static int s_iMaxX, s_iMaxY;

@@ -12,17 +12,16 @@ org     0x0500
 entry:
     jmp     main
 
-; add some nulls...
-times 8 - ($-$$) db 0
-
 ;**************************************************************************************************
 ;
 ;       Booter loader variables
 ;
 ;**************************************************************************************************
 size:           dw 0
+initrdsize:     dw 0
+bootersize:     dw 0
 bootdrive:      dw 0
-mmap:           dw 0x7c00
+booterstart:    dd 0
 
 ;**************************************************************************************************
 ;
@@ -53,6 +52,7 @@ msg5:           db "Executing third stage bootloader...", 0x0a, 0
 ;
 ;**************************************************************************************************
 main:
+    pop     word [initrdsize]
     pop     word [size]
     pop     word [bootdrive]
 
@@ -61,10 +61,6 @@ main:
     mov     ds, ax
     mov     es, ax
 
-    mov     ax, 0x6000
-    mov     ss, ax
-    mov     sp, 0xffff
-    
     sti
     
     mov     si, msg1
@@ -81,7 +77,7 @@ main:
     call    enable_a20
     call    install_gdt
     
-    mov     di, [mmap]
+    mov     di, 0x7c00
     call    get_memory_map
     
     sti
@@ -92,7 +88,7 @@ main:
     mov     cr0, eax
     
     cli
-    
+
     jmp     0x08:pmode
     
 ;**************************************************************************************************
@@ -104,6 +100,8 @@ main:
 bits    32
 
 pmode:
+    xor     ax, ax
+    mov     ax, word [size]
     call    clear_screen
     
     mov     ebx, msg4
@@ -120,33 +118,68 @@ pmode:
 
     xor     edx, edx
     mov     eax, ecx
-    ; jump to next 512-aligned address
+    ; find next 512-aligned address
     ; eip += (0x200 - (i % 0x200))
     ; eax = eip
     mov     ebx, 0x200
-    hlt
     div     ebx
     ; edx = eip % 0x200
     sub     ebx, edx
     ; ebx = 0x200 - eip % 0x200
-    hlt
     add     ecx, ebx
+    mov     word [booterstart], cx
     
-    push    dword [bootdrive]
-    
-    mov     ebx, 0x200
-    mov     eax, [size]
-    mul     ebx
-    add     eax, 0x500
+    xor     eax, eax
+    mov     ax, word [bootdrive]
     push    eax
     
-    push    eax
+    ; Booter starts at 16 MB; Booter's stack starts at 1 MB
+    ; 15 MB is even more than it needs...
+    push    dword 0x100000
 
-    push    dword [mmap]
+    xor     eax, eax
+    mov     ax, word 0x7c00
+    push    eax
     
+    ; now, move the Booter at 0x1000000 = 16 MB
+    ; first: it starts at booterstart
+    ; second: compute it's size to know, where initrd will start
+    ; third: move Booter at 16 MB and initrd right after it
+    ; fourth: pass placement address (right after end of initrd)
+    ; fifth: pass initrd address
+    ; sixth: execute Booter
+    ; looks simple, right?
+
+    xor     edx, edx
+    mov     eax, dword [selfsize]
+    mov     ebx, 0x200
+    div     ebx
+    mov     ebx, eax
+    cmp     edx, 0
+    je      .nope
+
+    inc     ebx
+    ; ebx is now selfsize in 0x200 sectors...
+
+    .nope:          
+    mov     dword [selfsize], ebx
+
+    mov     eax, dword [size]
+    mov     ebx, dword [initrdsize]
+    mov     ecx, dword [selfsize]
+    sub     eax, ebx
+    sub     eax, ecx
+
+    ; eax is now Booter size (or at least should be...)
+    mov     dword [bootersize], eax
+    hlt
+
     ; jump to stage 3: booter
-    jmp     ecx                 ; uff, hope it's well computed
+    mov     ecx, 0x1000000
+    jmp     ecx
         
 get_eip:
     mov     ecx, dword [esp]
     ret
+
+selfsize:   dw $ - $$ + 2

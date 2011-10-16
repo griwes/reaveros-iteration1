@@ -134,6 +134,7 @@ read_sectors:
         mov     si, failmsg
         call    print
         
+        cli
         hlt
     
     .end:
@@ -223,7 +224,7 @@ main:
     mov     fs, ax
     mov     gs, ax
 
-    mov     ax, 0x9000              ; create stack
+    xor     ax, ax                  ; create stack
     mov     ss, ax
     mov     sp, 0xffff
     sti                             ; restore interrupts
@@ -233,10 +234,10 @@ main:
     mov     si, msg
     call    print                   ; print our pretty welcome message
     
-;    call    check_extended
-;    cmp     ax, 0
+    call    check_extended
+    cmp     ax, 0
 
-;    jne     extended
+    jne     extended
 
     mov     ax, 0x0050
     mov     es, ax
@@ -250,12 +251,18 @@ main:
     jmp     s2jump
 
 extended:
-;    mov     cx, word [stage2size]
-;    call    read_sectors_extended
+    mov     cx, word [stage2size]
+    call    read_sectors_extended
 
 s2jump:
     push    word [bootdrive]
     push    word [stage2size]
+
+    ; compute initrd size
+    mov     ax, [reserved]
+    sub     ax, [stage2size]
+    dec     ax
+    push    word ax
 
     push    word 0x0050
     push    word 0x0000
@@ -264,7 +271,7 @@ s2jump:
     call    print
 
     retf
-        
+       
 ;***********************************************************************************************************************
 ;
 ;       Boot signature
