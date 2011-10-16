@@ -52,10 +52,6 @@ msg5:           db "Executing third stage bootloader...", 0x0a, 0
 ;
 ;**************************************************************************************************
 main:
-    pop     word [initrdsize]
-    pop     word [size]
-    pop     word [bootdrive]
-
     cli
     xor     ax, ax
     mov     ds, ax
@@ -63,6 +59,10 @@ main:
 
     sti
     
+    pop     word [initrdsize]
+    pop     word [size]
+    pop     word [bootdrive]
+
     mov     si, msg1
     call    print16
     
@@ -80,12 +80,16 @@ main:
     mov     di, 0x7c00
     call    get_memory_map
     
+    mov     ax, [size]
+    mov     bx, [initrdsize]
+    mov     cx, [bootdrive]
+
     sti
 
-    ; let's enable protected mode, jump to it and then call C++ BAL
-    mov     eax, cr0
-    or      al, 1
-    mov     cr0, eax
+    ; let's enable protected mode, jump to it and then call C++ Booter
+    mov     edx, cr0
+    or      dl, 1
+    mov     cr0, edx
     
     cli
 
@@ -100,8 +104,6 @@ main:
 bits    32
 
 pmode:
-    xor     ax, ax
-    mov     ax, word [size]
     call    clear_screen
     
     mov     ebx, msg4
@@ -150,8 +152,9 @@ pmode:
     ; sixth: execute Booter
     ; looks simple, right?
 
+    xor     eax, eax
     xor     edx, edx
-    mov     eax, dword [selfsize]
+    mov     ax, word [selfsize]
     mov     ebx, 0x200
     div     ebx
     mov     ebx, eax
@@ -162,11 +165,15 @@ pmode:
     ; ebx is now selfsize in 0x200 sectors...
 
     .nope:          
-    mov     dword [selfsize], ebx
+    mov     word [selfsize], bx
 
-    mov     eax, dword [size]
-    mov     ebx, dword [initrdsize]
-    mov     ecx, dword [selfsize]
+    xor     eax, eax
+    xor     ebx, ebx
+    xor     ecx, ecx
+
+    mov     ax, word [size]
+    mov     bx, word [initrdsize]
+    mov     cx, word [selfsize]
     sub     eax, ebx
     sub     eax, ecx
 

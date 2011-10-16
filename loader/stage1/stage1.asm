@@ -226,7 +226,7 @@ main:
 
     xor     ax, ax                  ; create stack
     mov     ss, ax
-    mov     sp, 0x7bff
+    mov     sp, 0x7c00
     sti                             ; restore interrupts
 
     mov     [bootdrive], dl         ; save boot drive number
