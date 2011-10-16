@@ -1,21 +1,35 @@
 #include "screen.h"
 #include "physmem.h"
 
-extern __attribute__((cdecl)) void outb(unsigned short, unsigned char);
-extern __attribute__((cdecl)) unsigned char inb(unsigned short);
-
-void Screen::Initialize()
+void outb(short port, char value)
 {
-    Screen::kout = (Screen::Console *)PhysMemory::Manager::Place(sizeof(Screen::Console));
-    Screen::kout->Initialize();
+    asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
+}
+
+char inb(short port)
+{
+    char ret;
+    asm volatile("inb %1, %0" : "=a" (ret) : "dN" (port));
+    return ret;
+}
+
+namespace Screen
+{
+    Console * kout = 0;
+
+    void Initialize()
+    {
+        Screen::kout = (Screen::Console *)PhysMemory::Manager::Place(sizeof(Screen::Console));
+        Screen::kout->Initialize();
+    }
 }
 
 void Screen::Console::Initialize()
 {
-    Screen::Console::s_iMaxX = 80;
-    Screen::Console::s_iMaxY = 25;
+    this->m_iMaxX = 80;
+    this->m_iMaxY = 25;
 
-    Screen::Console::s_pScreenMemory = (char *)0x000b8000;
+    this->m_pScreenMemory = (volatile char *)0x000b8000;
     
     this->m_iX = 0;
     this->m_iY = 0;
@@ -23,228 +37,235 @@ void Screen::Console::Initialize()
     this->m_iAttrib = 0x07;
 }
 
-Screen::Console & operator<<(Screen::Console & out, char iChar)
+Screen::Console * Screen::Console::Print(char iChar)
 {
     if (iChar == '\n')
     {
-        out.m_iY++;
-        out.m_iX = 0;
+        this->m_iY++;
+        this->m_iX = 0;
         
-        if (out.m_iY == Screen::Console::s_iMaxY)
+        if (this->m_iY == this->m_iMaxY)
         {
-            out.Scroll();
+            this->Scroll();
         }
     }
     
     else if (iChar == '\t')
     {
-        int i = out.m_iX % 8;
+        int i = this->m_iX % 8;
         if (i == 0)
             i = 8;
         
         while (i-- != 0)
         {
-            out << ' ';
+            this->Print(' ');
         }
     }
     
     else if (iChar == '\r')
     {
-        out.m_iX = 0;
+        this->m_iX = 0;
     }
     
     else if (iChar == '\b')
     {
-        out.m_iX--;
-        out << ' ';
+        this->m_iX--;
+        this->Print(' ');
+        this->m_iX--;
     }
     
     else
     {
-        char * pos = Screen::Console::s_pScreenMemory;
-        pos += out.m
-        *(Screen::Console::s_pScreenMemory) = iChar;
-        *(Screen::Console::s_pScreenMemory + 1) = out.m_iAttrib;
+        volatile char * pos = this->m_pScreenMemory;
+        pos += 2 * (this->m_iY * this->m_iMaxX + this->m_iX);
+        *(pos) = iChar;
+        *(pos + 1) = this->m_iAttrib;
         
-        out.m_iX++;
-        if (out.m_iX == Screen::Console::s_iMaxX)
+        this->m_iX++;
+        if (this->m_iX == this->m_iMaxX)
         {
-            out.m_iX = 0;
-            out.m_iY++;
+            this->m_iX = 0;
+            this->m_iY++;
             
-            if (out.m_iY == Screen::Console::s_iMaxY)
+            if (this->m_iY == this->m_iMaxY)
             {
-                out.Scroll();
+                this->Scroll();
             }
         }
     }
     
-    out.MoveCursor();
+    this->MoveCursor();
     
-    return out;
+    return this;
 }
 
-Screen::Console & operator<<(Screen::Console & out, char * pString)
+Screen::Console * Screen::Console::Print(char * pString)
 {
-    while (pString != 0)
+    char c;
+    
+    while (true)
     {
-        out << *pString;
+        c = *pString;
+        if (c == 0)
+            break;
+        
+        this->Print(c);
         pString++;
     }
     
-    return out;
+    return this;
 }
 
-Screen::Console & operator<<(Screen::Console & out, long int iInt)
+Screen::Console * Screen::Console::Print(long int iInt)
 {
-    switch (out.m_eMode)
+    long int tmp, mod;
+    
+    switch (this->m_eMode)
     {
-        case Screen::ConsoleFlags::iBin:
+        case iBin:
             for (int i = 63; i >= 0; i--)
             {
                 if (iInt & (1 << i))
                 {
-                    out << '1';
+                    this->Print('1');
                 }
                 else
                 {
-                    out << '0';
+                    this->Print('0');
                 }
             }
             
             break;
-        case Screen::ConsoleFlags::iOct:
-            long int tmp, mod;
-            
+        case iOct:
             tmp = iInt / 8;
             mod = iInt % 8;
             
             if (tmp > 0)
-                out << tmp;
+                this->Print(tmp);
             
-            out << (char)mod;
+            this->Print((char)(mod + ('0' - 0)));
             
             break;
-        case Screen::ConsoleFlags::iDec:
-            long int tmp, mod;
-            
+        case iDec:
             tmp = iInt / 10;
             mod = iInt % 10;
             
             if (tmp > 0)
-                out << tmp;
+                this->Print(tmp);
             
-            out << (char)mod;
+            this->Print((char)(mod + ('0' - 0)));
             
             break;
-        case Screen::ConsoleFlags::iHex:
+        case iHex:
             const char * digits = "0123456789ABCDEF";
             
             for (int i = 60; i > -1; i -= 4)
             {
-                out << digits[(iInt >> i) & 0xF];
+                this->Print(digits[(iInt >> i) & 0xF]);
             }
     }
     
-    return out;
+    return this;
 }
 
-Screen::Console & operator<<(Screen::Console & out, long int * pInt)
+Screen::Console * Screen::Console::Print(long int * pInt)
 {
-    return out << reinterpret_cast<long int>(pInt);
+    return this->Print(reinterpret_cast<long int>(pInt));
 }
 
-Screen::Console & operator<<(Screen::Console & out, int iInt)
+Screen::Console * Screen::Console::Print(int iInt)
 {
-    switch (out.m_eMode)
+    int tmp, mod;
+    
+    switch (this->m_eMode)
     {
-        case Screen::ConsoleFlags::iBin:
+        case iBin:
             for (int i = 31; i >= 0; i--)
             {
                 if (iInt & (1 << i))
                 {
-                    out << '1';
+                    this->Print('1');
                 }
                 else
                 {
-                    out << '0';
+                    this->Print('0');
                 }
             }
             
             break;
-        case Screen::ConsoleFlags::iOct:
-            int tmp, mod;
-            
+        case iOct:
             tmp = iInt / 8;
             mod = iInt % 8;
             
             if (tmp > 0)
-                out << tmp;
+                this->Print(tmp);
             
-            out << (char)mod;
+            this->Print((char)(mod + ('0' - 0)));
             
             break;
-        case Screen::ConsoleFlags::iDec:
-            int tmp, mod;
-            
+        case iDec:
             tmp = iInt / 10;
             mod = iInt % 10;
             
             if (tmp > 0)
-                out << tmp;
+                this->Print(tmp);
             
-            out << (char)mod;
+            this->Print((char)(mod + ('0' - 0)));
             
             break;
-        case Screen::ConsoleFlags::iHex:
+        case iHex:
             const char * digits = "0123456789ABCDEF";
             
             for (int i = 28; i > -1; i -= 4)
             {
-                out << digits[(iInt >> i) & 0xF];
+                this->Print(digits[(iInt >> i) & 0xF]);
             }
     }
     
-    return out;
+    return this;
 }
 
-Screen::Console & operator<<(Screen::Console & out, int * pInt)
+Screen::Console * Screen::Console::Print(int * pInt)
 {
-    return out << reinterpret_cast<int>(pInt);
+    return this->Print(reinterpret_cast<int>(pInt));
 }
 
-Screen::Console & operator<<(Screen::Console & out, double fDouble)
+Screen::Console * Screen::Console::Print(double fDouble)
 {
+    return this;
     // main double logic
 }
 
-Screen::Console & operator<<(Screen::Console & out, double * pDouble)
+Screen::Console * Screen::Console::Print(double * pDouble)
 {
-    return out << reinterpret_cast<long int>(pDouble);
+    return this->Print(reinterpret_cast<long int>(pDouble));
 }
 
-Screen::Console & operator<<(Screen::Console & out, void * pPointer)
+Screen::Console * Screen::Console::Print(void * pPointer)
 {
-    return out << reinterpret_cast<long int>(pPointer);
-}
-
-Screen::Console & operator<<(Screen::Console & out, Screen::ConsoleFlags flag)
-{
-    out.m_eMode = flag;
-    return out;
+    return this->Print(reinterpret_cast<long int>(pPointer));
 }
 
 void Screen::Console::MoveCursor()
 {
+    asm("pusha");
+
+    short i = this->m_iY * this->m_iMaxY + this->m_iX;
     
+    outb(0x03d4, 0x0f);
+    outb(0x03d5, i);
+    outb(0x03d4, 0x0e);
+    outb(0x03d5, i >> 8);
+    
+    asm("popa");
 }
 
 void Screen::Console::Scroll()
 {
-    char * target = Screen::Console::s_pScreenMemory;
-    char * base = Screen::Console::s_pScreenMemory + Screen::Console::s_iMaxX * Screen::Console::s_iMaxY;
+    volatile char * target = this->m_pScreenMemory;
+    volatile char * base = this->m_pScreenMemory + this->m_iMaxX * this->m_iMaxY;
     
-    for (int i = 0; i < Screen::Console::s_iMaxX * (Screen::Console::s_iMaxY - 1) * 2; i++)
+    for (int i = 0; i < this->m_iMaxX * (this->m_iMaxY - 1) * 2; i++)
     {
         *target = *base;
         
@@ -255,9 +276,9 @@ void Screen::Console::Scroll()
 
 void Screen::Console::Clear()
 {
-    char * base = Screen::Console::s_pScreenMemory;
+    volatile char * base = this->m_pScreenMemory;
     
-    for (int i = 0; i < Screen::Console::s_iMaxX * Screen::Console::s_iMaxY; i++)
+    for (int i = 0; i < this->m_iMaxX * this->m_iMaxY; i++)
     {
         base[2 * i] = ' ';
         base[2 * i + 1] = Screen::Console::m_iAttrib;

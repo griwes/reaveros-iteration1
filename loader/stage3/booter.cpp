@@ -2,8 +2,25 @@
 #include "screen.h"
 #include "physmem.h"
 
-void Booter::Initialize(int pPlacementAddress)
+namespace Booter
 {
-    PhysMemory::PlacementAddress = pPlacementAddress;
-}
+    void Initialize(int pPlacementAddress)
+    {
+        PhysMemory::PlacementAddress = pPlacementAddress;
+    }
 
+    void Panic(char * sMessage)
+    {
+        Screen::kout->Print(sMessage);
+    }   
+
+    void LoadKernel()
+    {
+        
+    }
+
+    void ExecuteKernel(int)
+    {
+        
+    }
+}

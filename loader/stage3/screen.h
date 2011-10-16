@@ -3,7 +3,7 @@
 
 namespace Screen
 {
-    static void Initialize();
+    void Initialize();
 
     // this is better than stdlib's way...
     enum ConsoleFlags
@@ -14,37 +14,34 @@ namespace Screen
         iOct
     };
     
-    ConsoleFlags hex = ConsoleFlags::iHex;
-    ConsoleFlags dec = ConsoleFlags::iDec;
-    ConsoleFlags bin = ConsoleFlags::iBin;
-    ConsoleFlags oct = ConsoleFlags::iOct;
-    
     class Console
     {
     public:
-        friend Console & operator<<(Console &, char);
-        friend Console & operator<<(Console &, char *);
-        friend Console & operator<<(Console &, long int);
-        friend Console & operator<<(Console &, long int *);
-        friend Console & operator<<(Console &, int);
-        friend Console & operator<<(Console &, int *);
-        friend Console & operator<<(Console &, double);
-        friend Console & operator<<(Console &, double *);
-        friend Console & operator<<(Console &, void *);
-        friend Console & operator<<(Console &, ConsoleFlags);
+        Console * Print(char);
+        Console * Print(char *);
+        Console * Print(long int);
+        Console * Print(long int *);
+        Console * Print(int);
+        Console * Print(int *);
+        Console * Print(double);
+        Console * Print(double *);
+        Console * Print(void *);
         void Initialize();
         void Scroll();
         void MoveCursor();
         void Clear();
-    private:
+        void Bin() { this->m_eMode = iBin; }
+        void Hex() { this->m_eMode = iHex; }
+        void Dec() { this->m_eMode = iDec; }
+        void Oct() { this->m_eMode = iOct; }
         int m_iX, m_iY;
-        static int s_iMaxX, s_iMaxY;
-        volatile static char * s_pScreenMemory;
+        int m_iMaxX, m_iMaxY;
+        volatile char * m_pScreenMemory;
         char m_iAttrib;
-        ConsoleFlags m_eMode;
+        Screen::ConsoleFlags m_eMode;
     };
     
-    Console * kout = 0;
+    extern Console * kout;
 }
 
 #endif

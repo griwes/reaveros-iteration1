@@ -3,14 +3,13 @@
 
 namespace Booter
 {
-    void Panic(char *);
+    extern void Initialize(int);
     
-    void Initialize(int);
-    bool Check64();
-    
-    void LoadStorageDriver(int);
-    void LoadKernel();
-    void ExecuteKernel(int);
+    extern void LoadStorageDriver(int);
+    extern void LoadKernel();
+    extern void ExecuteKernel(int);
+
+    extern void Panic(char *);
 }
 
 #endif

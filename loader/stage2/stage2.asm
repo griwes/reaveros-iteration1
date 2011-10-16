@@ -21,7 +21,7 @@ size:           dw 0
 initrdsize:     dw 0
 bootersize:     dw 0
 bootdrive:      dw 0
-booterstart:    dd 0
+booterstart:    dw 0
 
 ;**************************************************************************************************
 ;
@@ -104,6 +104,10 @@ main:
 bits    32
 
 pmode:
+    mov     [size], ax
+    mov     [initrdsize], bx
+    mov     [bootdrive], cx
+
     call    clear_screen
     
     mov     ebx, msg4
@@ -130,7 +134,7 @@ pmode:
     ; ebx = 0x200 - eip % 0x200
     add     ecx, ebx
     mov     word [booterstart], cx
-    
+
     xor     eax, eax
     mov     ax, word [bootdrive]
     push    eax
@@ -177,9 +181,26 @@ pmode:
     sub     eax, ebx
     sub     eax, ecx
 
-    ; eax is now Booter size (or at least should be...)
+    ; eax is now Booter size (yes, it is, checked... maybe not on raw machine, but checked
+    ; checked means checked, anyway! well, maybe not in OSDev :P)
     mov     dword [bootersize], eax
-    hlt
+
+    xor     ax, ax
+    mov     ax, word [size]
+    xor     cx, cx
+    mov     cx, word [selfsize]
+
+    sub     eax, ecx
+    mov     ebx, 0x80           ; 0x200 / 4, as we are moving dwords
+    mul     ebx
+    mov     ecx, eax
+
+    xor     esi, esi
+    mov     si, word [booterstart]
+
+    mov     edi, 0x1000000
+
+    rep     movsd
 
     ; jump to stage 3: booter
     mov     ecx, 0x1000000

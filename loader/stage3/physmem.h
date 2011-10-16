@@ -3,7 +3,7 @@
 
 namespace PhysMemory
 {
-    int PlacementAddress = 0;
+    extern int PlacementAddress;
     
     class Manager
     {
