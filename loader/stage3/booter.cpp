@@ -15,13 +15,16 @@ namespace Booter
         if (Screen::kout != 0)
             Screen::kout->Print(sMessage);
         
+        // it's better to print a message, however if panic happened before kout
+        // initialization... well, there is nothing that should fail
         else
             for (;;) ;
     }   
 
     void SetupInitRD(int pInitrd)
     {
-        void * initrd = (void *)pInitrd;
+        // cast the pointer to actual initrd type...
+        InitRD::RamDisk * initrd = (InitRD::RamDisk *)pInitrd;
         
         
     }
