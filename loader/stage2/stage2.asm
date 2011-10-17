@@ -139,7 +139,7 @@ pmode:
     mov     ax, word [bootdrive]
     push    eax
     
-    ; Booter starts at 16 MB; Booter's stack starts at 1 MB
+    ; Booter starts at 16 MB; Booter's "placement stack" starts at 1 MB
     ; 15 MB is even more than it needs...
     push    dword 0x100000
 

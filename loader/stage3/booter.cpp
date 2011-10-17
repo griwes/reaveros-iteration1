@@ -1,6 +1,7 @@
 #include "booter.h"
 #include "screen.h"
 #include "physmem.h"
+#include "initrd.h"
 
 namespace Booter
 {
@@ -11,16 +12,37 @@ namespace Booter
 
     void Panic(char * sMessage)
     {
-        Screen::kout->Print(sMessage);
+        if (Screen::kout != 0)
+            Screen::kout->Print(sMessage);
+        
+        else
+            for (;;) ;
     }   
 
+    void SetupInitRD(int pInitrd)
+    {
+        void * initrd = (void *)pInitrd;
+        
+        
+    }
+    
+    void LoadStorageDriver(int)
+    {
+
+    }
+
+    void LoadDriver(char *)
+    {
+        
+    }
+    
     void LoadKernel()
     {
         
     }
-
+    
     void ExecuteKernel(int)
     {
         
-    }
+    }    
 }

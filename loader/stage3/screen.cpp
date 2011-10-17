@@ -52,7 +52,7 @@ Screen::Console * Screen::Console::Print(char iChar)
     
     else if (iChar == '\t')
     {
-        int i = this->m_iX % 8;
+        int i = (this->m_iX + 1) % 8;
         if (i == 0)
             i = 8;
         
@@ -250,7 +250,7 @@ void Screen::Console::MoveCursor()
 {
     asm("pusha");
 
-    short i = this->m_iY * this->m_iMaxY + this->m_iX;
+    short i = this->m_iY * this->m_iMaxX + this->m_iX;
     
     outb(0x03d4, 0x0f);
     outb(0x03d5, i);
@@ -263,7 +263,7 @@ void Screen::Console::MoveCursor()
 void Screen::Console::Scroll()
 {
     volatile char * target = this->m_pScreenMemory;
-    volatile char * base = this->m_pScreenMemory + this->m_iMaxX * this->m_iMaxY;
+    volatile char * base = this->m_pScreenMemory + this->m_iMaxX * 2;
     
     for (int i = 0; i < this->m_iMaxX * (this->m_iMaxY - 1) * 2; i++)
     {
@@ -272,6 +272,17 @@ void Screen::Console::Scroll()
         target++;
         base++;
     }
+    
+    this->m_iX = 0;
+    this->m_iY = this->m_iMaxY - 1;
+    
+    for (int i = 0; i < this->m_iMaxX; i++)
+    {
+        this->Print(' ');
+    }
+    
+    this->m_iY = this->m_iMaxY - 1;
+    this->m_iX = 0;
 }
 
 void Screen::Console::Clear()
@@ -283,4 +294,8 @@ void Screen::Console::Clear()
         base[2 * i] = ' ';
         base[2 * i + 1] = Screen::Console::m_iAttrib;
     }
+    
+    this->m_iX = 0;
+    this->m_iY = 0;
+    this->MoveCursor();
 }

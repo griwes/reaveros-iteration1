@@ -9,12 +9,12 @@ extern "C" void __attribute__((cdecl)) booter_main(int pInitrd, int pMemoryMap, 
     Screen::kout->Clear();
     Screen::kout->Print("ReaverOS Booter, v0.1\n");
     
-    //Booter::SetupInitRD(pInitrd);
-    //Booter::LoadStorageDriver(iBootdrive);
-    //Booter::LoadDriver("/init/ReaverFS.drv");
+    Booter::SetupInitRD(pInitrd);
+    Booter::LoadStorageDriver(iBootdrive);
+    Booter::LoadDriver("/init/ReaverFS.drv");
     Booter::LoadKernel();
     
-    Screen::kout->Clear();
+    //Screen::kout->Clear();
     Booter::ExecuteKernel(pMemoryMap);
     
     // we should never reach this one, however...
