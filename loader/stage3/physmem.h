@@ -7,6 +7,8 @@ namespace PhysMemory
     // placement address. self-explanatory
     extern int PlacementAddress;
     
+    extern void PrintMemoryMap(int, int);
+    
     class Manager
     {
     public:

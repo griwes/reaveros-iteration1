@@ -141,9 +141,9 @@ Screen::Console * Screen::Console::Print(char * pString)
     return this;
 }
 
-Screen::Console * Screen::Console::Print(long int iInt)
+Screen::Console * Screen::Console::Print(unsigned long long int iInt)
 {
-    long int tmp, mod;
+    unsigned long long int tmp, mod;
     
     switch (this->m_eMode)
     {
@@ -164,7 +164,7 @@ Screen::Console * Screen::Console::Print(long int iInt)
             break;
         case iOct:
             // octal printing
-            tmp = iInt / 8;
+            tmp = iInt;
             mod = iInt % 8;
             
             if (tmp > 0)
@@ -197,15 +197,15 @@ Screen::Console * Screen::Console::Print(long int iInt)
     return this;
 }
 
-Screen::Console * Screen::Console::Print(long int * pInt)
+Screen::Console * Screen::Console::Print(unsigned long long int * pInt)
 {
-    return this->Print(reinterpret_cast<int>(pInt));
+    return this->Print(reinterpret_cast<unsigned int>(pInt));
 }
 
-Screen::Console * Screen::Console::Print(int iInt)
+Screen::Console * Screen::Console::Print(unsigned int iInt)
 {
     // see long int version
-    int tmp, mod;
+    unsigned int tmp, mod;
     
     switch (this->m_eMode)
     {
@@ -255,9 +255,9 @@ Screen::Console * Screen::Console::Print(int iInt)
     return this;
 }
 
-Screen::Console * Screen::Console::Print(int * pInt)
+Screen::Console * Screen::Console::Print(unsigned int * pInt)
 {
-    return this->Print(reinterpret_cast<int>(pInt));
+    return this->Print(reinterpret_cast<unsigned int>(pInt));
 }
 
 Screen::Console * Screen::Console::Print(double fDouble)
@@ -268,12 +268,12 @@ Screen::Console * Screen::Console::Print(double fDouble)
 
 Screen::Console * Screen::Console::Print(double * pDouble)
 {
-    return this->Print(reinterpret_cast<int>(pDouble));
+    return this->Print(reinterpret_cast<unsigned int>(pDouble));
 }
 
 Screen::Console * Screen::Console::Print(void * pPointer)
 {
-    return this->Print(reinterpret_cast<int>(pPointer));
+    return this->Print(reinterpret_cast<unsigned int>(pPointer));
 }
 
 void Screen::Console::MoveCursor()

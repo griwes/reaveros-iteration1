@@ -1,6 +1,9 @@
 #ifndef __booter_h__
 #define __booter_h__
 
+#include "initrd.h"
+#include "screen.h"
+
 // namespace holding various general functions
 namespace Booter
 {
@@ -16,10 +19,17 @@ namespace Booter
     // loads kernel
     extern void LoadKernel();
     // jumps to kernel
-    extern void ExecuteKernel(int);
+    extern void ExecuteKernel(int, int, unsigned long long int);
 
+    // setups paging and long mode, if required
+    extern void SetupKernelEnvironment();
+    
     // print panic message
     extern void Panic(char *);
+    
+    extern int GetTimestamp();
+    
+    extern InitRD::InitRD * initrd;
 }
 
 #endif

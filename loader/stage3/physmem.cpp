@@ -5,6 +5,27 @@
 namespace PhysMemory
 {
     int PlacementAddress = 0;
+    
+    void PrintMemoryMap(int pMemoryMap, int iMemRegCount)
+    {
+        unsigned int * map = (unsigned int *)pMemoryMap;
+
+        Screen::kout->Print("\nPrinting memory map (base, length, type):\n");
+        
+        for (int i = 0; i < iMemRegCount; i++)
+        {
+            Screen::kout->m_eMode = Screen::iHex;
+            Screen::kout->Print(*(map + 1));
+            Screen::kout->Print(*map)->Print(", ");
+            map += 2;
+            Screen::kout->Print(*(map + 1));
+            Screen::kout->Print(*map)->Print(", ");
+            map += 2;
+            Screen::kout->m_eMode = Screen::iDec;
+            Screen::kout->Print(*map)->Print('\n');
+            map += 2;
+        }
+    }
 }
 
 void * PhysMemory::Manager::Place(int iSize)

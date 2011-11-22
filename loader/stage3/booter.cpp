@@ -5,6 +5,8 @@
 
 namespace Booter
 {
+    InitRD::InitRD * initrd = 0;
+    
     void Initialize(int pPlacementAddress)
     {
         PhysMemory::PlacementAddress = pPlacementAddress;
@@ -23,10 +25,8 @@ namespace Booter
 
     void SetupInitRD(int pInitrd)
     {
-        // cast the pointer to actual initrd type...
-        InitRD::RamDisk * initrd = (InitRD::RamDisk *)pInitrd;
-        
-        
+        Booter::initrd = (InitRD::InitRD *)PhysMemory::Manager::Place(sizeof(InitRD::InitRD));
+        Booter::initrd->Initialize(pInitrd);        
     }
     
     void LoadStorageDriver(int)
@@ -44,8 +44,18 @@ namespace Booter
         
     }
     
-    void ExecuteKernel(int)
+    void SetupKernelEnvironment()
+    {
+
+    }
+    
+    void ExecuteKernel(int, int, Screen::VBEModeDescriptor *, unsigned long long int)
     {
         
     }    
+    
+    int GetTimestamp()
+    {
+        
+    }
 }

@@ -60,6 +60,7 @@ get_memory_map:
         xor     eax, eax
         mov     ax, bp
         xor     bp, bp
+        clc
         ret
         
     .fail:

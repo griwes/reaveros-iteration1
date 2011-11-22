@@ -1,8 +1,9 @@
 #include "booter.h"
 #include "screen.h"
+#include "physmem.h"
 
 // Booter almost-entry point
-extern "C" void __attribute__((cdecl)) booter_main(int pInitrd, int pMemoryMap, int pPlacementAddress, int iBootdrive)
+extern "C" void __attribute__((cdecl)) booter_main(int pInitrd, int pMemoryMap, int iMemRegCount, int pPlacementAddress, int iBootdrive)
 {
     // setup placement address
     Booter::Initialize(pPlacementAddress);
@@ -12,6 +13,8 @@ extern "C" void __attribute__((cdecl)) booter_main(int pInitrd, int pMemoryMap, 
     // clear screen and print welcome message
     Screen::kout->Clear();
     Screen::kout->Print("ReaverOS Booter, v0.1\n");
+
+    PhysMemory::PrintMemoryMap(pMemoryMap, iMemRegCount);
     
     // setup initrd (cpt obvious)
     Booter::SetupInitRD(pInitrd);
@@ -22,8 +25,10 @@ extern "C" void __attribute__((cdecl)) booter_main(int pInitrd, int pMemoryMap, 
     // load kernel (from bootdrive)
     Booter::LoadKernel();
     
-    //Screen::kout->Clear();
-    Booter::ExecuteKernel(pMemoryMap);
+    // setup paging and, if CPU is 64bit and kernel header is marked as 64bit, long mode
+    Booter::SetupKernelEnvironment();
+    unsigned long long int timestamp = Booter::GetTimestamp();
+    Booter::ExecuteKernel(pMemoryMap, iMemRegCount, timestamp);
     
     // we should never reach this one, however...
     for (;;) ;

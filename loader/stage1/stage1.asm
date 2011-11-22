@@ -229,6 +229,8 @@ main:
     mov     sp, 0x7c00
     sti                             ; restore interrupts
 
+    xor     ax, ax
+    mov     word [bootdrive], ax
     mov     [bootdrive], dl         ; save boot drive number
 
     mov     si, msg
@@ -243,7 +245,8 @@ main:
     mov     es, ax
     mov     bx, 0x0000
     
-    mov     cx, word [stage2size]
+    mov     cx, word [reserved]
+    dec     cx
     mov     ax, word [starting]
     inc     ax
     call    read_sectors
@@ -251,12 +254,16 @@ main:
     jmp     s2jump
 
 extended:
-    mov     cx, word [stage2size]
+    mov     cx, word [reserved]
+    dec     cx
     call    read_sectors_extended
 
 s2jump:
+    mov     cx, word [bootdrive]
     push    word [bootdrive]
-    push    word [stage2size]
+    mov     cx, word [reserved]
+    dec     cx
+    push    cx
 
     ; compute initrd size
     mov     ax, [reserved]

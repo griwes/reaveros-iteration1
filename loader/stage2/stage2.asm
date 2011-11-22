@@ -22,6 +22,7 @@ initrdsize:     dw 0
 bootersize:     dw 0
 bootdrive:      dw 0
 booterstart:    dw 0
+memregcount:    dw 0
 
 ;**************************************************************************************************
 ;
@@ -77,21 +78,24 @@ main:
     call    enable_a20
     call    install_gdt
     
+    sti
     mov     di, 0x7c00
     call    get_memory_map
-    
+    mov     word [memregcount], ax
+   
+    xor     ax, ax
+    xor     bx, bx
+    xor     cx, cx
     mov     ax, [size]
     mov     bx, [initrdsize]
-    mov     cx, [bootdrive]
-
-    sti
+    mov     cl, [bootdrive]
 
     ; let's enable protected mode, jump to it and then call C++ Booter
     mov     edx, cr0
     or      dl, 1
     mov     cr0, edx
     
-    cli
+    cli                 ; it will take long time until we sti against this one
 
     jmp     0x08:pmode
     
@@ -119,7 +123,7 @@ pmode:
     mov     ax, 0x10
     mov     ss, ax
     mov     esp, 0x90000
-    
+
     call    get_eip
 
     xor     edx, edx
@@ -138,10 +142,14 @@ pmode:
     xor     eax, eax
     mov     ax, word [bootdrive]
     push    eax
-    
+
     ; Booter starts at 16 MB; Booter's "placement stack" starts at 1 MB
     ; 15 MB is even more than it needs...
     push    dword 0x100000
+
+    xor     eax, eax
+    mov     ax, word [memregcount]
+    push    eax
 
     xor     eax, eax
     mov     ax, word 0x7c00
@@ -151,9 +159,8 @@ pmode:
     ; first: it starts at booterstart
     ; second: compute it's size to know, where initrd will start
     ; third: move Booter at 16 MB and initrd right after it
-    ; fourth: pass placement address (right after end of initrd)
-    ; fifth: pass initrd address
-    ; sixth: execute Booter
+    ; fourth: pass initrd address
+    ; fifth: execute Booter
     ; looks simple, right?
 
     xor     eax, eax
@@ -185,9 +192,15 @@ pmode:
     ; checked means checked, anyway! well, maybe not in OSDev :P)
     mov     dword [bootersize], eax
 
-    xor     ax, ax
+    ; push initrd pointer
+    mov     ebx, 0x200
+    mul     ebx
+    add     eax, 0x1000000
+    push    eax
+
+    xor     eax, eax
     mov     ax, word [size]
-    xor     cx, cx
+    xor     ecx, ecx
     mov     cx, word [selfsize]
 
     sub     eax, ecx
