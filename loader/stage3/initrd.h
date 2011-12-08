@@ -6,12 +6,12 @@ namespace InitRD
     class File
     {
     public:
-        void Initialize();
+        void Initialize(char *);
         char * GetContent();
         char * GetFilename();
+        int GetSize();
     private:
         int m_iLength;
-        char * filename;
         char * m_pContent;      
     };
 
@@ -20,7 +20,7 @@ namespace InitRD
     public:
         void Initialize(int);
         File * GetFile(int);
-        File * GetFile(char *);
+        File * GetFile(const char *);
     private:
         unsigned int m_iTimestamp;
         int m_iFiles;

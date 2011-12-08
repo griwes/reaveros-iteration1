@@ -33,11 +33,6 @@ void * PhysMemory::Manager::Place(int iSize)
     // oh well, we haven't initialized memory...
     if (!PhysMemory::PlacementAddress)
     {
-        // this if is never gonna be fulfilled...
-        if (Screen::kout != 0)
-            // but there is pretty error message!
-            Booter::Panic("FATAL ERROR: tried to place an object before initializing memory manager!");
-        
         for (;;) ;
     }
     
@@ -46,6 +41,31 @@ void * PhysMemory::Manager::Place(int iSize)
     // and increment
     PhysMemory::PlacementAddress += iSize;
     
+    if (PhysMemory::PlacementAddress > 0x1000000)
+    {
+        Booter::Panic("\nRunned out of memory!");
+    }
+    
     // and return
     return returned;
+}
+
+void * PhysMemory::Manager::PlacePageAligned(int iSize)
+{
+    if (!PhysMemory::PlacementAddress)
+    {
+        for (;;) ;
+    }
+    
+    int address = PhysMemory::PlacementAddress + 4095;
+    address &= 0xfffff000;
+    
+    PhysMemory::PlacementAddress = address + iSize;
+    
+    if (PhysMemory::PlacementAddress > 0x1000000)
+    {
+        Booter::Panic("\nRunned out of memory!");
+    }
+    
+    return (void *)address;
 }

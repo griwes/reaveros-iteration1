@@ -2,6 +2,7 @@
 #define __string_h__
 
 bool Compare(char *, char *);
-int Length(char *);
+bool Compare(const char *, char *);
+int Length(const char *);
 
 #endif

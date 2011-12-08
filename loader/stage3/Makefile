@@ -10,7 +10,8 @@ all: $(SOURCES) $(EXECUTABLE)
 	
 $(EXECUTABLE): $(OBJECTS) 
 	nasm -f elf -o bootstrap.o main.asm
-	$(LD) $(LDFLAGS) bootstrap.o $(OBJECTS) -o $@ -L/usr/lib/gcc/i686-linux-gnu/4.6/ -lgcc
+	nasm -f elf -o pagingasm.o paging.asm
+	$(LD) $(LDFLAGS) bootstrap.o pagingasm.o $(OBJECTS) -o $@ -L/usr/lib/gcc/i686-linux-gnu/4.6/ -lgcc
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

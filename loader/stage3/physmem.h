@@ -14,6 +14,7 @@ namespace PhysMemory
     public:
         // and this one returns address for object of size = iSize
         static void * Place(int iSize);
+        static void * PlacePageAligned(int iSize);
     };
 }
 

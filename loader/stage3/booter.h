@@ -27,7 +27,7 @@ namespace Booter
     // print panic message
     extern void Panic(char *);
     
-    extern int GetTimestamp();
+    extern unsigned long long int GetTimestamp();
     
     extern InitRD::InitRD * initrd;
 }

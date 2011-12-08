@@ -143,8 +143,8 @@ pmode:
     mov     ax, word [bootdrive]
     push    eax
 
-    ; Booter starts at 16 MB; Booter's "placement stack" starts at 1 MB
-    ; 15 MB is even more than it needs...
+    ; Booter starts at 8 MB; Booter's "placement stack" starts at 1 MB
+    ; 7 MB is even more than it needs...
     push    dword 0x100000
 
     xor     eax, eax
@@ -155,7 +155,7 @@ pmode:
     mov     ax, word 0x7c00
     push    eax
     
-    ; now, move the Booter at 0x1000000 = 16 MB
+    ; now, move the Booter at 0x800000 = 8 MB
     ; first: it starts at booterstart
     ; second: compute it's size to know, where initrd will start
     ; third: move Booter at 16 MB and initrd right after it
@@ -195,7 +195,7 @@ pmode:
     ; push initrd pointer
     mov     ebx, 0x200
     mul     ebx
-    add     eax, 0x1000000
+    add     eax, 0x800000
     push    eax
 
     xor     eax, eax
@@ -211,12 +211,12 @@ pmode:
     xor     esi, esi
     mov     si, word [booterstart]
 
-    mov     edi, 0x1000000
+    mov     edi, 0x800000
 
     rep     movsd
 
     ; jump to stage 3: booter
-    mov     ecx, 0x1000000
+    mov     ecx, 0x800000
     jmp     ecx
         
 get_eip:

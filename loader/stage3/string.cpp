@@ -1,4 +1,5 @@
 #include "string.h"
+#include "screen.h"
 
 bool Compare(char * first, char * second)
 {
@@ -13,12 +14,29 @@ bool Compare(char * first, char * second)
         {
             return false;
         }
+        
+        // oh well
+        // I spent 30 minutes on finding bug
+        // two following lines were missing
+        // this bug was epic, don't you think?
+        first++;
+        second++;
+    }
+    
+    if (*first != *second)
+    {
+        return false;
     }
     
     return true;
 }
 
-int Length(char * string)
+bool Compare(const char * first, char * second)
+{
+    return Compare(const_cast<char *>(first), second);
+}
+
+int Length(const char * string)
 {
     int i = 0;
 

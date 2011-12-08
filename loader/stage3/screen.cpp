@@ -276,6 +276,25 @@ Screen::Console * Screen::Console::Print(void * pPointer)
     return this->Print(reinterpret_cast<unsigned int>(pPointer));
 }
 
+Screen::Console * Screen::Console::Print(const char * string)
+{
+    char c;
+    
+    while (true)
+    {
+        c = *string;
+        
+        if (c == 0)
+            break;
+        
+        this->Print(c);
+        string++;
+    }
+    
+    return this;
+}
+
+
 void Screen::Console::MoveCursor()
 {
     // move cursor; assembly magic

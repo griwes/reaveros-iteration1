@@ -3,7 +3,7 @@
 rm ../reaverfs/bootfloppy/a.img
 rm ../reaverfs/bootfloppy/stage1.img
 rm ../reaverfs/bootfloppy/stage2.img
-rm ../reaverfs/bootfloppy/kernel.img
+# rm ../reaverfs/bootfloppy/kernel.img
 
 cd ./loader/stage1/
 nasm stage1.asm -o ../../../reaverfs/bootfloppy/stage1.img

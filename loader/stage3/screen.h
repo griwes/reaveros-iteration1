@@ -23,6 +23,7 @@ namespace Screen
         // most of them will never be used, but who cares
         Console * Print(char);
         Console * Print(char *);
+        Console * Print(const char *);
         Console * Print(unsigned long long int);
         Console * Print(unsigned long long int *);
         Console * Print(unsigned int);

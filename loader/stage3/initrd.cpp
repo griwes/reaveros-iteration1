@@ -1,6 +1,8 @@
 #include "initrd.h"
 #include "physmem.h"
 #include "screen.h"
+#include "string.h"
+#include "booter.h"
 
 void InitRD::InitRD::Initialize(int pInitrd)
 {
@@ -77,30 +79,67 @@ void InitRD::InitRD::Initialize(int pInitrd)
     Screen::kout->Print(minutes)->Print(':');
     if (seconds < 10) Screen::kout->Print('0');
     Screen::kout->Print(seconds);
-    for (;;);
+
+    char * image = reinterpret_cast<char *>(pInitrd);
+    
+    this->m_iFiles = *((int *)image);
+    if (this->m_iFiles == 0)
+    {
+        Booter::Panic("\n\nEmpty initrd found!");
+    }
+        
+    this->m_pFiles = (::InitRD::File *)PhysMemory::Manager::Place(sizeof(::InitRD::File) * this->m_iFiles);
+    
+    image += 512;
+    
+    for (int i = 0; i < this->m_iFiles; i++)
+    {
+        this->m_pFiles[i].Initialize(image);
+        Screen::kout->Print("\nFile \"")->Print(this->m_pFiles[i].GetFilename())->Print("\" found in initrd...");
+    }
 }
 
 InitRD::File * InitRD::InitRD::GetFile(int index)
 {
-
+    if (index > this->m_iFiles - 1)
+    {
+        Booter::Panic("Tried to access file above last initrd file!");
+    }
+    return &this->m_pFiles[index];
 }
 
-InitRD::File * InitRD::InitRD::GetFile(char * name)
+InitRD::File * InitRD::InitRD::GetFile(const char * filename)
 {
-
+    for (int i = 0; i < this->m_iFiles; i++)
+    {
+        if (Compare(filename, this->m_pFiles[i].GetFilename()))
+        {
+            Screen::kout->Print("\nFile ")->Print(filename)->Print(" found.\n");
+            return &this->m_pFiles[i];
+        }
+    }
+    
+    return (::InitRD::File *)0;
 }
 
 char * InitRD::File::GetContent()
 {
-
+    return this->m_pContent;
 }
 
 char * InitRD::File::GetFilename()
 {
-
+    return this->m_pContent - 512;
 }
 
-void InitRD::File::Initialize()
+int InitRD::File::GetSize()
 {
+    return this->m_iLength;
+}
 
+void InitRD::File::Initialize(char * file)
+{
+    this->m_pContent = file + 512;
+    this->m_iLength = *(int *)(file + 508);
+    *(this->m_pContent + 508) = 0; // ensure that filename ends with '\0'
 }
