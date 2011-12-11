@@ -41,7 +41,7 @@ void * PhysMemory::Manager::Place(int iSize)
     // and increment
     PhysMemory::PlacementAddress += iSize;
     
-    if (PhysMemory::PlacementAddress > 0x1000000)
+    if (PhysMemory::PlacementAddress > 0x800000)
     {
         Booter::Panic("\nRunned out of memory!");
     }
@@ -62,7 +62,7 @@ void * PhysMemory::Manager::PlacePageAligned(int iSize)
     
     PhysMemory::PlacementAddress = address + iSize;
     
-    if (PhysMemory::PlacementAddress > 0x1000000)
+    if (PhysMemory::PlacementAddress > 0x800000)
     {
         Booter::Panic("\nRunned out of memory!");
     }
