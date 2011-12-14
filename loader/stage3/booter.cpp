@@ -6,6 +6,7 @@
 
 extern "C" void LoadCR3(Paging::PageDirectory *);
 extern "C" void EnablePaging();
+extern "C" void Execute(int, int);
 
 // not very optimal, but who cares
 void Zero(char * dest, int size)
@@ -87,6 +88,13 @@ namespace Booter
         char * kernel = file->GetContent();
         
         Copy(kernel, (char *)(0x1000000), file->GetSize() * 512);
+        
+        // well, I cheated here twice
+        // for first cheat - look at comment at beginning of this function
+        // for second cheat - oh well, where is kernel's initrd?
+        // but it won't need it for some time
+        
+        // let's start that kernel development
     }
     
     void SetupKernelEnvironment()
@@ -101,7 +109,7 @@ namespace Booter
         Zero((char *)dir, sizeof(Paging::PageDirectory));
         
         // now, identity map first 16 MBs
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < 4; i++)
         {
             Paging::PageTable * table = (Paging::PageTable *)PhysMemory::Manager::PlacePageAligned(sizeof(Paging::PageTable));
             Zero((char *)table, sizeof(Paging::PageTable));
@@ -111,12 +119,12 @@ namespace Booter
             
             for (int j = 0; j < 1024; j++)
             {
-                table->Pages[j] = (i * 1024 * 1024 + j * 1024) | 1 | (1 << 1);
+                table->Pages[j] = (i * 4 * 1024 * 1024 + j * 4 * 1024) | 1 | (1 << 1);
             }
         }
         
         // now, map 16 MB - 48 MB to 1 GB - 1 GB 32 MB
-        for (int i = 0; i < 32; i++)
+        for (int i = 0; i < 8; i++)
         {
             Paging::PageTable * table = (Paging::PageTable *)PhysMemory::Manager::PlacePageAligned(sizeof(Paging::PageTable));
             Zero((char *)table, sizeof(Paging::PageTable));
@@ -126,28 +134,20 @@ namespace Booter
             
             for (int j = 0; j < 1024; j++)
             {
-                table->Pages[j] = (i * 1024 * 1024 + j * 1024) | 1 | (1 << 1);
+                table->Pages[j] = ((i + 4) * 4 * 1024 * 1024 + j * 4  * 1024) | 1 | (1 << 1);
             }
         }
 
         LoadCR3(dir);
-        Screen::kout->Print("trololo");
         EnablePaging();
-        Screen::kout->Print("trololo");
-        for (;;) ;
-        
+
         return;
     }
     
-    void ExecuteKernel(int memmap, int memcount, unsigned long long int timestamp) 
+    void ExecuteKernel(int memmap, int memcount) 
     {
-        // values are already pushed on stack
-        // let's just call it (virtual address, of course)
-        asm("jmp 0xc0000000");       
+        // execute assembly function, that setups kernel stack and executes it
+        // never returns
+        Execute(memmap, memcount);
     }    
-    
-    unsigned long long int GetTimestamp()
-    {
-        return 0;
-    }
 }

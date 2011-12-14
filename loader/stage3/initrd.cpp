@@ -72,7 +72,7 @@ void InitRD::InitRD::Initialize(int pInitrd)
 
     Screen::kout->Print(days)->Print(" of ");
     Screen::kout->Print(month_names[month - 1])->Print(' ');
-    Screen::kout->Print(1970 + years)->Print(", ");
+    Screen::kout->Print(1970 + years - 1)->Print(", ");
     if (hours < 10) Screen::kout->Print('0');
     Screen::kout->Print(hours)->Print(':');
     if (minutes < 10) Screen::kout->Print('0');
@@ -114,7 +114,6 @@ InitRD::File * InitRD::InitRD::GetFile(const char * filename)
     {
         if (Compare(filename, this->m_pFiles[i].GetFilename()))
         {
-            Screen::kout->Print("\nFile ")->Print(filename)->Print(" found.\n");
             return &this->m_pFiles[i];
         }
     }

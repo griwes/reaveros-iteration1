@@ -19,15 +19,13 @@ namespace Booter
     // loads kernel
     extern void LoadKernel();
     // jumps to kernel
-    extern void ExecuteKernel(int, int, unsigned long long int);
+    extern void ExecuteKernel(int, int);
 
     // setups paging and long mode, if required
     extern void SetupKernelEnvironment();
     
     // print panic message
     extern void Panic(char *);
-    
-    extern unsigned long long int GetTimestamp();
     
     extern InitRD::InitRD * initrd;
 }

@@ -27,8 +27,7 @@ extern "C" void __attribute__((cdecl)) booter_main(int pInitrd, int pMemoryMap, 
     
     // setup paging and, if CPU is 64bit and kernel header is marked as 64bit, long mode
     Booter::SetupKernelEnvironment();
-    unsigned long long int timestamp = Booter::GetTimestamp();
-    Booter::ExecuteKernel(pMemoryMap, iMemRegCount, timestamp);
+    Booter::ExecuteKernel(pMemoryMap, iMemRegCount);
     
     // we should (should? will) never reach this one, however...
     for (;;) ;
