@@ -8,5 +8,7 @@ extern "C" void KernelMain(int32 * pMemoryMap, int32 pMemoryMapSize)
 {
     Memory::Zero((uint8 *)&sbss, &ebss - &sbss);
     
+    Arch::Initialize();
+    
     Memory::Init(&ebss, pMemoryMap, pMemoryMapSize);
 }

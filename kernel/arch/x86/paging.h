@@ -8,7 +8,7 @@ namespace Arch
     {
         namespace Paging
         {
-            extern void Init(int32, int32 *, int32);
+            extern int Init(int32, int32 *, int32);
             
             struct PageEntry
             {
@@ -45,7 +45,7 @@ namespace Arch
                 PageDirectoryEntry tables[1024];
                 PageTable * pTables[1024];
                 int directory; // physical, self
-            };
+            }; // sizeof <= 3 pages
         }
         
         namespace PAEPaging
@@ -90,7 +90,7 @@ namespace Arch
                 PageDirectoryEntry tables[512]; // physical
                 PageTable * pTables[512]; // virtual
                 int directory; // physical, self
-            };
+            }; // sizeof <= 2 pages
             
             struct PageDirectoryPointerTableEntry
             {
