@@ -4,14 +4,14 @@
 
 // one note:
 // paging is currently enabled, however up to 3GB+48MB it's almost identity mapped
-// just substract 0xc0000000
+// just substract 0xc0000000 and add 16MB of identity mapped memory
 int Arch::x86::Paging::Init(int32 placement, int32 * memmap, int32 memmapsize)
 {
     placement += 4095;
     placement &= ~4095;
     
     // PAE paging
-    if (Arch::x86::Processor::CheckPAE() == 1)
+    if (Arch::x86::Processor::CheckPAE() == 1 && false) // key part not implemented yet
     {
         Arch::x86::PAEPaging::PageDirectoryPointerTable * pdpt = 
                     reinterpret_cast<Arch::x86::PAEPaging::PageDirectoryPointerTable *>(placement);

@@ -205,7 +205,7 @@ read_sectors_extended:
     ret
     
     .error:
-        mov     si, [failmsg]
+        mov     si, failmsg
         call    print
         cli
         hlt
