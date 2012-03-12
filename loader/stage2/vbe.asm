@@ -111,20 +111,20 @@ get_controller_info:
     cmp     ah, 0
     jne     .not_supported
 
-    cmp     [vbe_controller_info.signature], 'A'
+    cmp     [vbe_controller_info.signature], 'V'
     jne     .not_supported
-    cmp     [vbe_controller_info.signature + 1], 'S'
+    cmp     [vbe_controller_info.signature + 1], 'E'
     jne     .not_supported
-    cmp     [vbe_controller_info.signature + 2], 'E'
+    cmp     [vbe_controller_info.signature + 2], 'S'
     jne     .not_supported
-    cmp     [vbe_controller_info.signature + 3], 'V'
+    cmp     [vbe_controller_info.signature + 3], 'A'
     jne     .not_supported
 
     ret
     
     .not_supported:
         xor     eax, eax
-        mov     [enablevbe], 0
+        mov     byte [enablevbe], 0
         ret
 
 ;
@@ -159,7 +159,7 @@ setup_video_mode:
         cmp     ax, 0xffff
         je      .selected
 
-        push    eax
+        push    ax
         call    get_mode_info
 
         cmp     eax, 0
@@ -184,6 +184,9 @@ setup_video_mode:
 
         cmp     word [video_mode_description.yres], word [highesty]
         jle     .popadvance
+
+        pop     bx
+        jmp     .selected
         
     .popadvance:
         pop     eax
@@ -192,7 +195,22 @@ setup_video_mode:
         jmp     .loop
 
     .selected:
+        cmp     word [modenumber], 0
+        je      .failset
+
+        xor     eax, eax
+        xor     ebx, ebx
+
+        mov     ax, 0x4f02
+        int     0x10
+
+        cmp     ah, 0
+        jne     .failset
+
         ret
+    
+    .failset:
+        mov     byte [enablevbe], 0
 
     .fail:
         xor     eax, eax

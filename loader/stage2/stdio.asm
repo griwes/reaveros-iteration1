@@ -50,6 +50,15 @@ print16:
         popad
         ret
 
+;
+; print16_vbe()
+; VBE mode version of print16.
+; si - null ended string
+;
+
+print16_vbe:
+    ret
+
 
 bits    32
 
@@ -82,6 +91,14 @@ clear_screen:
 
     popa
     
+    ret
+
+;
+; clear_screen_vbe()
+; VBE mode version of clear_screen.
+; 
+
+clear_screen_vbe:
     ret
 
 ;
@@ -124,6 +141,15 @@ putch:
         ret
 
 ;
+; putch_vbe()
+; VBE mode version of putch.
+; bl - character
+;
+
+putch_vbe:
+    ret
+
+;
 ; print()
 ; Prints null-terminated string.
 ; ebx - address of string buffer
@@ -149,6 +175,26 @@ print:
 
         popa
         ret
+
+;
+; print_vbe()
+; VBE mode version of print.
+; ebx - address of string buffer
+;
+
+print_vbe:
+    ret
+
+; 
+; put_pixel()
+; Helper VBE mode function.
+; ax - x
+; bx - y
+; ecx - pixel color
+;
+
+put_pixel:
+    ret
 
 ;
 ; movcur()
