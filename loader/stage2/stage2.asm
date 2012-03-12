@@ -45,6 +45,8 @@ bootdrive:      dw 0
 booterstart:    dw 0
 memregcount:    dw 0
 
+enablevbe:      db 0
+
 ;
 ; Messages
 ;
@@ -62,6 +64,7 @@ msg4:           db "Executing third stage...", 0x0a, 0x0d, 0
 %include    "gdt.asm"
 %include    "a20.asm"
 %include    "mmap.asm"
+%include    "vbe.asm"
 
 ;
 ; Entry point
@@ -83,6 +86,17 @@ stage2:
     mov     si, msg1
     call    print16
 
+    mov     si, vbe
+    call    print16
+
+    cmp     [enablevbe], 1
+    jne     .novbe1
+
+    call    setup_video_mode
+    cmp     [enablevbe], 1
+    jne     .novbe1
+
+    .novbe1:
     mov     si, msg2
     call    print16
 
@@ -127,6 +141,7 @@ get_eip:
     ret
 
 stage3:
+    ; set registers
     mov     dx, 0x10
     mov     ds, dx
     mov     es, dx
@@ -150,4 +165,83 @@ stage3:
     mov     ebx, msg3
     call    print
 
-    call    get_eip
+    ; find address of end of stage 2
+    mov     ecx, selfsize
+    add     ecx, 4
+
+    ; and align it to 0x200 (512)
+    add     ecx, 511
+    mov     eax, 511
+    and     ecx, eax
+
+    mov     word [booterstart], cx
+    
+    ; pass video mode informations... [TODO]
+    push    dword 0
+
+    xor     eax, eax
+    mov     ax, word [bootdrive]
+    push    eax
+
+    push    dword 0x100000
+
+    xor     eax, eax
+    mov     ax, word [memregcount]
+    push    eax
+
+    xor     eax, eax
+    mov     ax, word 0x7c00
+    push    eax
+
+    xor     eax, eax
+    xor     edx, edx
+    mov     ax, word [selfsize]
+    mov     ebx, 0x200
+    div     ebx
+    mov     ebx, eax
+    cmp     edx, 0
+    je      .nope
+
+    inc     ebx
+    
+    .nope:
+    mov     word [selfsize], bx
+
+    xor     eax, eax
+    xor     ebx, ebx
+    xor     ecx, ecx
+
+    mov     ax, word [size]
+    mov     bx, word [initrdsize]
+    mov     cx, word [selfsize]
+
+    sub     eax, ebx
+    sub     eax, ecx
+
+    mov     dword [bootersize], eax
+
+    mov     ebx, 0x200
+    mul     ebx
+    add     eax, 0x800000
+    push    eax
+
+    xor     eax, eax
+    xor     ecx, ecx
+    mov     ax, word [size]
+    mov     cx, word [selfsize]
+
+    sub     eax, ecx
+    mov     ebx, 0x80
+    mul     ebx
+    mov     ecx, eax
+
+    xor     esi, esi
+    mov     si, word [booterstart]
+
+    mov     edi, 0x800000
+
+    rep     movsd
+
+    jmp     0x800000
+
+selfsize:   dw $ - $$ + 2

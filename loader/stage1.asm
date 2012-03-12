@@ -180,9 +180,9 @@ check_extended_0x13:
     mov     dl, [bootdrive]
 
     cmp     dl, 0
-    je      .no
+    je      .floppy
     cmp     dl, 1
-    je      .no
+    je      .floppy
 
     mov     ah, 0x41
     mov     bx, 0x55aa
@@ -192,6 +192,19 @@ check_extended_0x13:
     jnc     .return
 
     .no:
+        xor     ax, ax
+        mov     ah, 0x8
+        int     0x13
+
+        shr     dx, 8
+        inc     dx
+        mov     word [heads_per_cyl], dx
+        
+        xor     ch, ch
+        and     cl, 0x3f
+        mov     word [sec_per_track], cx
+
+    .floppy:
         xor     ax, ax
         ret
 

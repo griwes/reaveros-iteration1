@@ -98,5 +98,74 @@ int main(int argc, char ** argv)
         }
     }
     
+    char * buffer = new char[512];
+    Zero(buffer, 512);
     
+    stage1.read(buffer, 512);
+    output.write(buffer, 512);
+    Zero(buffer, 512);
+    
+    if (!stage1.eof())
+    {
+        std::cout << "Stage 1 wasn't 512 bytes long!" << std::endl;
+        return 7;
+    }
+    
+    stage1.close();
+    
+    short counter = 0;
+    while (!stage2.eof())
+    {
+        stage2.read(buffer, 512);
+        output.write(buffer, 512);
+        Zero(buffer, 512);
+        counter++;
+    }
+    stage2.close();
+    
+    int pos = output.tellp();
+    output.seekp(22);
+    // write stage 2 size into stage 1 header
+    output.write(reinterpret_cast<char *>(&counter), sizeof(counter)); 
+    output.seekp(pos);
+    
+    short booter_count = 0;
+    while (!booter.eof())
+    {
+        booter.read(buffer, 512);
+        output.write(buffer, 512);
+        Zero(buffer, 512);
+        booter_count++;
+    }
+    booter.close();
+    
+    pos = output.tellp();
+    output.seekp(512 + 8);
+    // write size of booter into stage 2 header
+    output.write(reinterpret_cast<char *>(&booter_count), sizeof(booter_count));
+    output.seekp(pos);
+    
+    short initrd_counter = 0;
+    if (argc == 6)
+    {
+        while (!initrd.eof())
+        {
+            initrd.read(buffer, 512);
+            output.write(buffer, 512);
+            Zero(buffer, 512);
+            initrd_counter++;
+        }
+    }
+    
+    output.seekp(512 + 8 + 4);
+    output.write(reinterpret_cast<char *>(&initrd_counter), sizeof(initrd_counter));
+    output.seekp(20);
+    short sum = initrd_counter + booter_count + counter + 1;
+    output.write(reinterpret_cast<char *>(&sum), sizeof(sum));
+    
+    output.close();
+    
+    std::cout << "Boot image created successfully." << std::endl;
+    
+    return 0;
 }
