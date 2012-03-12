@@ -1,4 +1,6 @@
 Reaver Operating System
 Version: 0.1 Alpha
 
-ReaverOS is fully object-oriented operating system, written mainly in C++ - and NASM in some places. System API is implemented using interrupt number 80h - the only POSIX thing in entire project, because all of System API - and ever C standard library - is written in C++ (and assembler, of course).
+ReaverOS is fully object-oriented operating system, written mainly in C++ 
+- and NASM in some places. All of System API - and ever C standard library 
+- is written in C++ (and assembler in parts, of course).
