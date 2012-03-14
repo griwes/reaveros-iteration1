@@ -95,6 +95,7 @@ stage2:
     call    print16
 
     call    setup_video_mode
+
     cmp     byte [enablevbe], 1
     jne     .novbe1
 
@@ -132,16 +133,6 @@ stage2:
 
 bits    32
 
-;
-; get_eip()
-; Helper function, returning current instruction address
-; return - ecx - eip
-;
-
-get_eip:
-    mov     ecx, dword [esp]
-    ret
-
 stage3:
     ; set registers
     mov     dx, 0x10
@@ -151,7 +142,7 @@ stage3:
     mov     gs, dx
     mov     ss, dx
     mov     esp, 0x90000
-    
+
     mov     [size], ax
     mov     [initrdsize], bx
     mov     [bootdrive], cx

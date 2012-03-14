@@ -124,6 +124,7 @@ get_controller_info:
     
     .not_supported:
         xor     eax, eax
+    
         mov     byte [enablevbe], 0
         ret
 
@@ -134,6 +135,8 @@ get_controller_info:
 ;
 
 get_mode_info:
+    push    ax
+
     mov     cx, ax
     mov     di, video_mode_description
 
@@ -141,17 +144,17 @@ get_mode_info:
 
     int     0x10
 
-    cmp     ah, 0
+    cmp     al, 0x4f
     jne     .fail
 
-    cmp     al, 0x4f
+    cmp     ah, 0
     jne     .fail
 
     ret
 
     .fail:
         xor     eax, eax
-        mov     byte [enablevbe], 0
+
         ret
 
 ;
@@ -178,16 +181,15 @@ setup_video_mode:
         mov     ax, [es:vbe_controller_info.videomodesoff + 2 * edx]
         pop     es
 
-        mov     word [modenumber], ax
-
         cmp     ax, 0xffff
         je      .selected
 
-        push    ax
+        mov     word [modenumber], ax
+
         call    get_mode_info
 
         cmp     eax, 0
-        je      .popadvance
+        je      .advance
 
         mov     eax, [video_mode_description.modeatrrib]
 
@@ -196,28 +198,27 @@ setup_video_mode:
         jne      .advance
 
         cmp     byte [video_mode_description.memorymodel], 4
-        jne     .popadvance
+        jne     .advance
 
         cmp     byte [video_mode_description.planes], 1
-        jne     .popadvance
+        jne     .advance
 
         mov     al, byte [depth]
         cmp     byte [video_mode_description.bpp], al
-        jl      .popadvance
+        jl      .advance
 
         mov     ax, word [highestx]
         cmp     word [video_mode_description.xres], ax
-        jle     .popadvance
+        jle     .advance
 
         mov     ax, word [highesty]
         cmp     word [video_mode_description.yres], ax
-        jle     .popadvance
+        jle     .advance
 
         pop     bx
-        jmp     .selected
+        mov     word [modenumber], bx
+        jmp     .loop
         
-    .popadvance:
-        pop     ax
     .advance:
         inc     edx
         jmp     .loop
@@ -225,6 +226,8 @@ setup_video_mode:
     .selected:
         cmp     word [modenumber], 0
         je      .failset
+
+        mov     bx, word [modenumber]
 
         xor     eax, eax
         
@@ -235,10 +238,17 @@ setup_video_mode:
         mov     ax, 0x4f02
         int     0x10
 
-        hlt
-
         cmp     ah, 0
         jne     .failset
+
+        push    es
+        xor     ax, ax
+        mov     es, ax
+        mov     di, 0x6c00
+        call    get_bios_vga_font
+        pop     es
+
+        hlt
 
         ret
     
@@ -247,4 +257,33 @@ setup_video_mode:
 
     .fail:
         xor     eax, eax
+
+        hlt
+
         ret
+
+;
+; get_bios_vga_font()
+; es:di - buffer to load the font to
+;
+
+get_bios_vga_font:
+    push    ds
+
+    mov     ax, 0x1130
+    mov     bh, 6
+        
+    int     0x10
+
+    hlt
+
+    push    es
+    pop     ds
+
+    mov     si, bp
+    mov     cx, 256 * 16 / 4
+
+    rep     movsd
+    pop     ds
+
+    ret
