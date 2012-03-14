@@ -73,3 +73,19 @@ enable_a20:
 
     .end:
         ret
+
+;
+; Helper functions
+;
+
+a20wait:
+    in      al, 0x64
+    test    al, 2
+    jnz     a20wait
+    ret
+    
+a20wait2:
+    in      al, 0x64
+    test    al, 1
+    jz      a20wait2
+    ret

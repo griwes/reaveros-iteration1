@@ -105,12 +105,6 @@ int main(int argc, char ** argv)
     output.write(buffer, 512);
     Zero(buffer, 512);
     
-    if (!stage1.eof())
-    {
-        std::cout << "Stage 1 wasn't 512 bytes long!" << std::endl;
-        return 7;
-    }
-    
     stage1.close();
     
     short counter = 0;

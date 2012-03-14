@@ -45,7 +45,7 @@ bootdrive:      dw 0
 booterstart:    dw 0
 memregcount:    dw 0
 
-enablevbe:      db 0
+enablevbe:      db 1
 
 ;
 ; Messages
@@ -55,6 +55,8 @@ msg1:           db "ReaverOS Bootloader v0.2", 0x0a, 0x0d, 0
 msg2:           db "Entering protected mode...", 0x0a, 0x0d, 0
 msg3:           db "Protected mode entered.", 0x0a, 0x0d, 0
 msg4:           db "Executing third stage...", 0x0a, 0x0d, 0
+
+vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
 
 ;
 ; Includes
@@ -86,14 +88,14 @@ stage2:
     mov     si, msg1
     call    print16
 
+    cmp     byte [enablevbe], 1
+    jne     .novbe1
+
     mov     si, vbe
     call    print16
 
-    cmp     [enablevbe], 1
-    jne     .novbe1
-
     call    setup_video_mode
-    cmp     [enablevbe], 1
+    cmp     byte [enablevbe], 1
     jne     .novbe1
 
     .novbe1:

@@ -115,8 +115,8 @@ putch:
     mov     ecx, cols * 2
     mov     al, byte [cury]
     mul     ecx
-    add     eax, byte [curx]
-    add     eax, byte [curx]
+    add     al, byte [curx]
+    add     al, byte [curx]
 
     xor     ecx, ecx
     add     edi, eax
@@ -211,13 +211,22 @@ movcur:
     add     al, byte [curx]
     mov     ebx, eax
 
+    ; for some magic reason a much shorter code doing exactly the same did not work...
     mov     al, 0x0f
-    out     0x03d4, al
-    out     0x03d5, bl
+    mov     dx, 0x03d4
+    out     dx, al
+
+    mov     al, bl
+    mov     dx, 0x03d5
+    out     dx, al
     
     mov     al, 0x0e
-    out     0x03d4, al
-    out     0x03d5, bh
+    mov     dx, 0x03d4
+    out     dx, al
+    
+    mov     al, bh
+    mov     dx, 0x03d5
+    out     dx, al
 
     popa
     ret

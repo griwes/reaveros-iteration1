@@ -264,9 +264,6 @@ stage1:
     mov     si, msg
     call    print
 
-    cli
-    hlt
-
     call    check_extended_0x13
     cmp     ax, 0
 

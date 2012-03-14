@@ -111,13 +111,13 @@ get_controller_info:
     cmp     ah, 0
     jne     .not_supported
 
-    cmp     [vbe_controller_info.signature], 'V'
+    cmp     byte [vbe_controller_info.signature], 'V'
     jne     .not_supported
-    cmp     [vbe_controller_info.signature + 1], 'E'
+    cmp     byte [vbe_controller_info.signature + 1], 'E'
     jne     .not_supported
-    cmp     [vbe_controller_info.signature + 2], 'S'
+    cmp     byte [vbe_controller_info.signature + 2], 'S'
     jne     .not_supported
-    cmp     [vbe_controller_info.signature + 3], 'A'
+    cmp     byte [vbe_controller_info.signature + 3], 'A'
     jne     .not_supported
 
     ret
@@ -134,7 +134,25 @@ get_controller_info:
 ;
 
 get_mode_info:
+    mov     cx, ax
+    mov     di, video_mode_description
+
+    mov     ax, 0x4f01
+
+    int     0x10
+
+    cmp     ah, 0
+    jne     .fail
+
+    cmp     al, 0x4f
+    jne     .fail
+
     ret
+
+    .fail:
+        xor     eax, eax
+        mov     byte [enablevbe], 0
+        ret
 
 ;
 ; setup_video_mode()
@@ -154,7 +172,13 @@ setup_video_mode:
         xor     eax, eax
         xor     ebx, ebx
 
-        mov     ax, [vbe_controller_info.videomodesseg:vbe_controller_info.videomodesoff + 2 * edx]
+        push    es
+        mov     ax, [vbe_controller_info.videomodesseg]
+        mov     es, ax
+        mov     ax, [es:vbe_controller_info.videomodesoff + 2 * edx]
+        pop     es
+
+        mov     word [modenumber], ax
 
         cmp     ax, 0xffff
         je      .selected
@@ -166,9 +190,10 @@ setup_video_mode:
         je      .popadvance
 
         mov     eax, [video_mode_description.modeatrrib]
+
         and     eax, 0x90
         cmp     eax, 0x90
-        je      .advance
+        jne      .advance
 
         cmp     byte [video_mode_description.memorymodel], 4
         jne     .popadvance
@@ -176,20 +201,23 @@ setup_video_mode:
         cmp     byte [video_mode_description.planes], 1
         jne     .popadvance
 
-        cmp     byte [video_mode_description.bpp], byte [depth]
+        mov     al, byte [depth]
+        cmp     byte [video_mode_description.bpp], al
         jl      .popadvance
 
-        cmp     word [video_mode_description.xres], word [highestx]
+        mov     ax, word [highestx]
+        cmp     word [video_mode_description.xres], ax
         jle     .popadvance
 
-        cmp     word [video_mode_description.yres], word [highesty]
+        mov     ax, word [highesty]
+        cmp     word [video_mode_description.yres], ax
         jle     .popadvance
 
         pop     bx
         jmp     .selected
         
     .popadvance:
-        pop     eax
+        pop     ax
     .advance:
         inc     edx
         jmp     .loop
@@ -199,10 +227,15 @@ setup_video_mode:
         je      .failset
 
         xor     eax, eax
-        xor     ebx, ebx
+        
+        ; set only bit D14 and D0-D8 (use linar frame buffer mode)
+        and     bx, 0100000111111111b
+        or      bx, 0100000000000000b
 
         mov     ax, 0x4f02
         int     0x10
+
+        hlt
 
         cmp     ah, 0
         jne     .failset
