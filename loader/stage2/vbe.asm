@@ -135,8 +135,6 @@ get_controller_info:
 ;
 
 get_mode_info:
-    push    ax
-
     mov     cx, ax
     mov     di, video_mode_description
 
@@ -165,7 +163,7 @@ get_mode_info:
 setup_video_mode:
     mov     di, vbe_controller_info
     call    get_controller_info
-    
+
     cmp     eax, 0
     je      .fail
 
@@ -215,12 +213,9 @@ setup_video_mode:
         cmp     word [video_mode_description.yres], ax
         jle     .advance
 
-        pop     bx
-        mov     word [modenumber], bx
-        jmp     .loop
-        
     .advance:
         inc     edx
+
         jmp     .loop
 
     .selected:
@@ -248,8 +243,6 @@ setup_video_mode:
         call    get_bios_vga_font
         pop     es
 
-        hlt
-
         ret
     
     .failset:
@@ -257,8 +250,6 @@ setup_video_mode:
 
     .fail:
         xor     eax, eax
-
-        hlt
 
         ret
 
@@ -269,13 +260,11 @@ setup_video_mode:
 
 get_bios_vga_font:
     push    ds
-
+    
     mov     ax, 0x1130
     mov     bh, 6
         
     int     0x10
-
-    hlt
 
     push    es
     pop     ds

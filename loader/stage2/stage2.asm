@@ -57,6 +57,7 @@ msg3:           db "Protected mode entered.", 0x0a, 0x0d, 0
 msg4:           db "Executing third stage...", 0x0a, 0x0d, 0
 
 vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
+vbe1:           db "Video mode ready.", 0x0a, 0x0d, 0
 
 ;
 ; Includes
@@ -96,13 +97,23 @@ stage2:
 
     call    setup_video_mode
 
+    hlt
+
     cmp     byte [enablevbe], 1
     jne     .novbe1
+
+    jmp     .video_mode
 
     .novbe1:
     mov     si, msg2
     call    print16
+    jmp     .a20_gdt
 
+    .video_mode:
+    mov     si, vbe1
+    call    print16_vbe
+    
+    .a20_gdt:
     call    enable_a20
     call    install_gdt
 
@@ -124,6 +135,8 @@ stage2:
     mov     cr0, edx
 
     cli                         ; long time until we see again, interrupts...
+
+    hlt
 
     jmp     0x08:stage3
 
