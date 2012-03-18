@@ -35,6 +35,12 @@ bits    16
 ; si - null ended string
 ;
 
+vbex:       dw 0
+vbey:       dw 0
+vbemaxx:    dw 0
+vbemaxy:    dw 0
+vbecolor:   dd 0
+
 print16:
     pushad
 
@@ -57,6 +63,52 @@ print16:
 ;
 
 print16_vbe:
+    lodsb
+    or      al, al
+    jz      .done
+
+    cmp     al, 0x0a
+    je      .newline
+
+    cmp     al, 0x0d
+    je      .carriage
+
+    mov     bx, word [vbex]
+    mov     cx, word [vbey]
+
+    .newline:
+        inc     word [vbey]
+        ret
+
+    .carriage:
+        mov     word [vbex], 0
+        ret
+
+    .done:
+        ret
+
+;
+; putch16_vbe()
+; Helper function for print16_vbe.
+;
+
+putch16_vbe:
+    push    ax
+    push    bx
+
+    xor     dx, dx
+    xor     ah, ah
+    mov     bx, 16
+
+    mul     bx
+
+    mov     ax, dx
+
+    pop     bx
+    pop     ax
+
+    
+
     ret
 
 
@@ -185,18 +237,6 @@ print:
 print_vbe:
     ret
 
-; 
-; put_pixel()
-; Helper VBE mode function.
-; ax - x
-; bx - y
-; ecx - pixel color
-;
-
-put_pixel:
-    ret
-
-;
 ; movcur()
 ; Moves hardware cursor.
 ;

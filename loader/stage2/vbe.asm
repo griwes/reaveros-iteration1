@@ -239,9 +239,23 @@ setup_video_mode:
         push    es
         xor     ax, ax
         mov     es, ax
-        mov     di, 0x6c00
+        mov     di, 0x5c00
         call    get_bios_vga_font
         pop     es
+
+        xor     dx, dx
+
+        mov     ax, word [video_mode_description.xres]
+        mov     bx, 8
+        div     bx
+        mov     word [vbemaxx], ax
+
+        xor     dx, dx
+
+        mov     ax, word [video_mode_description.yres]
+        mov     bx, 16
+        div     bx
+        mov     word [vbemaxy], ax
 
         ret
     
@@ -260,6 +274,7 @@ setup_video_mode:
 
 get_bios_vga_font:
     push    ds
+    push    es
     
     mov     ax, 0x1130
     mov     bh, 6
@@ -268,11 +283,13 @@ get_bios_vga_font:
 
     push    es
     pop     ds
+    pop     es
 
     mov     si, bp
     mov     cx, 256 * 16 / 4
 
     rep     movsd
+
     pop     ds
 
     ret

@@ -104,16 +104,16 @@ stage2:
 
     jmp     .video_mode
 
-    .novbe1:
+.novbe1:
     mov     si, msg2
     call    print16
     jmp     .a20_gdt
 
-    .video_mode:
+.video_mode:
     mov     si, vbe1
     call    print16_vbe
     
-    .a20_gdt:
+.a20_gdt:
     call    enable_a20
     call    install_gdt
 
