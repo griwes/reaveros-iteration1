@@ -37,6 +37,8 @@
 
 #include "types.h"
 #include "memory/memory.h"
+#include "processor/processor.h"
+#include "screen/screen.h"
 
 extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMap * pMemoryMap, void * pPlacementAddress,
                                                    uint32 iBootdrive, uint64 iStartingSector, Screen::VideoMode * pVideoMode)
@@ -50,7 +52,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Mem
     using Screen::kout;
     using Screen::nl;
     
-    kout << "ReaverOS 0.1: Cotyledon" << nl;
+    kout << "ReaverOS 0.1: Cotyledon" << nl << nl;
     
     Processor::PrintStatus();
     
