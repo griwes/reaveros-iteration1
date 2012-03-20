@@ -32,10 +32,45 @@
 #include "types.h"
 
 extern "C" void __attribute__((cdecl)) booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
-                                                   void * pPlacementAddress, uint32 iBootdrive, VideoMode * pVideoMode)
+                                                   void * pPlacementAddress, uint32 iBootdrive, uint64 iStartingSector,
+                                                   VideoMode * pVideoMode)
 {
-    Booter::Initialize(pPlacementAddress);
+    Memory::Initialize(pPlacementAddress);
     Screen::Initialize(pVideoMode);
+    
+    using Screen::bout;
+    using Screen::nl;
+    
+    bout << "Booter: ReaverOS' bootloader 0.1" << nl;
+    bout << "Reading memory map..." << nl;
+    
+    Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
+    
+    bout << "Reading InitRD..." << nl;
+    
+    InitRDDriver::Parse(pInitrd);
+    
+    bout << "Entering long mode..." << nl;
+    
+    Processor::EnterLongMode();
+    
+    StorageDriver * storage = InitRDDriver->GetFile("/boot/storage.drv");
+    FilesystemDriver * fs = InitRDDriver->GetFile("/boot/fs.drv");
+    
+    storage->Initialize(iBootdrive);
+    fs->Initialize(storage, iStartingSector);
+    
+    Processor::SetupNullIDT();
+    Processor::EnableInterrupts();
+    
+    void * end = fs->LoadFileIntoMemoryAddress("/boot/kernel", 0xFFFFFFFF80000000); // -2 GB
+    void * placement = fs->LoadFileIntoMemoryAddress("/boot/initrd", Memory::AlignToNextPage(end)); 
+    
+    Processor::Execute(0xFFFFFFFF80000000, Memory::AlignToNextPage(end), Memory::MemoryMap(pMemoryMap, iMemoryMapSize), 
+                       Memory::AlignToNextPage(placement), iBootdrive, iStartingSector, 
+                       Screen::GetProcessedVideoModeDescription());
+    
+    for (;;);
     
     return;
 }

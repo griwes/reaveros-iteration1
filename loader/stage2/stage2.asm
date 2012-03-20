@@ -47,17 +47,14 @@ memregcount:    dw 0
 
 enablevbe:      db 1
 
+starting:       dq 0
+
 ;
 ; Messages
 ;
 
-msg1:           db "ReaverOS Bootloader v0.2", 0x0a, 0x0d, 0
-msg2:           db "Entering protected mode...", 0x0a, 0x0d, 0
-msg3:           db "Protected mode entered.", 0x0a, 0x0d, 0
-msg4:           db "Executing third stage...", 0x0a, 0x0d, 0
-
+msg:            db "ReaverOS Bootloader v0.2", 0x0a, 0x0d, 0
 vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
-vbe1:           db "Video mode ready.", 0x0a, 0x0d, 0
 
 ;
 ; Includes
@@ -82,15 +79,16 @@ stage2:
     mov     fs, ax
     mov     gs, ax
 
+    pop     qword [starting]
     pop     word [initrdsize]
     pop     word [size]
     pop     word [bootdrive]
 
-    mov     si, msg1
+    mov     si, msg
     call    print16
 
     cmp     byte [enablevbe], 1
-    jne     .novbe1
+    jne     .novbe
 
     mov     si, vbe
     call    print16
@@ -99,21 +97,7 @@ stage2:
 
     hlt
 
-    cmp     byte [enablevbe], 1
-    jne     .novbe1
-
-    jmp     .video_mode
-
-.novbe1:
-    mov     si, msg2
-    call    print16
-    jmp     .a20_gdt
-
-.video_mode:
-    mov     si, vbe1
-    call    print16_vbe
-    
-.a20_gdt:
+.novbe:
     call    enable_a20
     call    install_gdt
 
@@ -160,17 +144,6 @@ stage3:
     mov     [initrdsize], bx
     mov     [bootdrive], cx
 
-    call    clear_screen
-
-    mov     ebx, msg1
-    call    print
-
-    mov     ebx, msg2
-    call    print
-
-    mov     ebx, msg3
-    call    print
-
     ; find address of end of stage 2
     mov     ecx, selfsize
     add     ecx, 4
@@ -182,8 +155,9 @@ stage3:
 
     mov     word [booterstart], cx
     
-    ; pass video mode informations... [TODO]
-    push    dword 0
+    push    dword video_mode_description
+
+    push    qword [starting]
 
     xor     eax, eax
     mov     ax, word [bootdrive]

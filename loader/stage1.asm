@@ -50,7 +50,7 @@ sec_per_track:  dw 18
 heads_per_cyl:  dw 2
 reserved:       dw 0                    ; filled by floppy creator - 21, 22 byte
 stage2_size:    dw 0                    ; filled by floppy creator - 23, 24 byte
-starting:       dw 0                    ; filled by hdd installer
+starting:       dq 0                    ; filled by hdd installer
 
 ;
 ; Variables
@@ -215,12 +215,11 @@ check_extended_0x13:
 ;
 ; read_sectors_extended()
 ; Warning: high level of function awesomeness included.
-; ax - starting sector
+; qword [packet.exstart] - starting sector
 ; cx - number of sectors
 ;
 
 read_sectors_extended:
-    mov     word [packet.exstart], ax
     mov     word [packet.number], cx
     
     mov     ah, 0x42
@@ -285,8 +284,8 @@ stage1:
     .extended:
         mov     cx, word [reserved]
         dec     cx
-        mov     ax, word [starting]
-        inc     ax
+        mov     qword [packet.exstart], qword [starting]
+        inc     qword [packet.exstart]
 
         call    read_sectors_extended
 
@@ -299,6 +298,8 @@ stage1:
         mov     ax, [reserved]
         sub     ax, [stage2_size]
         push    ax
+
+        push    qword [starting]
 
         push    word 0x07e0
         push    word 0x0000
