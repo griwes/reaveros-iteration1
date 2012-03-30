@@ -1,4 +1,10 @@
 /**
+ * ReaverOS
+ * loader/booter/memory.h
+ * Memory-related routines.
+ */
+
+/**
  * Reaver Project OS, Rose License
  * 
  * Copyright (C) 2011-2012 Reaver Project Team:
@@ -22,3 +28,42 @@
  * Michał "Griwes" Dominiak
  * 
  **/
+
+#ifndef __rose_booter_memory_h__
+#define __rose_booter_memory_h__
+
+#include "types.h"
+
+class MemoryMapEntry
+{
+public:
+    uint64 Base;
+    uint64 Length;
+    uint32 type;
+    uint32 ACPI30;
+
+    const char * Type();
+} __attribute__((packed));
+
+namespace Memory
+{
+    void Initialize(void *);
+    void PrintMemoryMap(MemoryMapEntry *, uint32);
+    void * AlignToNextPage(void *);
+
+    void * Place(uint32);
+    void * PlacePageAligned(uint32);
+
+    class MemoryMap
+    {
+    public:
+        MemoryMap(MemoryMapEntry *, uint32);
+    private:
+        MemoryMapEntry * m_pEntries;
+        uint32 m_pCount;
+    } __attribute__((packed));
+
+    extern void * pPlacement;
+}
+
+#endif

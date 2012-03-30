@@ -32,8 +32,11 @@ bits    16
 
 highestx:           dw 0
 highesty:           dw 0
+
 depth:              db 0
+
 modenumber:         dw 0
+selected:           dw 0
 
 vbe_controller_info:
     .signature:     dd 0
@@ -77,8 +80,7 @@ video_mode_description:
     .rsvdmasksize:  db 0
     .rsvdmaskpos:   db 0
     .colormodeinfo: db 0
-    .physbaseoff:   dw 0
-    .physbaseseg:   dw 0
+    .physbaseaddr:  dw 0
     .reserved2:     dd 0
     .reserved3:     dw 0
     .linbytes:      dw 0
@@ -125,7 +127,6 @@ get_controller_info:
     .not_supported:
         xor     eax, eax
     
-        mov     byte [enablevbe], 0
         ret
 
 ;
@@ -168,7 +169,7 @@ setup_video_mode:
     je      .fail
 
     xor     edx, edx
-    
+
     .loop:
         xor     eax, eax
         xor     ebx, ebx
@@ -193,25 +194,46 @@ setup_video_mode:
 
         and     eax, 0x90
         cmp     eax, 0x90
-        jne      .advance
+        jne     .advance
 
-        cmp     byte [video_mode_description.memorymodel], 4
+        cmp     byte [video_mode_description.memorymodel], 6
         jne     .advance
 
         cmp     byte [video_mode_description.planes], 1
         jne     .advance
 
-        mov     al, byte [depth]
-        cmp     byte [video_mode_description.bpp], al
+        mov     al, byte [video_mode_description.bpp]
+        cmp     al, byte [depth]
         jl      .advance
 
-        mov     ax, word [highestx]
-        cmp     word [video_mode_description.xres], ax
-        jle     .advance
+        mov     ax, word [video_mode_description.xres]
+        cmp     ax, word [highestx]
+        jl      .advance
 
-        mov     ax, word [highesty]
-        cmp     word [video_mode_description.yres], ax
-        jle     .advance
+        mov     ax, word [video_mode_description.yres]
+        cmp     ax, word [highesty]
+        jl      .advance
+
+        mov     al, byte [video_mode_description.bpp]
+
+        cmp     al, 16
+        je      .bpp
+
+        cmp     al, 32
+        jne     .advance
+
+    .bpp:
+        mov     ax, word [modenumber]
+        mov     word [selected], ax
+
+        mov     ax, word [video_mode_description.xres]
+        mov     word [highestx], ax
+
+        mov     ax, word [video_mode_description.yres]
+        mov     word [highesty], ax
+
+        mov     al, byte [video_mode_description.bpp]
+        mov     byte [depth], al
 
     .advance:
         inc     edx
@@ -219,13 +241,13 @@ setup_video_mode:
         jmp     .loop
 
     .selected:
-        cmp     word [modenumber], 0
+        cmp     word [selected], 0
         je      .failset
 
-        mov     bx, word [modenumber]
+        mov     bx, word [selected]
 
         xor     eax, eax
-        
+
         ; set only bit D14 and D0-D8 (use linar frame buffer mode)
         and     bx, 0100000111111111b
         or      bx, 0100000000000000b
@@ -243,25 +265,9 @@ setup_video_mode:
         call    get_bios_vga_font
         pop     es
 
-        xor     dx, dx
-
-        mov     ax, word [video_mode_description.xres]
-        mov     bx, 8
-        div     bx
-        mov     word [vbemaxx], ax
-
-        xor     dx, dx
-
-        mov     ax, word [video_mode_description.yres]
-        mov     bx, 16
-        div     bx
-        mov     word [vbemaxy], ax
-
         ret
-    
-    .failset:
-        mov     byte [enablevbe], 0
 
+    .failset:
     .fail:
         xor     eax, eax
 

@@ -53,11 +53,11 @@ install_gdt:
 ;
 
 gdt_start:
-    ; null
+    ; null:
     dd 0
     dd 0
 
-    ; code
+    ; code:
     dw 0x0ffff
     dw 0
     db 0
@@ -65,7 +65,7 @@ gdt_start:
     db 11001111b
     db 0
 
-    ; data
+    ; data:
     dw 0x0ffff
     dw 0
     db 0

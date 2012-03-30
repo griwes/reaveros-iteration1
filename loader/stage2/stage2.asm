@@ -29,7 +29,7 @@
 ; 
 
 bits    16
-org     0x0
+org     0x7e00
 
 entry:
     jmp     stage2
@@ -44,8 +44,6 @@ bootersize:     dw 0
 bootdrive:      dw 0
 booterstart:    dw 0
 memregcount:    dw 0
-
-enablevbe:      db 1
 
 starting:       dq 0
 
@@ -73,13 +71,16 @@ vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
 stage2:
     cli
 
-    mov     ax, 0x07e0
+    mov     ax, 0x0
     mov     ds, ax
     mov     es, ax
     mov     fs, ax
     mov     gs, ax
 
-    pop     qword [starting]
+    pop     word [starting + 6]
+    pop     word [starting + 4]
+    pop     word [starting + 2]
+    pop     word [starting]
     pop     word [initrdsize]
     pop     word [size]
     pop     word [bootdrive]
@@ -87,17 +88,11 @@ stage2:
     mov     si, msg
     call    print16
 
-    cmp     byte [enablevbe], 1
-    jne     .novbe
-
     mov     si, vbe
     call    print16
 
     call    setup_video_mode
 
-    hlt
-
-.novbe:
     call    enable_a20
     call    install_gdt
 
@@ -107,20 +102,11 @@ stage2:
     call    get_memory_map
     mov     word [memregcount], ax
     
-    xor     ax, ax
-    xor     bx, bx
-    xor     cx, cx
-    mov     ax, [size]
-    mov     bx, [initrdsize]
-    mov     cl, [bootdrive]
-
     mov     edx, cr0
     or      dl, 1
     mov     cr0, edx
 
     cli                         ; long time until we see again, interrupts...
-
-    hlt
 
     jmp     0x08:stage3
 
@@ -132,17 +118,13 @@ bits    32
 
 stage3:
     ; set registers
-    mov     dx, 0x10
-    mov     ds, dx
-    mov     es, dx
-    mov     fs, dx
-    mov     gs, dx
-    mov     ss, dx
+    mov     ax, 0x10
+    mov     ds, ax
+    mov     es, ax
+    mov     fs, ax
+    mov     gs, ax
+    mov     ss, ax
     mov     esp, 0x90000
-
-    mov     [size], ax
-    mov     [initrdsize], bx
-    mov     [bootdrive], cx
 
     ; find address of end of stage 2
     mov     ecx, selfsize
@@ -150,14 +132,17 @@ stage3:
 
     ; and align it to 0x200 (512)
     add     ecx, 511
-    mov     eax, 511
+    mov     eax, ~511
     and     ecx, eax
 
     mov     word [booterstart], cx
+
+    push    dword 0x5c00
     
     push    dword video_mode_description
 
-    push    qword [starting]
+    push    dword [starting + 4]
+    push    dword [starting]
 
     xor     eax, eax
     mov     ax, word [bootdrive]

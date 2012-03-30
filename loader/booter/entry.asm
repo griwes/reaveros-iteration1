@@ -35,4 +35,4 @@ global  entry
 extern  booter_main
 
 entry:
-    jmp    booter_main
+    call    booter_main

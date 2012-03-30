@@ -15,7 +15,7 @@
  * arising from the use of this software.
  * 
  * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, adn to alter it and redistribute it
+ * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  * 
  * 1. The origin of this software must not be misrepresented; you must not
@@ -30,41 +30,63 @@
  **/
 
 #include "types.h"
+#include "memory.h"
+#include "screen.h"
+#include "initrd.h"
+#include "processor.h"
+#include "storage.h"
+#include "filesystem.h"
 
-extern "C" void __attribute__((cdecl)) booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
+using Screen::bout;
+using Screen::nl;
+
+extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize,
                                                    void * pPlacementAddress, uint32 iBootdrive, uint64 iStartingSector,
-                                                   VideoMode * pVideoMode)
+                                                   VideoMode * pVideoMode, void * pFont)
 {
+    *(uint32 *)0x500000 = (uint32)pMemoryMap;
+    
     Memory::Initialize(pPlacementAddress);
-    Screen::Initialize(pVideoMode);
+    Screen::Initialize(pVideoMode, pFont);
+
+    *bout << "Booter: ReaverOS' bootloader 0.1" << nl;
+    *bout << "Reading memory map..." << nl;
+
+    for (;;) ;
+   
+/*    Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
     
-    using Screen::bout;
-    using Screen::nl;
-    
-    bout << "Booter: ReaverOS' bootloader 0.1" << nl;
-    bout << "Reading memory map..." << nl;
-    
-    Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
-    
-    bout << "Reading InitRD..." << nl;
+    *bout << "Reading InitRD..." << nl;
     
     InitRDDriver::Parse(pInitrd);
     
-    bout << "Entering long mode..." << nl;
+    *bout << "Entering long mode..." << nl;
     
     Processor::EnterLongMode();
+
+    // here, we are still in 32bit mode (compatibility mode)
+    // however, storage driver's and filesystem driver's code
+    // is already 64 bit, so it has no problem with loading
+    // data into 64bit areas of memory
+
+    // the same goes for Execute function, which calls 64 bit
+    // assembly to do far jump to -2GB in 64bit code sector
     
-    StorageDriver * storage = InitRDDriver->GetFile("/boot/storage.drv");
-    FilesystemDriver * fs = InitRDDriver->GetFile("/boot/fs.drv");
+    Processor::SetupGDT();
+
+    StorageDriver storage = InitRDDriver::GetFile("/boot/storage.drv");
+    FilesystemDriver fs = InitRDDriver::GetFile("/boot/fs.drv");
     
-    storage->Initialize(iBootdrive);
-    fs->Initialize(storage, iStartingSector);
-    
+    storage.Initialize(iBootdrive);
+    fs.Initialize(storage, iStartingSector);
+
     Processor::SetupNullIDT();
     Processor::EnableInterrupts();
     
-    void * end = fs->LoadFileIntoMemoryAddress("/boot/kernel", 0xFFFFFFFF80000000); // -2 GB
-    void * placement = fs->LoadFileIntoMemoryAddress("/boot/initrd", Memory::AlignToNextPage(end)); 
+    void * end = fs.LoadFileIntoMemoryAddress("/boot/kernel", 0xFFFFFFFF80000000); // -2 GB
+    void * placement = fs.LoadFileIntoMemoryAddress("/boot/initrd", Memory::AlignToNextPage(end));
+
+    Processor::DisableInterrupts();
     
     Processor::Execute(0xFFFFFFFF80000000, Memory::AlignToNextPage(end), Memory::MemoryMap(pMemoryMap, iMemoryMapSize), 
                        Memory::AlignToNextPage(placement), iBootdrive, iStartingSector, 
@@ -72,5 +94,5 @@ extern "C" void __attribute__((cdecl)) booter_main(InitRD * pInitrd, MemoryMapEn
     
     for (;;);
     
-    return;
+    return;*/
 }

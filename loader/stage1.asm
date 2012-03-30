@@ -284,8 +284,15 @@ stage1:
     .extended:
         mov     cx, word [reserved]
         dec     cx
-        mov     qword [packet.exstart], qword [starting]
-        inc     qword [packet.exstart]
+        mov     ax, word [starting]
+        mov     word [packet.exstart], ax
+        mov     ax, word [starting + 2]
+        mov     word [packet.exstart + 2], ax
+        mov     ax, word [starting + 4]
+        mov     word [packet.exstart + 4], ax
+        mov     ax, word [starting + 6]
+        mov     word [packet.exstart + 6], ax
+        inc     byte [packet.exstart]
 
         call    read_sectors_extended
 
@@ -299,7 +306,10 @@ stage1:
         sub     ax, [stage2_size]
         push    ax
 
-        push    qword [starting]
+        push    word [starting]
+        push    word [starting + 2]
+        push    word [starting + 4]
+        push    word [starting + 6]
 
         push    word 0x07e0
         push    word 0x0000
