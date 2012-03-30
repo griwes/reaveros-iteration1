@@ -1,7 +1,7 @@
 /**
  * ReaverOS
- * loader/booter/initrd.h
- * InitRD driver.
+ * loader/booter/processor.cpp
+ * Processor routines.
  */
 
 /**
@@ -29,28 +29,23 @@
  *
  **/
 
-#ifndef __rose_booter_initrd_h__
-#define __rose_booter_initrd_h__
+#include "processor.h"
+#include "screen.h"
 
-#include "types.h"
+using Screen::bout;
 
-class InitRD
+extern "C"
 {
-public:
-    uint32 NumElements;
-    uint32 Timestamp;
-} __attribute__((packed));
+    uint32 _cpu_check_long_mode();
+}
 
-class File
+void Processor::EnterLongMode()
 {
-    
-} __attribute__((packed));
+    if (!_cpu_check_long_mode())
+    {
+        *bout << "PANIC: long mode not supported!";
+        for (;;) ;
+    }
 
-class InitRDDriver
-{
-public:
-    static void Parse(InitRD *);
-    static File * GetFile(char *);
-};
-
-#endif
+    // identity map first 32 MiB
+}

@@ -54,15 +54,16 @@ extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint3
     
     *bout << nl << "Reading InitRD..." << nl;
     
-    InitRDDriver::Parse(pInitrd);
+//    InitRDDriver::Parse(pInitrd);
     
     *bout << "Entering long mode..." << nl;
 
-    for (;;) ;
     
-/*    Processor::EnterLongMode();
+    Processor::EnterLongMode();
 
-    // here, we are still in 32bit mode (compatibility mode)
+    for (;;) ;
+
+/*    // here, we are still in 32bit mode (compatibility mode)
     // however, storage driver's and filesystem driver's code
     // is already 64 bit, so it has no problem with loading
     // data into 64bit areas of memory
