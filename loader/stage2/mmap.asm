@@ -57,6 +57,8 @@ get_memory_map:
     cmp     ebx, 0
     je      .fail
 
+    inc     bp
+
     .loop:
         mov     eax, 0xe820
         mov     ecx, 24

@@ -44,25 +44,23 @@ extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint3
                                                    void * pPlacementAddress, uint32 iBootdrive, uint64 iStartingSector,
                                                    VideoMode * pVideoMode, void * pFont)
 {
-    *(uint32 *)0x500000 = (uint32)pMemoryMap;
-    
     Memory::Initialize(pPlacementAddress);
     Screen::Initialize(pVideoMode, pFont);
 
     *bout << "Booter: ReaverOS' bootloader 0.1" << nl;
-    *bout << "Reading memory map..." << nl;
+    *bout << "Reading memory map..." << nl << nl;
 
-    for (;;) ;
-   
-/*    Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
+    Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
     
-    *bout << "Reading InitRD..." << nl;
+    *bout << nl << "Reading InitRD..." << nl;
     
     InitRDDriver::Parse(pInitrd);
     
     *bout << "Entering long mode..." << nl;
+
+    for (;;) ;
     
-    Processor::EnterLongMode();
+/*    Processor::EnterLongMode();
 
     // here, we are still in 32bit mode (compatibility mode)
     // however, storage driver's and filesystem driver's code

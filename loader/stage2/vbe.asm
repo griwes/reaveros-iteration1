@@ -210,6 +210,9 @@ setup_video_mode:
         cmp     ax, word [highestx]
         jl      .advance
 
+        cmp     ax, word 1280
+        jne     .advance
+
         mov     ax, word [video_mode_description.yres]
         cmp     ax, word [highesty]
         jl      .advance

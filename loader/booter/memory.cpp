@@ -76,14 +76,49 @@ void Memory::PrintMemoryMap(MemoryMapEntry * pMap, uint32 count)
     *bout << "Base address       | Length             | Type" << nl;
     *bout << "-------------------|--------------------|----------------------------" << nl;
 
+    uint64 iTotalMemory = 0;
+    
     for (uint32 i = 0; i < count; i++)
     {
-        *bout << pMap->Base << " | " << pMap->Length << " | " << pMap->Type() << nl;
+        if (pMap->type == 1)
+        {
+            iTotalMemory += pMap->Length;
+        }
+
+        *bout << "0x";
+        
+        for (uint32 j = 60; j >= 4; j -= 4)
+        {
+            if ((pMap->Base & ((uint64)0xf << j)) != 0)
+            {
+                break;
+            }
+
+            *bout << "0";
+        }
+        
+        *bout << pMap->Base << " | 0x";
+
+        for (uint32 j = 60; j >= 4; j -= 4)
+        {
+            if ((pMap->Length & ((uint64)0xf << j)) != 0)
+            {
+                break;
+            }
+
+            *bout << "0";
+        }
+
+        *bout << pMap->Length << " | " << pMap->Type() << nl;
         *bout << "-------------------|--------------------|----------------------------" << nl;
         pMap++;
     }
 
     bout->Dec();
+
+    *bout << "Total memory available: " << iTotalMemory / (1024 * 1024 * 1024) << " GiB " <<
+                (iTotalMemory % (1024 * 1024 * 1024)) / (1024 * 1024) << "MiB " <<
+                (iTotalMemory % (1024 * 1024)) / 1024 << " KiB" << nl;
 }
 
 void * Memory::Place(uint32 size)

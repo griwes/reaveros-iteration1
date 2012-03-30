@@ -78,6 +78,7 @@ uint8 OutputStream::Base(uint8 base)
 
 void OutputStream::Initialize(VideoModeWrapper * pVideoMode)
 {
+    this->m_iBase = 10;
     this->m_pVideoMode = pVideoMode;
 }
 
@@ -110,6 +111,8 @@ OutputStream & operator << (OutputStream & s, const char * str)
     {
         s.m_pVideoMode->PrintCharacter(*str++);
     }
+
+    return s;
 }
 
 void VideoModeWrapper::PrintCharacter(char c)
@@ -122,11 +125,14 @@ void VideoModeWrapper::PrintCharacter(char c)
     if (c == '\n')
     {
         this->y++;
+        this->x = 0;
+        return;
     }
 
-    if (c == '\r')
+    if (c == '\t')
     {
-        this->x = 0;
+        this->x += (8 - this->x % 8);
+        return;
     }
 
     switch (this->m_pVideoMode->BitsPerPixel)
@@ -148,7 +154,7 @@ void VideoModeWrapper::PrintCharacter(char c)
 void VideoModeWrapper::_put16(char c)
 {
     uint8 * character = &((uint8 *)this->m_pFontData)[c * 16];
-    uint32 * dest = (uint32 *)(this->m_pVideoMode->PhysBasePtr + (this->y) * this->m_pVideoMode->LinearBytesPerScanLine
+    uint32 * dest = (uint32 *)(this->m_pVideoMode->PhysBasePtr + this->y * this->m_pVideoMode->LinearBytesPerScanLine * 16
                     + this->x * this->m_pVideoMode->BitsPerPixel);
 
     uint16 iColor = ((this->r >> 1) << this->m_pVideoMode->LinearRedFieldPosition) |
@@ -200,7 +206,7 @@ void VideoModeWrapper::_put16(char c)
 void VideoModeWrapper::_put32(char c)
 {
     uint8 * character = &((uint8 *)this->m_pFontData)[c * 16];
-    uint32 * dest = (uint32 *)(this->m_pVideoMode->PhysBasePtr + (this->y) * this->m_pVideoMode->LinearBytesPerScanLine
+    uint32 * dest = (uint32 *)(this->m_pVideoMode->PhysBasePtr + this->y * this->m_pVideoMode->LinearBytesPerScanLine * 16
                     + this->x * this->m_pVideoMode->BitsPerPixel);
 
     uint32 iColor = (this->r << this->m_pVideoMode->LinearRedFieldPosition) |

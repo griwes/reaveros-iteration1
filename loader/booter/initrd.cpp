@@ -1,7 +1,7 @@
 /**
  * ReaverOS
- * loader/booter/initrd.h
- * InitRD driver.
+ * loader/booter/initrd.cpp
+ * InitRD routines.
  */
 
 /**
@@ -29,27 +29,15 @@
  *
  **/
 
-#ifndef __rose_booter_initrd_h__
-#define __rose_booter_initrd_h__
+#include "initrd.h"
+#include "screen.h"
 
-#include "types.h"
+using Screen::bout;
+using Screen::nl;
 
-class InitRD
+void InitRDDriver::Parse(InitRD * pInitRD)
 {
-    uint32 NumElements;
-    uint32 Timestamp;
-} __attribute__((packed));
+    *bout << "Number of files in InitRD: " << pInitRD->NumElements << nl;
 
-class File
-{
     
-} __attribute__((packed));
-
-class InitRDDriver
-{
-public:
-    static void Parse(InitRD *);
-    static File * GetFile(char *);
-};
-
-#endif
+}

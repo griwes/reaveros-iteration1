@@ -100,7 +100,7 @@ stage2:
 
     mov     di, 0x7c00
     call    get_memory_map
-    mov     word [memregcount], ax
+    mov     word [memregcount], bp
     
     mov     edx, cr0
     or      dl, 1
@@ -127,7 +127,7 @@ stage3:
     mov     esp, 0x90000
 
     ; find address of end of stage 2
-    mov     ecx, selfsize
+    mov     ecx, dword selfsize
     add     ecx, 4
 
     ; and align it to 0x200 (512)

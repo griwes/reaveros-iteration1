@@ -172,6 +172,7 @@ OutputStream & operator << (OutputStream &s, T i)
     if (i < 0 && s.m_iBase == 10)
     {
         s.m_pVideoMode->PrintCharacter('-');
+        i = -i;
     }
     
     if (i == 0)
@@ -179,14 +180,15 @@ OutputStream & operator << (OutputStream &s, T i)
         s.m_pVideoMode->PrintCharacter(0);
     }
     
-    while (i != 0)
+    T div = i / s.m_iBase;
+    T mod = i % s.m_iBase;
+    
+    if (div != 0)
     {
-        T div = i / s.m_iBase;
-        T mod = i / s.m_iBase;
-        
         s << div;
-        s.m_pVideoMode->PrintCharacter("zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + mod]);
     }
+    
+    s.m_pVideoMode->PrintCharacter("zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + mod]);
     
     return s;
 }

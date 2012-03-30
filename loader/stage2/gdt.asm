@@ -36,15 +36,11 @@ bits    16
 ;
 
 install_gdt:
-    cli
-
     pusha
 
     lgdt    [gdt]
 
     popa
-
-    sti
 
     ret
 
