@@ -45,7 +45,7 @@ extern "C"
 
 namespace Processor
 {
-    PML4 * PagingStructures = 0;
+    PML4 * PagingStructures;
 }
 
 void Processor::EnterLongMode()
@@ -92,11 +92,16 @@ void Processor::EnterLongMode()
         }
     }
 
+    Processor::PagingStructures = p;
+    
+    uint32 cr3 = (uint32)p;
+    cr3 &= ~(uint32)0xfff;
+    
     _enable_pae_paging();
     _enable_msr_longmode();
-    _enable_paging((uint32)p & ~0xfff);
+    _enable_paging(cr3);
 
-    Processor::PagingStructures = p;
-
+    Screen::bout->UpdatePagingStructures();
+    
     return;
 }

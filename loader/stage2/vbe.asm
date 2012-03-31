@@ -210,12 +210,12 @@ setup_video_mode:
         cmp     ax, word [highestx]
         jl      .advance
 
-        cmp     ax, word 1280
-        jne     .advance
-
         mov     ax, word [video_mode_description.yres]
         cmp     ax, word [highesty]
         jl      .advance
+
+        cmp     ax, 760
+        jg     .advance
 
         mov     al, byte [video_mode_description.bpp]
 
@@ -248,6 +248,9 @@ setup_video_mode:
         je      .failset
 
         mov     bx, word [selected]
+
+        mov     ax, bx
+        call    get_mode_info
 
         xor     eax, eax
 

@@ -57,7 +57,7 @@ extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint3
 //    InitRDDriver::Parse(pInitrd);
     
     *bout << "Entering long mode...";
-    
+
     Processor::EnterLongMode();
 
     *bout << " done." << nl;

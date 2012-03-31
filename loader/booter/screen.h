@@ -84,6 +84,8 @@ public:
 class VideoModeWrapper
 {
 public:
+    friend class OutputStream;
+    
     void Initialize(void *, VideoMode *);
     void PrintCharacter(char);
     void ClearScreen();
@@ -93,7 +95,6 @@ private:
     uint8 x, y;
     uint8 maxx, maxy;
 
-    void _scroll();
     void _put16(char);
     void _put32(char);
 
@@ -138,6 +139,8 @@ public:
     }
     
     uint8 Base(uint8 = 0);
+
+    void UpdatePagingStructures();
 private:
     uint8 m_iBase;
     VideoModeWrapper * m_pVideoMode;
