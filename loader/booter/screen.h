@@ -29,8 +29,8 @@
  *
  **/
 
-#ifndef __rose_booter_screen_h__
-#define __rose_booter_screen_h__
+#ifndef __rose_loader_booter_screen_h__
+#define __rose_loader_booter_screen_h__
 
 #include "types.h"
 
@@ -90,7 +90,6 @@ public:
     
 private:
     VideoMode * m_pVideoMode;
-    uint32 * m_pMaskTable;
     uint8 x, y;
     uint8 maxx, maxy;
 

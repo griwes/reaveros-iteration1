@@ -29,8 +29,8 @@
  * 
  **/
 
-#ifndef __rose_booter_memory_h__
-#define __rose_booter_memory_h__
+#ifndef __rose_loader_booter_memory_h__
+#define __rose_loader_booter_memory_h__
 
 #include "types.h"
 
@@ -53,6 +53,8 @@ namespace Memory
 
     void * Place(uint32);
     void * PlacePageAligned(uint32);
+
+    void Zero(char *, uint32);
 
     class MemoryMap
     {

@@ -41,13 +41,13 @@ using Screen::bout;
 using Screen::nl;
 
 extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize,
-                                                   void * pPlacementAddress, uint32 iBootdrive, uint64 iStartingSector,
-                                                   VideoMode * pVideoMode, void * pFont)
+                            void * pPlacementAddress, uint32 iBootdrive, uint64 iStartingSector,
+                            VideoMode * pVideoMode, void * pFont)
 {
     Memory::Initialize(pPlacementAddress);
     Screen::Initialize(pVideoMode, pFont);
 
-    *bout << "Booter: ReaverOS' bootloader 0.1" << nl;
+    *bout << "Booter: ReaverOS' bootloader 0.2" << nl;
     *bout << "Reading memory map..." << nl << nl;
 
     Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
@@ -56,10 +56,11 @@ extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint3
     
 //    InitRDDriver::Parse(pInitrd);
     
-    *bout << "Entering long mode..." << nl;
-
+    *bout << "Entering long mode...";
     
     Processor::EnterLongMode();
+
+    *bout << " done." << nl;
 
     for (;;) ;
 

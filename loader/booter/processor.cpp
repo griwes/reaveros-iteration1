@@ -31,12 +31,21 @@
 
 #include "processor.h"
 #include "screen.h"
+#include "paging.h"
 
 using Screen::bout;
 
 extern "C"
 {
     uint32 _cpu_check_long_mode();
+    void _enable_pae_paging();
+    void _enable_msr_longmode();
+    void _enable_paging(uint32);
+}
+
+namespace Processor
+{
+    PML4 * PagingStructures = 0;
 }
 
 void Processor::EnterLongMode()
@@ -47,5 +56,47 @@ void Processor::EnterLongMode()
         for (;;) ;
     }
 
-    // identity map first 32 MiB
+    // identity map first 64 MiB
+
+    PML4 * p = (PML4 *)Memory::PlacePageAligned(sizeof(PML4));
+    Memory::Zero((char *)p, sizeof(PML4));
+
+    PageDirectoryPointerTable * pdpt = (PageDirectoryPointerTable *)Memory::PlacePageAligned(sizeof(PageDirectoryPointerTable));
+    Memory::Zero((char *)pdpt, sizeof(PageDirectoryPointerTable));
+    p->PointerTables[0] = pdpt;
+    p->Entries[0].Present = 1;
+    p->Entries[0].ReadWrite = 1;
+    p->Entries[0].PDPTAddress = ((uint64)pdpt) >> 12;
+
+    PageDirectory * pd = (PageDirectory *)Memory::PlacePageAligned(sizeof(PageDirectory));
+    Memory::Zero((char *)pd, sizeof(PageDirectory));
+    pdpt->PageDirectories[0] = pd;
+    pdpt->Entries[0].Present = 1;
+    pdpt->Entries[0].ReadWrite = 1;
+    pdpt->Entries[0].PageDirectoryAddress = ((uint64)pd) >> 12;
+    
+    for (uint32 i = 0; i < 16; i++)
+    {
+        PageTable * pt = (PageTable *)Memory::PlacePageAligned(sizeof(PageTable));
+        Memory::Zero((char *)pt, sizeof(PageTable));
+        pd->PageTables[i] = pt;
+        pd->Entries[i].Present = 1;
+        pd->Entries[i].ReadWrite = 1;
+        pd->Entries[i].PageTableAddress = ((uint64)pt) >> 12;
+
+        for (uint32 j = 0; j < 512; j++)
+        {
+            pt->Entries[j].Present = 1;
+            pt->Entries[j].ReadWrite = 1;
+            pt->Entries[j].PageAddress = (i * 2 * 1024 * 1024 + j * 4 * 1024) >> 12;
+        }
+    }
+
+    _enable_pae_paging();
+    _enable_msr_longmode();
+    _enable_paging((uint32)p & ~0xfff);
+
+    Processor::PagingStructures = p;
+
+    return;
 }

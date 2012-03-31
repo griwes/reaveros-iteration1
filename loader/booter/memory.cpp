@@ -117,7 +117,7 @@ void Memory::PrintMemoryMap(MemoryMapEntry * pMap, uint32 count)
     bout->Dec();
 
     *bout << "Total memory available: " << iTotalMemory / (1024 * 1024 * 1024) << " GiB " <<
-                (iTotalMemory % (1024 * 1024 * 1024)) / (1024 * 1024) << "MiB " <<
+                (iTotalMemory % (1024 * 1024 * 1024)) / (1024 * 1024) << " MiB " <<
                 (iTotalMemory % (1024 * 1024)) / 1024 << " KiB" << nl;
 }
 
@@ -136,4 +136,12 @@ void * Memory::PlacePageAligned(uint32 size)
     Memory::pPlacement = (void *)_;
     
     return Memory::Place(size);
+}
+
+void Memory::Zero(char * buf, uint32 size)
+{
+    while (size--)
+    {
+        *buf++ = 0;
+    }
 }

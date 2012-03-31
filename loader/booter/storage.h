@@ -29,8 +29,8 @@
  *
  **/
 
-#ifndef __rose_booter_storage_h__
-#define __rose_booter_storage_h__
+#ifndef __rose_loader_booter_storage_h__
+#define __rose_loader_booter_storage_h__
 
 #include "types.h"
 #include "initrd.h"

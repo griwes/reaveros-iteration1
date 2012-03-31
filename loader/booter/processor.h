@@ -29,12 +29,13 @@
  *
  **/
 
-#ifndef __rose_booter_processor_h__
-#define __rose_booter_processor_h__
+#ifndef __rose_loader_booter_processor_h__
+#define __rose_loader_booter_processor_h__
 
 #include "types.h"
 #include "memory.h"
 #include "screen.h"
+#include "paging.h"
 
 namespace Processor
 {
@@ -45,6 +46,8 @@ namespace Processor
     void DisableInterrupts();
     void RegisterInterruptRoutine(int, void *);
     void Execute(uint64, uint64, Memory::MemoryMap *, uint64, uint32, uint64, VideoModeDescription *);
+
+    extern PML4 * PagingStructures;
 }
 
 #endif
