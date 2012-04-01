@@ -41,6 +41,7 @@ extern "C"
     void _enable_pae_paging();
     void _enable_msr_longmode();
     void _enable_paging(uint32);
+    void _setup_gdt();
 }
 
 namespace Processor
@@ -104,4 +105,9 @@ void Processor::EnterLongMode()
     Screen::bout->UpdatePagingStructures();
     
     return;
+}
+
+void Processor::SetupGDT()
+{
+    _setup_gdt();
 }

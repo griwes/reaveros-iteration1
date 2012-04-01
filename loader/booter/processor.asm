@@ -46,6 +46,7 @@ global _enable_pae_paging
 global _enable_msr_longmode
 global _enable_paging
 global _reload_cr3
+global _setup_gdt
 
 _cpu_check_long_mode:
     mov     eax, 0x80000000
@@ -109,3 +110,48 @@ _reload_cr3:
     push    ebp
 
     ret
+
+_setup_gdt:
+    pusha
+    lgdt    [gdt]
+    popa
+
+    jmp     0x10:.ret
+
+    .ret:
+    ret
+
+gdt_start:
+    ; null:
+    dd 0
+    dd 0
+
+    ; code 64 bit:
+    dw 0x0ffff
+    dw 0
+    db 0
+    db 10011010b
+    db 11001111b
+    db 0
+
+    ; code 32 bit:
+    dw 0x0ffff
+    dw 0
+    db 0
+    db 10011010b
+    db 11001111b
+    db 0
+
+    ; data:
+    dw 0x0ffff
+    dw 0
+    db 0
+    db 10010010b
+    db 10101111b
+    db 0
+
+gdt_end:
+
+gdt:
+    dw gdt_end - gdt_start - 1
+    dd gdt_start

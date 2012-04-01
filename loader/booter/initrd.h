@@ -51,6 +51,8 @@ class InitRDDriver
 public:
     static void Parse(InitRD *);
     static File * GetFile(char *);
+private:
+    static InitRD * s_pInitRD;
 };
 
 #endif

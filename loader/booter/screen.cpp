@@ -99,7 +99,19 @@ VideoModeDescription * Screen::GetProcessedVideoModeDescription()
 void VideoModeWrapper::Initialize(void * pFont, VideoMode * pVideoMode)
 {
     this->m_pVideoMode = pVideoMode;
-    
+
+    if (this->m_pVideoMode->LinearBlueFieldPosition == 0 && this->m_pVideoMode->LinearGreenFieldPosition == 0
+            && this->m_pVideoMode->LinearRedFieldPosition == 0 && this->m_pVideoMode->LinearBytesPerScanLine == 0)
+    {
+        this->m_pVideoMode->LinearRedFieldPosition = this->m_pVideoMode->RedFieldPosition;
+        this->m_pVideoMode->LinearGreenFieldPosition = this->m_pVideoMode->GreenFieldPosition;
+        this->m_pVideoMode->LinearBlueFieldPosition = this->m_pVideoMode->BlueFieldPosition;
+        this->m_pVideoMode->LinearRedMaskSize = this->m_pVideoMode->RedMaskSize;
+        this->m_pVideoMode->LinearGreenMaskSize = this->m_pVideoMode->GreenMaskSize;
+        this->m_pVideoMode->LinearBlueMaskSize = this->m_pVideoMode->BlueMaskSize;
+        this->m_pVideoMode->LinearBytesPerScanLine = this->m_pVideoMode->BytesPerScanLine;
+    }
+
     this->maxx = this->m_pVideoMode->XResolution / 8;
     this->maxy = this->m_pVideoMode->YResolution / 16;
 
@@ -164,9 +176,9 @@ void VideoModeWrapper::_put16(char c)
     uint32 * dest = (uint32 *)(this->m_pVideoMode->PhysBasePtr + this->y * this->m_pVideoMode->LinearBytesPerScanLine * 16
                     + this->x * this->m_pVideoMode->BitsPerPixel);
 
-    uint16 iColor = ((this->r >> 1) << this->m_pVideoMode->LinearRedFieldPosition) |
-                    ((this->g >> 1) << this->m_pVideoMode->LinearGreenFieldPosition) |
-                    ((this->b >> 1) << this->m_pVideoMode->LinearBlueFieldPosition);
+    uint16 iColor = ((this->r >> (8 - this->m_pVideoMode->LinearRedMaskSize)) << this->m_pVideoMode->LinearRedFieldPosition) |
+                ((this->g >> (8 - this->m_pVideoMode->LinearGreenMaskSize)) << this->m_pVideoMode->LinearGreenFieldPosition) |
+                ((this->b >> (8 - this->m_pVideoMode->LinearBlueMaskSize)) << this->m_pVideoMode->LinearBlueFieldPosition);
 
     uint32 iPackedColor = iColor | iColor << 16;
 
@@ -370,8 +382,6 @@ void OutputStream::UpdatePagingStructures()
                                 2ull * 1024 * 1024 * startpde + 4ull * 1024 * startpte;
                     
                     pt->Entries[startpte].PageAddress = addr >> 12;
-
-                    *(uint32 *)0x2000 = addr >> 12;
 
                     startpte++;
                 }

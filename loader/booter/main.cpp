@@ -62,9 +62,7 @@ extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint3
 
     *bout << " done." << nl;
 
-    for (;;) ;
-
-/*    // here, we are still in 32bit mode (compatibility mode)
+    // here, we are still in 32bit mode (compatibility mode)
     // however, storage driver's and filesystem driver's code
     // is already 64 bit, so it has no problem with loading
     // data into 64bit areas of memory
@@ -74,8 +72,14 @@ extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint3
     
     Processor::SetupGDT();
 
+    for (;;) ;
+
+/*    *bout << "Loading storage and filesystem drivers...";
+    
     StorageDriver storage = InitRDDriver::GetFile("/boot/storage.drv");
     FilesystemDriver fs = InitRDDriver::GetFile("/boot/fs.drv");
+
+    *bout << " done." << nl;
     
     storage.Initialize(iBootdrive);
     fs.Initialize(storage, iStartingSector);

@@ -35,6 +35,8 @@
 using Screen::bout;
 using Screen::nl;
 
+InitRD * InitRDDriver::s_pInitRD;
+
 void InitRDDriver::Parse(InitRD * pInitRD)
 {
     if (pInitRD->NumElements == 0)
@@ -125,4 +127,30 @@ void InitRDDriver::Parse(InitRD * pInitRD)
     *bout << iSeconds << nl;
 
     return;
+}
+
+bool _strcmp(char * a, char * b)
+{
+    while (*a != 0)
+    {
+        if (*a++ != *b++)
+        {
+            return false;
+        }
+    }
+
+    if (*a != *b)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+File * InitRDDriver::GetFile(char * filename)
+{
+    for (uint32 i = 0; i < InitRDDriver::s_pInitRD->NumElements; i++)
+    {
+        
+    }
 }
