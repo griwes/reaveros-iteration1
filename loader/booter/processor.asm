@@ -37,6 +37,7 @@ bits    32
 ;     void _enable_pae_paging();
 ;     void _enable_msr_longmode();
 ;     void _enable_paging(uint32);
+;     void _reload_cr3(uint32);
 ; }
 ;
 
@@ -44,6 +45,7 @@ global _cpu_check_long_mode
 global _enable_pae_paging
 global _enable_msr_longmode
 global _enable_paging
+global _reload_cr3
 
 _cpu_check_long_mode:
     mov     eax, 0x80000000
@@ -91,6 +93,17 @@ _enable_paging:
     mov     eax, cr0
     or      eax, 1 << 31
     mov     cr0, eax
+
+    push    dword 0
+    push    ebp
+
+    ret
+
+_reload_cr3:
+    pop     ebp
+    pop     eax
+
+    mov     cr3, eax
 
     push    dword 0
     push    ebp

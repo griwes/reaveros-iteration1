@@ -34,6 +34,11 @@
 #include "paging.h"
 #include "processor.h"
 
+extern "C"
+{
+    void _reload_cr3(uint32);
+}
+
 namespace Screen
 {
     OutputStream * bout = 0;
@@ -278,8 +283,8 @@ void OutputStream::UpdatePagingStructures()
     uint32 endpdpte = (vidmemendpaged % (512 * 512 * 512)) / (512 * 512);
     uint32 endpde = (vidmemendpaged % (512 * 512)) / 512;
     uint32 endpte = vidmemendpaged % 512;
-
-    for (; !(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte); startpml4e++)
+    
+    while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
         PageDirectoryPointerTable * pdpt;
 
@@ -304,8 +309,8 @@ void OutputStream::UpdatePagingStructures()
             pml4->PointerTables[startpml4e] = pdpt;
         }
 
-        for (; !(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
-                && startpdpte < 512; startpdpte++)
+        while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                && startpdpte < 512)
         {
             PageDirectory * pd;
             
@@ -329,8 +334,8 @@ void OutputStream::UpdatePagingStructures()
                 pdpt->PageDirectories[startpdpte] = pd;
             }
             
-            for (; !(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
-                    && startpde < 512; startpde++)
+            while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                    && startpde < 512)
             {
                 PageTable * pt;
                 
@@ -354,48 +359,56 @@ void OutputStream::UpdatePagingStructures()
                     pd->PageTables[startpde] = pt;
                 }
 
-                for (; !(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
-                        && startpte < 512; startpte++);
+                while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                        && startpte < 512)
                 {
-                    __asm("hlt");
                     pt->Entries[startpte].Present = 1;
                     pt->Entries[startpte].ReadWrite = 1;
                     pt->Entries[startpte].CacheDisable = 1;
-                    pt->Entries[startpte].PageAddress = vidmem + startpml4e * 512 * 1024 * 1024 * 1024 +
-                                    startpdpte * 1024 * 1024 * 1024 + startpde * 2 * 1024 * 1024 +
-                                    startpte * 4 * 1024;
 
-                    if (startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpdpte)
-                    {
-                        __asm("xchg %bx, %bx");
-                        break;
-                    }
-                                    
+                    uint64 addr = 512ull * 1024 * 1024 * 1024 * startpml4e + 1024ull * 1024 * 1024 * startpdpte +
+                                2ull * 1024 * 1024 * startpde + 4ull * 1024 * startpte;
+                    
+                    pt->Entries[startpte].PageAddress = addr >> 12;
+
+                    *(uint32 *)0x2000 = addr >> 12;
+
+                    startpte++;
                 }
 
-                if (startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
                 {
-                    break;
+                    startpde++;
+                    startpte = 0;
                 }
 
-                startpte = 0;
-            }
-
-            if (startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
-            {
-                break;
+                else
+                {
+                    return;
+                }
             }
             
-            startpde = 0;
+            if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+            {
+                startpde = 0;
+                startpdpte++;
+            }
+
+            else
+            {
+                return;
+            }
         }
 
-        if (startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+        if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
         {
-            break;
+            startpdpte = 0;
+            startpml4e++;
         }
 
-        startpdpte = 0;
+        else
+        {
+            return;
+        }
     }
-
-    return;
 }
