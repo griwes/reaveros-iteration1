@@ -40,8 +40,8 @@
 #include "processor/processor.h"
 #include "screen/screen.h"
 
-extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMap * pMemoryMap, void * pPlacementAddress,
-                                                   uint32 iBootdrive, uint64 iStartingSector, Screen::VideoMode * pVideoMode)
+extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMap * pMemoryMap,
+                                                   void * pPlacementAddress, Screen::VideoMode * pVideoMode)
 {
     Memory::PreInitialize(pPlacementAddress);
     Memory::Initialize(pMemoryMap);
@@ -70,20 +70,11 @@ extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Mem
     DriverStorage::Initialize();
     VFS::Initialize();
     VFS::Mount(InitRD::Filesystem(pInitRD), "/boot");
-    
-    VFS::File storage = VFS::LoadFile("/boot/storage.drv");
-    Driver::StorageDriver * storagedrv = Driver::Storage::Register(storage.GetBuffer());
-    Devices::StorageDevice device = Devices::GetDeviceByBiosBootId(iBootdrive);
-    device.SetDriver(storagedrv);
-    device.ParsePartitions();
-    
-    VFS::File filesystem = VFS::LoadFIle("/boot/filesystem.drv");
-    Driver::FilesystemDriver * filesystemdrv = Driver::Storage::Register(filesystem.GetBuffer());
-    VFS::Filesystem systemfs = filesystemdrv->ParseFilesystem(device.StartsAt(iStartingSector));
-    VFS::Mount(systemfs, "/system");
-    
-    Devices::InitializeDevice(Devices::Keyboard);
-    Devices::InitializeDevice(Devices::Mouse);
+
+    /**
+     * TODO: detection of root filesystem... at now, I just want to write bootloader code
+     * to load kernel and initrd using BIOS interrupts, will write pseudocode here later.
+     */
     
     // the following line does much of the remaining job; only process manager is to be initialized
     String shellfilename = Config::ParseConfigFile("/system/kernel.conf")->GetKey("shell.filename");
