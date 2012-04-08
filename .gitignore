@@ -1,2 +1,4 @@
 utils/builder/build/*
 *~
+*.o
+*.img

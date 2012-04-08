@@ -32,16 +32,13 @@
 #include "types.h"
 #include "memory.h"
 #include "screen.h"
-#include "initrd.h"
 #include "processor.h"
-#include "storage.h"
-#include "filesystem.h"
 
 using Screen::bout;
 using Screen::nl;
 
-extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize,
-                            void * pPlacementAddress, uint32 iBootdrive, uint64 iStartingSector,
+extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, void * pPlacementAddress,
+                            void * pKernel, uint32 pKernelSize, void * pKernelInitRD, uint32 pKernelInitRDSize,
                             VideoMode * pVideoMode, void * pFont)
 {
     Memory::Initialize(pPlacementAddress);
@@ -74,29 +71,15 @@ extern "C" void booter_main(InitRD * pInitrd, MemoryMapEntry * pMemoryMap, uint3
 
     for (;;) ;
 
-/*    *bout << "Loading storage and filesystem drivers...";
-    
-    StorageDriver storage = InitRDDriver::GetFile("/boot/storage.drv");
-    FilesystemDriver fs = InitRDDriver::GetFile("/boot/fs.drv");
-
-    *bout << " done." << nl;
-    
-    storage.Initialize(iBootdrive);
-    fs.Initialize(storage, iStartingSector);
-
-    Processor::SetupNullIDT();
-    Processor::EnableInterrupts();
-    
-    void * end = fs.LoadFileIntoMemoryAddress("/boot/kernel", 0xFFFFFFFF80000000); // -2 GB
-    void * placement = fs.LoadFileIntoMemoryAddress("/boot/initrd", Memory::AlignToNextPage(end));
+    void * end = Memory::Move(pKernel, pKernelSize, 0xFFFFFFFF80000000); // -2 GB
+    void * placement = Memory::Move(pKernelInitRD, pKernelInitRDSize, Memory::AlignToNextPage(end));
 
     Processor::DisableInterrupts();
     
     Processor::Execute(0xFFFFFFFF80000000, Memory::AlignToNextPage(end), Memory::MemoryMap(pMemoryMap, iMemoryMapSize), 
-                       Memory::AlignToNextPage(placement), iBootdrive, iStartingSector, 
-                       Screen::GetProcessedVideoModeDescription());
+                       Memory::AlignToNextPage(placement), Screen::GetProcessedVideoModeDescription());
     
     for (;;);
     
-    return;*/
+    return;
 }
