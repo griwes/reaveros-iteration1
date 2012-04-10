@@ -272,8 +272,7 @@ stage1:
     mov     es, ax
     xor     bx, bx
 
-    mov     cx, word [reserved]
-    dec     cx
+    mov     cx, word [stage2_size]
     mov     ax, word [starting]
     inc     ax
 
@@ -282,8 +281,7 @@ stage1:
     jmp     .jump
 
     .extended:
-        mov     cx, word [reserved]
-        dec     cx
+        mov     cx, word [stage2_size]
         mov     ax, word [starting]
         mov     word [packet.exstart], ax
         mov     ax, word [starting + 2]
@@ -298,13 +296,6 @@ stage1:
 
     .jump:
         push    word [bootdrive]
-        mov     cx, word [reserved]
-        dec     cx
-        push    cx
-
-        mov     ax, [reserved]
-        sub     ax, [stage2_size]
-        push    ax
 
         push    word [starting]
         push    word [starting + 2]

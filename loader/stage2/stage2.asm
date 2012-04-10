@@ -34,13 +34,17 @@ org     0x7e00
 entry:
     jmp     stage2
 
+times 8 - ($-$$) db 0           ; I don't want to count bytes again...
+
 ;
 ; Variables
 ;
 
-size:           dw 0
-initrdsize:     dw 0
-bootersize:     dw 0
+size:           dw 0            ; 8
+bootersize:     dw 0            ; 10
+kernelsize:     dw 0            ; 12
+initrdsize:     dw 0            ; 14
+
 bootdrive:      dw 0
 booterstart:    dw 0
 memregcount:    dw 0
@@ -52,6 +56,8 @@ starting:       dq 0
 ;
 
 msg:            db "ReaverOS Bootloader v0.2", 0x0a, 0x0d, 0
+kernel:         db "Loading kernel and initrd... ", 0
+done:           db "Done.", 0x0a, 0x0d
 vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
 
 ;
@@ -81,8 +87,6 @@ stage2:
     pop     word [starting + 4]
     pop     word [starting + 2]
     pop     word [starting]
-    pop     word [initrdsize]
-    pop     word [size]
     pop     word [bootdrive]
 
     mov     si, msg
