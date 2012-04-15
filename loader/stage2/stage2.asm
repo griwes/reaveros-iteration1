@@ -46,7 +46,7 @@ kernelsize:     dw 0            ; 12
 initrdsize:     dw 0            ; 14
 
 bootdrive:      dw 0
-booterstart:    dw 0
+booterstart:    dw 0x800000
 memregcount:    dw 0
 
 starting:       dq 0
@@ -56,9 +56,10 @@ starting:       dq 0
 ;
 
 msg:            db "ReaverOS Bootloader v0.2", 0x0a, 0x0d, 0
-kernel:         db "Loading kernel and initrd... ", 0
+kernel:         db "Loading Booter, kernel and initrd... ", 0
 done:           db "Done.", 0x0a, 0x0d
 vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
+error:          db "Problem with loading... press any key to reboot.", 0x0a, 0x0d, 0
 
 ;
 ; Includes
@@ -69,6 +70,7 @@ vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
 %include    "a20.asm"
 %include    "mmap.asm"
 %include    "vbe.asm"
+%include    "int0x13.asm"
 
 ;
 ; Entry point
@@ -88,6 +90,24 @@ stage2:
     pop     word [starting + 2]
     pop     word [starting]
     pop     word [bootdrive]
+
+    mov     si, kernel
+    call    print16
+
+    add     word [starting], word [size]
+    inc     word [starting]
+
+    xor     ax, ax
+    mov     ax, word [bootersize]
+    add     ax, word [kernelsize]
+    add     ax, word [initrdsize]
+
+    mov     dl, byte [bootdrive]
+
+    call    read_sectors_high_memory
+
+    mov     si, done
+    call    print16
 
     mov     si, msg
     call    print16
@@ -130,27 +150,17 @@ stage3:
     mov     ss, ax
     mov     esp, 0x90000
 
-    ; find address of end of stage 2
-    mov     ecx, dword selfsize
-    add     ecx, 4
-
-    ; and align it to 0x200 (512)
-    add     ecx, 511
-    mov     eax, ~511
-    and     ecx, eax
-
-    mov     word [booterstart], cx
-
     push    dword 0x5c00
-    
     push    dword video_mode_description
 
-    push    dword [starting + 4]
-    push    dword [starting]
+    push    word [initrdsize]
+    push    word [kernelsize]
 
-    xor     eax, eax
-    mov     ax, word [bootdrive]
-    push    eax
+    mov     ax, word [bootersize]
+    mov     bx, 0x200
+    mul     bx
+    add     ax, word [booterstart]
+    push    ax
 
     push    dword 0x100000
 
@@ -161,55 +171,6 @@ stage3:
     xor     eax, eax
     mov     ax, word 0x7c00
     push    eax
-
-    xor     eax, eax
-    xor     edx, edx
-    mov     ax, word [selfsize]
-    mov     ebx, 0x200
-    div     ebx
-    mov     ebx, eax
-    cmp     edx, 0
-    je      .nope
-
-    inc     ebx
-    
-    .nope:
-    mov     word [selfsize], bx
-
-    xor     eax, eax
-    xor     ebx, ebx
-    xor     ecx, ecx
-
-    mov     ax, word [size]
-    mov     bx, word [initrdsize]
-    mov     cx, word [selfsize]
-
-    sub     eax, ebx
-    sub     eax, ecx
-
-    mov     dword [bootersize], eax
-
-    mov     ebx, 0x200
-    mul     ebx
-    add     eax, 0x800000
-    push    eax
-
-    xor     eax, eax
-    xor     ecx, ecx
-    mov     ax, word [size]
-    mov     cx, word [selfsize]
-
-    sub     eax, ecx
-    mov     ebx, 0x80
-    mul     ebx
-    mov     ecx, eax
-
-    xor     esi, esi
-    mov     si, word [booterstart]
-
-    mov     edi, 0x800000
-
-    rep     movsd
 
     jmp     0x800000
 

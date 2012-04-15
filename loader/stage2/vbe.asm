@@ -214,8 +214,9 @@ setup_video_mode:
         cmp     ax, word [highesty]
         jl      .advance
 
+        ; hack to make entire bochs window visible on my 1600x900 notebook
         cmp     ax, 760
-        jg     .advance
+        jg      .advance
 
         mov     al, byte [video_mode_description.bpp]
 
@@ -275,6 +276,8 @@ setup_video_mode:
 
     .failset:
     .fail:
+        mov     word [video_mode_description.xres], word 0
+
         xor     eax, eax
 
         ret

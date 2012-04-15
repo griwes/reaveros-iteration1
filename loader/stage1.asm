@@ -67,6 +67,8 @@ packet:
 msg:            db "Loading...", 0x0a, 0x0d, 0
 progress:       db ".", 0
 error:          db " Error", 0
+fail:           db " Legacy storage devices not supported.", 0
+
 bootdrive:      db 0
 sector:         db 0
 head:           db 0
@@ -104,70 +106,6 @@ convert_address:
     mov     byte [head], dl
     mov     byte [track], al
     ret
-
-;
-; read_sectors_basic()
-; Reads from bootdrive using legacy int 0x13 functions
-; 
-; ax - starting sector
-; cx - number of sectors
-; es:bx - buffer
-;
-
-read_sectors_basic:
-    .begin:
-        mov     di, 0x5
-    .loop:
-        push    ax
-        push    bx
-        push    cx
-        
-        call    convert_address
-
-        mov     ah, 0x02
-        mov     al, 0x01
-
-        mov     ch, byte [track]
-        mov     cl, byte [sector]
-
-        mov     dh, byte [head]
-        mov     dl, byte [bootdrive]
-
-        int     0x13
-
-        jnc     .end
-
-        xor     ax, ax
-        int     0x13
-
-        dec     di
-
-        pop     cx
-        pop     bx
-        pop     ax
-
-        jnz     .loop
-
-        mov     si, error
-        call    print
-
-        cli
-        hlt
-
-    .end:
-        mov     si, progress
-        call    print
-
-        pop     cx
-        pop     dx
-        pop     ax
-
-        add     bx, word [sector_size]
-        inc     ax
-
-        loop    .begin
-
-        ret
 
 ;
 ; check_extended_0x13()
@@ -266,49 +204,42 @@ stage1:
     call    check_extended_0x13
     cmp     ax, 0
 
-    jne     .extended
-
-    mov     ax, 0x07e0
-    mov     es, ax
-    xor     bx, bx
+    je      .fail
 
     mov     cx, word [stage2_size]
     mov     ax, word [starting]
-    inc     ax
+    mov     word [packet.exstart], ax
+    mov     ax, word [starting + 2]
+    mov     word [packet.exstart + 2], ax
+    mov     ax, word [starting + 4]
+    mov     word [packet.exstart + 4], ax
+    mov     ax, word [starting + 6]
+    mov     word [packet.exstart + 6], ax
+    inc     byte [packet.exstart]
 
-    call    read_sectors_basic
+    call    read_sectors_extended
 
-    jmp     .jump
+    push    word [bootdrive]
 
-    .extended:
-        mov     cx, word [stage2_size]
-        mov     ax, word [starting]
-        mov     word [packet.exstart], ax
-        mov     ax, word [starting + 2]
-        mov     word [packet.exstart + 2], ax
-        mov     ax, word [starting + 4]
-        mov     word [packet.exstart + 4], ax
-        mov     ax, word [starting + 6]
-        mov     word [packet.exstart + 6], ax
-        inc     byte [packet.exstart]
+    push    word [starting]
+    push    word [starting + 2]
+    push    word [starting + 4]
+    push    word [starting + 6]
 
-        call    read_sectors_extended
+    push    word 0x07e0
+    push    word 0x0000
 
-    .jump:
-        push    word [bootdrive]
+    mov     si, progress
+    call    print
 
-        push    word [starting]
-        push    word [starting + 2]
-        push    word [starting + 4]
-        push    word [starting + 6]
+    retf
 
-        push    word 0x07e0
-        push    word 0x0000
-
-        mov     si, progress
+    .fail:
+        mov     si, fail
         call    print
 
-        retf
+        cli
+        hlt
 
 ;
 ; Boot signature

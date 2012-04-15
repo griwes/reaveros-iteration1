@@ -38,8 +38,8 @@ using Screen::bout;
 using Screen::nl;
 
 extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, void * pPlacementAddress,
-                            void * pKernel, uint32 pKernelSize, void * pKernelInitRD, uint32 pKernelInitRDSize,
-                            VideoMode * pVideoMode, void * pFont)
+                            void * pKernel, uint32 pKernelSize, uint32 pKernelInitRDSize, VideoMode * pVideoMode,
+                            void * pFont)
 {
     Memory::Initialize(pPlacementAddress);
     Screen::Initialize(pVideoMode, pFont);
