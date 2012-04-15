@@ -49,24 +49,40 @@ install_gdt:
 ;
 
 gdt_start:
-    ; null:
+    ; null - 0x0
     dd 0
     dd 0
 
-    ; code:
-    dw 0x0ffff
+    ; code - 0x8
+    dw 0xffff
     dw 0
     db 0
     db 10011010b
     db 11001111b
     db 0
 
-    ; data:
-    dw 0x0ffff
+    ; data - 0x10
+    dw 0xffff
     dw 0
     db 0
     db 10010010b
     db 11001111b
+    db 0
+
+    ; 16 bit code - 0x18
+    dw 0xffff
+    dw 0
+    db 0
+    db 10011010b
+    db 10001111b
+    db 0
+
+    ; 16 bit data - 0x20
+    dw 0xffff
+    dw 0
+    db 0
+    db 10010010b
+    db 10001111b
     db 0
 
 gdt_end:

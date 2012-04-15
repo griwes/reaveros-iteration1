@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <stdint.h>
 
 void Usage()
 {

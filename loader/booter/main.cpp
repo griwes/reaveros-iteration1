@@ -43,7 +43,7 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
 {
     Memory::Initialize(pPlacementAddress);
     Screen::Initialize(pVideoMode, pFont);
-
+    
     *bout << "Booter: ReaverOS' bootloader 0.2" << nl;
     *bout << "Reading memory map..." << nl << nl;
 
@@ -71,7 +71,7 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
 
     for (;;) ;
 
-    void * end = Memory::Move(pKernel, pKernelSize, 0xFFFFFFFF80000000); // -2 GB
+/*    void * end = Memory::Move(pKernel, pKernelSize, 0xFFFFFFFF80000000); // -2 GB
     void * placement = Memory::Move(pKernelInitRD, pKernelInitRDSize, Memory::AlignToNextPage(end));
 
     Processor::DisableInterrupts();
@@ -82,4 +82,4 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     for (;;);
     
     return;
-}
+*/}

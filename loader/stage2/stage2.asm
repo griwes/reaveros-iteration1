@@ -32,7 +32,7 @@ bits    16
 org     0x7e00
 
 entry:
-    jmp     stage2
+    jmp     0x0:stage2
 
 times 8 - ($-$$) db 0           ; I don't want to count bytes again...
 
@@ -46,7 +46,7 @@ kernelsize:     dw 0            ; 12
 initrdsize:     dw 0            ; 14
 
 bootdrive:      dw 0
-booterstart:    dw 0x800000
+booterstart:    dd 0x800000
 memregcount:    dw 0
 
 starting:       dq 0
@@ -55,11 +55,12 @@ starting:       dq 0
 ; Messages
 ;
 
-msg:            db "ReaverOS Bootloader v0.2", 0x0a, 0x0d, 0
+msg:            db 0x0a, 0x0d, 0x0a, 0x0d, "ReaverOS Bootloader v0.2", 0x0a, 0x0d, 0
 kernel:         db "Loading Booter, kernel and initrd... ", 0
-done:           db "Done.", 0x0a, 0x0d
+done:           db " done.", 0x0a, 0x0d
 vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
-error:          db "Problem with loading... press any key to reboot.", 0x0a, 0x0d, 0
+error:          db 0x0a, 0x0d, "Problem with loading... press any key to reboot.", 0x0a, 0x0d, 0
+progress:       db ".", 0
 
 ;
 ; Includes
@@ -91,10 +92,17 @@ stage2:
     pop     word [starting]
     pop     word [bootdrive]
 
+    mov     si, msg
+    call    print16
+
     mov     si, kernel
     call    print16
 
-    add     word [starting], word [size]
+    call    enable_a20
+    call    install_gdt
+
+    mov     ax, word [size]
+    add     word [starting], ax
     inc     word [starting]
 
     xor     ax, ax
@@ -109,16 +117,10 @@ stage2:
     mov     si, done
     call    print16
 
-    mov     si, msg
-    call    print16
-
     mov     si, vbe
     call    print16
 
     call    setup_video_mode
-
-    call    enable_a20
-    call    install_gdt
 
     sti
 
@@ -156,11 +158,13 @@ stage3:
     push    word [initrdsize]
     push    word [kernelsize]
 
+    xor     eax, eax
+
     mov     ax, word [bootersize]
     mov     bx, 0x200
     mul     bx
-    add     ax, word [booterstart]
-    push    ax
+    add     eax, dword [booterstart]
+    push    eax
 
     push    dword 0x100000
 
@@ -172,6 +176,6 @@ stage3:
     mov     ax, word 0x7c00
     push    eax
 
-    jmp     0x800000
+    jmp     0x8:0x800000
 
 selfsize:   dw $ - $$ + 2
