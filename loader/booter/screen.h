@@ -149,7 +149,7 @@ private:
 namespace Screen
 {
     void Initialize(VideoMode *, void * pFont);
-    VideoModeDescription * GetProcessedVideoModeDescription();
+    VideoModeDescription * SaveProcessedVideoModeDescription(uint64);
 
     extern OutputStream * bout;
     extern const char * nl;

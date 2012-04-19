@@ -41,11 +41,7 @@ namespace Processor
 {
     void EnterLongMode();
     void SetupGDT();
-    void SetupNullIDT();
-    void EnableInterrupts();
-    void DisableInterrupts();
-    void RegisterInterruptRoutine(int, void *);
-    void Execute(uint64, uint64, Memory::MemoryMap *, uint64, uint32, uint64, VideoModeDescription *);
+    void Execute(uint64, uint64, uint64, uint64, uint64);
 
     extern PML4 * PagingStructures;
 }

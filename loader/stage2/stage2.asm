@@ -155,10 +155,12 @@ stage3:
     push    dword 0x5c00
     push    dword video_mode_description
 
-    push    word [initrdsize]
-    push    word [kernelsize]
-
     xor     eax, eax
+
+    mov     ax, word [initrdsize]
+    push    eax
+    mov     ax, word [kernelsize]
+    push    eax
 
     mov     ax, word [bootersize]
     mov     bx, 0x200
@@ -176,6 +178,6 @@ stage3:
     mov     ax, word 0x7c00
     push    eax
 
-    jmp     0x8:0x800000
+    jmp     0x800000
 
 selfsize:   dw $ - $$ + 2

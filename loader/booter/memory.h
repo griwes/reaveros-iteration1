@@ -49,22 +49,21 @@ namespace Memory
 {
     void Initialize(void *);
     void PrintMemoryMap(MemoryMapEntry *, uint32);
-    void * AlignToNextPage(void *);
+    uint64 AlignToNextPage(uint64);
 
     void * Place(uint32);
     void * PlacePageAligned(uint32);
 
     void Zero(char *, uint32);
 
-    class MemoryMap
-    {
-    public:
-        MemoryMap(MemoryMapEntry *, uint32);
-    private:
-        MemoryMapEntry * m_pEntries;
-        uint32 m_pCount;
-    } __attribute__((packed));
+    void Map(uint64, uint64, uint64 = 64 * 1024 * 1024);
+    uint64 CountPagingStructures(uint64, uint64);
 
+    void UpdateMemoryMap(uint64, uint64);
+    
+    uint64 Move(uint64, uint32, uint64);
+    uint64 CreateMemoryMap(MemoryMapEntry *, uint32);
+    
     extern void * pPlacement;
 }
 

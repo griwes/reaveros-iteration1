@@ -49,6 +49,8 @@ num:            dw 0
 read_sectors_high_memory:
     push    ax
 
+    mov     edi, 0x800000
+
     mov     ax, word [starting]
     mov     word [packet.exstart], ax
     mov     ax, word [starting + 2]
@@ -108,9 +110,8 @@ bits    32
         mov     es, ax
         mov     ss, ax
 
-        mov     ecx, 192
+        mov     ecx, 98304
         mov     esi, 0x20000
-        mov     edi, 0x800000
         rep     movsd
 
         jmp     0x18:.pmode16

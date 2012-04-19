@@ -38,20 +38,16 @@ using Screen::bout;
 using Screen::nl;
 
 extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, void * pPlacementAddress,
-                            void * pKernel, uint32 pKernelSize, uint32 pKernelInitRDSize, VideoMode * pVideoMode,
+                            uint32 pKernel, uint32 pKernelSize, uint32 pKernelInitRDSize, VideoMode * pVideoMode,
                             void * pFont)
 {
     Memory::Initialize(pPlacementAddress);
     Screen::Initialize(pVideoMode, pFont);
-    
+
     *bout << "Booter: ReaverOS' bootloader 0.2" << nl;
     *bout << "Reading memory map..." << nl << nl;
 
     Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
-    
-    *bout << nl << "Reading InitRD..." << nl;
-    
-//    InitRDDriver::Parse(pInitrd);
     
     *bout << "Entering long mode...";
 
@@ -60,26 +56,39 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     *bout << " done." << nl;
 
     // here, we are still in 32bit mode (compatibility mode)
-    // however, storage driver's and filesystem driver's code
-    // is already 64 bit, so it has no problem with loading
-    // data into 64bit areas of memory
+    // however, Memory::Move() invokes 64 bit assembly routines
+    // that copy given memory addresses into 64 bit address space
+    // (mapping > 64MiB at given virtual addresses)
 
-    // the same goes for Execute function, which calls 64 bit
-    // assembly to do far jump to -2GB in 64bit code sector
+    // but it needs some 64bit descriptors
     
     Processor::SetupGDT();
 
+    // copy kernel and initrd, put video mode description after it
+    // emplace (not finished) memory map back there
+    
+    uint64 end = Memory::Move(pKernel, pKernelSize, 0xFFFFFFFF80000000); // -2 GB
+    uint64 video = Memory::Move(pKernel + pKernelSize, pKernelInitRDSize, Memory::AlignToNextPage(end));
+    uint64 memmap = Screen::SaveProcessedVideoModeDescription(video);
+    uint64 placement = Memory::CreateMemoryMap(pMemoryMap, iMemoryMapSize, memmap);
+
+    // magic call. maps memory from kernel start.
+    // amount of memory to map should be enough for kernel to recreate paging structures
+    // in it's own, completely known space (part of boot protocol), as well as additional 16 MiB
+    // for additional stuff to be put on placement stack
+
+    uint64 size = placement + Memory::CountPagingStructures(0xFFFFFFFF80000000, placement + 16 * 1024 * 1024);
+    Memory::Map(placement, placement + size);
+
+    // and this one updates memory map, setting size to type 0xFFFF entry (kernel-used memory)
+    // that starts at 64 MiB in physical memory
+    
+    Memory::UpdateMemoryMap(memmap, size);
+    
+    Processor::Execute(0xFFFFFFFF80000000, Memory::AlignToNextPage(end), memmap, Memory::AlignToNextPage(placement),
+                       video);
+    
     for (;;) ;
-
-/*    void * end = Memory::Move(pKernel, pKernelSize, 0xFFFFFFFF80000000); // -2 GB
-    void * placement = Memory::Move(pKernelInitRD, pKernelInitRDSize, Memory::AlignToNextPage(end));
-
-    Processor::DisableInterrupts();
-    
-    Processor::Execute(0xFFFFFFFF80000000, Memory::AlignToNextPage(end), Memory::MemoryMap(pMemoryMap, iMemoryMapSize), 
-                       Memory::AlignToNextPage(placement), Screen::GetProcessedVideoModeDescription());
-    
-    for (;;);
     
     return;
-*/}
+}
