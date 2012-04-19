@@ -61,12 +61,11 @@ void Memory::Initialize(void * pAddr)
     Memory::pPlacement = pAddr;
 }
 
-void * Memory::AlignToNextPage(void * pAddr)
+uint64 Memory::AlignToNextPage(uint64 pAddr)
 {
-    uint32 addr = (uint32)pAddr;
-    addr += 4095;
-    addr &= ~(uint32)4095;
-    return (void *)addr;
+    pAddr += 4095;
+    pAddr &= ~(uint64)4095;
+    return pAddr;
 }
 
 void Memory::PrintMemoryMap(MemoryMapEntry * pMap, uint32 count)

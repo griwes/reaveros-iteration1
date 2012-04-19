@@ -89,11 +89,9 @@ void OutputStream::Initialize(VideoModeWrapper * pVideoMode)
     this->m_pVideoMode = pVideoMode;
 }
 
-VideoModeDescription * Screen::GetProcessedVideoModeDescription()
+uint64 Screen::SaveProcessedVideoModeDescription(uint64 pDestAddress)
 {
-    VideoModeDescription * ret = (VideoModeDescription *)Memory::Place(sizeof(VideoModeDescription));
-
-    return ret;
+    return 0;
 }
 
 void VideoModeWrapper::Initialize(void * pFont, VideoMode * pVideoMode)

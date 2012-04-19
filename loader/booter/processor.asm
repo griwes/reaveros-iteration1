@@ -126,28 +126,28 @@ gdt_start:
     dd 0
     dd 0
 
-    ; code 64 bit:
-    dw 0x0ffff
+    ; code 64 bit: 
+    dw 0
     dw 0
     db 0
-    db 10011010b
-    db 11001111b
+    db 0x98
+    db 0x20
     db 0
 
     ; code 32 bit:
-    dw 0x0ffff
+    dw 0
     dw 0
     db 0
-    db 10011010b
-    db 11001111b
+    db 0x92
+    db 0x20
     db 0
 
     ; data:
-    dw 0x0ffff
+    dw 0
     dw 0
     db 0
-    db 10010010b
-    db 10101111b
+    db 0x90
+    db 0
     db 0
 
 gdt_end:

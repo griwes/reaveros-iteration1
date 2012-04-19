@@ -62,7 +62,7 @@ namespace Memory
     void UpdateMemoryMap(uint64, uint64);
     
     uint64 Move(uint64, uint32, uint64);
-    uint64 CreateMemoryMap(MemoryMapEntry *, uint32);
+    uint64 CreateMemoryMap(MemoryMapEntry *, uint32, uint64);
     
     extern void * pPlacement;
 }

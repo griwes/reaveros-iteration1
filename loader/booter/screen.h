@@ -149,23 +149,11 @@ private:
 namespace Screen
 {
     void Initialize(VideoMode *, void * pFont);
-    VideoModeDescription * SaveProcessedVideoModeDescription(uint64);
+    uint64 SaveProcessedVideoModeDescription(uint64);
 
     extern OutputStream * bout;
     extern const char * nl;
     extern const char * tab;
-}
-
-template<>
-inline OutputStream & operator << <float>(OutputStream & s, float f)
-{
-    return s;
-}
-
-template<>
-inline OutputStream & operator << <double>(OutputStream & s, double d)
-{
-    return s;
 }
 
 template<typename T>
