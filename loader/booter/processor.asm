@@ -38,6 +38,7 @@ bits    32
 ;     void _enable_msr_longmode();
 ;     void _enable_paging(uint32);
 ;     void _reload_cr3(uint32);
+;     void _copy(uint32, uint32, uint32);
 ; }
 ;
 
@@ -47,6 +48,7 @@ global _enable_msr_longmode
 global _enable_paging
 global _reload_cr3
 global _setup_gdt
+global _copy
 
 _cpu_check_long_mode:
     mov     eax, 0x80000000
@@ -68,7 +70,6 @@ _cpu_check_long_mode:
 
         ret
 
-
 _enable_pae_paging:
     mov     eax, cr4
     or      eax, 1 << 5
@@ -86,7 +87,7 @@ _enable_msr_longmode:
     ret
 
 _enable_paging:
-    pop     ebp
+    pop     ebx
     pop     eax
 
     mov     cr3, eax
@@ -95,19 +96,36 @@ _enable_paging:
     or      eax, 1 << 31
     mov     cr0, eax
 
-    push    dword 0
-    push    ebp
+    push    eax
+    push    ebx
 
     ret
 
 _reload_cr3:
-    pop     ebp
+    pop     ebx
     pop     eax
 
     mov     cr3, eax
 
-    push    dword 0
-    push    ebp
+    push    eax
+    push    ebx
+    
+    ret
+
+_copy:
+    pop     ebx
+
+    pop     esi
+    pop     edi
+    pop     ecx
+
+    rep     movsd
+
+    push    eax
+    push    eax
+    push    eax
+
+    push    ebx
 
     ret
 
@@ -119,35 +137,49 @@ _setup_gdt:
     jmp     0x10:.ret
 
     .ret:
+    mov     ax, 0x20
+    mov     ds, ax
+    mov     es, ax
+    mov     fs, ax
+    mov     gs, ax
+    mov     ss, ax
+
     ret
 
 gdt_start:
     ; null:
-    dd 0
-    dd 0
+    dq 0
 
     ; code 64 bit: 
     dw 0
     dw 0
     db 0
-    db 0x98
-    db 0x20
+    db 10011000b
+    db 00100000b
     db 0
 
     ; code 32 bit:
-    dw 0
+    dw 0xffff
     dw 0
     db 0
-    db 0x92
-    db 0x20
+    db 10011010b
+    db 11001111b
     db 0
 
     ; data:
     dw 0
     dw 0
     db 0
-    db 0x90
+    db 10010000b
     db 0
+    db 0
+
+    ; data 32bit:
+    dw 0xffff
+    dw 0
+    db 0
+    db 10010010b
+    db 11001111b
     db 0
 
 gdt_end:

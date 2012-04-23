@@ -31,11 +31,19 @@
 
 #include "memory.h"
 #include "screen.h"
+#include "paging.h"
+#include "processor.h"
 
 using Screen::bout;
 using Screen::nl;
 
+extern "C"
+{
+    void _copy(uint32, uint32, uint32);
+}
+
 void * Memory::pPlacement;
+uint64 Memory::iFirstFreePageAddress;
 
 const char * MemoryMapEntry::Type()
 {
@@ -59,6 +67,7 @@ const char * MemoryMapEntry::Type()
 void Memory::Initialize(void * pAddr)
 {
     Memory::pPlacement = pAddr;
+    Memory::iFirstFreePageAddress = 64 * 1024 * 1024;
 }
 
 uint64 Memory::AlignToNextPage(uint64 pAddr)
@@ -142,5 +151,168 @@ void Memory::Zero(char * buf, uint32 size)
     while (size--)
     {
         *buf++ = 0;
+    }
+}
+
+uint64 Memory::Copy(uint32 pSource, uint32 iSize, uint64 pDestination)
+{
+    uint64 p = Memory::iFirstFreePageAddress;
+
+    iSize += (iSize % 4);
+    if (iSize < 4 * 1024)
+    {
+        iSize = 4 * 1024;
+    }
+
+    Memory::Map(pDestination, pDestination + iSize, Memory::iFirstFreePageAddress);
+    Memory::Map(0x8000000, 0x8000000 + iSize, p);
+
+    iSize /= 4;
+    _copy(pSource, 0x8000000, iSize);
+    
+    return pDestination + iSize * 4;
+}
+
+void Memory::Map(uint64 pBegin, uint64 pEnd, uint64 & pPhysicalStart, bool bCacheDisable)
+{
+    PML4 * pml4 = Processor::PagingStructures;
+    
+    uint32 iBeginPaged = pBegin >> 12;
+    uint32 iEndPaged = pEnd >> 12;
+    
+    uint32 startpml4e = iBeginPaged / (512 * 512 * 512);
+    uint32 startpdpte = (iBeginPaged % (512 * 512 * 512)) / (512 * 512);
+    uint32 startpde = (iBeginPaged % (512 * 512)) / 512;
+    uint32 startpte = iBeginPaged % 512;
+    
+    uint32 endpml4e = iEndPaged / (512 * 512 * 512);
+    uint32 endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
+    uint32 endpde = (iEndPaged % (512 * 512)) / 512;
+    uint32 endpte = iEndPaged % 512;
+    
+    while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+    {
+        PageDirectoryPointerTable * pdpt;
+        
+        if (pml4->Entries[startpml4e].Present == 1)
+        {
+            pml4->Entries[startpml4e].CacheDisable = bCacheDisable;
+            pdpt = pml4->PointerTables[startpml4e];
+        }
+        
+        else
+        {
+            pdpt = (PageDirectoryPointerTable *)Memory::PlacePageAligned(
+                sizeof(PageDirectoryPointerTable));
+            
+            Memory::Zero((char *)pdpt, sizeof(PageDirectoryPointerTable));
+            
+            pml4->Entries[startpml4e].Present = 1;
+            pml4->Entries[startpml4e].ReadWrite = 1;
+            pml4->Entries[startpml4e].CacheDisable = bCacheDisable;
+            pml4->Entries[startpml4e].PDPTAddress = (uint32)pdpt >> 12;
+            
+            pml4->PointerTables[startpml4e] = pdpt;
+        }
+        
+        while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+            && startpdpte < 512)
+        {
+            PageDirectory * pd;
+            
+            if (pdpt->Entries[startpdpte].Present == 1)
+            {
+                pdpt->Entries[startpdpte].CacheDisable = bCacheDisable;
+                pd = pdpt->PageDirectories[startpdpte];
+            }
+            
+            else
+            {
+                pd = (PageDirectory *)Memory::PlacePageAligned(sizeof(PageDirectory));
+                
+                Memory::Zero((char *)pd, sizeof(PageDirectory));
+                
+                pdpt->Entries[startpdpte].Present = 1;
+                pdpt->Entries[startpdpte].ReadWrite = 1;
+                pdpt->Entries[startpdpte].CacheDisable = bCacheDisable;
+                pdpt->Entries[startpdpte].PageDirectoryAddress = (uint32)pd >> 12;
+                
+                pdpt->PageDirectories[startpdpte] = pd;
+            }
+            
+            while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                && startpde < 512)
+            {
+                PageTable * pt;
+                
+                if (pd->Entries[startpde].Present == 1)
+                {
+                    pd->Entries[startpde].CacheDisable = bCacheDisable;
+                    pt = pd->PageTables[startpde];
+                }
+                
+                else
+                {
+                    pt = (PageTable *)Memory::PlacePageAligned(sizeof(PageTable));
+                    
+                    Memory::Zero((char *)pt, sizeof(PageTable));
+                    
+                    pd->Entries[startpde].Present = 1;
+                    pd->Entries[startpde].ReadWrite = 1;
+                    pd->Entries[startpde].CacheDisable = bCacheDisable;
+                    pd->Entries[startpde].PageTableAddress = (uint32)pt >> 12;
+                    
+                    pd->PageTables[startpde] = pt;
+                }
+                
+                while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                    && startpte < 512)
+                {
+                    pt->Entries[startpte].Present = 1;
+                    pt->Entries[startpte].ReadWrite = 1;
+                    pt->Entries[startpte].CacheDisable = bCacheDisable;
+                    
+                    uint64 addr = pPhysicalStart;
+                    pt->Entries[startpte].PageAddress = addr >> 12;
+                    
+                    startpte++;
+
+                    pPhysicalStart += 4096;
+                }
+                
+                if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+                {
+                    startpde++;
+                    startpte = 0;
+                }
+                
+                else
+                {
+                    return;
+                }
+            }
+            
+            if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+            {
+                startpde = 0;
+                startpdpte++;
+            }
+            
+            else
+            {
+                return;
+            }
+        }
+        
+        if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+        {
+            startpdpte = 0;
+            startpml4e++;
+        }
+        
+        else
+        {
+            return;
+        }
     }
 }

@@ -56,15 +56,16 @@ namespace Memory
 
     void Zero(char *, uint32);
 
-    void Map(uint64, uint64, uint64 = 64 * 1024 * 1024);
+    void Map(uint64, uint64, uint64 &, bool = false);
     uint64 CountPagingStructures(uint64, uint64);
 
     void UpdateMemoryMap(uint64, uint64);
     
-    uint64 Move(uint64, uint32, uint64);
+    uint64 Copy(uint32, uint32, uint64);
     uint64 CreateMemoryMap(MemoryMapEntry *, uint32, uint64);
     
     extern void * pPlacement;
+    extern uint64 iFirstFreePageAddress;
 }
 
 #endif

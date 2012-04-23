@@ -55,37 +55,34 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
 
     *bout << " done." << nl;
 
-    // here, we are still in 32bit mode (compatibility mode)
-    // however, Memory::Move() invokes 64 bit assembly routines
-    // that copy given memory addresses into 64 bit address space
-    // (mapping > 64MiB at given virtual addresses)
-
-    // but it needs some 64bit descriptors
-    
     Processor::SetupGDT();
 
     // copy kernel and initrd, put video mode description after it
     // emplace (not finished) memory map back there
+
+    // algorithm for this:
+    // 1. map enough pages to make a copy at both destination address and address in low memory
+    // 2. copy data to those pages sitting in low memory of VAS
     
-    uint64 end = Memory::Move(pKernel, pKernelSize, 0xFFFFFFFF80000000); // -2 GB
-    uint64 video = Memory::Move(pKernel + pKernelSize, pKernelInitRDSize, Memory::AlignToNextPage(end));
+    uint64 end = Memory::Copy(pKernel, pKernelSize * 512, 0xFFFFFFFF80000000); // -2 GB
+    uint64 video = Memory::Copy(pKernel + pKernelSize * 512, pKernelInitRDSize * 512, Memory::AlignToNextPage(end));
     uint64 memmap = Screen::SaveProcessedVideoModeDescription(video);
     uint64 placement = Memory::CreateMemoryMap(pMemoryMap, iMemoryMapSize, memmap);
-
+    
     // magic call. maps memory from kernel start.
     // amount of memory to map should be enough for kernel to recreate paging structures
     // in it's own, completely known space (part of boot protocol), as well as additional 16 MiB
     // for additional stuff to be put on placement stack
 
     uint64 size = placement + Memory::CountPagingStructures(0xFFFFFFFF80000000, placement + 16 * 1024 * 1024);
-    Memory::Map(placement, placement + size);
+    Memory::Map(placement, placement + size, Memory::iFirstFreePageAddress);
 
     // and this one updates memory map, setting size to type 0xFFFF entry (kernel-used memory)
     // that starts at 64 MiB in physical memory
     
     Memory::UpdateMemoryMap(memmap, size);
     
-    Processor::Execute(0xFFFFFFFF80000000, Memory::AlignToNextPage(end), memmap, Memory::AlignToNextPage(placement),
+    Processor::Execute(0x8, 0xFFFFFFFF80000000, Memory::AlignToNextPage(end), memmap, Memory::AlignToNextPage(placement),
                        video);
     
     for (;;) ;
