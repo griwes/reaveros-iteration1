@@ -91,7 +91,27 @@ void OutputStream::Initialize(VideoModeWrapper * pVideoMode)
 
 uint64 Screen::SaveProcessedVideoModeDescription(uint64 pDestAddress)
 {
-    return 0;
+    uint64 p = Memory::iFirstFreePageAddress;
+    Memory::Map(pDestAddress, pDestAddress + 4096, Memory::iFirstFreePageAddress);
+    Memory::Map(0x8000000, 0x8000000 + 4096, p);
+
+    KernelVideoMode * kvideo = (KernelVideoMode *)0x8000000;
+
+    kvideo->PhysBasePtr = Screen::bout->m_pVideoMode->m_pVideoMode->PhysBasePtr;
+    kvideo->BytesPerScanLine = Screen::bout->m_pVideoMode->m_pVideoMode->LinearBytesPerScanLine;
+    kvideo->XResolution = Screen::bout->m_pVideoMode->m_pVideoMode->XResolution;
+    kvideo->YResolution = Screen::bout->m_pVideoMode->m_pVideoMode->YResolution;
+    kvideo->BitsPerPixel = Screen::bout->m_pVideoMode->m_pVideoMode->BitsPerPixel;
+    kvideo->RedMaskSize = Screen::bout->m_pVideoMode->m_pVideoMode->RedMaskSize;
+    kvideo->RedFieldPosition = Screen::bout->m_pVideoMode->m_pVideoMode->RedFieldPosition;
+    kvideo->GreenMaskSize = Screen::bout->m_pVideoMode->m_pVideoMode->GreenMaskSize;
+    kvideo->GreenFieldPosition = Screen::bout->m_pVideoMode->m_pVideoMode->GreenFieldPosition;
+    kvideo->BlueMaskSize = Screen::bout->m_pVideoMode->m_pVideoMode->BlueMaskSize;
+    kvideo->BlueFieldPosition = Screen::bout->m_pVideoMode->m_pVideoMode->BlueFieldPosition;
+    kvideo->ReservedMaskSize = Screen::bout->m_pVideoMode->m_pVideoMode->RsvdMaskSize;
+    kvideo->ReservedFieldPosition = Screen::bout->m_pVideoMode->m_pVideoMode->RsvdFieldPosition;
+
+    return pDestAddress + 4096;
 }
 
 void VideoModeWrapper::Initialize(void * pFont, VideoMode * pVideoMode)

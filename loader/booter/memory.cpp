@@ -176,6 +176,8 @@ uint64 Memory::Copy(uint32 pSource, uint32 iSize, uint64 pDestination)
 void Memory::Map(uint64 pBegin, uint64 pEnd, uint64 & pPhysicalStart, bool bCacheDisable)
 {
     PML4 * pml4 = Processor::PagingStructures;
+
+    pEnd = Memory::AlignToNextPage(pEnd);
     
     uint32 iBeginPaged = pBegin >> 12;
     uint32 iEndPaged = pEnd >> 12;
@@ -315,4 +317,124 @@ void Memory::Map(uint64 pBegin, uint64 pEnd, uint64 & pPhysicalStart, bool bCach
             return;
         }
     }
+}
+
+uint64 Memory::CreateMemoryMap(MemoryMapEntry * pMemoryMap, uint32 iCount, uint64 pDestinationAddress)
+{
+    uint64 p = Memory::iFirstFreePageAddress;
+    Memory::Map(pDestinationAddress, pDestinationAddress + sizeof(MemoryMapEntry) * (iCount + 1),
+                Memory::iFirstFreePageAddress);
+    Memory::Map(0x8000000, 0x8000000 + sizeof(MemoryMapEntry) * (iCount + 1), p);
+
+    MemoryMapEntry * pKernelMemoryMap = (MemoryMapEntry *)0x8000000;
+    
+    for (int32 i = 0; i < iCount; i++)
+    {
+        pKernelMemoryMap->type = pMemoryMap[i].type;
+        pKernelMemoryMap->Base = pMemoryMap[i].Base;
+        pKernelMemoryMap->Length = pMemoryMap[i].Length;
+        pKernelMemoryMap->ACPI30 = pMemoryMap[i].ACPI30;
+        pKernelMemoryMap++;
+    }
+
+    pKernelMemoryMap->type = 0xffff;
+    pKernelMemoryMap->Base = 64 * 1024 * 1024;
+    pKernelMemoryMap->Length = 0;
+    pKernelMemoryMap->ACPI30 = 0;
+
+    return Memory::AlignToNextPage(pDestinationAddress + sizeof(MemoryMapEntry) * (iCount + 1));
+}
+
+uint64 Memory::CountPagingStructures(uint64 pBegin, uint64 pEnd)
+{
+    pEnd = Memory::AlignToNextPage(pEnd);
+    
+    uint32 iBeginPaged = pBegin >> 12;
+    uint32 iEndPaged = pEnd >> 12;
+    
+    uint32 startpml4e = iBeginPaged / (512 * 512 * 512);
+    uint32 startpdpte = (iBeginPaged % (512 * 512 * 512)) / (512 * 512);
+    uint32 startpde = (iBeginPaged % (512 * 512)) / 512;
+    
+    uint32 endpml4e = iEndPaged / (512 * 512 * 512);
+    uint32 endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
+    uint32 endpde = (iEndPaged % (512 * 512)) / 512;
+
+    uint64 iSize = 0;
+    
+    while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde))
+    {
+        iSize += sizeof(PageDirectoryPointerTable);
+
+        pEnd += sizeof(PageDirectoryPointerTable);
+
+        iEndPaged = Memory::AlignToNextPage(pEnd) >> 12;
+        endpml4e = iEndPaged / (512 * 512 * 512);
+        endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
+        endpde = (iEndPaged % (512 * 512)) / 512;
+
+        while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde) && startpdpte < 512)
+        {
+            iSize += sizeof(PageDirectory);
+
+            pEnd += sizeof(PageDirectory);
+
+            iEndPaged = Memory::AlignToNextPage(pEnd) >> 12;
+            endpml4e = iEndPaged / (512 * 512 * 512);
+            endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
+            endpde = (iEndPaged % (512 * 512)) / 512;
+
+            while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde) && startpde < 512)
+            {
+                iSize += sizeof(PageTable);
+
+                pEnd += sizeof(PageTable);
+
+                iEndPaged = Memory::AlignToNextPage(pEnd) >> 12;
+                endpml4e = iEndPaged / (512 * 512 * 512);
+                endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
+                endpde = (iEndPaged % (512 * 512)) / 512;
+
+                startpde++;
+            }
+
+            if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde))
+            {
+                startpde = 0;
+                startpdpte++;
+            }
+
+            else
+            {
+                return iSize;
+            }
+        }
+
+        if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde))
+        {
+            startpdpte = 0;
+            startpml4e++;
+        }
+
+        else
+        {
+            return iSize;
+        }
+    }
+
+    return iSize;
+}
+
+void Memory::UpdateMemoryMap(uint64 memmap, uint64 size)
+{
+    MemoryMapEntry * p = (MemoryMapEntry *)0x8000000;
+
+    while (p->type != 0xffff)
+    {
+        p++;
+    }
+
+    p->Length = size;
+
+    return;
 }

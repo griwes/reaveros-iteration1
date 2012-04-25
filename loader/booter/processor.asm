@@ -39,16 +39,18 @@ bits    32
 ;     void _enable_paging(uint32);
 ;     void _reload_cr3(uint32);
 ;     void _copy(uint32, uint32, uint32);
+;     voud _execute();
 ; }
 ;
 
-global _cpu_check_long_mode
-global _enable_pae_paging
-global _enable_msr_longmode
-global _enable_paging
-global _reload_cr3
-global _setup_gdt
-global _copy
+global  _cpu_check_long_mode
+global  _enable_pae_paging
+global  _enable_msr_longmode
+global  _enable_paging
+global  _reload_cr3
+global  _setup_gdt
+global  _copy
+global  _execute
 
 _cpu_check_long_mode:
     mov     eax, 0x80000000
@@ -145,6 +147,15 @@ _setup_gdt:
     mov     ss, ax
 
     ret
+
+_execute:
+    pop     eax
+    pop     eax
+    
+    push    word 0x8
+    push    eax
+
+    retf
 
 gdt_start:
     ; null:

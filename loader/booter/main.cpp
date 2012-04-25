@@ -74,16 +74,17 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // in it's own, completely known space (part of boot protocol), as well as additional 16 MiB
     // for additional stuff to be put on placement stack
 
-    uint64 size = placement + Memory::CountPagingStructures(0xFFFFFFFF80000000, placement + 16 * 1024 * 1024);
-    Memory::Map(placement, placement + size, Memory::iFirstFreePageAddress);
+    uint64 size = Memory::CountPagingStructures(0xFFFFFFFF80000000, Memory::AlignToNextPage(placement) + 16 * 1024 * 1024);
 
+    Memory::Map(placement, placement + size, Memory::iFirstFreePageAddress);
+    
     // and this one updates memory map, setting size to type 0xFFFF entry (kernel-used memory)
     // that starts at 64 MiB in physical memory
     
     Memory::UpdateMemoryMap(memmap, size);
     
-    Processor::Execute(0x8, 0xFFFFFFFF80000000, Memory::AlignToNextPage(end), memmap, Memory::AlignToNextPage(placement),
-                       video);
+    Processor::Execute(pKernel, Memory::AlignToNextPage(end), memmap, iMemoryMapSize + 1,
+                       Memory::AlignToNextPage(placement), video);
     
     for (;;) ;
     

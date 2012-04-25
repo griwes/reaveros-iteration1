@@ -42,6 +42,8 @@ extern "C"
     void _enable_msr_longmode();
     void _enable_paging(uint32);
     void _setup_gdt();
+
+    void _execute(uint32);
 }
 
 namespace Processor
@@ -80,4 +82,10 @@ void Processor::EnterLongMode()
 void Processor::SetupGDT()
 {
     _setup_gdt();
+}
+
+void Processor::Execute(uint32 address, uint64 pInitRD, uint64 pMemoryMap, uint32 iMemoryMapSize, uint64 pPlacement,
+                        uint64 pVideoMode)
+{
+    _execute(address);
 }

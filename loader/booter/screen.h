@@ -81,10 +81,36 @@ public:
     uint8 ____[189];
 } __attribute__((packed));
 
+class KernelVideoMode
+{
+public:
+    uint32 PhysBasePtr;
+    uint16 BytesPerScanLine;
+    uint16 XResolution, YResolution;
+    uint8 BitsPerPixel;
+    uint16 RedMaskSize, RedFieldPosition;
+    uint16 GreenMaskSize, GreenFieldPosition;
+    uint16 BlueMaskSize, BlueFieldPosition;
+    uint16 ReservedMaskSize, ReservedFieldPosition;
+} __attribute__((packed));
+
+class OutputStream;
+
+namespace Screen
+{
+    void Initialize(VideoMode *, void * pFont);
+    uint64 SaveProcessedVideoModeDescription(uint64);
+    
+    extern OutputStream * bout;
+    extern const char * nl;
+    extern const char * tab;
+}
+
 class VideoModeWrapper
 {
 public:
     friend class OutputStream;
+    friend uint64 Screen::SaveProcessedVideoModeDescription(uint64);
     
     void Initialize(void *, VideoMode *);
     void PrintCharacter(char);
@@ -103,23 +129,6 @@ private:
     void * m_pFontData;
 } __attribute__((packed));
 
-class VideoModeDescription
-{
-public:
-    uint16 ModeAttributes;
-
-    uint64 PhysicalVideoMemoryAddress;
-    uint16 LineSize;
-    
-    uint16 XResolution;
-    uint16 YResolution;
-    
-    uint8 RedSize, RedPosition;
-    uint8 GreenSize, GreenPosition;
-    uint8 BlueSize, BluePosition;
-    uint8 RsvdSize, RsvdPosition;
-} __attribute__((packed));
-
 class OutputStream
 {
 public:
@@ -127,6 +136,8 @@ public:
     friend OutputStream & operator << (OutputStream &, const char *);
     template<typename T>
     friend OutputStream & operator << (OutputStream &, T);
+
+    friend uint64 Screen::SaveProcessedVideoModeDescription(uint64);
 
     void Hex()
     {
@@ -145,16 +156,6 @@ private:
     uint8 m_iBase;
     VideoModeWrapper * m_pVideoMode;
 };
-
-namespace Screen
-{
-    void Initialize(VideoMode *, void * pFont);
-    uint64 SaveProcessedVideoModeDescription(uint64);
-
-    extern OutputStream * bout;
-    extern const char * nl;
-    extern const char * tab;
-}
 
 template<typename T>
 OutputStream & operator << (OutputStream &s, T i)

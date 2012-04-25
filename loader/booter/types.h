@@ -44,4 +44,6 @@ typedef __UINT64_TYPE__ uint64;
 typedef __INTPTR_TYPE__ intptr;
 typedef __UINTPTR_TYPE__ uintptr;
 
+#define dbg __asm("xchg %bx, %bx")
+
 #endif
