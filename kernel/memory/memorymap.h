@@ -28,3 +28,61 @@
  * Michał "Griwes" Dominiak
  * 
  **/
+
+#ifndef __rose_kernel_memory_memorymap_h__
+#define __rose_kernel_memory_memorymap_h__
+
+#include "../types.h"
+#include "../lib/string.h"
+
+namespace Memory
+{
+    class MemoryMapEntry
+    {
+    public:
+        String TypeDescription();
+        inline uint32 & Type()
+        {
+            return this->m_iType;
+        }
+        inline uint64 & Base()
+        {
+            return this->m_iBase;
+        }
+        inline uint64 & Length()
+        {
+            return this->m_iLength;
+        }
+        inline uint64 End()
+        {
+            return this->m_iBase + this->m_iLength + 1;
+        }
+
+    private:
+        uint64 m_iBase;
+        uint64 m_iLength;
+        uint32 m_iType;
+        uint32 ACPI30;
+    } __attribute__((packed));
+
+    class MemoryMap
+    {
+    public:
+        MemoryMap(MemoryMapEntry *, uint32);
+        
+        uint64 CountUsableMemory();
+        uint32 GetMemoryType(uint64);
+        String GetMemoryTypeDescription(uint64);
+        
+        MemoryMapEntry * GetEntries();
+        uint32 GetNumberOfEntries();
+
+        void CreateFreePageStack();
+
+    private:
+        MemoryMapEntry * m_pEntries;
+        uint32 m_iSize;
+    };
+}
+
+#endif

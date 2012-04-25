@@ -40,11 +40,14 @@
 #include "processor/processor.h"
 #include "screen/screen.h"
 
-extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMap * pMemoryMap,
+extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * pMemoryMap,
                                     uint32 iMemoryMapSize, void * pPlacementAddress, Screen::VideoMode * pVideoMode)
 {
     Memory::PreInitialize(pPlacementAddress);
-    Memory::Initialize(pMemoryMap);
+    Memory::Initialize(pMemoryMap, iMemoryMapSize);
+
+    for (;;);
+
     Processor::Initialize();
     
     Screen::Initialize(pVideoMode);
@@ -52,38 +55,8 @@ extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Mem
     using Screen::kout;
     using Screen::nl;
     
-    kout << "ReaverOS 0.1: Cotyledon" << nl << nl;
-    
-    Processor::PrintStatus();
-    
-    kout << "Memory is initialized, entire RAM size: " << Memory::GetEntireRAMSize() << ", available RAM size: " 
-         << Memory::GetAvailableRAMSize() << nl;
-    kout << "Current video mode number: " << Screen::GetVideoModeID() << ", video mode details: "
-         << Screen::GetModeDetails().String() << nl;
-         
-    kout << " - Validating InitRD...";
-    
-    pInitRD->Validate();
-    
-    kout << "Done." << nl << " - Loading storage and filesystem drivers...";
-    
-    DriverStorage::Initialize();
-    VFS::Initialize();
-    VFS::Mount(InitRD::Filesystem(pInitRD), "/boot");
-
-    kout << "Done." << nl;
-
-    /**
-     * TODO: detection of root filesystem... at now, I just want to write bootloader code
-     * to load kernel and initrd using BIOS interrupts, will write pseudocode here later.
-     */
-    
-    // the following line does much of the remaining job; only process manager is to be initialized
-    String shellfilename = Config::ParseConfigFile("/system/kernel.conf")->GetKey("shell.filename");
-    
-    Process::Manager::Initialize();
-    Process::Create(shellfilename).SetAsActive();
-    Process::Scheduler::StartUp();
+    kout << "ReaverOS 0.1: Cotyledon" << nl;
+    kout << "Copyright (C) 2011-2012 Reaver Project Team: Michał Dominiak" << nl << nl;
     
     for (;;) ;
     

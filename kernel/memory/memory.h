@@ -33,11 +33,17 @@
 #define _rose_kernel_memory_memory_h_
 
 #include "../types.h"
+#include "memorymap.h"
 
 namespace Memory
 {
     void PreInitialize(void *);
-    void Initialize(Memory::MemoryMap *);
+    void Initialize(Memory::MemoryMapEntry *, iMemoryMapSize);
+
+    template<typename T>
+    void Zero(T *);
+    template<typename T>
+    void Zero(T *, uint32);
     
     void * pPlacementAddress;
 }

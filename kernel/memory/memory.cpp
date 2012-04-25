@@ -31,6 +31,40 @@
 
 #include "memory.h"
 
+void * operator new(uint64 iSize)
+{
+    if (!Memory::pPlacementAddress)
+    {
+        return Memory::KernelHeap->Alloc(iSize);
+    }
+
+    void * p = Memory::pPlacementAddress;
+    Memory::pPlacementAddress += iSize;
+
+    return p;
+}
+
+// hope no-one will ever try to free placement address...
+void operator delete(void * pPointer)
+{
+    Memory::KernelHeap->Free(pPointer);
+}
+
+void * operator new[](uint64 iSize)
+{
+    return operator new(iSize);
+}
+
+void operator delete[](void * pPointer)
+{
+    Memory::KernelHeap->Free(pPointer);
+}
+
+namespace Memory
+{
+    void * pPlacementAddress = 0;
+}
+
 void Memory::PreInitialize(void * pPlacementAddress)
 {
     Memory::pPlacementAddress = pPlacementAddress;
@@ -38,6 +72,29 @@ void Memory::PreInitialize(void * pPlacementAddress)
     return;
 }
 
-void Memory::Initialize(Memory::MemoryMap * pMemMap)
+void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 {
+    MemoryMap * pMemoryMap = new pMemoryMap(pMemMap, iMemoryMapSize);
+}
+
+template<typename T>
+void Memory::Zero(T * p)
+{
+    uint32 iSize = sizeof(T);
+
+    for (uint32 i = 0; i < iSize; i++)
+    {
+        *(char *)(p++) = 0;
+    }
+}
+
+template<typename T>
+void Memory::Zero(T * p, uint32 iCount)
+{
+    uint32 iSize = sizeof(T) * iCount;
+
+    for (uint32 i = 0; i < iSize; i++)
+    {
+        *(char *)(p++) = 0;
+    }
 }
