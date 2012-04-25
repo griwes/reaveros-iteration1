@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 utils/builder/build/*
->>>>>>> bootloader-rewrite
 *~
 *.o
 *.img

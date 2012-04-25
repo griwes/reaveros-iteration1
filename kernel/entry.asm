@@ -28,8 +28,10 @@
 ; Michał "Griwes" Dominiak
 ; 
 
+bits    64
+
 global  entry
 extern  kernel_main
 
 entry:
-    jmp kernel_main
+    jmp     kernel_main

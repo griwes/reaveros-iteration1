@@ -40,16 +40,4 @@ void Memory::PreInitialize(void * pPlacementAddress)
 
 void Memory::Initialize(Memory::MemoryMap * pMemMap)
 {
-    // recreate paging structures in kernel space
-    
-    // system status ATM:
-    // 1. first 32 MB of physical memory - identity mapped
-    // 2. next 32 MB of physical memory - mapped at -2 GB
-    // First 32 MBs are special, don't touch them
-    // the bootloader is free to do anything with them
-    // and we don't want to rewrite this part just because
-    // bootloader did something new and important.
-    // Kernel and it's InitRD are at -2GB
-    
-    
 }

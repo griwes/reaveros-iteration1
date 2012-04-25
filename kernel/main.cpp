@@ -41,7 +41,7 @@
 #include "screen/screen.h"
 
 extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMap * pMemoryMap,
-                                                   void * pPlacementAddress, Screen::VideoMode * pVideoMode)
+                                    uint32 iMemoryMapSize, void * pPlacementAddress, Screen::VideoMode * pVideoMode)
 {
     Memory::PreInitialize(pPlacementAddress);
     Memory::Initialize(pMemoryMap);
@@ -70,6 +70,8 @@ extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Mem
     DriverStorage::Initialize();
     VFS::Initialize();
     VFS::Mount(InitRD::Filesystem(pInitRD), "/boot");
+
+    kout << "Done." << nl;
 
     /**
      * TODO: detection of root filesystem... at now, I just want to write bootloader code
