@@ -1,4 +1,10 @@
 /**
+ * ReaverOS
+ * loader/booter/types.h
+ * Basic types typedefs.
+ */
+
+/**
  * Reaver Project OS, Rose License
  * 
  * Copyright (C) 2011-2012 Reaver Project Team:
@@ -9,11 +15,7 @@
  * arising from the use of this software.
  * 
  * Permission is granted to anyone to use this software for any purpose,
-<<<<<<< HEAD
  * including commercial applications, adn to alter it and redistribute it
-=======
- * including commercial applications, and to alter it and redistribute it
->>>>>>> bootloader-rewrite
  * freely, subject to the following restrictions:
  * 
  * 1. The origin of this software must not be misrepresented; you must not
@@ -26,3 +28,22 @@
  * Michał "Griwes" Dominiak
  * 
  **/
+
+#ifndef __booter_types_h__
+#define __booter_types_h__
+
+typedef __SIZE_TYPE__ size;
+typedef __INT8_TYPE__ int8;
+typedef __INT16_TYPE__ int16;
+typedef __INT32_TYPE__ int32;
+typedef __INT64_TYPE__ int64;
+typedef __UINT8_TYPE__ uint8;
+typedef __UINT16_TYPE__ uint16;
+typedef __UINT32_TYPE__ uint32;
+typedef __UINT64_TYPE__ uint64;
+typedef __INTPTR_TYPE__ intptr;
+typedef __UINTPTR_TYPE__ uintptr;
+
+#define dbg __asm("xchg %bx, %bx")
+
+#endif

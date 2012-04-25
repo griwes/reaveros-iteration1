@@ -31,12 +31,20 @@
 
 #include <iostream>
 #include <fstream>
+<<<<<<< HEAD
+=======
+#include <stdint.h>
+>>>>>>> bootloader-rewrite
 
 void Usage()
 {
     std::cout << "ReaverFS bootfloppy creator, version 0.2" << std::endl << std::endl;
     std::cout << "Usage:" << std::endl;
+<<<<<<< HEAD
     std::cout << "./mkrfloppy <output> <1st stage> <2nd stage> <booter> [<initrd>]" << std::endl;
+=======
+    std::cout << "./mkrfloppy <output> <1st stage> <2nd stage> <booter> <kernel> <initrd>" << std::endl;
+>>>>>>> bootloader-rewrite
 
     return;
 }
@@ -53,7 +61,11 @@ void Zero(char * buffer, int size)
 
 int main(int argc, char ** argv)
 {
+<<<<<<< HEAD
     if (argc < 5 || argc > 6)
+=======
+    if (argc != 7)
+>>>>>>> bootloader-rewrite
     {
         Usage();
         return 1;
@@ -87,6 +99,7 @@ int main(int argc, char ** argv)
         return 5;
     }
     
+<<<<<<< HEAD
     std::fstream initrd;
     if (argc == 6)
     {
@@ -98,6 +111,24 @@ int main(int argc, char ** argv)
         }
     }
     
+=======
+    std::fstream kernel;
+    kernel.open(argv[5], std::fstream::in | std::fstream::binary);
+    if (!kernel.good())
+    {
+        std::cout << "Couldn't open kernel file." << std::endl;
+        return 6;
+    }
+
+    std::fstream initrd;
+    initrd.open(argv[6], std::fstream::in | std::fstream::binary);
+    if (!initrd.good())
+    {
+        std::cout << "Couldn't open intird file." << std::endl;
+        return 7;
+    }
+
+>>>>>>> bootloader-rewrite
     char * buffer = new char[512];
     Zero(buffer, 512);
     
@@ -107,7 +138,11 @@ int main(int argc, char ** argv)
     
     stage1.close();
     
+<<<<<<< HEAD
     short counter = 0;
+=======
+    uint16_t counter = 0;
+>>>>>>> bootloader-rewrite
     while (!stage2.eof())
     {
         stage2.read(buffer, 512);
@@ -118,22 +153,39 @@ int main(int argc, char ** argv)
     stage2.close();
     
     int pos = output.tellp();
+<<<<<<< HEAD
     output.seekp(22);
     // write stage 2 size into stage 1 header
     output.write(reinterpret_cast<char *>(&counter), sizeof(counter)); 
     output.seekp(pos);
     
     short booter_count = 0;
+=======
+    // write stage 2 size into stage 1 header
+    output.seekp(22);
+    output.write(reinterpret_cast<char *>(&counter), sizeof(counter));
+    // write stage 2 size into stage 2 header
+    output.seekp(512 + 8);
+    output.write(reinterpret_cast<char *>(&counter), sizeof(counter));
+    output.seekp(pos);
+    
+    uint16_t booter_counter = 0;
+>>>>>>> bootloader-rewrite
     while (!booter.eof())
     {
         booter.read(buffer, 512);
         output.write(buffer, 512);
         Zero(buffer, 512);
+<<<<<<< HEAD
         booter_count++;
+=======
+        booter_counter++;
+>>>>>>> bootloader-rewrite
     }
     booter.close();
     
     pos = output.tellp();
+<<<<<<< HEAD
     output.seekp(512 + 8);
     // write size of booter into stage 2 header
     output.write(reinterpret_cast<char *>(&booter_count), sizeof(booter_count));
@@ -155,6 +207,43 @@ int main(int argc, char ** argv)
     output.write(reinterpret_cast<char *>(&initrd_counter), sizeof(initrd_counter));
     output.seekp(20);
     short sum = initrd_counter + booter_count + counter + 1;
+=======
+    // write size of booter into stage 2 header
+    output.seekp(512 + 10);
+    output.write(reinterpret_cast<char *>(&booter_counter), sizeof(booter_counter));
+    output.seekp(pos);
+
+    uint16_t kernel_counter = 0;
+    while (!kernel.eof())
+    {
+        kernel.read(buffer, 512);
+        output.write(buffer, 512);
+        Zero(buffer, 512);
+        kernel_counter++;
+    }
+
+    pos = output.tellp();
+    // write size of kernel into stage 2 header
+    output.seekp(512 + 12);
+    output.write(reinterpret_cast<char *>(&kernel_counter), sizeof(kernel_counter));
+    output.seekp(pos);
+
+    uint16_t initrd_counter = 0;
+    while (!initrd.eof())
+    {
+        initrd.read(buffer, 512);
+        output.write(buffer, 512);
+        Zero(buffer, 512);
+        initrd_counter++;
+    }
+
+    // write size of initrd into stage 2 header
+    output.seekp(512 + 14);
+    output.write(reinterpret_cast<char *>(&initrd_counter), sizeof(initrd_counter));
+
+    output.seekp(20);
+    uint16_t sum = initrd_counter + kernel_counter + booter_counter + counter + 1;
+>>>>>>> bootloader-rewrite
     output.write(reinterpret_cast<char *>(&sum), sizeof(sum));
     
     output.close();

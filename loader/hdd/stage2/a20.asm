@@ -1,4 +1,10 @@
 ;
+; ReaverOS
+; loader/stage2/a20.asm
+; A20 gate routine
+;
+
+;
 ; Reaver Project OS, Rose License
 ;
 ; Copyright (C) 2011-2012 Reaver Project Team:
@@ -9,11 +15,7 @@
 ; arising from the use of this software.
 ; 
 ; Permission is granted to anyone to use this software for any purpose,
-<<<<<<< HEAD
 ; including commercial applications, adn to alter it and redistribute it
-=======
-; including commercial applications, and to alter it and redistribute it
->>>>>>> bootloader-rewrite
 ; freely, subject to the following restrictions:
 ; 
 ; 1. The origin of this software must not be misrepresented; you must not
@@ -25,3 +27,65 @@
 ; 
 ; Michał "Griwes" Dominiak
 ; 
+
+bits    16
+
+enable_a20:
+    ; try BIOS A20 enable function
+    mov     ax, 0x2401
+    int     0x15
+
+    ; check whether it was successful
+    cmp     ah, 0
+    je      .end
+
+    ; it wasn't, use keyboard controller method
+    cli
+
+    call    a20wait
+    mov     al, 0xad
+    out     0x64, al
+
+    call    a20wait
+    mov     al, 0xd0
+    out     0x64, al
+
+    call    a20wait2
+    mov     al, 0x64
+    push    eax
+
+    call    a20wait
+    mov     al, 0xd1
+    out     0x64, al
+
+    call    a20wait
+    pop     eax
+    or      al, 2
+    out     0x60, al
+
+    call    a20wait
+    mov     al, 0xae
+    out     0x64, al
+
+    call    a20wait
+
+    sti
+
+    .end:
+        ret
+
+;
+; Helper functions
+;
+
+a20wait:
+    in      al, 0x64
+    test    al, 2
+    jnz     a20wait
+    ret
+    
+a20wait2:
+    in      al, 0x64
+    test    al, 1
+    jz      a20wait2
+    ret

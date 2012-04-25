@@ -1,4 +1,10 @@
 ;
+; ReaverOS
+; loader/stage2/mmap.asm
+; Memory map routine
+;
+
+;
 ; Reaver Project OS, Rose License
 ;
 ; Copyright (C) 2011-2012 Reaver Project Team:
@@ -9,11 +15,7 @@
 ; arising from the use of this software.
 ; 
 ; Permission is granted to anyone to use this software for any purpose,
-<<<<<<< HEAD
 ; including commercial applications, adn to alter it and redistribute it
-=======
-; including commercial applications, and to alter it and redistribute it
->>>>>>> bootloader-rewrite
 ; freely, subject to the following restrictions:
 ; 
 ; 1. The origin of this software must not be misrepresented; you must not
@@ -25,3 +27,60 @@
 ; 
 ; Michał "Griwes" Dominiak
 ; 
+
+bits    16
+
+;
+; get_memory_map()
+; es:di - buffer
+; return: bp - regions count
+;
+
+get_memory_map:
+    xor     ebx, ebx
+    xor     bp, bp
+
+    mov     eax, 0xe820
+    mov     ecx, 24
+    mov     edx, 0x534d4150
+
+    mov     [es:di + 20], dword 1
+
+    int     0x15
+
+    jc      .fail
+
+    mov     edx, 0x534d4150
+    cmp     eax, edx
+    jne     .fail
+
+    cmp     ebx, 0
+    je      .fail
+
+    inc     bp
+
+    .loop:
+        mov     eax, 0xe820
+        mov     ecx, 24
+        mov     edx, 0x534d4150
+        add     di, 24
+
+        mov     [es:di + 20], dword 1
+
+        int     0x15
+
+        jc      .end
+
+        cmp     ebx, 0
+        je      .end
+
+        inc     bp
+        jmp     .loop
+
+    .end:
+        clc
+        ret
+
+    .fail:
+        xor     eax, eax
+        ret     0
