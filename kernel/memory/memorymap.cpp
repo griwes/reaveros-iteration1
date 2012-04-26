@@ -32,7 +32,7 @@
 #include "memorymap.h"
 #include "memory.h"
 
-String Memory::MemoryMap::TypeDescription()
+String Memory::MemoryMapEntry::TypeDescription()
 {
     const char * description;
         

@@ -34,9 +34,11 @@ global  entry
 extern  kernel_main
 
 entry:
-    jmp     0xFFFFFFFF80000000 + 8
+    mov     rax, 0xFFFFFFFF80000000 + 16
+    jmp     rax
 
-times 8 - ($-$$) db 0
+times 16 - ($-$$) db 0
 
 highmemory:
+    hlt
     jmp     kernel_main

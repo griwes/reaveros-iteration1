@@ -39,6 +39,8 @@ namespace Screen
 {
     Screen::Console * kout;
 
+    class VideoMode;
+
     char nl;
     
     void Initialize(Screen::VideoMode *);

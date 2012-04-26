@@ -38,14 +38,31 @@
 namespace Memory
 {
     void PreInitialize(void *);
-    void Initialize(Memory::MemoryMapEntry *, iMemoryMapSize);
+    void Initialize(Memory::MemoryMapEntry *, uint32);
 
     template<typename T>
-    void Zero(T *);
-    template<typename T>
-    void Zero(T *, uint32);
+    void Zero(T * p)
+    {
+        uint32 iSize = sizeof(T);
+        
+        for (uint32 i = 0; i < iSize; i++)
+        {
+            *(char *)(p++) = 0;
+        }
+    }
     
-    void * pPlacementAddress;
+    template<typename T>
+    void Zero(T * p, uint32 iCount)
+    {
+        uint32 iSize = sizeof(T) * iCount;
+        
+        for (uint32 i = 0; i < iSize; i++)
+        {
+            *(char *)(p++) = 0;
+        }
+    }
+    
+    extern void * pPlacementAddress;
 }
 
 #endif

@@ -178,20 +178,17 @@ void Memory::Map(uint64 pBegin, uint64 pEnd, uint64 & pPhysicalStart, bool bCach
     PML4 * pml4 = Processor::PagingStructures;
 
     pEnd = Memory::AlignToNextPage(pEnd);
+
+    uint64 startpml4e = (pBegin >> 39) & 511;
+    uint64 startpdpte = (pBegin >> 30) & 511;
+    uint64 startpde = (pBegin >> 21) & 511;
+    uint64 startpte = (pBegin >> 12) & 511;
     
-    uint32 iBeginPaged = pBegin >> 12;
-    uint32 iEndPaged = pEnd >> 12;
-    
-    uint32 startpml4e = iBeginPaged / (512 * 512 * 512);
-    uint32 startpdpte = (iBeginPaged % (512 * 512 * 512)) / (512 * 512);
-    uint32 startpde = (iBeginPaged % (512 * 512)) / 512;
-    uint32 startpte = iBeginPaged % 512;
-    
-    uint32 endpml4e = iEndPaged / (512 * 512 * 512);
-    uint32 endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
-    uint32 endpde = (iEndPaged % (512 * 512)) / 512;
-    uint32 endpte = iEndPaged % 512;
-    
+    uint64 endpml4e = (pEnd >> 39) & 511;
+    uint64 endpdpte = (pEnd >> 30) & 511;
+    uint64 endpde = (pEnd >> 21) & 511;
+    uint64 endpte = (pEnd >> 12) & 511;
+
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
         PageDirectoryPointerTable * pdpt;
@@ -349,17 +346,14 @@ uint64 Memory::CountPagingStructures(uint64 pBegin, uint64 pEnd)
 {
     pEnd = Memory::AlignToNextPage(pEnd);
     
-    uint32 iBeginPaged = pBegin >> 12;
-    uint32 iEndPaged = pEnd >> 12;
+    uint64 startpml4e = (pBegin >> 39) & 511;
+    uint64 startpdpte = (pBegin >> 30) & 511;
+    uint64 startpde = (pBegin >> 21) & 511;
     
-    uint32 startpml4e = iBeginPaged / (512 * 512 * 512);
-    uint32 startpdpte = (iBeginPaged % (512 * 512 * 512)) / (512 * 512);
-    uint32 startpde = (iBeginPaged % (512 * 512)) / 512;
+    uint64 endpml4e = (pEnd >> 39) & 511;
+    uint64 endpdpte = (pEnd >> 30) & 511;
+    uint64 endpde = (pEnd >> 21) & 511;
     
-    uint32 endpml4e = iEndPaged / (512 * 512 * 512);
-    uint32 endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
-    uint32 endpde = (iEndPaged % (512 * 512)) / 512;
-
     uint64 iSize = 0;
     
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde))
@@ -368,33 +362,30 @@ uint64 Memory::CountPagingStructures(uint64 pBegin, uint64 pEnd)
 
         pEnd += sizeof(PageDirectoryPointerTable);
 
-        iEndPaged = Memory::AlignToNextPage(pEnd) >> 12;
-        endpml4e = iEndPaged / (512 * 512 * 512);
-        endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
-        endpde = (iEndPaged % (512 * 512)) / 512;
-
+        endpml4e = (pEnd >> 39) & 511;
+        endpdpte = (pEnd >> 30) & 511;
+        endpde = (pEnd >> 21) & 511;
+        
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde) && startpdpte < 512)
         {
             iSize += sizeof(PageDirectory);
 
             pEnd += sizeof(PageDirectory);
 
-            iEndPaged = Memory::AlignToNextPage(pEnd) >> 12;
-            endpml4e = iEndPaged / (512 * 512 * 512);
-            endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
-            endpde = (iEndPaged % (512 * 512)) / 512;
-
+            endpml4e = (pEnd >> 39) & 511;
+            endpdpte = (pEnd >> 30) & 511;
+            endpde = (pEnd >> 21) & 511;
+            
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde) && startpde < 512)
             {
                 iSize += sizeof(PageTable);
 
                 pEnd += sizeof(PageTable);
 
-                iEndPaged = Memory::AlignToNextPage(pEnd) >> 12;
-                endpml4e = iEndPaged / (512 * 512 * 512);
-                endpdpte = (iEndPaged % (512 * 512 * 512)) / (512 * 512);
-                endpde = (iEndPaged % (512 * 512)) / 512;
-
+                endpml4e = (pEnd >> 39) & 511;
+                endpdpte = (pEnd >> 30) & 511;
+                endpde = (pEnd >> 21) & 511;
+                
                 startpde++;
             }
 

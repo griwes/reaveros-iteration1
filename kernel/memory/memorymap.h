@@ -41,17 +41,17 @@ namespace Memory
     {
     public:
         String TypeDescription();
-        inline uint32 & Type()
+        inline uint32 Type()
         {
             return this->m_iType;
         }
         inline uint64 & Base()
         {
-            return this->m_iBase;
+            return (uint64 &)this->m_iBase;
         }
         inline uint64 & Length()
         {
-            return this->m_iLength;
+            return (uint64 &)this->m_iLength;
         }
         inline uint64 End()
         {

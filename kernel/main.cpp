@@ -40,19 +40,24 @@
 #include "processor/processor.h"
 #include "screen/screen.h"
 
+namespace InitRD
+{
+    class InitRD;
+}
+
 extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * pMemoryMap,
                                     uint32 iMemoryMapSize, void * pPlacementAddress, Screen::VideoMode * pVideoMode)
 {
     Memory::PreInitialize(pPlacementAddress);
     Memory::Initialize(pMemoryMap, iMemoryMapSize);
 
-    for (;;);
+    for (;;) ;
 
     Processor::Initialize();
     
     Screen::Initialize(pVideoMode);
     
-    using Screen::kout;
+/*    using Screen::kout;
     using Screen::nl;
     
     kout << "ReaverOS 0.1: Cotyledon" << nl;
@@ -61,4 +66,4 @@ extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Mem
     for (;;) ;
     
     return; // for the sake of good coding style
-}
+*/}

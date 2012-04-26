@@ -82,7 +82,7 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // that starts at 64 MiB in physical memory
     
     Memory::UpdateMemoryMap(memmap, size);
-    
+
     Processor::Execute(pKernel, Memory::AlignToNextPage(end), memmap, iMemoryMapSize + 1,
                        Memory::AlignToNextPage(placement), video);
     
