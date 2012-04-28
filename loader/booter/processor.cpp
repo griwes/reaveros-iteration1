@@ -43,7 +43,7 @@ extern "C"
     void _enable_paging(uint32);
     void _setup_gdt();
 
-    void _execute(uint32);
+    void _execute();
 }
 
 namespace Processor
@@ -84,8 +84,7 @@ void Processor::SetupGDT()
     _setup_gdt();
 }
 
-void Processor::Execute(uint32 address, uint64 pInitRD, uint64 pMemoryMap, uint32 iMemoryMapSize, uint64 pPlacement,
-                        uint64 pVideoMode)
+void Processor::Execute(uint32, uint64, uint64, uint32, uint64, uint64)
 {
-    _execute(address);
+    __asm("jmp _execute");
 }

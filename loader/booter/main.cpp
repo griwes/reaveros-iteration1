@@ -63,6 +63,8 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // algorithm for this:
     // 1. map enough pages to make a copy at both destination address and address in low memory
     // 2. copy data to those pages sitting in low memory of VAS
+
+    *bout << "Preparing kernel memory...";
     
     uint64 end = Memory::Copy(pKernel, pKernelSize * 512, 0xFFFFFFFF80000000); // -2 GB
     uint64 video = Memory::Copy(pKernel + pKernelSize * 512, pKernelInitRDSize * 512, Memory::AlignToNextPage(end));
@@ -82,6 +84,8 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // that starts at 64 MiB in physical memory
     
     Memory::UpdateMemoryMap(memmap, size);
+
+    *bout << " done." << nl << "Executing kernel...";
 
     Processor::Execute(pKernel, Memory::AlignToNextPage(end), memmap, iMemoryMapSize + 1,
                        Memory::AlignToNextPage(placement), video);

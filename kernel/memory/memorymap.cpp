@@ -85,14 +85,14 @@ uint64 Memory::MemoryMap::CountUsableMemory()
 
 Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 {
-    uint32 iKernelEntryIndex = 0;
-    uint32 iAdditional = 0;
-    
+    uint64 iKernelEntryIndex = 0;
+    uint64 iAdditional = 0;
+
     while (pMemMap[iKernelEntryIndex].Type() != 0xffff)
     {
         iKernelEntryIndex++;
     }
-    
+
     Memory::MemoryMapEntry * pKernelEntry = pMemMap + iKernelEntryIndex;
     
     for (uint32 i = 0; i < iMemoryMapSize; i++, pMemMap++)
@@ -121,6 +121,6 @@ Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMap
         }
     }
 
-    this->m_pEntries = new MemoryMapEntry[iMemoryMapSize + iAdditional];
+    this->m_pEntries = new MemoryMapEntry[iMemoryMapSize + iAdditional];    
     this->m_iSize = iMemoryMapSize + iAdditional;
 }

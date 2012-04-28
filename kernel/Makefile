@@ -1,6 +1,6 @@
 CC=g++
 LD=ld
-CFLAGS=-m64 -c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno-exceptions -fno-rtti -fno-stack-protector -std=c++0x
+CFLAGS=-c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno-exceptions -fno-rtti -fno-stack-protector -std=c++0x -ffreestanding -mcmodel=large -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow -mno-red-zone
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=main.cpp processor/processor.cpp memory/memory.cpp memory/memorymap.cpp lib/string.cpp
 OBJECTS=$(SOURCES:.cpp=.o)

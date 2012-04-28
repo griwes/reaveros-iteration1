@@ -40,10 +40,16 @@ namespace Memory
     class MemoryMapEntry
     {
     public:
-        String TypeDescription();
-        inline uint32 Type()
+        MemoryMapEntry() {}
+        MemoryMapEntry(uint64 b, uint64 l, uint32 t)
+                : m_iBase(b), m_iLength(l), m_iType(t)
         {
-            return this->m_iType;
+        }
+
+        String TypeDescription();
+        inline uint32 & Type()
+        {
+            return (uint32 &)this->m_iType;
         }
         inline uint64 & Base()
         {

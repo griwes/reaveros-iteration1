@@ -38,6 +38,7 @@ namespace Memory
 
 void * operator new(uint64 iSize)
 {
+    
     if (!Memory::pPlacementAddress)
     {
 //        return Memory::KernelHeap->Alloc(iSize);
@@ -75,8 +76,6 @@ void Memory::PreInitialize(void * pPlacementAddress)
 void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 {
     MemoryMap * pMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
-//    Memory::KernelHeap = new Memory::Heap(pMemoryMap->CreateFreePageStack());
-    Memory::pPlacementAddress = 0;
 
     return;
 }

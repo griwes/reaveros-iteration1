@@ -149,10 +149,13 @@ _setup_gdt:
     ret
 
 _execute:
+    mov     esp, ebp
+
     pop     eax
     pop     eax
-    
-    push    word 0x8
+    pop     eax
+
+    push    dword 0x8
     push    eax
 
     retf

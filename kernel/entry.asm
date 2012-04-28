@@ -40,5 +40,15 @@ entry:
 times 16 - ($-$$) db 0
 
 highmemory:
-    hlt
+    push    rbp
+    mov     rbp, rsp
+
+    add     rsp, 8
+
+    mov     rdi, qword [rsp]
+    mov     rsi, qword [rsp + 8]
+    mov     edx, dword [rsp + 16]
+    mov     rcx, qword [rsp + 20]
+    mov     r8, qword [rsp + 28]
+
     jmp     kernel_main
