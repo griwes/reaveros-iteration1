@@ -45,6 +45,7 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     Screen::Initialize(pVideoMode, pFont);
 
     *bout << "Booter: ReaverOS' bootloader 0.2" << nl;
+    *bout << "Copyright (c) 2011-2012 Reaver Project Team" << nl << nl;
     *bout << "Reading memory map..." << nl << nl;
 
     Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
@@ -76,14 +77,15 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // in it's own, completely known space (part of boot protocol), as well as additional 16 MiB
     // for additional stuff to be put on placement stack
 
-    uint64 size = Memory::CountPagingStructures(0xFFFFFFFF80000000, Memory::AlignToNextPage(placement) + 16 * 1024 * 1024);
+    uint64 size = Memory::CountPagingStructures(0xFFFFFFFF80000000, Memory::AlignToNextPage(placement)
+                                + 8 * 1024 * 1024 + (Memory::TotalMemory / (4 * 1024)) * 8);
 
     Memory::Map(placement, placement + size + 16 * 1024 * 1024, Memory::iFirstFreePageAddress);
     
     // and this one updates memory map, setting size to type 0xFFFF entry (kernel-used memory)
     // that starts at 64 MiB in physical memory
     
-    Memory::UpdateMemoryMap(memmap, size);
+    Memory::UpdateMemoryMap(size);
 
     *bout << " done." << nl << "Executing kernel...";
 

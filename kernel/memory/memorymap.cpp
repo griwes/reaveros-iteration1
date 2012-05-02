@@ -31,6 +31,10 @@
 
 #include "memorymap.h"
 #include "memory.h"
+#include "../screen/screen.h"
+
+using Screen::kout;
+using Screen::nl;
 
 String Memory::MemoryMapEntry::TypeDescription()
 {
@@ -72,7 +76,7 @@ uint64 Memory::MemoryMap::CountUsableMemory()
 {
     uint64 iSize = 0;
 
-    for (int32 i = 0; i < this->m_iSize; i++)
+    for (uint32 i = 0; i < this->m_iSize; i++)
     {
         if (this->m_pEntries[i].Type() == 1)
         {
@@ -86,7 +90,9 @@ uint64 Memory::MemoryMap::CountUsableMemory()
 Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 {
     uint64 iKernelEntryIndex = 0;
-    uint64 iAdditional = 0;
+    uint64 iAdditionalBase = 0;
+    uint64 iAdditionalLength = 0;
+    uint32 iAdditionalType = 0;
 
     while (pMemMap[iKernelEntryIndex].Type() != 0xffff)
     {
@@ -95,32 +101,126 @@ Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMap
 
     Memory::MemoryMapEntry * pKernelEntry = pMemMap + iKernelEntryIndex;
     
-    for (uint32 i = 0; i < iMemoryMapSize; i++, pMemMap++)
+    for (uint32 i = 0; i < iMemoryMapSize; i++)
     {
-        if (pMemMap->Base() >= pKernelEntry->Base() && pMemMap->Base() < pKernelEntry->End())
+        if (pMemMap[i].Base() >= pKernelEntry->Base() && pMemMap[i].Base() < pKernelEntry->End())
         {
-            if (pMemMap->End() <= pKernelEntry->End())
+            if (pMemMap[i].End() <= pKernelEntry->End())
             {
-                Memory::Zero(pMemMap);
+                Memory::Zero(&pMemMap[i]);
             }
 
             else
             {
-                pMemMap->Base() = pKernelEntry->End();
+                pMemMap[i].Base() = pKernelEntry->End();
             }
         }
 
-        else if (pMemMap->End() > pKernelEntry->Base() && pMemMap->End() < pKernelEntry->End())
+        else if (pMemMap[i].End() > pKernelEntry->Base() && pMemMap[i].End() < pKernelEntry->End())
         {
-            pMemMap->Length() = pKernelEntry->Base() - pMemMap->Base() - 1;
+            pMemMap[i].Length() = pKernelEntry->Base() - pMemMap[i].Base() - 1;
         }
 
-        else if (pMemMap->Base() < pKernelEntry->Base() && pMemMap->End() > pKernelEntry->End())
+        else if (pMemMap[i].Base() < pKernelEntry->Base() && pMemMap[i].End() > pKernelEntry->End())
         {
-            iAdditional++;
+            iAdditionalBase = pKernelEntry->End() - 1;
+            iAdditionalLength = pMemMap[i].End() - iAdditionalBase - 1;
+            iAdditionalType = pMemMap[i].Type();
         }
     }
 
-    this->m_pEntries = new MemoryMapEntry[iMemoryMapSize + iAdditional];    
-    this->m_iSize = iMemoryMapSize + iAdditional;
+    this->m_pEntries = new MemoryMapEntry[iMemoryMapSize + (iAdditionalLength != 0 ? 1 : 0)];
+    this->m_iSize = iMemoryMapSize + (iAdditionalLength != 0 ? 1 : 0);
+
+    uint64 iLowestBase = 0xFFFFFFFFFFFFFFFF;
+    uint64 iLowestIndex = 0;
+    for (uint32 i = 0, j = 0; i < iMemoryMapSize; i++, j++)
+    {
+        iLowestBase = 0xFFFFFFFFFFFFFFFF;
+        iLowestIndex = 0;
+        
+        for (uint32 k = 0; k < iMemoryMapSize; k++)
+        {
+            if (pMemMap[k].Base() < iLowestBase && pMemMap[k].Type() != 0)
+            {
+                iLowestBase = pMemMap[k].Base();
+                iLowestIndex = k;
+            }
+        }
+
+        if (iAdditionalBase < iLowestBase)
+        {
+            this->m_pEntries[j].Type() = iAdditionalType;
+            this->m_pEntries[j].Base() = iAdditionalBase;
+            this->m_pEntries[j].Length() = iAdditionalLength;
+
+            j++;
+        }
+
+        this->m_pEntries[j] = pMemMap[iLowestIndex];
+
+        pMemMap[iLowestIndex].Type() = 0;
+    }
+}
+
+void Memory::MemoryMap::PrintMemoryMap()
+{
+    Screen::Console::Mode m = kout->GetMode();
+    kout->Hex(16, true);
+
+    *kout << "Base address       | Length             | Type" << nl;
+    *kout << "-------------------|--------------------|----------------------------" << nl;
+
+    for (uint32 i = 0; i < this->m_iSize; i++)
+    {
+        *kout << Memory::pMemoryMap->GetEntries()[i].Base();
+        *kout << " | ";
+        *kout << Memory::pMemoryMap->GetEntries()[i].Length();
+        *kout << " | ";
+        *kout << Memory::pMemoryMap->GetEntries()[i].TypeDescription();
+        *kout << nl;
+    }
+
+    *kout << "-------------------|--------------------|----------------------------" << nl;
+    
+    uint64 total = Memory::pMemoryMap->CountUsableMemory();
+    uint64 gbs = total >> 30;
+    uint64 mbs = (total >> 20) & 1023;
+    uint64 kbs = (total >> 10) & 1023;
+
+    kout->Dec();
+    *kout << "Total usable memory: " << gbs << " GiB " << mbs << " MiB " << kbs << " KiB" << nl << nl;
+    
+    kout->SetMode(m);
+}
+
+uint32 Memory::MemoryMap::GetNumberOfEntries()
+{
+    return this->m_iSize;
+}
+
+uint32 Memory::MemoryMap::GetMemoryType(uint64 addr)
+{
+    for (uint32 i = 0; i < this->m_iSize; i++)
+    {
+        if (this->m_pEntries[i].Base() <= addr && this->m_pEntries[i].End() > addr)
+        {
+            return this->m_pEntries[i].Type();
+        }
+    }
+
+    return 0xdeadc0de;
+}
+
+String Memory::MemoryMap::GetMemoryTypeDescription(uint64 addr)
+{
+    for (uint32 i = 0; i < this->m_iSize; i++)
+    {
+        if (this->m_pEntries[i].Base() <= addr && this->m_pEntries[i].End() > addr)
+        {
+            return this->m_pEntries[i].TypeDescription();
+        }
+    }
+    
+    return String::MakeConst("Address not available");
 }

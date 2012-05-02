@@ -44,6 +44,7 @@ extern "C"
 
 void * Memory::pPlacement;
 uint64 Memory::iFirstFreePageAddress;
+uint64 Memory::TotalMemory;
 
 const char * MemoryMapEntry::Type()
 {
@@ -118,15 +119,17 @@ void Memory::PrintMemoryMap(MemoryMapEntry * pMap, uint32 count)
         }
 
         *bout << pMap->Length << " | " << pMap->Type() << nl;
-        *bout << "-------------------|--------------------|----------------------------" << nl;
         pMap++;
     }
 
     bout->Dec();
 
+    *bout << "-------------------|--------------------|----------------------------" << nl;
     *bout << "Total memory available: " << iTotalMemory / (1024 * 1024 * 1024) << " GiB " <<
                 (iTotalMemory % (1024 * 1024 * 1024)) / (1024 * 1024) << " MiB " <<
-                (iTotalMemory % (1024 * 1024)) / 1024 << " KiB" << nl;
+                (iTotalMemory % (1024 * 1024)) / 1024 << " KiB" << nl << nl;
+
+    Memory::TotalMemory = iTotalMemory;
 }
 
 void * Memory::Place(uint32 size)
@@ -325,7 +328,7 @@ uint64 Memory::CreateMemoryMap(MemoryMapEntry * pMemoryMap, uint32 iCount, uint6
 
     MemoryMapEntry * pKernelMemoryMap = (MemoryMapEntry *)0x8000000;
     
-    for (int32 i = 0; i < iCount; i++)
+    for (uint32 i = 0; i < iCount; i++)
     {
         pKernelMemoryMap->type = pMemoryMap[i].type;
         pKernelMemoryMap->Base = pMemoryMap[i].Base;
@@ -416,7 +419,7 @@ uint64 Memory::CountPagingStructures(uint64 pBegin, uint64 pEnd)
     return iSize;
 }
 
-void Memory::UpdateMemoryMap(uint64 memmap, uint64 size)
+void Memory::UpdateMemoryMap(uint64 size)
 {
     MemoryMapEntry * p = (MemoryMapEntry *)0x8000000;
 

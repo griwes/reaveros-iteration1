@@ -1,7 +1,7 @@
 /**
  * ReaverOS
  * kernel/screen/console.h
- * Base console terminal header.
+ * Base console header.
  */
 
 /**
@@ -15,7 +15,7 @@
  * arising from the use of this software.
  * 
  * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, adn to alter it and redistribute it
+ * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  * 
  * 1. The origin of this software must not be misrepresented; you must not
@@ -32,11 +32,28 @@
 #ifndef _rose_kernel_screen_console_h_
 #define _rose_kernel_screen_console_h_
 
+#include "../types.h"
+#include "../lib/string.h"
+
 namespace Screen
 {
     class Console
     {
+    public:
+        enum Mode
+        {
+            
+        };
+
+        void Hex(uint64 = 0, bool = false);
+        void Dec(uint64 = 0); 
         
+        Console & operator<<(char);
+        Console & operator<<(const char *);
+        Console & operator<<(const String &);
+
+        Mode GetMode();
+        void SetMode(Mode);
     };
 }
 

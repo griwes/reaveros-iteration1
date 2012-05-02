@@ -15,7 +15,7 @@
  * arising from the use of this software.
  * 
  * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, adn to alter it and redistribute it
+ * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  * 
  * 1. The origin of this software must not be misrepresented; you must not
@@ -44,6 +44,15 @@ namespace Memory
         MemoryMapEntry(uint64 b, uint64 l, uint32 t)
                 : m_iBase(b), m_iLength(l), m_iType(t)
         {
+        }
+
+        MemoryMapEntry & operator=(const MemoryMapEntry & rhs)
+        {
+            this->m_iBase = rhs.m_iBase;
+            this->m_iLength = rhs.m_iLength;
+            this->m_iType = rhs.m_iType;
+
+            return *this;
         }
 
         String TypeDescription();
@@ -75,6 +84,8 @@ namespace Memory
     {
     public:
         MemoryMap(MemoryMapEntry *, uint32);
+
+        void PrintMemoryMap();
         
         uint64 CountUsableMemory();
         uint32 GetMemoryType(uint64);
@@ -82,8 +93,6 @@ namespace Memory
         
         MemoryMapEntry * GetEntries();
         uint32 GetNumberOfEntries();
-
-        void CreateFreePageStack();
 
     private:
         MemoryMapEntry * m_pEntries;

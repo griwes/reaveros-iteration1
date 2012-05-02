@@ -15,7 +15,7 @@
  * arising from the use of this software.
  * 
  * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, adn to alter it and redistribute it
+ * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  * 
  * 1. The origin of this software must not be misrepresented; you must not
@@ -34,14 +34,17 @@
 namespace Memory
 {
     void * pPlacementAddress = 0;
+    Memory::MemoryMap * pMemoryMap = 0;
+    Memory::Heap * KernelHeap = 0;
+    Paging::PML4 * KernelPML4 = 0;
+    Paging::PageDirectory * KernelSpace[2] = {0, 0};
 }
 
 void * operator new(uint64 iSize)
 {
-    
     if (!Memory::pPlacementAddress)
     {
-//        return Memory::KernelHeap->Alloc(iSize);
+        return Memory::KernelHeap->Alloc(iSize);
     }
 
     void * p = Memory::pPlacementAddress;
@@ -50,10 +53,10 @@ void * operator new(uint64 iSize)
     return p;
 }
 
-// hope no-one will ever try to free placement address...
+// hope no-one will ever try to free placed memory...
 void operator delete(void * pPointer)
 {
-//    Memory::KernelHeap->Free(pPointer);
+    Memory::KernelHeap->Free(pPointer);
 }
 
 void * operator new[](uint64 iSize)
@@ -63,7 +66,19 @@ void * operator new[](uint64 iSize)
 
 void operator delete[](void * pPointer)
 {
-//    Memory::KernelHeap->Free(pPointer);
+    Memory::KernelHeap->Free(pPointer);
+}
+
+void Memory::AlignPlacementToPage()
+{
+    Memory::pPlacementAddress = Memory::AlignToNextPage((uint64)Memory::pPlacementAddress);
+}
+
+void * Memory::AlignToNextPage(uint64 p)
+{
+    p += 4095;
+    p &= 4096;
+    return (void *)p;
 }
 
 void Memory::PreInitialize(void * pPlacementAddress)
@@ -75,7 +90,42 @@ void Memory::PreInitialize(void * pPlacementAddress)
 
 void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 {
-    MemoryMap * pMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
+    Memory::pMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
+    
+    Memory::RemapKernel();
+    Memory::CreateFreePageStack();
+    Memory::KernelHeap = new Heap;
 
     return;
+}
+
+void Memory::RemapKernel()
+{
+    Memory::MemoryMapEntry * p = (Memory::MemoryMapEntry *)0xFFFFFFFFFFFFFFFF;
+
+    for (uint64 i = 0; i < Memory::pMemoryMap->GetNumberOfEntries(); i++)
+    {
+        if (Memory::pMemoryMap->GetEntries()[i].Type() == 0xffff)
+        {
+            p = &Memory::pMemoryMap->GetEntries()[i];
+            break;
+        }
+    }
+
+    // unfortunately, there is no way to panic yet...
+    if (p == (Memory::MemoryMapEntry *)0xFFFFFFFFFFFFFFFF)
+    {
+        for (;;);
+    }
+
+    Memory::AlignPlacementToPage();
+
+    Memory::KernelPML4 = new Paging::PML4;
+
+    Memory::KernelPML4->Map(0xFFFFFFFF80000000, p->Length(), p->Base());
+}
+
+void Memory::CreateFreePageStack()
+{
+
 }

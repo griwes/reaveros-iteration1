@@ -9,8 +9,8 @@ EXECUTABLE=builds/booter.img
 all: $(SOURCES) $(EXECUTABLE)
 	
 $(EXECUTABLE): $(OBJECTS) 
-	nasm -f elf -o bootstrap.o entry.asm
-	nasm -f elf -o processorasm.o processor.asm
+	yasm -f elf -o bootstrap.o entry.asm
+	yasm -f elf -o processorasm.o processor.asm
 	$(LD) $(LDFLAGS) bootstrap.o processorasm.o $(OBJECTS) -o $@ -L/usr/lib/gcc/x86_64-linux-gnu/4.6/32/ -lgcc
 
 .cpp.o:

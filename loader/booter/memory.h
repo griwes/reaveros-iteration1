@@ -59,13 +59,14 @@ namespace Memory
     void Map(uint64, uint64, uint64 &, bool = false);
     uint64 CountPagingStructures(uint64, uint64);
 
-    void UpdateMemoryMap(uint64, uint64);
+    void UpdateMemoryMap(uint64);
     
     uint64 Copy(uint32, uint32, uint64);
     uint64 CreateMemoryMap(MemoryMapEntry *, uint32, uint64);
     
     extern void * pPlacement;
     extern uint64 iFirstFreePageAddress;
+    extern uint64 TotalMemory;
 }
 
 #endif

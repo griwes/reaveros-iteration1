@@ -15,7 +15,7 @@
  * arising from the use of this software.
  * 
  * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, adn to alter it and redistribute it
+ * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  * 
  * 1. The origin of this software must not be misrepresented; you must not
@@ -34,11 +34,19 @@
 
 #include "../types.h"
 #include "memorymap.h"
+#include "heap.h"
+#include "paging.h"
 
 namespace Memory
 {
     void PreInitialize(void *);
     void Initialize(Memory::MemoryMapEntry *, uint32);
+
+    void RemapKernel();
+    void CreateFreePageStack();
+
+    void AlignPlacementToPage();
+    void * AlignToNextPage(uint64);
 
     template<typename T>
     void Zero(T * p)
@@ -61,8 +69,12 @@ namespace Memory
             *(char *)(p++) = 0;
         }
     }
-    
+
     extern void * pPlacementAddress;
+    extern Memory::MemoryMap * pMemoryMap;
+    extern Memory::Heap * KernelHeap;
+    extern Paging::PML4 * KernelPML4;
+    extern Paging::PageDirectory * KernelSpace[2];
 }
 
 #endif

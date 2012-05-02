@@ -15,7 +15,7 @@
  * arising from the use of this software.
  * 
  * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, adn to alter it and redistribute it
+ * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  * 
  * 1. The origin of this software must not be misrepresented; you must not
@@ -51,17 +51,17 @@ extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Mem
     Memory::PreInitialize(pPlacementAddress);
     Memory::Initialize(pMemoryMap, iMemoryMapSize);
 
-    for (;;) ;
-
-    Processor::Initialize();
+/*    Processor::Initialize();
     
     Screen::Initialize(pVideoMode);
+    
+    for (;;) ;
     
 /*    using Screen::kout;
     using Screen::nl;
     
     kout << "ReaverOS 0.1: Cotyledon" << nl;
-    kout << "Copyright (C) 2011-2012 Reaver Project Team: Michał Dominiak" << nl << nl;
+    kout << "Copyright (C) 2011-2012 Reaver Project Team" << nl << nl;
     
     for (;;) ;
     
