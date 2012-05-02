@@ -51,6 +51,8 @@ extern "C" void __attribute__((cdecl)) kernel_main(InitRD::InitRD * pInitRD, Mem
     Memory::PreInitialize(pPlacementAddress);
     Memory::Initialize(pMemoryMap, iMemoryMapSize);
 
+    for (;;);
+
 /*    Processor::Initialize();
     
     Screen::Initialize(pVideoMode);

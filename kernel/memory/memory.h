@@ -49,24 +49,36 @@ namespace Memory
     void * AlignToNextPage(uint64);
 
     template<typename T>
-    void Zero(T * p)
+    void Zero(T * ptr)
     {
         uint32 iSize = sizeof(T);
+        char * p = (char *)ptr;
         
-        for (uint32 i = 0; i < iSize; i++)
+        for (uint32 i = 0; i < iSize; i += 4)
         {
-            *(char *)(p++) = 0;
+            *(uint32 *)(p + i) = 0;
+        }
+
+        for (uint32 i = 0; i < iSize % 4; i++)
+        {
+            p[i] = 0;
         }
     }
     
     template<typename T>
-    void Zero(T * p, uint32 iCount)
+    void Zero(T * ptr, uint32 iCount)
     {
         uint32 iSize = sizeof(T) * iCount;
-        
-        for (uint32 i = 0; i < iSize; i++)
+        char * p = (char *)ptr;
+
+        for (uint32 i = 0; i < iSize; i += 4)
         {
-            *(char *)(p++) = 0;
+            *(uint32 *)(p + i) = 0;
+        }
+
+        for (uint32 i = 0; i < iSize % 4; i++)
+        {
+            p[i] = 0;
         }
     }
 
@@ -75,6 +87,7 @@ namespace Memory
     extern Memory::Heap * KernelHeap;
     extern Paging::PML4 * KernelPML4;
     extern Paging::PageDirectory * KernelSpace[2];
+    extern uint64 StackStart;
 }
 
 #endif

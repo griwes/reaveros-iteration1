@@ -103,6 +103,11 @@ Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMap
     
     for (uint32 i = 0; i < iMemoryMapSize; i++)
     {
+        if (pMemMap[i].Type() == 0xffff)
+        {
+            continue;
+        }
+
         if (pMemMap[i].Base() >= pKernelEntry->Base() && pMemMap[i].Base() < pKernelEntry->End())
         {
             if (pMemMap[i].End() <= pKernelEntry->End())
@@ -118,13 +123,13 @@ Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMap
 
         else if (pMemMap[i].End() > pKernelEntry->Base() && pMemMap[i].End() < pKernelEntry->End())
         {
-            pMemMap[i].Length() = pKernelEntry->Base() - pMemMap[i].Base() - 1;
+            pMemMap[i].Length() = pKernelEntry->Base() - pMemMap[i].Base();
         }
 
         else if (pMemMap[i].Base() < pKernelEntry->Base() && pMemMap[i].End() > pKernelEntry->End())
         {
-            iAdditionalBase = pKernelEntry->End() - 1;
-            iAdditionalLength = pMemMap[i].End() - iAdditionalBase - 1;
+            iAdditionalBase = pKernelEntry->End();
+            iAdditionalLength = pMemMap[i].End() - iAdditionalBase;
             iAdditionalType = pMemMap[i].Type();
         }
     }

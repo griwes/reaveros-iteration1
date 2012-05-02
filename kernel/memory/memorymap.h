@@ -70,7 +70,7 @@ namespace Memory
         }
         inline uint64 End()
         {
-            return this->m_iBase + this->m_iLength + 1;
+            return this->m_iBase + this->m_iLength;
         }
 
     private:

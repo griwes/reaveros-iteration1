@@ -16,4 +16,4 @@ hdd:
 	cd builds; \
 	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img stage3.img; \
 	dd if=a.img of=hdd.img conv=notrunc; \
-	bochs
+	bochs -q

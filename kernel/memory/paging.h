@@ -122,15 +122,17 @@ namespace Paging
     {
         PML4Entry Entries[512];
         PageDirectoryPointerTable * PointerTables[512];
+
+        PML4();
         
-        inline uint64 GetPhysicalAddress(PML4 * pml4, uint64 pAddr)
+        inline uint64 GetPhysicalAddress(uint64 pAddr)
         {
-            return pml4->PointerTables[(pAddr >> 39) & 511]->PageDirectories[(pAddr >> 30) & 511]->
+            return this->PointerTables[(pAddr >> 39) & 511]->PageDirectories[(pAddr >> 30) & 511]->
             PageTables[(pAddr >> 21) & 511]->Entries[(pAddr >> 12) & 511].PageAddress
             << 12 + pAddr % 4096;
         }
 
-        void Map(uint64, uint64, uint64, bool = false, bool = true, bool = false, bool = false);
+        void Map(uint64, uint64, uint64, bool = false, bool = true, bool = false, bool = false, PML4 * = 0);
     };
 }
 

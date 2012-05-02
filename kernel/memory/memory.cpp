@@ -30,6 +30,7 @@
  **/
 
 #include "memory.h"
+#include "../processor/processor.h"
 
 namespace Memory
 {
@@ -38,6 +39,7 @@ namespace Memory
     Memory::Heap * KernelHeap = 0;
     Paging::PML4 * KernelPML4 = 0;
     Paging::PageDirectory * KernelSpace[2] = {0, 0};
+    uint64 StackStart = 0;
 }
 
 void * operator new(uint64 iSize)
@@ -77,7 +79,8 @@ void Memory::AlignPlacementToPage()
 void * Memory::AlignToNextPage(uint64 p)
 {
     p += 4095;
-    p &= 4096;
+    p &= ~4095;
+    
     return (void *)p;
 }
 
@@ -93,6 +96,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::pMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
     
     Memory::RemapKernel();
+    dbg;
     Memory::CreateFreePageStack();
     Memory::KernelHeap = new Heap;
 
@@ -102,7 +106,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 void Memory::RemapKernel()
 {
     Memory::MemoryMapEntry * p = (Memory::MemoryMapEntry *)0xFFFFFFFFFFFFFFFF;
-
+    
     for (uint64 i = 0; i < Memory::pMemoryMap->GetNumberOfEntries(); i++)
     {
         if (Memory::pMemoryMap->GetEntries()[i].Type() == 0xffff)
@@ -121,8 +125,14 @@ void Memory::RemapKernel()
     Memory::AlignPlacementToPage();
 
     Memory::KernelPML4 = new Paging::PML4;
+    Memory::KernelPML4->Map(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());        
+    Memory::KernelPML4->Map(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, 16 * 1024, p->End() - 16 * 1024);
+    // 1-page gap above is current kernel stack control - 4 KiB should be enough for boot-up kernel stack
 
-    Memory::KernelPML4->Map(0xFFFFFFFF80000000, p->Length(), p->Base());
+    Memory::StackStart = 0xFFFFFFFF80000000 + p->Length();
+    Processor::LoadCR3((uint64)Memory::KernelPML4 - 0xFFFFFFFF80000000 + p->Base());
+    
+    return;
 }
 
 void Memory::CreateFreePageStack()

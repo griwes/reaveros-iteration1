@@ -28,3 +28,25 @@
  * Michał "Griwes" Dominiak
  * 
  **/
+
+#include "processor.h"
+
+extern "C"
+{
+    void _load_cr3(uint64);
+}
+
+void Processor::Initialize()
+{
+
+}
+
+void Processor::LoadCR3(uint64 p)
+{
+    _load_cr3(p);
+}
+
+void Processor::PrintStatus()
+{
+
+}

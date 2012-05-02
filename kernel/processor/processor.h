@@ -33,12 +33,14 @@
 #define _rose_kernel_processor_processor_h_
 
 #include "../types.h"
+#include "../memory/paging.h"
 
 namespace Processor
 {
     void Initialize();
-    
     void PrintStatus();
+
+    void LoadCR3(uint64);
 }
 
 #endif

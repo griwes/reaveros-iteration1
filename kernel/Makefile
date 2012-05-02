@@ -16,7 +16,8 @@ all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	yasm -f elf64 -o bootstrap.o entry.asm
-	$(LD) $(LDFLAGS) bootstrap.o $(OBJECTS) -o $@
+	yasm -f elf64 -o processor.o processor/processor.asm
+	$(LD) $(LDFLAGS) bootstrap.o processor.o $(OBJECTS) -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

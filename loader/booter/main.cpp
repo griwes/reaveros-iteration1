@@ -78,16 +78,20 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // for additional stuff to be put on placement stack
 
     uint64 size = Memory::CountPagingStructures(0xFFFFFFFF80000000, Memory::AlignToNextPage(placement)
-                                + 8 * 1024 * 1024 + (Memory::TotalMemory / (4 * 1024)) * 8);
-
-    Memory::Map(placement, placement + size + 16 * 1024 * 1024, Memory::iFirstFreePageAddress);
+                                + 16 * 1024 * 1024 + Memory::TotalMemory / 512);
+    size += Memory::AlignToNextPage(16 * 1024 * 1024 + Memory::TotalMemory / 512);
+    
+    Memory::Map(placement, placement + size, Memory::iFirstFreePageAddress);
     
     // and this one updates memory map, setting size to type 0xFFFF entry (kernel-used memory)
     // that starts at 64 MiB in physical memory
     
-    Memory::UpdateMemoryMap(size);
+    Memory::UpdateMemoryMap(placement - 0xFFFFFFFF80000000 + size);
 
-    *bout << " done." << nl << "Executing kernel...";
+    *bout << " done." << nl;
+    bout->Hex();
+    *bout << "Memory from " << 0xFFFFFFFF80000000 << " to " << placement + size << " available for kernel usage." << nl;
+    *bout << "Executing kernel...";
 
     Processor::Execute(pKernel, Memory::AlignToNextPage(end), memmap, iMemoryMapSize + 1,
                        Memory::AlignToNextPage(placement), video);

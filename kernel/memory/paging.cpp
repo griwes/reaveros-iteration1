@@ -32,9 +32,20 @@
 #include "paging.h"
 #include "memory.h"
 
-void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical, bool bCacheDisable,
-                        bool bReadWrite, bool bUser, bool bWriteThrough)
+Paging::PML4::PML4()
 {
+    Memory::Zero(&this->Entries, 512);
+    Memory::Zero(&this->PointerTables, 512);
+}
+
+void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical, bool bCacheDisable,
+                        bool bReadWrite, bool bUser, bool bWriteThrough, PML4 * old)
+{
+    if (old == (PML4 *)0)
+    {
+        old = this;
+    }
+
     uint64 pEnd = pBaseVirtual + iLength;
     
     uint64 startpml4e = (pBaseVirtual >> 39) & 511;
@@ -60,14 +71,14 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
         {
             pdpt = new PageDirectoryPointerTable;
             
-            Memory::Zero((char *)pdpt, sizeof(PageDirectoryPointerTable));
+            Memory::Zero(pdpt);
             
             this->Entries[startpml4e].Present = 1;
-            this->Entries[startpml4e].PDPTAddress = (uint64)pdpt >> 12;
+            this->Entries[startpml4e].PDPTAddress = old->GetPhysicalAddress((uint64)pdpt) >> 12;
             
             this->PointerTables[startpml4e] = pdpt;
         }
-        
+
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
@@ -82,10 +93,10 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
             {
                 pd = new PageDirectory;
                 
-                Memory::Zero((char *)pd, sizeof(PageDirectory));
+                Memory::Zero(pd);
                 
                 pdpt->Entries[startpdpte].Present = 1;
-                pdpt->Entries[startpdpte].PageDirectoryAddress = (uint64)pd >> 12;
+                pdpt->Entries[startpdpte].PageDirectoryAddress = old->GetPhysicalAddress((uint64)pd) >> 12;
                 
                 pdpt->PageDirectories[startpdpte] = pd;
             }
@@ -104,10 +115,10 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                 {
                     pt = new PageTable;
                     
-                    Memory::Zero((char *)pt, sizeof(PageTable));
+                    Memory::Zero(pt);
                     
                     pd->Entries[startpde].Present = 1;
-                    pd->Entries[startpde].PageTableAddress = (uint64)pt >> 12;
+                    pd->Entries[startpde].PageTableAddress = old->GetPhysicalAddress((uint64)pt) >> 12;
                     
                     pd->PageTables[startpde] = pt;
                 }
