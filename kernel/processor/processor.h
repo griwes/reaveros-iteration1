@@ -41,6 +41,7 @@ namespace Processor
     void PrintStatus();
 
     void LoadCR3(uint64);
+    Paging::PML4 * GetCR3();
 }
 
 #endif

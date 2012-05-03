@@ -135,14 +135,17 @@ void Memory::PrintMemoryMap(MemoryMapEntry * pMap, uint32 count)
 void * Memory::Place(uint32 size)
 {
     void * ret = Memory::pPlacement;
-    Memory::pPlacement += size;
+    uint32 _ = (uint32)Memory::pPlacement;
+    _ += size;
+    Memory::pPlacement = (void *)_;
+    
     return ret;
 }
 
 void * Memory::PlacePageAligned(uint32 size)
 {
-    Memory::pPlacement += 4095;
     uint32 _ = (uint32)Memory::pPlacement;
+    _ += 4095;
     _ &= ~(uint32)4095;
     Memory::pPlacement = (void *)_;
     

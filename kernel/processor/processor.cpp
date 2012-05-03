@@ -34,6 +34,7 @@
 extern "C"
 {
     void _load_cr3(uint64);
+    uint64 _get_cr3();
 }
 
 void Processor::Initialize()
@@ -44,6 +45,11 @@ void Processor::Initialize()
 void Processor::LoadCR3(uint64 p)
 {
     _load_cr3(p);
+}
+
+Paging::PML4 * Processor::GetCR3()
+{
+    return (Paging::PML4 *)_get_cr3();
 }
 
 void Processor::PrintStatus()

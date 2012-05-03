@@ -50,7 +50,8 @@ void * operator new(uint64 iSize)
     }
 
     void * p = Memory::pPlacementAddress;
-    Memory::pPlacementAddress += iSize;
+    uint64 _ = (uint64)Memory::pPlacementAddress + iSize;
+    Memory::pPlacementAddress = (void *)_;
 
     return p;
 }
@@ -79,8 +80,8 @@ void Memory::AlignPlacementToPage()
 void * Memory::AlignToNextPage(uint64 p)
 {
     p += 4095;
-    p &= ~4095;
-    
+    p &= ~(uint64)4095;
+
     return (void *)p;
 }
 
@@ -96,7 +97,6 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::pMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
     
     Memory::RemapKernel();
-    dbg;
     Memory::CreateFreePageStack();
     Memory::KernelHeap = new Heap;
 
@@ -122,15 +122,17 @@ void Memory::RemapKernel()
         for (;;);
     }
 
+    // the following wastes few KiBs of memory - but who cares, when there are GiBs of RAM?
     Memory::AlignPlacementToPage();
-
-    Memory::KernelPML4 = new Paging::PML4;
-    Memory::KernelPML4->Map(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());        
+    Memory::KernelPML4 = new Paging::PML4(p->Base());
+    Memory::AlignPlacementToPage();
+    
+    Memory::KernelPML4->Map(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());
     Memory::KernelPML4->Map(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, 16 * 1024, p->End() - 16 * 1024);
     // 1-page gap above is current kernel stack control - 4 KiB should be enough for boot-up kernel stack
 
     Memory::StackStart = 0xFFFFFFFF80000000 + p->Length();
-    Processor::LoadCR3((uint64)Memory::KernelPML4 - 0xFFFFFFFF80000000 + p->Base());
+    Processor::LoadCR3(Memory::KernelPML4->GetPhysicalAddress((uint64)Memory::KernelPML4) & ~(uint64)4095);
     
     return;
 }

@@ -34,11 +34,18 @@ bits    64
 ; extern "C"
 ; {
 ;     void _load_cr3(uint64);
+;     uint64 _get_cr3();
 ; }
 ;
 
 global  _load_cr3
+global  _get_cr3
 
 _load_cr3:
     mov     cr3, rdi
+    ret
+
+_get_cr3:
+    xor     rax, rax
+    mov     rax, cr3
     ret

@@ -32,7 +32,7 @@
 #include "terminal.h"
 
 Screen::Terminal::Terminal(Screen::TerminalDriver * pDrv, String sName)
-        : m_pDriver(pDrv), m_sName(sName)
+            : m_sName(sName), m_pDriver(pDrv)
 {
 }
 

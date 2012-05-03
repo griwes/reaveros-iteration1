@@ -160,7 +160,8 @@ private:
 template<typename T>
 OutputStream & operator << (OutputStream &s, T i)
 {
-    if (i < 0 && s.m_iBase == 10)
+    // first part for the sake of leaving warning away
+    if (!(i > 0 || i == 0) && s.m_iBase == 10)
     {
         s.m_pVideoMode->PrintCharacter('-');
         i = -i;
