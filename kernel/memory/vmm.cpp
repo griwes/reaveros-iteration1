@@ -1,7 +1,7 @@
 /**
  * ReaverOS
- * kernel/memory/heap.cpp
- * Kernel heap implementation.
+ * kernel/memory/vmm.cpp
+ * Virtual memory manager implementation.
  */
 
 /**
@@ -29,24 +29,27 @@
  *
  **/
 
-#include "heap.h"
+#include "vmm.h"
+#include "../scheduler/scheduler.h"
+#include "memory.h"
 
-Memory::Heap::Heap()
+void Memory::VMM::MapPage(uint64 pAddr)
 {
-    
+    if (!Scheduler::Initialized)
+    {
+        uint64 physical = Memory::Pages->Pop();
+        Memory::KernelPML4->Map(pAddr, 4 * 1024, physical);
+
+        return;
+    }
 }
 
-Memory::Heap::~Heap()
+void Memory::VMM::UnmapPage(uint64 pAddr)
 {
-
-}
-
-void * Memory::Heap::Alloc(uint64 )
-{
-
-}
-
-void Memory::Heap::Free(void * )
-{
-
+    if (!Scheduler::Initialized)
+    {
+        Memory::Pages->Push(Memory::KernelPML4->Unmap(pAddr));
+        
+        return;
+    }
 }

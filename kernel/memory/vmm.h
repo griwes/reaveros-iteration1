@@ -1,7 +1,7 @@
 /**
  * ReaverOS
- * kernel/memory/heap.cpp
- * Kernel heap implementation.
+ * kernel/memory/vmm.h
+ * Virtual memory manager header.
  */
 
 /**
@@ -29,24 +29,18 @@
  *
  **/
 
-#include "heap.h"
+#ifndef __rose_kernel_memory_vmm_h__
+#define __rose_kernel_memory_vmm_h__
 
-Memory::Heap::Heap()
+#include "../types.h"
+
+namespace Memory
 {
-    
+    namespace VMM
+    {
+        void MapPage(uint64);
+        void UnmapPage(uint64);
+    }
 }
 
-Memory::Heap::~Heap()
-{
-
-}
-
-void * Memory::Heap::Alloc(uint64 )
-{
-
-}
-
-void Memory::Heap::Free(void * )
-{
-
-}
+#endif

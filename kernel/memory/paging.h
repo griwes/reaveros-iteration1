@@ -142,6 +142,7 @@ namespace Paging
         }
 
         void Map(uint64, uint64, uint64, bool = false, bool = true, bool = false, bool = false, PML4 * = 0);
+        uint64 Unmap(uint64);
     };
 }
 

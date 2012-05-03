@@ -1,7 +1,7 @@
 /**
  * ReaverOS
- * kernel/memory/heap.cpp
- * Kernel heap implementation.
+ * kernel/memory/pagestack.h
+ * Page stack header.
  */
 
 /**
@@ -29,24 +29,29 @@
  *
  **/
 
-#include "heap.h"
+#ifndef __rose_kernel_memory_pagestack_h__
+#define __rose_kernel_memory_pagestack_h__
 
-Memory::Heap::Heap()
+#include "../types.h"
+#include "memorymap.h"
+
+namespace Memory
 {
-    
+    class PageStack
+    {
+    public:
+        PageStack(Memory::MemoryMap *);
+        ~PageStack();
+        
+        uint64 Pop();
+        void Push(uint64);
+
+        uint64 Count();
+    private:
+        uint64 * m_pStack;
+        uint64 m_pLastPage;
+        uint64 m_iSize;
+    };
 }
 
-Memory::Heap::~Heap()
-{
-
-}
-
-void * Memory::Heap::Alloc(uint64 )
-{
-
-}
-
-void Memory::Heap::Free(void * )
-{
-
-}
+#endif

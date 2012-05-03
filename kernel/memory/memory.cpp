@@ -40,6 +40,7 @@ namespace Memory
     Paging::PML4 * KernelPML4 = 0;
     Paging::PageDirectory * KernelSpace[2] = {0, 0};
     uint64 StackStart = 0;
+    Memory::PageStack * Pages = 0;
 }
 
 void * operator new(uint64 iSize)
@@ -97,7 +98,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::pMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
     
     Memory::RemapKernel();
-    Memory::CreateFreePageStack();
+    Memory::Pages = new PageStack(Memory::pMemoryMap);
     Memory::KernelHeap = new Heap;
 
     return;
@@ -133,11 +134,8 @@ void Memory::RemapKernel()
 
     Memory::StackStart = 0xFFFFFFFF80000000 + p->Length();
     Processor::LoadCR3(Memory::KernelPML4->GetPhysicalAddress((uint64)Memory::KernelPML4) & ~(uint64)4095);
+
+    Memory::KernelPML4->m_iBase = 0;
     
     return;
-}
-
-void Memory::CreateFreePageStack()
-{
-
 }

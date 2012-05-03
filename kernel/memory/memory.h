@@ -36,6 +36,7 @@
 #include "memorymap.h"
 #include "heap.h"
 #include "paging.h"
+#include "pagestack.h"
 
 namespace Memory
 {
@@ -43,7 +44,6 @@ namespace Memory
     void Initialize(Memory::MemoryMapEntry *, uint32);
 
     void RemapKernel();
-    void CreateFreePageStack();
 
     void AlignPlacementToPage();
     void * AlignToNextPage(uint64);
@@ -88,6 +88,7 @@ namespace Memory
     extern Paging::PML4 * KernelPML4;
     extern Paging::PageDirectory * KernelSpace[2];
     extern uint64 StackStart;
+    extern Memory::PageStack * Pages;
 }
 
 #endif

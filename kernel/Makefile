@@ -6,9 +6,10 @@ CFLAGS=-c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=main.cpp cxx.cpp \
 	processor/processor.cpp \
-	memory/memory.cpp memory/memorymap.cpp memory/paging.cpp memory/heap.cpp \
+	memory/memory.cpp memory/memorymap.cpp memory/paging.cpp memory/heap.cpp memory/pagestack.cpp memory/vmm.cpp \
 	lib/string.cpp \
-	screen/screen.cpp screen/terminal.cpp screen/console.cpp
+	screen/screen.cpp screen/terminal.cpp screen/console.cpp \
+	scheduler/scheduler.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=builds/kernel.img
 

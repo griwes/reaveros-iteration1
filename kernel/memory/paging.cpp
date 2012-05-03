@@ -180,3 +180,11 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
         }
     }
 }
+
+uint64 Paging::PML4::Unmap(uint64 pAddr)
+{
+    uint64 physical = this->GetPhysicalAddress(pAddr);
+    Memory::Zero(&this->PointerTables[(pAddr >> 39) & 511]->PageDirectories[(pAddr >> 30) & 511]->PageTables[(pAddr >> 21) & 511]
+                    ->Entries[(pAddr >> 39) & 511]);
+    return physical;
+}
