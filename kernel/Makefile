@@ -5,7 +5,7 @@ CFLAGS=-c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno
 		-mno-sse3 -mno-3dnow -mno-red-zone
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=main.cpp cxx.cpp \
-	processor/processor.cpp \
+	processor/processor.cpp processor/synchronization.cpp \
 	memory/memory.cpp memory/memorymap.cpp memory/paging.cpp memory/heap.cpp memory/pagestack.cpp memory/vmm.cpp \
 	lib/string.cpp \
 	screen/screen.cpp screen/terminal.cpp screen/console.cpp \
@@ -18,7 +18,8 @@ all: $(SOURCES) $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	yasm -f elf64 -o bootstrap.o entry.asm
 	yasm -f elf64 -o processor.o processor/processor.asm
-	$(LD) $(LDFLAGS) bootstrap.o processor.o $(OBJECTS) -o $@
+	yasm -f elf64 -o synchronization.o processor/synchronization.asm
+	$(LD) $(LDFLAGS) bootstrap.o processor.o synchronization.o $(OBJECTS) -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

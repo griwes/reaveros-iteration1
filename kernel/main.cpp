@@ -59,7 +59,7 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     
     for (;;) ;
     
-/*    using Screen::kout;
+    using Screen::kout;
     using Screen::nl;
     
     kout << "ReaverOS 0.1: Cotyledon" << nl;

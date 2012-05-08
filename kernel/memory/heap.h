@@ -33,17 +33,59 @@
 #define __rose_kernel_memory_heap_h__
 
 #include "../types.h"
+#include "../processor/synchronization.h"
 
 namespace Memory
 {
+    struct AllocationBlockFooter;
+    
+    struct AllocationBlockHeader
+    {
+        uint32 Magic;
+        uint32 Size;
+        AllocationBlockHeader * Smaller;
+        AllocationBlockHeader * Bigger;
+
+        inline AllocationBlockFooter * Footer()
+        {
+            return (AllocationBlockFooter *)((uint8 *)this + sizeof(AllocationBlockHeader) + this->Size);
+        }
+    };
+
+    struct AllocationBlockFooter
+    {
+        uint32 Magic;
+        AllocationBlockHeader * Header;
+    };
+
     class Heap
     {
     public:
         Heap();
+        Heap(uint64);
         ~Heap();
 
         void * Alloc(uint64);
         void Free(void *);
+
+    private:
+        AllocationBlockHeader * m_pBiggest1024;
+        AllocationBlockHeader * m_pSmallest1024;
+        AllocationBlockHeader * m_pBiggest256;
+        AllocationBlockHeader * m_pSmallest256;
+        AllocationBlockHeader * m_pBiggest64;
+        AllocationBlockHeader * m_pSmallest64;
+        AllocationBlockHeader * m_pBiggest16;
+        AllocationBlockHeader * m_pSmallest16;
+
+        AllocationBlockHeader * m_pBiggest;
+        AllocationBlockHeader * m_pSmallest;
+
+        uint64 m_iStart, m_iEnd;
+
+        Processor::Spinlock m_pLock;
+
+        AllocationBlockHeader * _select_list(uint64);
     };
 }
 

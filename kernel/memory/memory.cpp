@@ -99,7 +99,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     
     Memory::RemapKernel();
     Memory::Pages = new PageStack(Memory::pMemoryMap);
-    Memory::KernelHeap = new Heap;
+    Memory::KernelHeap = new Heap(Memory::StackStart);
 
     return;
 }
