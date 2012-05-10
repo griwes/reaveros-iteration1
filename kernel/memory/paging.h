@@ -56,6 +56,9 @@ namespace Paging
     struct PageTable
     {
         PageTableEntry Entries[512];
+
+        void * operator new(uint64);
+        void * operator new[](uint64);
     };
     
     struct PageDirectoryEntry
@@ -78,6 +81,9 @@ namespace Paging
     {
         PageDirectoryEntry Entries[512];
         PageTable * PageTables[512];
+
+        void * operator new(uint64);
+        void * operator new[](uint64);
     };
     
     struct PageDirectoryPointerTableEntry
@@ -100,6 +106,9 @@ namespace Paging
     {
         PageDirectoryPointerTableEntry Entries[512];
         PageDirectory * PageDirectories[512];
+        
+        void * operator new(uint64);
+        void * operator new[](uint64);
     };
     
     struct PML4Entry
@@ -123,6 +132,9 @@ namespace Paging
         PML4Entry Entries[512];
         PageDirectoryPointerTable * PointerTables[512];
         uint64 m_iBase;
+
+        void * operator new(uint64);
+        void * operator new[](uint64);
 
         PML4(uint64 = 0);
         

@@ -188,3 +188,58 @@ uint64 Paging::PML4::Unmap(uint64 pAddr)
                     ->Entries[(pAddr >> 39) & 511]);
     return physical;
 }
+
+static void * _alloc_aligned(uint64 iSize)
+{
+    if (Memory::pPlacementAddress == 0)
+    {
+//        return Memory::KernelHeap->AllocAligned(iSize);
+    }
+
+    Memory::AlignPlacementToPage();
+    void * p = Memory::pPlacementAddress;
+    uint64 _ = (uint64)Memory::pPlacementAddress + iSize;
+    Memory::pPlacementAddress = (void *)_;
+    
+    return p;
+}
+
+void * Paging::PageTable::operator new(uint64 iSize)
+{
+    return _alloc_aligned(iSize);
+}
+
+void * Paging::PageTable::operator new[](uint64 iSize)
+{
+    return _alloc_aligned(iSize);
+}
+
+void * Paging::PageDirectory::operator new(uint64 iSize)
+{
+    return _alloc_aligned(iSize);
+}
+
+void * Paging::PageDirectory::operator new[](uint64 iSize)
+{
+    return _alloc_aligned(iSize);
+}
+
+void * Paging::PageDirectoryPointerTable::operator new(uint64 iSize)
+{
+    return _alloc_aligned(iSize);
+}
+
+void * Paging::PageDirectoryPointerTable::operator new[](uint64 iSize)
+{
+    return _alloc_aligned(iSize);
+}
+
+void * Paging::PML4::operator new(uint64 iSize)
+{
+    return _alloc_aligned(iSize);
+}
+
+void * Paging::PML4::operator new[](uint64 iSize)
+{
+    return _alloc_aligned(iSize);
+}

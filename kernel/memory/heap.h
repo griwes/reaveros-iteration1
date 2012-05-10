@@ -37,12 +37,19 @@
 
 namespace Memory
 {
-    struct AllocationBlockFooter;
+    struct AllocationBlockHeader;
+    
+    struct AllocationBlockFooter
+    {
+        uint32 Magic;
+        AllocationBlockHeader * Header;
+    } __attribute__((__packed__));
     
     struct AllocationBlockHeader
     {
         uint32 Magic;
         uint32 Size;
+        uint32 Flags;
         AllocationBlockHeader * Smaller;
         AllocationBlockHeader * Bigger;
 
@@ -50,13 +57,17 @@ namespace Memory
         {
             return (AllocationBlockFooter *)((uint8 *)this + sizeof(AllocationBlockHeader) + this->Size);
         }
-    };
 
-    struct AllocationBlockFooter
-    {
-        uint32 Magic;
-        AllocationBlockHeader * Header;
-    };
+        inline AllocationBlockHeader * Previous()
+        {
+            return ((AllocationBlockFooter *)((uint8 *)this - sizeof(AllocationBlockFooter)))->Header;
+        }
+
+        inline AllocationBlockHeader * Next()
+        {
+            return (AllocationBlockHeader *)((uint8 *)this->Footer() + sizeof(AllocationBlockFooter));
+        }
+    } __attribute__((__packed__));
 
     class Heap
     {
@@ -66,18 +77,10 @@ namespace Memory
         ~Heap();
 
         void * Alloc(uint64);
+        void * AllocAligned(uint64);    // for allocating paging structures
         void Free(void *);
 
     private:
-        AllocationBlockHeader * m_pBiggest1024;
-        AllocationBlockHeader * m_pSmallest1024;
-        AllocationBlockHeader * m_pBiggest256;
-        AllocationBlockHeader * m_pSmallest256;
-        AllocationBlockHeader * m_pBiggest64;
-        AllocationBlockHeader * m_pSmallest64;
-        AllocationBlockHeader * m_pBiggest16;
-        AllocationBlockHeader * m_pSmallest16;
-
         AllocationBlockHeader * m_pBiggest;
         AllocationBlockHeader * m_pSmallest;
 
@@ -85,7 +88,9 @@ namespace Memory
 
         Processor::Spinlock m_pLock;
 
-        AllocationBlockHeader * _select_list(uint64);
+        void _expand();
+        void _insert(AllocationBlockHeader *);
+        void _validate(void *, bool = true);
     };
 }
 

@@ -123,11 +123,8 @@ void Memory::RemapKernel()
         for (;;);
     }
 
-    // the following wastes few KiBs of memory - but who cares, when there are GiBs of RAM?
-    Memory::AlignPlacementToPage();
     Memory::KernelPML4 = new Paging::PML4(p->Base());
-    Memory::AlignPlacementToPage();
-    
+
     Memory::KernelPML4->Map(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());
     Memory::KernelPML4->Map(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, 16 * 1024, p->End() - 16 * 1024);
     // 1-page gap above is current kernel stack control - 4 KiB should be enough for boot-up kernel stack
