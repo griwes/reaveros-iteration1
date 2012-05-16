@@ -48,7 +48,7 @@ namespace Memory
     struct AllocationBlockHeader
     {
         uint32 Magic;
-        uint32 Size;
+        uint64 Size;
         uint32 Flags;
         AllocationBlockHeader * Smaller;
         AllocationBlockHeader * Bigger;
@@ -72,7 +72,6 @@ namespace Memory
     class Heap
     {
     public:
-        Heap();
         Heap(uint64);
         ~Heap();
 
@@ -90,7 +89,7 @@ namespace Memory
 
         void _expand();
         void _insert(AllocationBlockHeader *);
-        void _validate(void *, bool = true);
+        void * _validate(void *, bool = true);
     };
 }
 
