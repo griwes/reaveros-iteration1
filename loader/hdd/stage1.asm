@@ -38,9 +38,8 @@ times 8 - ($-$$) db 0
 
 ;
 ; Reaver Floppy Header
-; Note: there is no BPB here. This bootloader will work on both floppy
-; (useless feature) and HDD supporting int 0x13 extensions. For El-Torito
-; bootloader, see eltorito.asm.
+; Note: there is no BPB here.This bootloader will only work on HDD supporting
+; int 0x13 extensions. For El-Torito bootloader, see ../eltorito/stage1.asm.
 ;
 
 magic:          dd 0xFEA7EFF5           ; REAVERFS
@@ -70,9 +69,6 @@ error:          db " Error", 0
 fail:           db " Legacy storage devices not supported.", 0
 
 bootdrive:      db 0
-sector:         db 0
-head:           db 0
-track:          db 0
 
 ;
 ; print()
@@ -89,23 +85,6 @@ print:
         jmp     .start
     .done:
         ret
-
-;
-; convert_address()
-; ax - linear address
-;
-
-convert_address:
-    ; just some head/sector/track magic
-    xor     dx, dx
-    div     word [sec_per_track]
-    inc     dl
-    mov     byte [sector], dl
-    xor     dx, dx
-    div     word [heads_per_cyl]
-    mov     byte [head], dl
-    mov     byte [track], al
-    ret
 
 ;
 ; check_extended_0x13()
