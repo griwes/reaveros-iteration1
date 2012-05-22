@@ -34,6 +34,8 @@
 
 #include "../types.h"
 #include "../memory/paging.h"
+#include "smp.h"
+#include "core.h"
 
 namespace Processor
 {
@@ -42,6 +44,9 @@ namespace Processor
 
     void LoadCR3(uint64);
     Paging::PML4 * GetCR3();
+
+    extern Processor::SMP::Core * Core;
+    extern Processor::SMP::Environment * Cores;
 }
 
 #endif

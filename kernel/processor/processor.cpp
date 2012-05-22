@@ -30,6 +30,9 @@
  **/
 
 #include "processor.h"
+#include "../acpi/acpi.h"
+#include "smp.h"
+#include "core.h"
 
 extern "C"
 {
@@ -37,9 +40,19 @@ extern "C"
     uint64 _get_cr3();
 }
 
+namespace Processor
+{
+    Processor::SMP::Core * Core = 0xffffffff40000000;
+    Processor::SMP::Environment * Cores = nullptr;
+}
+
 void Processor::Initialize()
 {
+    ACPI::ReadTables();
 
+    Processor::Core->LAPIC()->SetupIDT();
+    Processor::Core->EnableInterrupts();
+    Processor::Cores->BootCores();
 }
 
 void Processor::LoadCR3(uint64 p)
@@ -54,5 +67,5 @@ Paging::PML4 * Processor::GetCR3()
 
 void Processor::PrintStatus()
 {
-
+    Processor::Cores->PrintStatus();
 }

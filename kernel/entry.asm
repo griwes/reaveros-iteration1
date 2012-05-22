@@ -34,11 +34,8 @@ global  entry
 extern  kernel_main
 
 entry:
-    mov     rax, qword 0xFFFFFFFF80000000
-    add     rax, byte 32
+    mov     rax, qword highmemory
     jmp     rax
-
-times 32 - ($-$$) db 0
 
 highmemory:
     push    rbp
@@ -51,7 +48,10 @@ highmemory:
     mov     r8, qword [rsp + 36]
 
     mov     rax, rsi
+
     ; stupid loop, TODO: sanity checks
+    ; the loop below moves kernel stack at the end currently (and later) mapped area
+    ; (I was little clueless, when I looked at this few days after writing it)
     .loop:          
         cmp     dword [rax + 16], 0xffff
         je     .after
