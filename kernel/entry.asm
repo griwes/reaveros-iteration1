@@ -34,11 +34,12 @@ global  entry
 extern  kernel_main
 
 entry:
+    hlt
     mov     rax, qword [qword base]
     add     rax, 16
     jmp     rax
 
-times 16 - ($-$$) db 0
+times 32 - ($-$$) db 0
 
 highmemory:
     push    rbp

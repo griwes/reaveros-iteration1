@@ -1,9 +1,13 @@
 all: clean chdd bochs
 
+q: clean chdd qemu
+
 bochs:
 	cd builds && bochs -q
 
-# ugly hack; bochs doesn't want to work from colormake, don't know why
+qemu:
+	cd builds && qemu-system-x86_64 -hda hdd.img
+
 chdd:
 	colormake hdd
 

@@ -123,6 +123,7 @@ private:
 
     void _put16(char);
     void _put32(char);
+    void _put80x25(char); // TODO: printing in 80x25 mode
 
     uint8 r, g, b, _;
 
