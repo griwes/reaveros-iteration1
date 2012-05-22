@@ -1,7 +1,7 @@
 /**
  * ReaverOS
- * kernel/memory/pagestack.cpp
- * Page stack implementation.
+ * kernel/lib/stack.cpp
+ * Stack implementation.
  */
 
 /**
@@ -29,21 +29,26 @@
  *
  **/
 
-#include "pagestack.h"
-#include "vmm.h"
-#include "memory.h"
+#include "stack.h"
+#include "../memory/vmm.h"
+#include "../memory/memory.h"
 
-Memory::PageStack::PageStack(Memory::MemoryMap * pMemoryMap)
+Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap)
 {
     this->m_iSize = 0;
 
     Memory::AlignPlacementToPage();
     this->m_pStack = (uint64 *)Memory::pPlacementAddress;
     this->m_pLastPage = (uint64)Memory::pPlacementAddress;
-    
+
     for (uint64 i = 0; i < pMemoryMap->GetNumberOfEntries(); i++)
     {
         if (pMemoryMap->GetEntries()[i].Type() != 1)
+        {
+            continue;
+        }
+
+        if (pMemoryMap->GetEntries()[i].End() <= 1024 * 1024)
         {
             continue;
         }
@@ -70,16 +75,16 @@ Memory::PageStack::PageStack(Memory::MemoryMap * pMemoryMap)
     Memory::pPlacementAddress = (void *)(this->m_pLastPage + 4 * 1024);
 }
 
-Memory::PageStack::~PageStack()
+Lib::Stack::~Stack()
 {
 }
 
-uint64 Memory::PageStack::Count()
+uint64 Lib::Stack::Count()
 {
     return this->m_iSize;
 }
 
-uint64 Memory::PageStack::Pop()
+uint64 Lib::Stack::Pop()
 {
     this->m_iSize--;
     uint64 ret = this->m_pStack[this->m_iSize];
@@ -92,7 +97,7 @@ uint64 Memory::PageStack::Pop()
     return ret;
 }
 
-void Memory::PageStack::Push(uint64 p)
+void Lib::Stack::Push(uint64 p)
 {
     this->m_pStack[this->m_iSize] = p;
     this->m_iSize++;

@@ -1,7 +1,7 @@
 /**
  * ReaverOS
- * kernel/memory/pagestack.h
- * Page stack header.
+ * kernel/lib/stack.h
+ * Stack header.
  */
 
 /**
@@ -29,19 +29,20 @@
  *
  **/
 
-#ifndef __rose_kernel_memory_pagestack_h__
-#define __rose_kernel_memory_pagestack_h__
+#ifndef __rose_kernel_lib_stack_h__
+#define __rose_kernel_lib_stack_h__
 
 #include "../types.h"
-#include "memorymap.h"
+#include "../memory/memorymap.h"
 
-namespace Memory
+namespace Lib
 {
-    class PageStack
+    class Stack
     {
     public:
-        PageStack(Memory::MemoryMap *);
-        ~PageStack();
+        Stack(Memory::MemoryMap *);
+        Stack(uint64, uint64);
+        ~Stack();
         
         uint64 Pop();
         void Push(uint64);

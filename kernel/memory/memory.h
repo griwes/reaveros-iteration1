@@ -36,7 +36,7 @@
 #include "memorymap.h"
 #include "heap.h"
 #include "paging.h"
-#include "pagestack.h"
+#include "../lib/stack.h"
 
 namespace Memory
 {
@@ -88,7 +88,7 @@ namespace Memory
     extern Paging::PML4 * KernelPML4;
     extern Paging::PageDirectory * KernelSpace[2];
     extern uint64 StackStart;
-    extern Memory::PageStack * Pages;
+    extern Lib::Stack * Pages;
 }
 
 #endif

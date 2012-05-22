@@ -48,7 +48,7 @@ extern "C"
 
 namespace Processor
 {
-    PML4 * PagingStructures;
+    PML4 * PagingStructures = 0;
 }
 
 void Processor::EnterLongMode()

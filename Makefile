@@ -6,7 +6,7 @@ bochs:
 	cd builds && bochs -q
 
 qemu:
-	cd builds && qemu-system-x86_64 -hda hdd.img
+	cd builds && qemu-system-x86_64 -hda hdd.img -monitor stdio -no-kvm -m 2048
 
 chdd:
 	colormake hdd

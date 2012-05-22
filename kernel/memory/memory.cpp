@@ -40,7 +40,7 @@ namespace Memory
     Paging::PML4 * KernelPML4 = 0;
     Paging::PageDirectory * KernelSpace[2] = {0, 0};
     uint64 StackStart = 0;
-    Memory::PageStack * Pages = 0;
+    Lib::Stack * Pages = 0;
 }
 
 void * operator new(uint64 iSize)
@@ -98,7 +98,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::pMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
     
     Memory::RemapKernel();
-    Memory::Pages = new PageStack(Memory::pMemoryMap);
+    Memory::Pages = new Lib::Stack(Memory::pMemoryMap);
     Memory::KernelHeap = new Heap(Memory::StackStart);
 
     return;

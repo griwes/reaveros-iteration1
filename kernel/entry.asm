@@ -34,9 +34,8 @@ global  entry
 extern  kernel_main
 
 entry:
-    hlt
-    mov     rax, qword [qword base]
-    add     rax, 16
+    mov     rax, qword 0xFFFFFFFF80000000
+    add     rax, byte 32
     jmp     rax
 
 times 32 - ($-$$) db 0
@@ -62,11 +61,9 @@ highmemory:
 
     .after:
         mov     rsp, qword [rax + 8]
-        mov     rax, qword [qword base]
+        mov     rax, qword 0xFFFFFFFF80000000
         add     rsp, rax
 
     mov     rbp, rsp
 
     jmp     kernel_main
-
-base:       dq 0xFFFFFFFF80000000

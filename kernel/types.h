@@ -55,6 +55,6 @@ inline T abs(T i)
     return i;
 }
 
-#define dbg __asm
+#define dbg __asm("xchg %bx, %bx")
 
 #endif

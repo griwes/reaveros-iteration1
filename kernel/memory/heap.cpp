@@ -520,6 +520,6 @@ void * Memory::Heap::_validate(void * pAddr, bool bShouldBeAllocated)
     {
         __asm("hlt");
     }
-
+    
     return pAddr;
 }
