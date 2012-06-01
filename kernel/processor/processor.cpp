@@ -42,7 +42,7 @@ extern "C"
 
 namespace Processor
 {
-    Processor::SMP::Core * Core = 0xffffffff40000000;
+    Processor::SMP::Core * Core = (Processor::SMP::Core *)0xffffffff40000000;
     Processor::SMP::Environment * Cores = nullptr;
 }
 

@@ -48,8 +48,8 @@ namespace Memory
     struct AllocationBlockHeader
     {
         uint32 Magic;
-        uint64 Size;
         uint32 Flags;
+        uint64 Size;
         AllocationBlockHeader * Smaller;
         AllocationBlockHeader * Bigger;
 
@@ -83,13 +83,19 @@ namespace Memory
         AllocationBlockHeader * m_pBiggest;
         AllocationBlockHeader * m_pSmallest;
 
-        uint64 m_iStart, m_iEnd;
+        uint64 m_iStart, m_iEnd, m_iLimit;
+        
+        Processor::Spinlock m_lock;
 
-        Processor::Spinlock m_pLock;
-
+        void _check_sanity();
         void _expand();
         void _insert(AllocationBlockHeader *);
         void * _validate(void *, bool = true);
+        void * _allocate(AllocationBlockHeader *, uint64);
+        AllocationBlockHeader * _find_closest(uint64);
+        bool _is_free(AllocationBlockHeader *);
+        void _merge(AllocationBlockHeader *, AllocationBlockHeader *);
+        void _shrink(AllocationBlockHeader *);
     };
 }
 

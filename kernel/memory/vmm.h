@@ -40,6 +40,9 @@ namespace Memory
     {
         void MapPage(uint64);
         void UnmapPage(uint64);
+
+        void MapPages(uint64, uint64);
+        void UnmapPages(uint64, uint64);
     }
 }
 
