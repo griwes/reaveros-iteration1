@@ -5,11 +5,12 @@ CFLAGS=-c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno
 		-mno-sse3 -mno-3dnow -mno-red-zone
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=main.cpp cxx.cpp \
-	processor/processor.cpp processor/synchronization.cpp \
+	processor/processor.cpp processor/synchronization.cpp processor/smp.cpp processor/core.cpp \
 	memory/memory.cpp memory/memorymap.cpp memory/paging.cpp memory/heap.cpp memory/vmm.cpp \
 	lib/string.cpp lib/stack.cpp \
 	screen/screen.cpp screen/terminal.cpp screen/console.cpp \
-	scheduler/scheduler.cpp
+	scheduler/scheduler.cpp \
+	acpi/acpi.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=builds/kernel.img
 

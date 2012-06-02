@@ -63,5 +63,5 @@ Screen::Console & Screen::Console::operator<<(const char * )
 
 Screen::Console & Screen::Console::operator<<(const String & )
 {
-
+    return *this;
 }

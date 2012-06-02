@@ -53,3 +53,21 @@ void Memory::VMM::UnmapPage(uint64 pAddr)
         return;
     }
 }
+
+void Memory::VMM::MapPages(uint64 start, uint64 end)
+{
+    while (start < end)
+    {
+        Memory::VMM::MapPage(start);
+        start += 4096;
+    }
+}
+
+void Memory::VMM::UnmapPages(uint64 start, uint64 end)
+{
+    while (start < end)
+    {
+        Memory::VMM::UnmapPage(start);
+        start += 4096;
+    }
+}

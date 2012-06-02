@@ -78,15 +78,55 @@ void * Memory::Heap::Alloc(uint64 iSize)
     return ret;
 }
 
-void * Memory::Heap::AllocAligned(uint64 /*iSize*/)
+void * Memory::Heap::AllocAligned(uint64 iSize)
 {
-    // TODO
     this->m_lock.Lock();
-    
-    this->_check_sanity();
 
+    this->_check_sanity();
+    
+    if (iSize == 0)
+    {
+        return nullptr;
+    }
+    
+    AllocationBlockHeader * last = ((AllocationBlockFooter *)(this->m_iEnd - sizeof(AllocationBlockFooter)))->Header;
+    
+    if (!this->_is_free(last))
+    {
+        this->_expand();
+    }
+    
+    uint64 iModSize = iSize % 4096;
+    
+    if (iModSize > 0)
+    {
+        this->_expand();
+    }
+    
+    if (iModSize + sizeof(AllocationBlockFooter) > 4096)
+    {
+        this->_expand();
+    }
+    
+    for (uint64 i = 0; i < iSize - iModSize; i += 4096)
+    {
+        this->_expand();
+    }
+    
+    AllocationBlockHeader * block = (this->_is_free(last) ? last : last->Next());
+    uint64 pAddress = (uint64)block + sizeof(AllocationBlockHeader);
+    uint64 pAddressAligned = pAddress + 4095;
+    pAddressAligned &= ~(uint64)4095;
+    
+    uint64 iBlockSize = iSize + (pAddressAligned - pAddress);
+    
+    // FIXME: this way of allocating wastes up to 4095 bytes
+    // FIXME: add _break() (counter-_merge()) to solve this problem
+    this->_allocate(block, iBlockSize);
+    
     this->m_lock.Unlock();
-    return nullptr;
+
+    return (void *)pAddressAligned;
 }
 
 void Memory::Heap::Free(void * pAddress)

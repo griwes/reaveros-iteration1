@@ -39,7 +39,10 @@ namespace Screen
 {
     extern Screen::Console * kout;
 
-    class VideoMode;
+    class VideoMode
+    {
+        
+    };
 
     extern char nl;
     

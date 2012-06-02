@@ -72,7 +72,7 @@ namespace Memory
     class Heap
     {
     public:
-        Heap(uint64);
+        Heap(uint64, uint64);
         ~Heap();
 
         void * Alloc(uint64);
