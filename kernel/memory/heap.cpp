@@ -36,7 +36,7 @@ Memory::Heap::Heap(uint64 start, uint64 limit)
         : m_pBiggest((AllocationBlockHeader *)start), m_pSmallest((AllocationBlockHeader *)start),
           m_iStart(start), m_iEnd(start + 4 * 4 * 1024), m_iLimit(limit)
 {
-    VMM::MapPages(start, start + 4 * 4 * 1024);
+    Memory::VMM::MapPages(this->m_iStart, this->m_iEnd);
     
     this->m_pBiggest->Magic = 0xFEA7EFA1;
     this->m_pBiggest->Size = 4 * 4 * 1024 - sizeof(AllocationBlockHeader) - sizeof(AllocationBlockFooter);
@@ -50,6 +50,7 @@ Memory::Heap::Heap(uint64 start, uint64 limit)
 
 Memory::Heap::~Heap()
 {
+    VMM::UnmapPages(this->m_iStart, this->m_iEnd);
 }
 
 void * Memory::Heap::Alloc(uint64 iSize)
@@ -77,13 +78,14 @@ void * Memory::Heap::Alloc(uint64 iSize)
     return ret;
 }
 
-void * Memory::Heap::AllocAligned(uint64 iSize)
+void * Memory::Heap::AllocAligned(uint64 /*iSize*/)
 {
+    // TODO
     this->m_lock.Lock();
     
     this->_check_sanity();
 
-    this->m_lock.Unlock();    
+    this->m_lock.Unlock();
     return nullptr;
 }
 
@@ -92,6 +94,11 @@ void Memory::Heap::Free(void * pAddress)
     this->m_lock.Lock();
     
     this->_check_sanity();
+    
+    if (pAddress == nullptr)
+    {
+        return;
+    }
     
     this->_validate(pAddress);
     
@@ -108,7 +115,7 @@ void Memory::Heap::_check_sanity()
     {
         if (this->m_pBiggest != nullptr || this->m_pSmallest != nullptr)
         {
-//          PANIC("only one nullptr!");
+//            PANIC("only one nullptr!");
         }
     }
     
@@ -123,7 +130,7 @@ void Memory::Heap::_expand()
     this->m_iEnd += 4096;
     this->_check_sanity();
 
-    VMM::MapPage(this->m_iEnd - 4096);
+    Memory::VMM::MapPage(this->m_iEnd - 4096);
     
     AllocationBlockHeader * newhead = (AllocationBlockHeader *)(this->m_iEnd - 4096);
     newhead->Magic = 0xFEA7EFA1;
@@ -132,13 +139,14 @@ void Memory::Heap::_expand()
     newhead->Footer()->Magic = 0xFEA7EFA1;
     newhead->Footer()->Header = newhead;
     
+    newhead->Smaller = nullptr;
+    newhead->Bigger = nullptr;
+    
     this->_insert(newhead);
 }
 
 void Memory::Heap::_insert(AllocationBlockHeader * newhead)
 {
-    static uint64 count1 = 0, count2 = 0;
-    
     this->_check_sanity();
     
     if (this->m_pBiggest == nullptr)
@@ -163,7 +171,7 @@ void Memory::Heap::_insert(AllocationBlockHeader * newhead)
         return;
     }
     
-    if (newhead->Flags & 1 << 1 != 1 << 1 && newhead->Size + sizeof(AllocationBlockHeader)
+    if ((newhead->Flags & 2) != 2 && newhead->Size + sizeof(AllocationBlockHeader)
         + sizeof(AllocationBlockFooter) >= 4096 && this->m_iEnd == (uint64)newhead->Footer()
         + sizeof(AllocationBlockFooter))
     {
@@ -175,8 +183,6 @@ void Memory::Heap::_insert(AllocationBlockHeader * newhead)
     
     if (newhead->Size <= list->Size)
     {
-        count1++;
-        
         newhead->Smaller = list->Smaller;
         newhead->Bigger = list;
         list->Smaller = newhead;
@@ -189,8 +195,6 @@ void Memory::Heap::_insert(AllocationBlockHeader * newhead)
     
     else
     {
-        count2++;
-        
         newhead->Bigger = list->Bigger;
         newhead->Smaller = list;
         list->Bigger = newhead;
@@ -201,7 +205,7 @@ void Memory::Heap::_insert(AllocationBlockHeader * newhead)
         }
     }
     
-    newhead->Flags ^= 1 << 1;
+    newhead->Flags ^= 2;
     
     this->_check_sanity();
 }
@@ -216,6 +220,11 @@ void Memory::Heap::_merge(Memory::AllocationBlockHeader * first, Memory::Allocat
     if ((uint64)first > (uint64)second)
     {
         return this->_merge(second, first);
+    }
+    
+    if (first->Next() != second)
+    {
+//        PANIC("trying to merge not adjacent AllocationBlockHeaders!");
     }
     
     if (first->Bigger != nullptr)
@@ -238,8 +247,33 @@ void Memory::Heap::_merge(Memory::AllocationBlockHeader * first, Memory::Allocat
         second->Smaller->Bigger = second->Bigger;
     }
     
+    if (first == this->m_pBiggest)
+    {
+        this->m_pBiggest = first->Smaller;
+    }
+    
+    if (first == this->m_pSmallest)
+    {
+        this->m_pSmallest = first->Bigger;
+    }
+    
+    if (second == this->m_pBiggest)
+    {
+        this->m_pBiggest = second->Smaller;
+    }
+    
+    if (second == this->m_pSmallest)
+    {
+        this->m_pSmallest = second->Bigger;
+    }
+    
     first->Size += second->Size + sizeof(AllocationBlockHeader) + sizeof(AllocationBlockFooter);
     first->Footer()->Header = first;
+    
+    if ((second->Flags & 2) == 2)
+    {
+        first->Flags |= 2;
+    }
     
     this->_insert(first);
 }
@@ -319,6 +353,11 @@ Memory::AllocationBlockHeader * Memory::Heap::_find_closest(uint64 iSize)
 {
     AllocationBlockHeader * list = nullptr;
     
+    if (this->m_pBiggest == nullptr)
+    {
+        return nullptr;
+    }
+    
     if (abs(this->m_pBiggest->Size - iSize) < abs(this->m_pSmallest->Size - iSize))
     {
         list = this->m_pBiggest;
@@ -345,7 +384,7 @@ Memory::AllocationBlockHeader * Memory::Heap::_find_closest(uint64 iSize)
 bool Memory::Heap::_is_free(Memory::AllocationBlockHeader * block)
 {
     if ((uint64)block >= this->m_iStart && (uint64)block->Footer() + sizeof(AllocationBlockFooter) <= this->m_iEnd &&
-        block->Magic == 0xFEA7EFA1 && block->Footer()->Magic == 0xFEA7EFA1 && block->Flags & 1 == 0)
+        block->Magic == 0xFEA7EFA1 && block->Footer()->Magic == 0xFEA7EFA1 && (block->Flags & 1) == 0)
     {
         return true;
     }
@@ -359,6 +398,7 @@ bool Memory::Heap::_is_free(Memory::AllocationBlockHeader * block)
 void Memory::Heap::_shrink(Memory::AllocationBlockHeader * head)
 {
     // TODO
+    head->Flags |= 2;
     this->_insert(head);
 }
 
@@ -370,12 +410,12 @@ void * Memory::Heap::_validate(void * pAddress, bool bShouldBeAllocated)
 //        PANIC("invalid magic number!");
     }
     
-    if (bShouldBeAllocated && head->Flags & 1 != 1)
+    if (bShouldBeAllocated && (head->Flags & 1) != 1)
     {
 //        PANIC("block should've been marked as allocated!");
     }
     
-    if (!bShouldBeAllocated && head->Flags & 1 == 1)
+    if (!bShouldBeAllocated && (head->Flags & 1) == 1)
     {
 //        PANIC("block shouldn't have been marked as allocated!");
     }
