@@ -40,6 +40,20 @@ namespace Screen
 {
     class Terminal;
 
+    enum Color
+    {
+        White,
+        Grey,
+        Green,
+        Red,
+        Violet,
+        Orange,
+        Cyan,
+        Blue,
+        Yellow,
+        Black
+    };
+
     class Console
     {
     public:
@@ -57,6 +71,7 @@ namespace Screen
         Console & operator<<(char);
         Console & operator<<(const char *);
         Console & operator<<(const Lib::String &);
+        Console & operator<<(Screen::Color);
         template<typename T> Console & operator<<(T);
         template<typename T> Console & operator<<(T *);
 
@@ -67,7 +82,7 @@ namespace Screen
         
         void SetBase(uint64 newbase)
         {
-            if (newbase > 36)
+            if (newbase > 32 || newbase < 2)
             {
                 this->m_iBase = 36;
             }
@@ -100,7 +115,82 @@ namespace Screen
         uint64 m_iWidth;
         bool m_b16;
         uint64 m_i16Width;
+        Terminal * m_pTerminal;
     };
+}
+
+template<typename T>
+Screen::Console & Screen::Console::operator<<(T i)
+{
+    // first part for the sake of leaving warning away
+    if (!(i > 0 || i == 0) && this->m_iBase == 10)
+    {
+        *this << '-';
+        i = -i;
+    }
+
+    if (this->m_iBase == 16)
+    {
+        if (this->m_b16)
+        {
+            *this << "0x";
+        }
+
+        if (this->m_i16Width != 0)
+        {
+            for (int64 j = sizeof(T) / 16; j >= 0; j--)
+            {
+                if ((i & (0xf << j)) != 0)
+                    break;
+                *this << '0';
+            }
+        }
+    }
+
+    if (this->m_iWidth != 0)
+    {
+        uint64 w = this->m_iWidth;
+        for (uint64 j = i; w > 0 && j > 0; j /= this->m_iBase, w--) ;
+        while (w-- > 0)
+        {
+            *this << '0';
+        }
+    }
+
+    else if (i == 0)
+    {
+        *this << '0';
+    }
+    
+    T div = i / this->m_iBase;
+    T mod = i % this->m_iBase;
+    
+    if (div != 0)
+    {
+        *this << div;
+    }
+    
+    *this << ("zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + mod]);
+    
+    return *this;
+}
+
+template<typename T>
+Screen::Console & Screen::Console::operator<<(T * p)
+{
+    uint64 base = this->m_iBase;
+    bool b = this->m_b16;
+    uint64 w16 = this->m_i16Width;
+    
+    this->HexNumbers(16, true);
+
+    *this << (uint64)p;
+
+    this->m_iBase = base;
+    this->m_b16 = b;
+    this->m_i16Width = w16;
+
+    return *this;
 }
 
 #endif

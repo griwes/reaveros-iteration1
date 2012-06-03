@@ -30,6 +30,7 @@
  **/
 
 #include "../lib/string.h"
+#include "console.h"
 
 namespace Screen
 {
@@ -56,6 +57,8 @@ namespace Screen
         virtual void ScrollUp();
         virtual void ScrollDown();
 
+        virtual void SetColor(Screen::Color) = 0;
+
         virtual Lib::String GetName()
         {
             return this->m_sName;
@@ -78,6 +81,11 @@ namespace Screen
         virtual ~BootTerminal();
 
         virtual void Print(const Lib::String &);
+
+        virtual void SetColor(Screen::Color);
+
+    private:
+        VideoMode * m_pVideoMode;
     };
 
     class ReaverTerminal : public Terminal

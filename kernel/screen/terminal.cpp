@@ -66,16 +66,21 @@ void Screen::ReaverTerminal::Print(const Lib::String & sString)
 }
 
 Screen::BootTerminal::BootTerminal(Screen::VideoMode * pVideoMode)
-    : Terminal(0)
+    : Terminal(0), m_pVideoMode(pVideoMode)
 {
-
+    dbg;
 }
 
 Screen::BootTerminal::~BootTerminal()
 {
 }
 
-void Screen::BootTerminal::Print(const Lib::String & )
+void Screen::BootTerminal::Print(const Lib::String & string)
+{
+
+}
+
+void Screen::BootTerminal::SetColor(Screen::Color )
 {
 
 }

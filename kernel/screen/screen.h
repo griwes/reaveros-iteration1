@@ -49,20 +49,6 @@ namespace Screen
     extern char nl;
     
     void Initialize(Screen::VideoMode *);
-
-    enum Colors
-    {
-        White,
-        Grey,
-        Green,
-        Red,
-        Violet,
-        Orange,
-        Cyan,
-        Blue,
-        Yellow,
-        Black
-    };
 }
 
 #endif

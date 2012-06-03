@@ -51,7 +51,9 @@ void * operator new(uint64 iSize)
 {
     if (!Memory::pPlacementAddress)
     {
-        return Memory::KernelHeap->Alloc(iSize);
+        void * ret = Memory::KernelHeap->Alloc(iSize);
+        dbg;
+        return ret;
     }
 
     void * p = Memory::pPlacementAddress;
@@ -64,7 +66,10 @@ void * operator new(uint64 iSize)
 // hope no-one will ever try to free placed memory...
 void operator delete(void * pPointer)
 {
-    Memory::KernelHeap->Free(pPointer);
+    if (!Memory::pPlacementAddress)
+    {
+        Memory::KernelHeap->Free(pPointer);
+    }
 }
 
 void * operator new[](uint64 iSize)
@@ -74,7 +79,10 @@ void * operator new[](uint64 iSize)
 
 void operator delete[](void * pPointer)
 {
-    Memory::KernelHeap->Free(pPointer);
+    if (!Memory::pPlacementAddress)
+    {
+        Memory::KernelHeap->Free(pPointer);
+    }
 }
 
 void Memory::AlignPlacementToPage()

@@ -30,6 +30,7 @@
  **/
 
 #include "console.h"
+#include "terminal.h"
 
 Screen::Console::Console(Screen::Terminal * )
 {
@@ -55,15 +56,7 @@ Screen::Console & Screen::Console::operator<<(const Lib::String & )
     return *this;
 }
 
-template<typename T>
-Screen::Console & Screen::Console::operator<<(T )
+Screen::Console & Screen::Console::operator<<(Screen::Color color)
 {
-    return *this;
+    this->m_pTerminal->SetColor(color);
 }
-
-template<typename T>
-Screen::Console & Screen::Console::operator<<(T * )
-{
-    return *this;
-}
-

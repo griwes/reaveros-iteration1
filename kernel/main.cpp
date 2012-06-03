@@ -31,7 +31,7 @@
 
 /**
  * Useful convention is used here, as error in code in kernel in most cases 
- * mean critical error: never return error codes - print a message and stop
+ * means critical error: never return error codes - print a message and stop
  * system in called function.
  */
 
@@ -40,6 +40,7 @@
 #include "processor/processor.h"
 #include "screen/screen.h"
 #include "memory/memorymap.h"
+#include "screen/console.h"
 
 namespace InitRD
 {
