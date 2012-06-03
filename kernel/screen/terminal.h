@@ -49,7 +49,7 @@ namespace Screen
     class Terminal
     {
     public:
-        Terminal(Screen::TerminalDriver *, const Lib::String & = "");
+        Terminal(Screen::TerminalDriver *, const Lib::String & = Lib::String());
         virtual ~Terminal() = 0;
 
         virtual void Print(const Lib::String &) = 0;

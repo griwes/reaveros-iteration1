@@ -52,7 +52,6 @@ void * operator new(uint64 iSize)
     if (!Memory::pPlacementAddress)
     {
         void * ret = Memory::KernelHeap->Alloc(iSize);
-        dbg;
         return ret;
     }
 

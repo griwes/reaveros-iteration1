@@ -42,4 +42,5 @@ namespace Screen
 void Screen::Initialize(Screen::VideoMode * pVideoMode)
 {
     Screen::kout = new Screen::Console(new BootTerminal(pVideoMode));
+    dbg;
 }
