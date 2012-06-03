@@ -31,24 +31,13 @@
 
 #include "console.h"
 
-Screen::Console::Mode Screen::Console::GetMode()
+Screen::Console::Console(Screen::Terminal * )
 {
 
 }
 
-void Screen::Console::SetMode(Screen::Console::Mode )
+Screen::Console::~Console()
 {
-
-}
-
-void Screen::Console::Hex(uint64 , bool )
-{
-
-}
-
-void Screen::Console::Dec(uint64 )
-{
-
 }
 
 Screen::Console & Screen::Console::operator<<(char )
@@ -61,7 +50,20 @@ Screen::Console & Screen::Console::operator<<(const char * )
     return *this;
 }
 
-Screen::Console & Screen::Console::operator<<(const String & )
+Screen::Console & Screen::Console::operator<<(const Lib::String & )
 {
     return *this;
 }
+
+template<typename T>
+Screen::Console & Screen::Console::operator<<(T )
+{
+    return *this;
+}
+
+template<typename T>
+Screen::Console & Screen::Console::operator<<(T * )
+{
+    return *this;
+}
+

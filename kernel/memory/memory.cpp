@@ -31,6 +31,10 @@
 
 #include "memory.h"
 #include "../processor/processor.h"
+#include "memorymap.h"
+#include "heap.h"
+#include "paging.h"
+#include "../lib/stack.h"
 
 namespace Memory
 {
@@ -101,6 +105,8 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::Pages = new Lib::Stack(Memory::pMemoryMap);
     Memory::KernelHeap = new Heap(Memory::StackStart, 0xFFFFFFFFC0000000);
 
+    Memory::pPlacementAddress = (void *)0;
+    
     return;
 }
 

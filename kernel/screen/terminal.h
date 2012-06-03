@@ -33,6 +33,8 @@
 
 namespace Screen
 {
+    class VideoMode;
+    
     class TerminalDriver
     {
     public:
@@ -46,28 +48,44 @@ namespace Screen
     class Terminal
     {
     public:
-        Terminal(Screen::TerminalDriver *, String = "");
+        Terminal(Screen::TerminalDriver *, const Lib::String & = "");
         virtual ~Terminal() = 0;
 
-        virtual void Print(String) = 0;
-
+        virtual void Print(const Lib::String &) = 0;
+        
         virtual void ScrollUp();
         virtual void ScrollDown();
 
-        virtual String GetName();
-        virtual void SetName(String);
+        virtual Lib::String GetName()
+        {
+            return this->m_sName;
+        }
+        
+        virtual void SetName(const Lib::String & s)
+        {
+            this->m_sName = s;
+        }
 
     protected:
-        String m_sName;
+        Lib::String m_sName;
         Screen::TerminalDriver * m_pDriver;
+    };
+
+    class BootTerminal : public Terminal
+    {
+    public:
+        BootTerminal(Screen::VideoMode *);
+        virtual ~BootTerminal();
+
+        virtual void Print(const Lib::String &);
     };
 
     class ReaverTerminal : public Terminal
     {
     public:
-        ReaverTerminal(Screen::TerminalDriver *, String = "");
+        ReaverTerminal(Screen::TerminalDriver *, const Lib::String & = "");
         virtual ~ReaverTerminal();
 
-        virtual void Print(String);
+        virtual void Print(const Lib::String &);
     };
 }

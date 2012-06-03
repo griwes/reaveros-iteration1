@@ -30,9 +30,16 @@
  **/
 
 #include "screen.h"
+#include "terminal.h"
+#include "console.h"
 
 namespace Screen
 {
     Screen::Console * kout = 0;
     char nl = '\n';
+}
+
+void Screen::Initialize(Screen::VideoMode * pVideoMode)
+{
+    Screen::kout = new Screen::Console(new BootTerminal(pVideoMode));
 }

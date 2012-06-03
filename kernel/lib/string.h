@@ -1,13 +1,44 @@
 #ifndef __rose_kernel_lib_string_h__
 #define __rose_kernel_lib_string_h__
 
-class String
-{
-public:
-    static String MakeConst(const char *);
+#include "../types.h"
 
-    String();
-    String(const char *);
-};
+// TODO: add UTF-8 support
+
+namespace Lib
+{
+    inline uint64 Strlen(const char * s)
+    {
+        uint64 len;
+
+        while (*s != 0)
+        {
+            len++;
+            s++;
+        }
+
+        return len;
+    }
+
+    class String
+    {
+    public:
+        String();
+        String(const char *);
+        String(const String &);
+
+        uint64 Length();
+        const char * Buffer();
+        
+        String operator+(const String &);
+        String & operator+=(const String &);
+        friend String operator+(const char *, const String &);
+        String & operator=(const String &);
+
+    private:
+        char * m_pData;
+        uint64 m_iLength;
+    };
+}
 
 #endif

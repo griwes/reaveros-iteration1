@@ -55,7 +55,7 @@ namespace Memory
             return *this;
         }
 
-        String TypeDescription();
+        Lib::String TypeDescription();
         inline uint32 & Type()
         {
             return (uint32 &)this->m_iType;
@@ -89,7 +89,7 @@ namespace Memory
         
         uint64 CountUsableMemory();
         uint32 GetMemoryType(uint64);
-        String GetMemoryTypeDescription(uint64);
+        Lib::String GetMemoryTypeDescription(uint64);
         
         MemoryMapEntry * GetEntries();
         uint32 GetNumberOfEntries();

@@ -33,13 +33,24 @@
 #define _rose_kernel_memory_memory_h_
 
 #include "../types.h"
-#include "memorymap.h"
-#include "heap.h"
-#include "paging.h"
-#include "../lib/stack.h"
+
+namespace Lib
+{
+    class Stack;
+}
+
+namespace Paging
+{
+    class PML4;
+    class PageDirectory;
+}
 
 namespace Memory
 {
+    class MemoryMapEntry;
+    class MemoryMap;
+    class Heap;
+    
     void PreInitialize(void *);
     void Initialize(Memory::MemoryMapEntry *, uint32);
 
@@ -52,12 +63,14 @@ namespace Memory
     void Zero(T * ptr)
     {
         uint32 iSize = sizeof(T);
-        char * p = (char *)ptr;
+        uint8 * p = (uint8 *)ptr;
         
         for (uint32 i = 0; i < iSize; i += 4)
         {
             *(uint32 *)(p + i) = 0;
         }
+
+        p += iSize - iSize % 4;
 
         for (uint32 i = 0; i < iSize % 4; i++)
         {
@@ -69,16 +82,62 @@ namespace Memory
     void Zero(T * ptr, uint32 iCount)
     {
         uint32 iSize = sizeof(T) * iCount;
-        char * p = (char *)ptr;
+        uint8 * p = (uint8 *)ptr;
 
         for (uint32 i = 0; i < iSize; i += 4)
         {
             *(uint32 *)(p + i) = 0;
         }
 
+        p += iSize - iSize % 4;
+
         for (uint32 i = 0; i < iSize % 4; i++)
         {
             p[i] = 0;
+        }
+    }
+
+    template<typename T>
+    void Copy(T * src, T * dest)
+    {
+        uint32 iSize = sizeof(T);
+
+        uint8 * ps = (uint8 *)src;
+        uint8 * pd = (uint8 *)dest;
+        
+        for (uint32 i = 0; i < iSize; i += 4)
+        {
+            *(uint32 *)(pd + i) = *(uint32 *)(ps + i);
+        }
+
+        ps += iSize - iSize % 4;
+        pd += iSize - iSize % 4;
+
+        for (uint32 i = 0; i < iSize % 4; i++)
+        {
+            pd[i] = ps[i];
+        }
+    }
+
+    template<typename T>
+    void Copy(T * src, T * dest, uint32 iCount)
+    {
+        uint32 iSize = sizeof(T) * iCount;
+        
+        uint8 * ps = (uint8 *)src;
+        uint8 * pd = (uint8 *)dest;
+        
+        for (uint32 i = 0; i < iSize; i += 4)
+        {
+            *(uint32 *)(pd + i) = *(uint32 *)(ps + i);
+        }
+        
+        ps += iSize - iSize % 4;
+        pd += iSize - iSize % 4;
+        
+        for (uint32 i = 0; i < iSize % 4; i++)
+        {
+            pd[i] = ps[i];
         }
     }
 

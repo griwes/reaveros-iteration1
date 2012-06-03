@@ -398,7 +398,7 @@ Memory::AllocationBlockHeader * Memory::Heap::_find_closest(uint64 iSize)
         return nullptr;
     }
     
-    if (abs(this->m_pBiggest->Size - iSize) < abs(this->m_pSmallest->Size - iSize))
+    if (abs((int64)this->m_pBiggest->Size - (int64)iSize) < abs((int64)this->m_pSmallest->Size - (int64)iSize))
     {
         list = this->m_pBiggest;
         

@@ -32,6 +32,8 @@
 #include "vmm.h"
 #include "../scheduler/scheduler.h"
 #include "memory.h"
+#include "../lib/stack.h"
+#include "paging.h"
 
 void Memory::VMM::MapPage(uint64 pAddr)
 {

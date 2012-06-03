@@ -31,7 +31,7 @@
 
 #include "terminal.h"
 
-Screen::Terminal::Terminal(Screen::TerminalDriver * pDrv, String sName)
+Screen::Terminal::Terminal(Screen::TerminalDriver * pDrv, const Lib::String & sName)
             : m_sName(sName), m_pDriver(pDrv)
 {
 }
@@ -39,16 +39,6 @@ Screen::Terminal::Terminal(Screen::TerminalDriver * pDrv, String sName)
 Screen::Terminal::~Terminal()
 {
     delete m_pDriver;
-}
-
-String Screen::Terminal::GetName()
-{
-    return this->m_sName;
-}
-
-void Screen::Terminal::SetName(String sName)
-{
-    this->m_sName = sName;
 }
 
 void Screen::Terminal::ScrollUp()
@@ -61,7 +51,7 @@ void Screen::Terminal::ScrollDown()
     this->m_pDriver->ScrollDown();
 }
 
-Screen::ReaverTerminal::ReaverTerminal(Screen::TerminalDriver * pDrv, String sName)
+Screen::ReaverTerminal::ReaverTerminal(Screen::TerminalDriver * pDrv, const Lib::String & sName)
         : Terminal(pDrv, sName)
 {
 }
@@ -70,7 +60,22 @@ Screen::ReaverTerminal::~ReaverTerminal()
 {
 }
 
-void Screen::ReaverTerminal::Print(String sString)
+void Screen::ReaverTerminal::Print(const Lib::String & sString)
+{
+
+}
+
+Screen::BootTerminal::BootTerminal(Screen::VideoMode * pVideoMode)
+    : Terminal(0)
+{
+
+}
+
+Screen::BootTerminal::~BootTerminal()
+{
+}
+
+void Screen::BootTerminal::Print(const Lib::String & )
 {
 
 }

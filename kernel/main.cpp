@@ -39,6 +39,7 @@
 #include "memory/memory.h"
 #include "processor/processor.h"
 #include "screen/screen.h"
+#include "memory/memorymap.h"
 
 namespace InitRD
 {
@@ -54,10 +55,10 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     Screen::Initialize(pVideoMode);
     
     for (;;) ;
-    
+
     using Screen::kout;
     using Screen::nl;
-
+    
     *kout << Screen::Grey;
     
     *kout << "ReaverOS 0.1: Cotyledon" << nl;

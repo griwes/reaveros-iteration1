@@ -32,11 +32,12 @@
 #include "memorymap.h"
 #include "memory.h"
 #include "../screen/screen.h"
+#include "../screen/console.h"
 
 using Screen::kout;
 using Screen::nl;
 
-String Memory::MemoryMapEntry::TypeDescription()
+Lib::String Memory::MemoryMapEntry::TypeDescription()
 {
     const char * description;
         
@@ -64,7 +65,7 @@ String Memory::MemoryMapEntry::TypeDescription()
             description = "Unknown type of memory";
     }
     
-    return String::MakeConst(description);
+    return Lib::String(description);
 }
 
 Memory::MemoryMapEntry * Memory::MemoryMap::GetEntries()
@@ -170,8 +171,8 @@ Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMap
 
 void Memory::MemoryMap::PrintMemoryMap()
 {
-    Screen::Console::Mode m = kout->GetMode();
-    kout->Hex(16, true);
+    uint64 m = kout->GetBase();
+    kout->HexNumbers(16);
 
     *kout << "Base address       | Length             | Type" << nl;
     *kout << "-------------------|--------------------|----------------------------" << nl;
@@ -189,14 +190,13 @@ void Memory::MemoryMap::PrintMemoryMap()
     *kout << "-------------------|--------------------|----------------------------" << nl;
     
     uint64 total = Memory::pMemoryMap->CountUsableMemory();
-    uint64 gbs = total >> 30;
-    uint64 mbs = (total >> 20) & 1023;
-    uint64 kbs = (total >> 10) & 1023;
+    uint64 gibs = total >> 30;
+    uint64 mibs = (total >> 20) & 1023;
+    uint64 kibs = (total >> 10) & 1023;
 
-    kout->Dec();
-    *kout << "Total usable memory: " << gbs << " GiB " << mbs << " MiB " << kbs << " KiB" << nl << nl;
-    
-    kout->SetMode(m);
+    kout->SetBase(10);
+    *kout << "Total usable memory: " << gibs << " GiB " << mibs << " MiB " << kibs << " KiB" << nl << nl;
+    kout->SetBase(m);
 }
 
 uint32 Memory::MemoryMap::GetNumberOfEntries()
@@ -217,7 +217,7 @@ uint32 Memory::MemoryMap::GetMemoryType(uint64 addr)
     return 0xdeadc0de;
 }
 
-String Memory::MemoryMap::GetMemoryTypeDescription(uint64 addr)
+Lib::String Memory::MemoryMap::GetMemoryTypeDescription(uint64 addr)
 {
     for (uint32 i = 0; i < this->m_iSize; i++)
     {
@@ -227,5 +227,5 @@ String Memory::MemoryMap::GetMemoryTypeDescription(uint64 addr)
         }
     }
     
-    return String::MakeConst("Address not available");
+    return Lib::String("Address not available");
 }
