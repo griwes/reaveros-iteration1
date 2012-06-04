@@ -73,11 +73,12 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
         else
         {
             pdpt = new PageDirectoryPointerTable;
+
             Memory::Zero(pdpt);
             
             this->Entries[startpml4e].Present = 1;
             this->Entries[startpml4e].PDPTAddress = old->GetPhysicalAddress((uint64)pdpt) >> 12;
-
+            
             *(uint64 *)0x2000 = old->GetPhysicalAddress((uint64)pdpt);
             
             this->PointerTables[startpml4e] = pdpt;
@@ -96,7 +97,7 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
             else
             {
                 pd = new PageDirectory;
-                
+
                 Memory::Zero(pd);
                 
                 pdpt->Entries[startpdpte].Present = 1;

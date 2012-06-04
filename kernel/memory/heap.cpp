@@ -127,7 +127,7 @@ void * Memory::Heap::AllocAligned(uint64 iSize)
     this->_allocate(block, iBlockSize);
     
     this->m_lock.Unlock();
-    
+
     return (void *)pAddressAligned;
 }
 

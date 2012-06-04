@@ -60,74 +60,46 @@ namespace Memory
     void * AlignToNextPage(uint64);
 
     template<typename T>
-    void Zero(T * ptr)
-    {
-        uint32 iSize = sizeof(T);
-        uint8 * p = (uint8 *)ptr;
-
-        for (uint32 i = 0; i < iSize; i += 4)
-        {
-            *(uint32 *)(p + i) = 0;
-        }
-
-        p += iSize - iSize % 4;
-
-        for (uint32 i = 0; i < iSize % 4; i++)
-        {
-            p[i] = 0;
-        }
-    }
-    
-    template<typename T>
-    void Zero(T * ptr, uint32 iCount)
+    void Zero(T * ptr, uint32 iCount = 1)
     {
         uint32 iSize = sizeof(T) * iCount;
         uint8 * p = (uint8 *)ptr;
 
-        for (uint32 i = 0; i < iSize; i += 4)
+        bool flag = false;
+        
+        if (p == (void *)0xffffffff81419000)
         {
+            flag = true;
+        }
+
+        for (uint64 i = 0; i < iSize; i += 4)
+        {
+            if (flag && iSize - i < 10)
+            {
+                asm volatile ("mov %0, %%rax" :: "r"(p + i) : "%rax");
+                dbg;
+            }
+            
             *(uint32 *)(p + i) = 0;
         }
 
         p += iSize - iSize % 4;
 
-        for (uint32 i = 0; i < iSize % 4; i++)
+        for (uint64 i = 0; i < iSize % 4; i++)
         {
             p[i] = 0;
         }
     }
 
     template<typename T>
-    void Copy(T * src, T * dest)
-    {
-        uint32 iSize = sizeof(T);
-
-        uint8 * ps = (uint8 *)src;
-        uint8 * pd = (uint8 *)dest;
-        
-        for (uint32 i = 0; i < iSize; i += 4)
-        {
-            *(uint32 *)(pd + i) = *(uint32 *)(ps + i);
-        }
-
-        ps += iSize - iSize % 4;
-        pd += iSize - iSize % 4;
-
-        for (uint32 i = 0; i < iSize % 4; i++)
-        {
-            pd[i] = ps[i];
-        }
-    }
-
-    template<typename T>
-    void Copy(T * src, T * dest, uint32 iCount)
+    void Copy(T * src, T * dest, uint32 iCount = 1)
     {
         uint32 iSize = sizeof(T) * iCount;
         
         uint8 * ps = (uint8 *)src;
         uint8 * pd = (uint8 *)dest;
         
-        for (uint32 i = 0; i < iSize; i += 4)
+        for (uint64 i = 0; i < iSize; i += 4)
         {
             *(uint32 *)(pd + i) = *(uint32 *)(ps + i);
         }
@@ -135,7 +107,7 @@ namespace Memory
         ps += iSize - iSize % 4;
         pd += iSize - iSize % 4;
         
-        for (uint32 i = 0; i < iSize % 4; i++)
+        for (uint64 i = 0; i < iSize % 4; i++)
         {
             pd[i] = ps[i];
         }
