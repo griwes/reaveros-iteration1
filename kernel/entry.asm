@@ -46,6 +46,7 @@ highmemory:
     mov     edx, dword [rsp + 24]
     mov     rcx, qword [rsp + 28]
     mov     r8, qword [rsp + 36]
+    mov     r9, qword [rsp + 44]
 
     mov     rax, rsi
 

@@ -42,16 +42,22 @@ namespace Screen
 
     enum Color
     {
-        White,
-        Grey,
-        Green,
-        Red,
-        Violet,
-        Orange,
-        Cyan,
+        Black,
         Blue,
+        Green,
+        Cyan,
+        Red,
+        Magenta,
+        Brown,
+        Gray,
+        Charcoal,
+        BrightBlue,
+        BrightGreen,
+        BrightCyan,
+        Orange,
+        Pink,
         Yellow,
-        Black
+        White
     };
 
     class Console

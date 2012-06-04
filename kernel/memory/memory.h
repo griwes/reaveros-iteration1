@@ -64,7 +64,7 @@ namespace Memory
     {
         uint32 iSize = sizeof(T);
         uint8 * p = (uint8 *)ptr;
-        
+
         for (uint32 i = 0; i < iSize; i += 4)
         {
             *(uint32 *)(p + i) = 0;

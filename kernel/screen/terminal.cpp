@@ -30,6 +30,8 @@
  **/
 
 #include "terminal.h"
+#include "../memory/memory.h"
+#include "../memory/paging.h"
 
 Screen::Terminal::Terminal(Screen::TerminalDriver * pDrv, const Lib::String & sName)
             : m_sName(sName), m_pDriver(pDrv)
@@ -65,10 +67,13 @@ void Screen::ReaverTerminal::Print(const Lib::String & sString)
 
 }
 
-Screen::BootTerminal::BootTerminal(Screen::VideoMode * pVideoMode)
-    : Terminal(0), m_pVideoMode(pVideoMode)
+Screen::BootTerminal::BootTerminal(Screen::VideoMode * pVideoMode, uint8 * pFont)
+    : Terminal(0), x(0), y(0), m_pVideoMode(pVideoMode), m_pFont(pFont), r(0xbb), g(0xbb), b(0xbb),
+      maxx(pVideoMode->XResolution / 8), maxy(pVideoMode->YResolution / 16)
 {
     dbg;
+    Memory::KernelPML4->Map(0xFFFFFFFF00000000, pVideoMode->BytesPerScanLine * pVideoMode->YResolution,
+                            pVideoMode->PhysBasePtr, true, true);
 }
 
 Screen::BootTerminal::~BootTerminal()
@@ -77,10 +82,211 @@ Screen::BootTerminal::~BootTerminal()
 
 void Screen::BootTerminal::Print(const Lib::String & string)
 {
-
+    for (const char * i = string.Buffer(); *i != 0; i++)
+    {
+        this->_put_char(*i);
+    }
 }
 
-void Screen::BootTerminal::SetColor(Screen::Color )
+void Screen::BootTerminal::SetColor(Screen::Color color)
+{
+    switch (color)
+    {
+        case Black:
+            this->r = this->g = this->b = 0x00;
+            break;
+        case Blue:
+            this->r = this->g = 0x00;
+            this->b = 0xbb;
+            break;
+        case Green:
+            this->r = this->b = 0x00;
+            this->g = 0xbb;
+            break;
+        case Cyan:
+            this->r = 0x00;
+            this->g = this->b = 0xbb;
+            break;
+        case Red:
+            this->r = 0xbb;
+            this->g = this->b = 0x00;
+            break;
+        case Magenta:
+            this->r = this->b = 0xbb;
+            this->g = 0x00;
+            break;
+        case Brown:
+            this->r = this->g = 0xbb;
+            this->b = 0x00;
+            break;
+        case Gray:
+            this->r = this->g = this->b = 0xbb;
+            break;
+        case Charcoal:
+            this->r = this->g = this->b = 0x55;
+            break;
+        case BrightBlue:
+            this->r = this->g = 0x55;
+            this->b = 0xff;
+            break;
+        case BrightGreen:
+            this->r = this->b = 0x55;
+            this->g = 0xff;
+            break;
+        case BrightCyan:
+            this->r = 0x55;
+            this->g = this->b = 0xff;
+            break;
+        case Orange:
+            this->r = 0x55;
+            this->g = this->b = 0xff;
+            break;
+        case Pink:
+            this->r = this->b = 0xff;
+            this->g = 0x55;
+            break;
+        case Yellow:
+            this->r = this->g = 0xff;
+            this->b = 0x55;
+            break;
+        case White:
+            this->r = this->g = this->b = 0xff;
+            break;
+        default:
+            this->r = this->g = this->b = 0xbb;
+    }
+}
+
+void Screen::BootTerminal::_put_char(char c)
+{
+    if (c == 0)
+    {
+        return;
+    }
+
+    if (c == '\n')
+    {
+        this->x = 0;
+        this->y++;
+
+        if (this->y > maxy)
+        {
+            this->_scroll();
+        }
+
+        return;
+    }
+
+    if (c == '\r')
+    {
+        this->x = 0;
+        return;
+    }
+
+    if (c == '\t')
+    {
+        this->x += (8 - this->x % 8);
+        return;
+    }
+
+    // TODO:
+/*    if (this->m_pVideoMode->XResolution == 0)
+    {
+        this->_put80x25(c);
+        return;
+    }*/
+
+    switch (this->m_pVideoMode->BitsPerPixel)
+    {
+        case 16:
+            this->_put16(c);
+            break;
+        case 32:
+            this->_put32(c);
+    }
+}
+
+void Screen::BootTerminal::_put16(char c)
+{
+    uint8 * character = &(this->m_pFont[c * 16]);
+    uint16 * dest = (uint16 *)(0xFFFFFFFF00000000 + this->y * this->m_pVideoMode->BytesPerScanLine * 16
+                    + this->x * this->m_pVideoMode->BitsPerPixel);
+    
+    uint16 iColor = ((this->r >> (8 - this->m_pVideoMode->RedMaskSize)) << this->m_pVideoMode->RedFieldPosition) |
+                ((this->g >> (8 - this->m_pVideoMode->GreenMaskSize)) << this->m_pVideoMode->GreenFieldPosition) |
+                ((this->b >> (8 - this->m_pVideoMode->BlueMaskSize)) << this->m_pVideoMode->BlueFieldPosition);
+    
+    uint16 iBgcolor = 0;
+    
+    for (int i = 0; i < 16; i++)
+    {
+        uint8 data = character[i];
+        
+        for (uint8 i = 0; i < 8; i++)
+        {
+            dest[i] = (data >> (7 - i)) & 1 ? iColor : iBgcolor;
+        }
+        
+        uint64 _ = (uint64)dest;
+        _ += this->m_pVideoMode->BytesPerScanLine ;
+        dest = (uint16 *)_;
+    }
+    
+    this->x++;
+    
+    if (this->x > this->maxx)
+    {
+        this->x = 0;
+        this->y++;
+
+        if (this->y > this->maxy)
+        {
+            this->_scroll();
+        }
+    }
+}
+
+void Screen::BootTerminal::_put32(char c)
+{
+    uint8 * character = &(this->m_pFont[c * 16]);
+    uint32 * dest = (uint32 *)(0xFFFFFFFF00000000 + this->y * this->m_pVideoMode->BytesPerScanLine * 16
+                + this->x * this->m_pVideoMode->BitsPerPixel);
+    
+    uint32 iColor = (this->r << this->m_pVideoMode->RedFieldPosition) |
+                (this->g << this->m_pVideoMode->GreenFieldPosition) |
+                (this->b << this->m_pVideoMode->BlueFieldPosition);
+    
+    uint32 iBgcolor = 0;
+    
+    for (int i = 0; i < 16; i++)
+    {
+        uint8 data = character[i];
+        
+        for (uint8 i = 0; i < 8; i++)
+        {
+            dest[i] = (data >> (7 - i)) & 1 ? iColor : iBgcolor;
+        }
+        
+        uint64 _ = (uint64)dest;
+        _ += this->m_pVideoMode->BytesPerScanLine;
+        dest = (uint32 *)_;
+    }
+    
+    this->x++;
+    
+    if (this->x > this->maxx)
+    {
+        this->x = 0;
+        this->y++;
+
+        if (this->y > this->maxy)
+        {
+            this->_scroll();
+        }
+    }
+}
+
+void Screen::BootTerminal::_scroll()
 {
 
 }

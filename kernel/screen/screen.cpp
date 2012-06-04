@@ -39,8 +39,7 @@ namespace Screen
     char nl = '\n';
 }
 
-void Screen::Initialize(Screen::VideoMode * pVideoMode)
+void Screen::Initialize(Screen::VideoMode * pVideoMode, uint8 * pFont)
 {
-    Screen::kout = new Screen::Console(new BootTerminal(pVideoMode));
-    dbg;
+    Screen::kout = new Screen::Console(new BootTerminal(pVideoMode, pFont));
 }

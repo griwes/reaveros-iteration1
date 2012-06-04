@@ -84,7 +84,7 @@ void Processor::SetupGDT()
     _setup_gdt();
 }
 
-void Processor::Execute(uint32, uint64, uint64, uint32, uint64, uint64)
+void Processor::Execute(uint32, uint64, uint64, uint32, uint64, uint64, uint64)
 {
     __asm("jmp _execute");
 }

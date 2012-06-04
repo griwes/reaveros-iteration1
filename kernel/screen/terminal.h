@@ -77,7 +77,7 @@ namespace Screen
     class BootTerminal : public Terminal
     {
     public:
-        BootTerminal(Screen::VideoMode *);
+        BootTerminal(Screen::VideoMode *, uint8 *);
         virtual ~BootTerminal();
 
         virtual void Print(const Lib::String &);
@@ -85,7 +85,17 @@ namespace Screen
         virtual void SetColor(Screen::Color);
 
     private:
+        void _put_char(char);
+        void _scroll();
+
+        void _put16(char);
+        void _put32(char);
+
+        uint64 x, y;
+        uint64 maxx, maxy;
         VideoMode * m_pVideoMode;
+        uint8 * m_pFont;
+        uint8 r, g, b;
     };
 
     class ReaverTerminal : public Terminal

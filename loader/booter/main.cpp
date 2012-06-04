@@ -68,7 +68,8 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     *bout << "Preparing kernel memory...";
     
     uint64 end = Memory::Copy(pKernel, pKernelSize * 512, 0xFFFFFFFF80000000); // -2 GB
-    uint64 video = Memory::Copy(pKernel + pKernelSize * 512, pKernelInitRDSize * 512, Memory::AlignToNextPage(end));
+    uint64 videofont = Memory::Copy(pKernel + pKernelSize * 512, pKernelInitRDSize * 512, Memory::AlignToNextPage(end));
+    uint64 video = Memory::Copy((uint32)pFont, 4096, Memory::AlignToNextPage(videofont));
     uint64 memmap = Screen::SaveProcessedVideoModeDescription(video);
     uint64 placement = Memory::CreateMemoryMap(pMemoryMap, iMemoryMapSize, memmap);
     
@@ -94,7 +95,7 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     *bout << "Executing kernel...";
 
     Processor::Execute(pKernel, Memory::AlignToNextPage(end), memmap, iMemoryMapSize + 1,
-                       Memory::AlignToNextPage(placement), video);
+                       Memory::AlignToNextPage(placement), video, videofont);
     
     for (;;) ;
     

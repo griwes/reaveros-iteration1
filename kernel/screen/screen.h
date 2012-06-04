@@ -41,14 +41,21 @@ namespace Screen
     
     extern Screen::Console * kout;
 
-    class VideoMode
+    struct VideoMode
     {
-        
-    };
+        uint32 PhysBasePtr;
+        uint16 BytesPerScanLine;
+        uint16 XResolution, YResolution;
+        uint8 BitsPerPixel;
+        uint16 RedMaskSize, RedFieldPosition;
+        uint16 GreenMaskSize, GreenFieldPosition;
+        uint16 BlueMaskSize, BlueFieldPosition;
+        uint16 ReservedMaskSize, ReservedFieldPosition;
+    } __attribute__((__packed__));
 
     extern char nl;
     
-    void Initialize(Screen::VideoMode *);
+    void Initialize(Screen::VideoMode *, uint8 *);
 }
 
 #endif

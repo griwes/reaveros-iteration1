@@ -56,11 +56,12 @@ Memory::Heap::~Heap()
 void * Memory::Heap::Alloc(uint64 iSize)
 {
     this->m_lock.Lock();
-    
+
     this->_check_sanity();
     
     if (iSize == 0)
     {
+        this->m_lock.Unlock();
         return nullptr;
     }
     
@@ -81,11 +82,12 @@ void * Memory::Heap::Alloc(uint64 iSize)
 void * Memory::Heap::AllocAligned(uint64 iSize)
 {
     this->m_lock.Lock();
-
+    
     this->_check_sanity();
     
     if (iSize == 0)
     {
+        this->m_lock.Unlock();
         return nullptr;
     }
     
@@ -125,7 +127,7 @@ void * Memory::Heap::AllocAligned(uint64 iSize)
     this->_allocate(block, iBlockSize);
     
     this->m_lock.Unlock();
-
+    
     return (void *)pAddressAligned;
 }
 

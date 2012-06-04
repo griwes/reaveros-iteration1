@@ -48,24 +48,24 @@ namespace InitRD
 }
 
 extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize,
-                            void * pPlacementAddress, Screen::VideoMode * pVideoMode)
+                            void * pPlacementAddress, Screen::VideoMode * pVideoMode, uint8 * pFont)
 {
     Memory::PreInitialize(pPlacementAddress);
     Memory::Initialize(pMemoryMap, iMemoryMapSize);
 
-    Screen::Initialize(pVideoMode);
+    Screen::Initialize(pVideoMode, pFont);
     
     for (;;) ;
 
     using Screen::kout;
     using Screen::nl;
     
-    *kout << Screen::Grey;
+    *kout << Screen::Gray;
     
     *kout << "ReaverOS 0.1: Cotyledon" << nl;
     *kout << "Copyright (C) 2011-2012 Reaver Project Team" << nl << nl;
 
-    *kout << "Initializing basic memory manager... " << Screen::Green << "done" << Screen::Grey << "." << nl;
+    *kout << "Initializing basic memory manager... " << Screen::Green << "done" << Screen::Gray << "." << nl;
     *kout << "Printing memory map." << nl << nl;
 
     Memory::pMemoryMap->PrintMemoryMap();
@@ -73,7 +73,7 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     *kout << nl << "Initializing processor... " << nl;
     Processor::Initialize();
 
-    *kout << Screen::Green << "done" << Screen::Grey << "." << nl;
+    *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
     Processor::PrintStatus();
 
     for (;;) ;

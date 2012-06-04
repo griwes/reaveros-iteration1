@@ -31,6 +31,7 @@
 
 #include "paging.h"
 #include "memory.h"
+#include "heap.h"
 
 Paging::PML4::PML4(uint64 iBase)
 {
@@ -142,6 +143,7 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                     startpte++;
                     
                     pBasePhysical += 4096;
+
                 }
                 
                 if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
@@ -193,7 +195,7 @@ static void * _alloc_aligned(uint64 iSize)
 {
     if (Memory::pPlacementAddress == 0)
     {
-//        return Memory::KernelHeap->AllocAligned(iSize);
+        return Memory::KernelHeap->AllocAligned(iSize);
     }
 
     Memory::AlignPlacementToPage();

@@ -9,7 +9,7 @@ Lib::String::String()
 Lib::String::String(const char * s)
     : m_pData(new char[Lib::Strlen(s) + 1]), m_iLength(Lib::Strlen(s) + 1)
 {
-    Memory::Copy(s, (const char *)this->m_pData);
+    Memory::Copy(s, (const char *)this->m_pData, this->m_iLength);
 }
 
 Lib::String::String(const Lib::String & s)
@@ -18,12 +18,12 @@ Lib::String::String(const Lib::String & s)
     Memory::Copy(s.m_pData, this->m_pData, s.m_iLength);
 }
 
-const char * Lib::String::Buffer()
+const char * Lib::String::Buffer() const
 {
     return this->m_pData;
 }
 
-uint64 Lib::String::Length()
+uint64 Lib::String::Length() const
 {
     return this->m_iLength;
 }

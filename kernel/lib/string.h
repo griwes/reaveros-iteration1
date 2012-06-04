@@ -9,7 +9,7 @@ namespace Lib
 {
     inline uint64 Strlen(const char * s)
     {
-        uint64 len;
+        uint64 len = 0;
 
         while (*s != 0)
         {
@@ -27,8 +27,8 @@ namespace Lib
         String(const char *);
         String(const String &);
 
-        uint64 Length();
-        const char * Buffer();
+        uint64 Length() const;
+        const char * Buffer() const;
         
         String operator+(const String &);
         String & operator+=(const String &);

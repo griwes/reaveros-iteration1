@@ -51,8 +51,7 @@ void * operator new(uint64 iSize)
 {
     if (!Memory::pPlacementAddress)
     {
-        void * ret = Memory::KernelHeap->Alloc(iSize);
-        return ret;
+        return Memory::KernelHeap->Alloc(iSize);
     }
 
     void * p = Memory::pPlacementAddress;
