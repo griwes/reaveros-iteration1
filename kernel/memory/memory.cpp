@@ -35,28 +35,28 @@
 #include "heap.h"
 #include "paging.h"
 #include "../lib/stack.h"
+#include "../lib/list.h"
 
 namespace Memory
 {
-    void * pPlacementAddress = 0;
-    Memory::MemoryMap * pMemoryMap = 0;
+    void * PlacementAddress = 0;
+    Memory::MemoryMap * SystemMemoryMap = 0;
     Memory::Heap * KernelHeap = 0;
-    Paging::PML4 * KernelPML4 = 0;
-    Paging::PageDirectory * KernelSpace[2] = {0, 0};
     uint64 StackStart = 0;
-    Lib::Stack * Pages = 0;
+    Lib::Stack * GlobalPages = 0;
+    VM::Region * KernelRegion = 0;
 }
 
 void * operator new(uint64 iSize)
 {
-    if (!Memory::pPlacementAddress)
+    if (!Memory::PlacementAddress)
     {
         return Memory::KernelHeap->Alloc(iSize);
     }
 
-    void * p = Memory::pPlacementAddress;
-    uint64 _ = (uint64)Memory::pPlacementAddress + iSize;
-    Memory::pPlacementAddress = (void *)_;
+    void * p = Memory::PlacementAddress;
+    uint64 _ = (uint64)Memory::PlacementAddress + iSize;
+    Memory::PlacementAddress = (void *)_;
 
     return p;
 }
@@ -64,7 +64,7 @@ void * operator new(uint64 iSize)
 // hope no-one will ever try to free placed memory...
 void operator delete(void * pPointer)
 {
-    if (!Memory::pPlacementAddress)
+    if (!Memory::PlacementAddress)
     {
         Memory::KernelHeap->Free(pPointer);
     }
@@ -77,7 +77,7 @@ void * operator new[](uint64 iSize)
 
 void operator delete[](void * pPointer)
 {
-    if (!Memory::pPlacementAddress)
+    if (!Memory::PlacementAddress)
     {
         Memory::KernelHeap->Free(pPointer);
     }
@@ -85,7 +85,7 @@ void operator delete[](void * pPointer)
 
 void Memory::AlignPlacementToPage()
 {
-    Memory::pPlacementAddress = Memory::AlignToNextPage((uint64)Memory::pPlacementAddress);
+    Memory::PlacementAddress = Memory::AlignToNextPage((uint64)Memory::PlacementAddress);
 }
 
 void * Memory::AlignToNextPage(uint64 p)
@@ -98,20 +98,20 @@ void * Memory::AlignToNextPage(uint64 p)
 
 void Memory::PreInitialize(void * pPlacementAddress)
 {
-    Memory::pPlacementAddress = pPlacementAddress;
+    Memory::PlacementAddress = pPlacementAddress;
     
     return;
 }
 
 void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 {
-    Memory::pMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
+    Memory::SystemMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
     
     Memory::RemapKernel();
-    Memory::Pages = new Lib::Stack(Memory::pMemoryMap);
+    Memory::Pages = new Lib::Stack(Memory::SystemMemoryMap);
     Memory::KernelHeap = new Heap(Memory::StackStart, 0xFFFFFFFFC0000000);
 
-    Memory::pPlacementAddress = (void *)0;
+    Memory::PlacementAddress = (void *)0;
     
     return;
 }
@@ -120,11 +120,11 @@ void Memory::RemapKernel()
 {
     Memory::MemoryMapEntry * p = (Memory::MemoryMapEntry *)0xFFFFFFFFFFFFFFFF;
     
-    for (uint64 i = 0; i < Memory::pMemoryMap->GetNumberOfEntries(); i++)
+    for (uint64 i = 0; i < Memory::SystemMemoryMap->GetNumberOfEntries(); i++)
     {
-        if (Memory::pMemoryMap->GetEntries()[i].Type() == 0xffff)
+        if (Memory::SystemMemoryMap->GetEntries()[i].Type() == 0xffff)
         {
-            p = &Memory::pMemoryMap->GetEntries()[i];
+            p = &Memory::SystemMemoryMap->GetEntries()[i];
             break;
         }
     }

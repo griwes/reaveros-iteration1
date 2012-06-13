@@ -68,7 +68,7 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     *kout << "Initializing basic memory manager... " << Screen::Green << "done" << Screen::Gray << "." << nl;
     *kout << "Printing memory map." << nl << nl;
 
-    Memory::pMemoryMap->PrintMemoryMap();
+    Memory::SystemMemoryMap->PrintMemoryMap();
     
     *kout << nl << "Initializing processor... " << nl;
     Processor::Initialize();

@@ -6,7 +6,7 @@ CFLAGS=-c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=main.cpp cxx.cpp \
 	processor/processor.cpp processor/synchronization.cpp processor/smp.cpp processor/core.cpp \
-	memory/memory.cpp memory/memorymap.cpp memory/paging.cpp memory/heap.cpp memory/vmm.cpp \
+	memory/memory.cpp memory/memorymap.cpp memory/paging.cpp memory/heap.cpp \
 	lib/string.cpp lib/stack.cpp \
 	screen/screen.cpp screen/terminal.cpp screen/console.cpp \
 	scheduler/scheduler.cpp \

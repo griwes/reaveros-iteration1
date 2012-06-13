@@ -47,6 +47,11 @@ namespace Paging
 
 namespace Memory
 {
+    namespace VM
+    {
+        class Region;
+    }
+
     class MemoryMapEntry;
     class MemoryMap;
     class Heap;
@@ -65,21 +70,8 @@ namespace Memory
         uint32 iSize = sizeof(T) * iCount;
         uint8 * p = (uint8 *)ptr;
 
-        bool flag = false;
-        
-        if (p == (void *)0xffffffff81419000)
-        {
-            flag = true;
-        }
-
         for (uint64 i = 0; i < iSize; i += 4)
         {
-            if (flag && iSize - i < 10)
-            {
-                asm volatile ("mov %0, %%rax" :: "r"(p + i) : "%rax");
-                dbg;
-            }
-            
             *(uint32 *)(p + i) = 0;
         }
 
@@ -113,13 +105,12 @@ namespace Memory
         }
     }
 
-    extern void * pPlacementAddress;
-    extern Memory::MemoryMap * pMemoryMap;
+    extern void * PlacementAddress;
+    extern Memory::MemoryMap * SystemMemoryMap;
     extern Memory::Heap * KernelHeap;
-    extern Paging::PML4 * KernelPML4;
-    extern Paging::PageDirectory * KernelSpace[2];
     extern uint64 StackStart;
     extern Lib::Stack * Pages;
+    extern VM::Region * KernelRegion;
 }
 
 #endif
