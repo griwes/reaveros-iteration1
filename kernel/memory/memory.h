@@ -70,16 +70,9 @@ namespace Memory
         uint32 iSize = sizeof(T) * iCount;
         uint8 * p = (uint8 *)ptr;
 
-        for (uint64 i = 0; i < iSize; i += 4)
+        for (uint64 i = 0; i < iSize; i++)
         {
-            *(uint32 *)(p + i) = 0;
-        }
-
-        p += iSize - iSize % 4;
-
-        for (uint64 i = 0; i < iSize % 4; i++)
-        {
-            p[i] = 0;
+            *(p++) = 0;
         }
     }
 
@@ -90,20 +83,12 @@ namespace Memory
         
         uint8 * ps = (uint8 *)src;
         uint8 * pd = (uint8 *)dest;
-        
-        for (uint64 i = 0; i < iSize; i += 4)
+
+        for (uint64 i = 0; i < iSize; i++)
         {
-            *(uint32 *)(pd + i) = *(uint32 *)(ps + i);
+            *(pd++) = *(ps++);
         }
-        
-        ps += iSize - iSize % 4;
-        pd += iSize - iSize % 4;
-        
-        for (uint64 i = 0; i < iSize % 4; i++)
-        {
-            pd[i] = ps[i];
-        }
-    }
+   }
 
     extern void * PlacementAddress;
     extern Memory::MemoryMap * SystemMemoryMap;
