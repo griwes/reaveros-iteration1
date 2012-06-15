@@ -1,3 +1,34 @@
+/**
+ * ReaverOS
+ * kernel/lib/vector.h
+ * Simple container class.
+ */
+
+/**
+ * Reaver Project OS, Rose License
+ *
+ * Copyright (C) 2011-2012 Reaver Project Team:
+ * 1. Michał "Griwes" Dominiak
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation is required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ * Michał "Griwes" Dominiak
+ *
+ **/
+
 #ifndef __rose_kernel_lib_vector_h__
 #define __rose_kernel_lib_vector_h__
 
@@ -23,35 +54,115 @@ namespace
         friend class Lib::Vector<T>;
         
         _vector_iterator(Vector * v, uint64 i)
-        : m_pParent(v), m_iRevision(v->m_iRevision), m_iIndex(i)
+            : m_pParent(v), m_iRevision(v->m_iRevision), m_iIndex(i)
         {
         }
         
-        _vector_iterator(const Vector &);
-        ~_vector_iterator();
+        _vector_iterator(const Iterator & it)
+            : m_pParent(it.m_pParent), m_iRevision(it.m_iRevision), m_iIndex(it.m_iIndex)
+        {
+        }
         
-        T & operator*();
-        T * operator->();
+        ~_vector_iterator()
+        {
+        }
+
+        T & operator*()
+        {
+            if (m_iRevision == m_pParent->m_iRevision && m_iIndex < m_pParent->m_iSize)
+            {
+                return m_pParent->m_pBuffer[m_iIndex];
+            }
+
+            // there are no null references in C++, they said...
+            return *(T *)0;
+        }
         
-        Iterator operator++();
-        Iterator operator++(uint64);
-        Iterator operator--();
-        Iterator operator--(uint64);
+        Iterator operator++()
+        {
+            m_iIndex++;
+        }
         
-        Iterator operator+(uint64);
-        Iterator & operator+=(uint64);
-        Iterator operator-(uint64);
-        Iterator & operator-=(uint64);
+        Iterator operator++(uint64)
+        {
+            m_iIndex++;
+        }
+
+        Iterator operator--()
+        {
+            m_iIndex--;
+        }
         
-        Iterator & operator=(const Iterator &);
+        Iterator operator--(uint64)
+        {
+            m_iIndex--;
+        }
+
+        Iterator operator+(uint64 i)
+        {
+            return Iterator(m_pParent, m_iIndex + i);
+        }
         
-        bool operator<(const Iterator &);
-        bool operator>(const Iterator &);
-        bool operator==(const Iterator &);
-        bool operator!=(const Iterator &);
-        bool operator<=(const Iterator &);
-        bool operator>=(const Iterator &);
+        Iterator & operator+=(uint64 i)
+        {
+            m_iIndex += i;
+            return *this;
+        }
         
+        Iterator operator-(uint64 i)
+        {
+            return Iterator(m_pParent, m_iIndex - i);
+        }
+        
+        Iterator & operator-=(uint64 i)
+        {
+            m_iIndex -= i;
+            return *this;
+        }
+
+        Iterator & operator=(const Iterator & it)
+        {
+            m_iIndex = it.m_iIndex;
+            m_pParent = it.m_pParent;
+            m_iRevision = it.m_iRevision;
+            return *this;
+        }
+
+        bool operator<(Iterator it)
+        {
+            if (m_pParent != it.m_pParent)
+            {
+                return m_pParent < it.m_pParent;
+            }
+
+            return m_iIndex < it.m_iIndex;
+        }
+        
+        bool operator>(Iterator it)
+        {
+            return it < *this;
+        }
+        
+        bool operator==(Iterator it)
+        {
+            return (!(*this < it) && !(it < *this));
+        }
+        
+        bool operator!=(Iterator it)
+        {
+            return (*this < it || it < *this);
+        }
+        
+        bool operator<=(Iterator it)
+        {
+            return (*this < it || *this == it);
+        }
+        
+        bool operator>=(Iterator it)
+        {
+            return (*this > it || *this == it);
+        }
+
     private:
         Vector * m_pParent;
         uint64 m_iRevision;
@@ -131,7 +242,7 @@ namespace Lib
                 return;
             }
             
-            it->~T();
+            (*it).~T();
             m_iSize--;
         }
         
@@ -201,7 +312,7 @@ namespace Lib
         
         Iterator End()
         {
-            return Iterator(this, m_iCapacity);
+            return Iterator(this, m_iSize);
         }
         
         
@@ -214,9 +325,8 @@ namespace Lib
         {
             if (ind >= m_iSize)
             {
-                // cause unexplainable page fault
-                // hey, we rarely hit this code!
-                *(uint8 *)0 = 0;
+                // return null reference
+                return *(T *)0;
             }
             
             return m_pBuffer[ind];

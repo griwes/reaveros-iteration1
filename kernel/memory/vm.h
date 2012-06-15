@@ -4,7 +4,7 @@
 #include "../types.h"
 #include "paging.h"
 #include "../processor/synchronization.h"
-#include "../lib/list.h"
+#include "../lib/vector.h"
 
 namespace Memory
 {
@@ -19,6 +19,7 @@ namespace Memory
             Page();
             ~Page();
 
+            uint64 Allocated:1;
             uint64 Userspace:1;
             uint64 AutoAllocate:1;
             uint64 CoWCopy:1;
@@ -29,14 +30,15 @@ namespace Memory
             uint64 MMIOPage:1;
             uint64 ReadOnly:1;
             uint64 KillOnWrite:1;
-
+            uint64 Global:1;
+            
             uint64 PhysicalAddress;
             uint64 VirtualAddress;
 
             Region * Parent;
 
             Page * CoWBase;
-            Lib::List<Page *> CoWCopies;
+            Lib::Vector<Page *> CoWCopies;
             uint64 CoWCounter;
 
             Processor::Spinlock Lock;
@@ -64,7 +66,7 @@ namespace Memory
             uint64 ReadOnly:1;
             uint64 KillOnRead:1;
 
-            Lib::List<Page *> Pages;
+            Lib::Vector<Page *> Pages;
 
             uint64 VirtualAddress;
             uint64 Length;
@@ -109,7 +111,7 @@ namespace Memory
             }
 
             Scheduler::Process * Parent;
-            Lib::List<Region *> Regions;
+            Lib::Vector<Region *> Regions;
 
         private:
             Processor::Spinlock m_lock;

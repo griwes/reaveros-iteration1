@@ -44,14 +44,14 @@ namespace Lib
         typedef T Type;
         typedef _list_iterator<T> Iterator;
         typedef _list_element<T> Element;
-        typedef List<T> List;
+        typedef List<T> Listt;
 
         List(bool);
         ~List();
 
-        Insert(const T &);
-        Remove(const T &);
-        Remove(Iterator);
+        Iterator Insert(const T &);
+        void Remove(const T &);
+        void Remove(Iterator);
     };
 }
 
