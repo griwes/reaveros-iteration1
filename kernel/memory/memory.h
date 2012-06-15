@@ -50,6 +50,7 @@ namespace Memory
     namespace VM
     {
         class Region;
+        class AddressSpace;
     }
 
     class MemoryMapEntry;
@@ -96,6 +97,7 @@ namespace Memory
     extern uint64 StackStart;
     extern Lib::Stack * Pages;
     extern VM::Region * KernelRegion;
+    extern VM::AddressSpace * BaseVAS;
 }
 
 #endif

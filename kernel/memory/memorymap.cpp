@@ -179,17 +179,17 @@ void Memory::MemoryMap::PrintMemoryMap()
 
     for (uint32 i = 0; i < this->m_iSize; i++)
     {
-        *kout << Memory::pMemoryMap->GetEntries()[i].Base();
+        *kout << Memory::SystemMemoryMap->GetEntries()[i].Base();
         *kout << " | ";
-        *kout << Memory::pMemoryMap->GetEntries()[i].Length();
+        *kout << Memory::SystemMemoryMap->GetEntries()[i].Length();
         *kout << " | ";
-        *kout << Memory::pMemoryMap->GetEntries()[i].TypeDescription();
+        *kout << Memory::SystemMemoryMap->GetEntries()[i].TypeDescription();
         *kout << nl;
     }
 
     *kout << "-------------------|--------------------|----------------------------" << nl;
     
-    uint64 total = Memory::pMemoryMap->CountUsableMemory();
+    uint64 total = Memory::SystemMemoryMap->CountUsableMemory();
     uint64 gibs = total >> 30;
     uint64 mibs = (total >> 20) & 1023;
     uint64 kibs = (total >> 10) & 1023;

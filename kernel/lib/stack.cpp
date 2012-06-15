@@ -38,8 +38,8 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap)
     this->m_iSize = 0;
 
     Memory::AlignPlacementToPage();
-    this->m_pStack = (uint64 *)Memory::pPlacementAddress;
-    this->m_pLastPage = (uint64)Memory::pPlacementAddress;
+    this->m_pStack = (uint64 *)Memory::PlacementAddress;
+    this->m_pLastPage = (uint64)Memory::PlacementAddress;
 
     for (uint64 i = 0; i < pMemoryMap->GetNumberOfEntries(); i++)
     {
@@ -72,7 +72,7 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap)
 
     // give the stack one additional page for possibly freed at some point pages
     // not much more will be placed, anyway
-    Memory::pPlacementAddress = (void *)(this->m_pLastPage + 4 * 1024);
+    Memory::PlacementAddress = (void *)(this->m_pLastPage + 4 * 1024);
 }
 
 Lib::Stack::~Stack()

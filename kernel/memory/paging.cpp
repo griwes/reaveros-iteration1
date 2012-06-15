@@ -32,6 +32,7 @@
 #include "paging.h"
 #include "memory.h"
 #include "heap.h"
+#include "vmm.h"
 
 Paging::PML4::PML4(uint64 iBase)
 {
@@ -194,7 +195,7 @@ uint64 Paging::PML4::Unmap(uint64 pAddr)
 
 static void * _alloc(uint64 iSize)
 {
-    return VMM::AllocPagingPages(iSize / 4096 + (iSize % 4096 ? 1 : 0));
+    return Memory::VMM::AllocPagingPages(iSize / 4096 + (iSize % 4096 ? 1 : 0));
 }
 
 void * Paging::PageTable::operator new(uint64 iSize)

@@ -4,7 +4,15 @@
 #include "../types.h"
 #include "paging.h"
 #include "../processor/synchronization.h"
+#include "../processor/processor.h"
 #include "../lib/vector.h"
+
+namespace Scheduler
+{
+    class Process;
+}
+
+class File;
 
 namespace Memory
 {
@@ -68,8 +76,8 @@ namespace Memory
 
             Lib::Vector<Page *> Pages;
 
-            uint64 VirtualAddress;
-            uint64 Length;
+            uint64 Base;
+            uint64 End;
 
             AddressSpace * Parent;
             AddressSpace * SharedAddressSpace;
@@ -85,7 +93,9 @@ namespace Memory
             AddressSpace();
             ~AddressSpace();
 
+            void AddRegion(uint64, uint64);
             void AddRegion(Region *);
+            void RemoveRegion(uint64);
             void RemoveRegion(Region *);
             
             void MapPage(uint64);
@@ -110,11 +120,17 @@ namespace Memory
                 }
             }
 
+            void SetActive()
+            {
+                Processor::LoadCR3(m_pPML4->GetPhysicalAddress((uint64)m_pPML4));
+            }
+
             Scheduler::Process * Parent;
             Lib::Vector<Region *> Regions;
 
         private:
             Processor::Spinlock m_lock;
+            Paging::PML4 * m_pPML4;
         };
     }
 }

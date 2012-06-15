@@ -36,6 +36,8 @@
 #include "paging.h"
 #include "../lib/stack.h"
 #include "../lib/list.h"
+#include "vm.h"
+#include "vmm.h"
 
 namespace Memory
 {
@@ -45,6 +47,7 @@ namespace Memory
     uint64 StackStart = 0;
     Lib::Stack * GlobalPages = 0;
     VM::Region * KernelRegion = 0;
+    VM::AddressSpace * BaseVAS = 0;
 }
 
 void * operator new(uint64 iSize)
@@ -135,16 +138,17 @@ void Memory::RemapKernel()
         for (;;);
     }
 
-    Memory::KernelPML4 = new Paging::PML4(p->Base());
+    BaseVAS = new VM::AddressSpace;
 
-    Memory::KernelPML4->Map(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());
-    Memory::KernelPML4->Map(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, 16 * 1024, p->End() - 16 * 1024);
-    // 1-page gap above is current kernel stack control - 4 KiB should be enough for boot-up kernel stack
+    BaseVAS->AddRegion(0xFFFFFFFF80000000, 0);
+    BaseVAS->Regions[0]->KernelRegion = 1;
+    
+    VMM::MapPages(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());
+    VMM::MapPages(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, p->End() - 16 * 1024);
 
     Memory::StackStart = 0xFFFFFFFF80000000 + p->Length();
-    Processor::LoadCR3(Memory::KernelPML4->GetPhysicalAddress((uint64)Memory::KernelPML4) & ~(uint64)4095);
 
-    Memory::KernelPML4->m_iBase = 0;
+    BaseVAS->SetActive();
     
     return;
 }
