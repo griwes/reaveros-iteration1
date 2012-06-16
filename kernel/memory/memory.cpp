@@ -46,8 +46,9 @@ namespace Memory
     Memory::Heap * KernelHeap = 0;
     uint64 StackStart = 0;
     Lib::Stack * GlobalPages = 0;
+    Lib::Stack * CorePages = 0;
     VM::Region * KernelRegion = 0;
-    VM::AddressSpace * BaseVAS = 0;
+    VM::AddressSpace * CurrentVAS = 0;
 }
 
 void * operator new(uint64 iSize)
@@ -111,7 +112,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::SystemMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
     
     Memory::RemapKernel();
-    Memory::Pages = new Lib::Stack(Memory::SystemMemoryMap);
+    Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap);
     Memory::KernelHeap = new Heap(Memory::StackStart, 0xFFFFFFFFC0000000);
 
     Memory::PlacementAddress = (void *)0;
@@ -137,18 +138,17 @@ void Memory::RemapKernel()
     {
         for (;;);
     }
-
-    BaseVAS = new VM::AddressSpace;
-
-    BaseVAS->AddRegion(0xFFFFFFFF80000000, 0);
-    BaseVAS->Regions[0]->KernelRegion = 1;
+    
+    CurrentVAS = new VM::AddressSpace(p->Base());
     
     VMM::MapPages(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());
     VMM::MapPages(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, p->End() - 16 * 1024);
-
+    
     Memory::StackStart = 0xFFFFFFFF80000000 + p->Length();
 
-    BaseVAS->SetActive();
+    CurrentVAS->m_pPML4->m_iBase = 0;
+    
+    CurrentVAS->SetActive();
     
     return;
 }

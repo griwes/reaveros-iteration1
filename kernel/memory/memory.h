@@ -29,8 +29,8 @@
  * 
  **/
 
-#ifndef _rose_kernel_memory_memory_h_
-#define _rose_kernel_memory_memory_h_
+#ifndef __rose_kernel_memory_memory_h__
+#define __rose_kernel_memory_memory_h__
 
 #include "../types.h"
 
@@ -95,9 +95,10 @@ namespace Memory
     extern Memory::MemoryMap * SystemMemoryMap;
     extern Memory::Heap * KernelHeap;
     extern uint64 StackStart;
-    extern Lib::Stack * Pages;
+    extern Lib::Stack * GlobalPages;
+    extern Lib::Stack * CorePages;
     extern VM::Region * KernelRegion;
-    extern VM::AddressSpace * BaseVAS;
+    extern VM::AddressSpace * CurrentVAS;
 }
 
 #endif

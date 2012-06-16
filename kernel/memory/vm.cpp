@@ -1,8 +1,8 @@
 #include "vm.h"
 
-Memory::VM::AddressSpace::AddressSpace()
+Memory::VM::AddressSpace::AddressSpace(uint64 base)
 {
-
+    m_pPML4 = new Paging::PML4(base);
 }
 
 Memory::VM::AddressSpace::~AddressSpace()
@@ -10,14 +10,66 @@ Memory::VM::AddressSpace::~AddressSpace()
 
 }
 
-void Memory::VM::AddressSpace::AddRegion(Memory::VM::Region * )
+void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 limit, Region * region)
 {
+    if (region == nullptr)
+    {
+        Region * region = new Region;
+        region->Base = base;
+        region->End = base + limit;
+    }
 
+    auto it = Regions.Begin() + 1;
+    for (; it != Regions.End(); it++)
+    {
+        if ((*it - 1)->Base == base)
+        {
+            PANIC();
+        }
+
+        if ((*it - 1)->Base < base && (*(it))->Base > base)
+        {
+            if ((*it - 1)->End < base && (*(it))->Base < base + limit)
+            {
+                break;
+            }
+
+            else
+            {
+                PANIC();
+            }
+        }
+    }
+
+    Regions.Insert(region, it);
 }
 
-void Memory::VM::AddressSpace::RemoveRegion(Memory::VM::Region * )
+void Memory::VM::AddressSpace::AddRegion(Memory::VM::Region * pRegion)
 {
+    AddRegion(pRegion->Base, pRegion->End, pRegion);
+}
 
+void Memory::VM::AddressSpace::RemoveRegion(uint64 base)
+{
+    auto it = Regions.Begin() + 1;
+    for (; it != Regions.End(); it++)
+    {
+        if ((*it - 1)->Base == base)
+        {
+            Regions.Remove(it - 1);
+            return;
+        }
+
+        if ((*it - 1)->Base < base && (*(it))->Base > base)
+        {
+            PANIC();
+        }
+    }
+}
+
+void Memory::VM::AddressSpace::RemoveRegion(Memory::VM::Region * pRegion)
+{
+    RemoveRegion(pRegion->Base);
 }
 
 void Memory::VM::AddressSpace::MapPage(uint64 )

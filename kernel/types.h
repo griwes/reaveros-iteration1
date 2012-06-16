@@ -55,6 +55,8 @@ inline T abs(T i)
     return i;
 }
 
+// for now
+#define PANIC(X) __asm("hlt");
 #define dbg __asm("xchg %bx, %bx")
 
 #endif

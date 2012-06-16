@@ -18,6 +18,38 @@ namespace Memory
 {
     namespace VM
     {
+        // kernel global addresses and limits
+        const uint64 PSPoolStackBase = 0xFFFFFD7D3F700000;
+        const uint64 PSPoolStackEnd = 1025ull * 1024 * 1024;
+        const uint64 HeapBase = 0xFFFFFD7D7F800000;
+        const uint64 HeapLimit = 1024ull * 1024 * 1024 * 1024;
+        const uint64 TCBPoolStackBase = 0xFFFFFE7D7F800000;
+        const uint64 TCBPoolStackLimit = 4ull * 1024 * 1024;;
+        const uint64 PCBPoolStackBase = 0xFFFFFE7D80000000;
+        const uint64 PCBPoolStackLimit = 4ull * 1024 * 1024;;
+        const uint64 PSPoolBase = 0xFFFFFF7DC0000000;
+        const uint64 PSPoolLimit = 1025ull * 1024 * 1024 * 1024;
+        const uint64 ACPIAreaBase = 0xFFFFFF7DC0000000;
+        const uint64 ACPIAreaLimit = 2ull * 1024 * 1024 * 1024;
+        const uint64 FreePageStackBase = 0xFFFFFF7E00000000;
+        const uint64 FreePageStackLimit = 512ull * 1024 * 1024 * 1024;
+        const uint64 PCBPoolBase = 0xFFFFFFFE00000000;
+        const uint64 PCBPoolLimit = 2ull * 1024 * 1024 * 1024;
+        const uint64 TCBPoolBase = 0xFFFFFFFE80000000;
+        const uint64 TCBPoolLimit = 2ull * 1024 * 1024 * 1024;
+        const uint64 VideoMemoryBase = 0xFFFFFFFF00000000;
+        const uint64 VideoMemoryLimit = 1024ull * 1024 * 1024;
+        const uint64 VideoBackbufferBase = 0xFFFFFFFF40000000;
+        const uint64 VideoBackbufferLimit = 1024ull * 1024 * 1024;
+        const uint64 KernelBase = 0xFFFFFFFF80000000;
+        const uint64 KernelLimit = 2ull * 1024 * 1024 * 1024;
+
+        // core structures addresses and limits
+        const uint64 CoreDataAreaBase = 0xFFFF800000000000;
+        const uint64 CoreDataAreaLimit = 1024 * 1024 * 1024;
+        const uint64 CorePageStackBase = 0xFFFF800040000000;
+        const uint64 CorePageStackLimit = 1024 * 1024 * 1024;
+        
         class AddressSpace;
         class Region;
         
@@ -90,15 +122,20 @@ namespace Memory
         class AddressSpace
         {
         public:
-            AddressSpace();
+            AddressSpace(uint64 = 0);
             ~AddressSpace();
 
-            void AddRegion(uint64, uint64);
+            void AddRegion(uint64, uint64, Region * = nullptr);
             void AddRegion(Region *);
             void RemoveRegion(uint64);
             void RemoveRegion(Region *);
             
             void MapPage(uint64);
+            void MapPage(uint64 s, uint64 b)
+            {
+                m_pPML4->Map(s, s + 4096, b);
+            }
+            
             void MapPages(uint64 start, uint64 end)
             {
                 while (start < end)
@@ -106,6 +143,11 @@ namespace Memory
                     this->MapPage(start);
                     start += 4096;
                 }
+            }
+
+            void MapPages(uint64 s, uint64 e, uint64 b)
+            {
+                m_pPML4->Map(s, e, b);
             }
 
             void MapPage(Page *);
@@ -128,6 +170,8 @@ namespace Memory
             Scheduler::Process * Parent;
             Lib::Vector<Region *> Regions;
 
+            friend void Memory::RemapKernel();
+            
         private:
             Processor::Spinlock m_lock;
             Paging::PML4 * m_pPML4;

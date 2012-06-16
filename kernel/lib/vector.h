@@ -74,28 +74,31 @@ namespace
                 return m_pParent->m_pBuffer[m_iIndex];
             }
 
-            // there are no null references in C++, they said...
-            return *(T *)0;
+            PANIC();
         }
         
-        Iterator operator++()
+        Iterator & operator++()
         {
             m_iIndex++;
+            return *this;
         }
         
-        Iterator operator++(uint64)
+        Iterator & operator++(int)
         {
             m_iIndex++;
+            return *this;
         }
 
-        Iterator operator--()
+        Iterator & operator--()
         {
             m_iIndex--;
+            return *this;
         }
         
-        Iterator operator--(uint64)
+        Iterator & operator--(int)
         {
             m_iIndex--;
+            return *this;
         }
 
         Iterator operator+(uint64 i)
@@ -207,7 +210,7 @@ namespace Lib
         {
             if (it.m_pParent != this || it.m_iRevision != m_iRevision)
             {
-                return;
+                PANIC();
             }
             
             if (m_iSize + 1 > m_iCapacity)
@@ -325,8 +328,7 @@ namespace Lib
         {
             if (ind >= m_iSize)
             {
-                // return null reference
-                return *(T *)0;
+                PANIC();
             }
             
             return m_pBuffer[ind];
