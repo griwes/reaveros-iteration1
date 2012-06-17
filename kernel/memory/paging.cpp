@@ -80,8 +80,6 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
             this->Entries[startpml4e].Present = 1;
             this->Entries[startpml4e].PDPTAddress = old->GetPhysicalAddress((uint64)pdpt) >> 12;
             
-            *(uint64 *)0x2000 = old->GetPhysicalAddress((uint64)pdpt);
-            
             this->PointerTables[startpml4e] = pdpt;
         }
 
@@ -138,14 +136,15 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                     pt->Entries[startpte].User = bUser;
                     pt->Entries[startpte].WriteThrough = bWriteThrough;
                     pt->Entries[startpte].CacheDisable = bCacheDisable;
-                    
+
+                    uint64 oldaddr = pt->Entries[startpte].PageAddress << 12;
+                    Memory::VMM::PushPage(oldaddr);
                     uint64 addr = pBasePhysical;
                     pt->Entries[startpte].PageAddress = addr >> 12;
                     
                     startpte++;
                     
                     pBasePhysical += 4096;
-
                 }
                 
                 if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))

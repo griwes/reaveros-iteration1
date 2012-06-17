@@ -1,5 +1,0 @@
-This document covers standard library implementation of ReaverOS.
-
-Hmm, maybe not "standard" part of it, however, because it's already described
-in many places. I'm going to introduce C++ "standard" library, provided by 
-ReaverOS: LibRose.

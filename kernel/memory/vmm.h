@@ -4,6 +4,7 @@
 #include "../types.h"
 #include "memory.h"
 #include "vm.h"
+#include "../lib/stack.h"
 
 namespace Memory
 {
@@ -39,6 +40,19 @@ namespace Memory
         inline void UnmapPages(uint64 s, uint64 e)
         {
             Memory::CurrentVAS->UnmapPages(s, e);
+        }
+
+        inline void PushPage(uint64 p)
+        {
+            if (Memory::CorePages)
+            {
+                Memory::CorePages->Push(p);
+            }
+
+            else
+            {
+                Memory::GlobalPages->Push(p);
+            }
         }
 
         extern bool Ready;

@@ -38,7 +38,7 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
     this->m_iSize = 0;
 
     this->m_pStack = (uint64 *)base;
-    this->m_iLastPage = base;
+    this->m_iLastPage = 0;
 
     for (uint64 i = 0; i < pMemoryMap->GetNumberOfEntries(); i++)
     {
@@ -55,8 +55,17 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
         uint64 start = pMemoryMap->GetEntries()[i].Base();
         uint64 end = pMemoryMap->GetEntries()[i].End();
 
-        while (start != end)
+        while (start < end)
         {
+            if (m_iLastPage == 0)
+            {
+                Memory::VMM::MapPage((uint64)m_pStack, start);
+                m_iLastPage = (uint64)m_pStack;
+                start += 4096;
+                dbg;
+                continue;
+            }
+
             this->m_pStack[this->m_iSize] = start;
             this->m_iSize++;
 
@@ -65,6 +74,7 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
             if (this->m_iSize % 512 == 0)
             {
                 this->m_iLastPage += 4096;
+                Memory::VMM::MapPage(m_iLastPage, Pop());
             }
         }
     }
