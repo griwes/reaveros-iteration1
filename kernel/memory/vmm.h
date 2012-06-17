@@ -40,6 +40,8 @@ namespace Memory
         {
             Memory::CurrentVAS->UnmapPages(s, e);
         }
+
+        extern bool Ready;
     }
 }
 

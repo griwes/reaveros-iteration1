@@ -33,13 +33,12 @@
 #include "../memory/vmm.h"
 #include "../memory/memory.h"
 
-Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap)
+Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
 {
     this->m_iSize = 0;
 
-    Memory::AlignPlacementToPage();
-    this->m_pStack = (uint64 *)Memory::PlacementAddress;
-    this->m_pLastPage = (uint64)Memory::PlacementAddress;
+    this->m_pStack = (uint64 *)base;
+    this->m_iLastPage = base;
 
     for (uint64 i = 0; i < pMemoryMap->GetNumberOfEntries(); i++)
     {
@@ -65,14 +64,10 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap)
 
             if (this->m_iSize % 512 == 0)
             {
-                this->m_pLastPage += 4096;
+                this->m_iLastPage += 4096;
             }
         }
     }
-
-    // give the stack one additional page for possibly freed at some point pages
-    // not much more will be placed, anyway
-    Memory::PlacementAddress = (void *)(this->m_pLastPage + 4 * 1024);
 }
 
 Lib::Stack::~Stack()
@@ -91,7 +86,7 @@ uint64 Lib::Stack::Pop()
 
     if ((this->m_iSize + 64) % 512 == 0)
     {
-        Memory::VMM::UnmapPage(this->m_pLastPage);
+        Memory::VMM::UnmapPage(this->m_iLastPage);
     }
 
     return ret;
@@ -104,8 +99,8 @@ void Lib::Stack::Push(uint64 p)
 
     if ((this->m_iSize + 32) % 512 == 0)
     {
-        Memory::VMM::MapPage(this->m_pLastPage + 4096);
-        this->m_pLastPage += 4096;
+        Memory::VMM::MapPage(this->m_iLastPage + 4096);
+        this->m_iLastPage += 4096;
     }
 
     return;

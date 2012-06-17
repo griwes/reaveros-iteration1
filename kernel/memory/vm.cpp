@@ -1,8 +1,8 @@
 #include "vm.h"
 
 Memory::VM::AddressSpace::AddressSpace(uint64 base)
+    : m_pPML4(new Paging::PML4(base))
 {
-    m_pPML4 = new Paging::PML4(base);
 }
 
 Memory::VM::AddressSpace::~AddressSpace()

@@ -195,6 +195,12 @@ uint64 Paging::PML4::Unmap(uint64 pAddr)
 
 static void * _alloc(uint64 iSize)
 {
+    if (!Memory::VMM::Ready)
+    {
+        Memory::AlignPlacementToPage();
+        return operator new(iSize);
+    }
+    
     return Memory::VMM::AllocPagingPages(iSize / 4096 + (iSize % 4096 ? 1 : 0));
 }
 

@@ -40,7 +40,7 @@ namespace Lib
     class Stack
     {
     public:
-        Stack(Memory::MemoryMap *);
+        Stack(Memory::MemoryMap *, uint64);
         Stack(uint64, uint64);
         ~Stack();
         
@@ -50,7 +50,7 @@ namespace Lib
         uint64 Count();
     private:
         uint64 * m_pStack;
-        uint64 m_pLastPage;
+        uint64 m_iLastPage;
         uint64 m_iSize;
     };
 }
