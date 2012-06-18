@@ -142,9 +142,35 @@ namespace Paging
         {
             if (this->m_iBase == 0)
             {
-                return (this->PointerTables[(pAddr >> 42) & 511]->PageDirectories[(pAddr >> 32) & 511]->
-                    PageTables[(pAddr >> 22) & 511]->Entries[(pAddr >> 12) & 511].PageAddress
-                    << 12) + pAddr % 4096;
+                if (!Entries[(pAddr >> 42) & 511].Present)
+                {
+                    PANIC();
+                }
+                
+                auto a = PointerTables[(pAddr >> 42) & 511];
+
+                if (!a->Entries[(pAddr >> 42) & 511].Present)
+                {
+                    PANIC();
+                }
+
+                auto b = a->PageDirectories[(pAddr >> 32) & 511];
+
+                if (!b->Entries[(pAddr >> 32) & 511].Present)
+                {
+                    PANIC();
+                }
+
+                auto c = b->PageTables[(pAddr >> 22) & 511];
+
+                if (!c->Entries[(pAddr >> 22) & 511].Present)
+                {
+                    PANIC();
+                }
+
+                auto & d = c->Entries[(pAddr >> 12) & 511];
+
+                return (d.PageAddress << 12) + pAddr % 4096;
             }
 
             else

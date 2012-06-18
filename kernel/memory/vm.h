@@ -6,6 +6,7 @@
 #include "../processor/synchronization.h"
 #include "../processor/processor.h"
 #include "../lib/vector.h"
+#include "memory.h"
 
 namespace Scheduler
 {
@@ -122,6 +123,8 @@ namespace Memory
         class AddressSpace
         {
         public:
+            friend void Memory::RemapKernel();
+            
             AddressSpace(uint64 = 0);
             ~AddressSpace();
 
@@ -170,8 +173,6 @@ namespace Memory
             Scheduler::Process * Parent;
             Lib::Vector<Region *> Regions;
 
-            friend void Memory::RemapKernel();
-            
         private:
             Processor::Spinlock m_lock;
             Paging::PML4 * m_pPML4;

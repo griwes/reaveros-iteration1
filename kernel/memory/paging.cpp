@@ -138,7 +138,11 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                     pt->Entries[startpte].CacheDisable = bCacheDisable;
 
                     uint64 oldaddr = pt->Entries[startpte].PageAddress << 12;
-                    Memory::VMM::PushPage(oldaddr);
+                    if (oldaddr != 0)
+                    {
+                        Memory::VMM::PushPage(oldaddr);
+                    }
+                    
                     uint64 addr = pBasePhysical;
                     pt->Entries[startpte].PageAddress = addr >> 12;
                     
@@ -194,10 +198,14 @@ uint64 Paging::PML4::Unmap(uint64 pAddr)
 
 static void * _alloc(uint64 iSize)
 {
-    if (!Memory::VMM::Ready)
+    if (Memory::PlacementAddress)
     {
         Memory::AlignPlacementToPage();
-        return operator new(iSize);
+        void * ret = Memory::PlacementAddress;
+        uint64 _ = (uint64)Memory::PlacementAddress;
+        _ += iSize;
+        Memory::PlacementAddress = (void *)_;
+        return ret;
     }
     
     return Memory::VMM::AllocPagingPages(iSize / 4096 + (iSize % 4096 ? 1 : 0));

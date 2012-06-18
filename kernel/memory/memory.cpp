@@ -141,7 +141,7 @@ void Memory::RemapKernel()
     }
     
     CurrentVAS = new VM::AddressSpace(p->Base());
-    
+
     VMM::MapPages(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());
     VMM::MapPages(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, 16 * 1024, p->End() - 16 * 1024);
     
@@ -149,6 +149,6 @@ void Memory::RemapKernel()
 
     CurrentVAS->SetActive();
     CurrentVAS->m_pPML4->m_iBase = 0;
-    
+
     return;
 }
