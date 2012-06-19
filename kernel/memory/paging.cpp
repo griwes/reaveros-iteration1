@@ -104,7 +104,7 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                 
                 pdpt->PageDirectories[startpdpte] = pd;
             }
-            
+
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
             {
@@ -126,7 +126,7 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                     
                     pd->PageTables[startpde] = pt;
                 }
-                
+
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)
                 {

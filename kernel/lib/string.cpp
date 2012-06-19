@@ -46,6 +46,7 @@ Lib::String operator+(const char * s1, const Lib::String & s2)
 Lib::String & Lib::String::operator+=(const Lib::String & s)
 {
     *this = *this + s;
+    return *this;
 }
 
 Lib::String & Lib::String::operator=(const Lib::String & s)

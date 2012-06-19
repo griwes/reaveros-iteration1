@@ -88,7 +88,7 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // that starts at 64 MiB in physical memory
     
     Memory::UpdateMemoryMap(placement - 0xFFFFFFFF80000000 + size);
-
+    
     *bout << " done." << nl;
     bout->Hex();
     *bout << "Memory from " << 0xFFFFFFFF80000000 << " to " << placement + size << " available for kernel usage." << nl;

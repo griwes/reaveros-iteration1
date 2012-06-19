@@ -68,8 +68,8 @@ void Screen::ReaverTerminal::Print(const Lib::String & sString)
 }
 
 Screen::BootTerminal::BootTerminal(Screen::VideoMode * pVideoMode, uint8 * pFont)
-    : Terminal(0), x(0), y(0), m_pVideoMode(pVideoMode), m_pFont(pFont), r(0xbb), g(0xbb), b(0xbb),
-      maxx(pVideoMode->XResolution / 8), maxy(pVideoMode->YResolution / 16)
+    : Terminal(0), x(0), y(0), maxx(pVideoMode->XResolution / 8), maxy(pVideoMode->YResolution / 16),
+      m_pVideoMode(pVideoMode), m_pFont(pFont), r(0xbb), g(0xbb), b(0xbb)      
 {
     dbg;
 }

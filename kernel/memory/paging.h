@@ -138,7 +138,7 @@ namespace Paging
 
         PML4(uint64 = 0);
         
-        inline uint64 GetPhysicalAddress(uint64 pAddr)
+        uint64 GetPhysicalAddress(uint64 pAddr)
         {
             if (this->m_iBase == 0)
             {

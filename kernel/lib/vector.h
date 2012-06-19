@@ -75,6 +75,7 @@ namespace
             }
 
             PANIC();
+            return *(T *)0; // for the sake of dropping compiler warning
         }
         
         Iterator & operator++()

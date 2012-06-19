@@ -8,7 +8,7 @@ namespace Memory
     }
 }
 
-void * Memory::VMM::AllocPagingPages(uint64 count)
+void * Memory::VMM::AllocPagingPages(uint64)
 {
     
 }

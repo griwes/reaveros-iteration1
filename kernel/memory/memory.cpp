@@ -110,14 +110,13 @@ void Memory::PreInitialize(void * pPlacementAddress)
 void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 {
     Memory::SystemMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
-    
+
     Memory::RemapKernel();
     Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap, Memory::VM::FreePageStackBase);
-    dbg;
     Memory::KernelHeap = new Heap(Memory::VM::HeapBase, Memory::VM::HeapLimit);
 
     Memory::PlacementAddress = (void *)0;
-    
+
     return;
 }
 
@@ -141,13 +140,14 @@ void Memory::RemapKernel()
     }
     
     CurrentVAS = new VM::AddressSpace(p->Base());
-
+    
     VMM::MapPages(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());
     VMM::MapPages(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, 16 * 1024, p->End() - 16 * 1024);
     
     Memory::StackStart = 0xFFFFFFFF80000000 + p->Length();
 
     CurrentVAS->SetActive();
+    PANIC();
     CurrentVAS->m_pPML4->m_iBase = 0;
 
     return;
