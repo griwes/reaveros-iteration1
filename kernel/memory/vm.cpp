@@ -1,4 +1,6 @@
 #include "vm.h"
+#include "../lib/stack.h"
+#include "../scheduler/scheduler.h"
 
 Memory::VM::AddressSpace::AddressSpace(uint64 base)
     : m_pPML4(new Paging::PML4(base))
@@ -12,6 +14,8 @@ Memory::VM::AddressSpace::~AddressSpace()
 
 void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 limit, Region * region)
 {
+    m_lock.Lock();
+    
     if (region == nullptr)
     {
         Region * region = new Region;
@@ -42,6 +46,8 @@ void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 limit, Region * reg
     }
 
     Regions.Insert(region, it);
+
+    m_lock.Lock();
 }
 
 void Memory::VM::AddressSpace::AddRegion(Memory::VM::Region * pRegion)
@@ -51,6 +57,8 @@ void Memory::VM::AddressSpace::AddRegion(Memory::VM::Region * pRegion)
 
 void Memory::VM::AddressSpace::RemoveRegion(uint64 base)
 {
+    m_lock.Lock();
+    
     auto it = Regions.Begin() + 1;
     for (; it != Regions.End(); it++)
     {
@@ -65,6 +73,8 @@ void Memory::VM::AddressSpace::RemoveRegion(uint64 base)
             PANIC();
         }
     }
+
+    m_lock.Unlock();
 }
 
 void Memory::VM::AddressSpace::RemoveRegion(Memory::VM::Region * pRegion)
@@ -72,9 +82,9 @@ void Memory::VM::AddressSpace::RemoveRegion(Memory::VM::Region * pRegion)
     RemoveRegion(pRegion->Base);
 }
 
-void Memory::VM::AddressSpace::MapPage(uint64 )
+void Memory::VM::AddressSpace::MapPage(uint64 address)
 {
-
+    MapPages(address, 1, (Scheduler::Initialized ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop()));
 }
 
 void Memory::VM::AddressSpace::MapPage(Memory::VM::Page * )

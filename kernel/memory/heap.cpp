@@ -34,12 +34,12 @@
 
 Memory::Heap::Heap(uint64 start, uint64 limit)
         : m_pBiggest((AllocationBlockHeader *)start), m_pSmallest((AllocationBlockHeader *)start),
-          m_iStart(start), m_iEnd(start + 4 * 4 * 1024), m_iLimit(limit)
+          m_iStart(start), m_iEnd(start + 64 * 1024), m_iLimit(limit)
 {
     Memory::VMM::MapPages(this->m_iStart, this->m_iEnd);
-    
+
     this->m_pBiggest->Magic = 0xFEA7EFA1;
-    this->m_pBiggest->Size = 4 * 4 * 1024 - sizeof(AllocationBlockHeader) - sizeof(AllocationBlockFooter);
+    this->m_pBiggest->Size = 64 * 1024 - sizeof(AllocationBlockHeader) - sizeof(AllocationBlockFooter);
     this->m_pBiggest->Bigger = nullptr;
     this->m_pBiggest->Smaller = nullptr;
     this->m_pBiggest->Flags = 0;

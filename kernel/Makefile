@@ -4,13 +4,7 @@ CFLAGS=-c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno
 		-fno-stack-protector -std=c++0x -ffreestanding -mcmodel=kernel -mno-mmx -mno-sse -mno-sse2 \
 		-mno-sse3 -mno-3dnow -mno-red-zone
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
-SOURCES=main.cpp cxx.cpp \
-	processor/processor.cpp processor/synchronization.cpp processor/smp.cpp processor/core.cpp \
-	memory/memory.cpp memory/memorymap.cpp memory/paging.cpp memory/heap.cpp memory/vm.cpp memory/vmm.cpp \
-	lib/string.cpp lib/stack.cpp \
-	screen/screen.cpp screen/terminal.cpp screen/console.cpp \
-	scheduler/scheduler.cpp \
-	acpi/acpi.cpp
+SOURCES=$(shell find . -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=builds/kernel.img
 

@@ -73,8 +73,7 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
             if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16)
             {
                 this->m_iLastPage += 4096;
-                Memory::VMM::MapPage(m_iLastPage, m_pStack[m_iSize - 1]);
-                m_iSize--;
+                Memory::VMM::MapPage(m_iLastPage, m_pStack[--m_iSize]);
             }
         }
     }

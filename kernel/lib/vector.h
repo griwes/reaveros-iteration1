@@ -86,8 +86,9 @@ namespace
         
         Iterator & operator++(int)
         {
+            Iterator tmp(*this);
             m_iIndex++;
-            return *this;
+            return tmp;
         }
 
         Iterator & operator--()
@@ -98,8 +99,9 @@ namespace
         
         Iterator & operator--(int)
         {
+            Iterator tmp(*this);
             m_iIndex--;
-            return *this;
+            return tmp;
         }
 
         Iterator operator+(uint64 i)
