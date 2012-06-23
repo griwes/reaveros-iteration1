@@ -142,28 +142,28 @@ namespace Paging
         {
             if (this->m_iBase == 0)
             {
-                if (!Entries[(pAddr >> 42) & 511].Present)
+                if (!Entries[(pAddr >> 39) & 511].Present)
                 {
                     PANIC();
                 }
                 
-                auto a = PointerTables[(pAddr >> 42) & 511];
+                auto a = PointerTables[(pAddr >> 39) & 511];
 
-                if (!a->Entries[(pAddr >> 42) & 511].Present)
+                if (!a->Entries[(pAddr >> 30) & 511].Present)
                 {
                     PANIC();
                 }
 
-                auto b = a->PageDirectories[(pAddr >> 32) & 511];
+                auto b = a->PageDirectories[(pAddr >> 30) & 511];
 
-                if (!b->Entries[(pAddr >> 32) & 511].Present)
+                if (!b->Entries[(pAddr >> 21) & 511].Present)
                 {
                     PANIC();
                 }
 
-                auto c = b->PageTables[(pAddr >> 22) & 511];
+                auto c = b->PageTables[(pAddr >> 21) & 511];
 
-                if (!c->Entries[(pAddr >> 22) & 511].Present)
+                if (!c->Entries[(pAddr >> 12) & 511].Present)
                 {
                     PANIC();
                 }

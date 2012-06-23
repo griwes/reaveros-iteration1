@@ -56,7 +56,7 @@ inline T abs(T i)
 }
 
 // for now
-#define PANIC(X) __asm("hlt")
+#define PANIC(X) __asm __volatile__("movl %0, %%eax" :: "r"(__LINE__) : "%eax"); __asm("hlt")
 #define dbg __asm("xchg %bx, %bx")
 
 #endif

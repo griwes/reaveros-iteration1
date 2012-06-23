@@ -136,7 +136,7 @@ namespace Memory
             void MapPage(uint64);
             void MapPage(uint64 s, uint64 b)
             {
-                m_pPML4->Map(s, s + 4096, b);
+                m_pPML4->Map(s, 4096, b);
             }
             
             void MapPages(uint64 start, uint64 end)

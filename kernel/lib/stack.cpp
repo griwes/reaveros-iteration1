@@ -62,7 +62,6 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
                 Memory::VMM::MapPage((uint64)m_pStack, start);
                 m_iLastPage = (uint64)m_pStack;
                 start += 4096;
-                dbg;
                 continue;
             }
 
@@ -71,10 +70,11 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
 
             start += 4096;
 
-            if (this->m_iSize % 512 == 0)
+            if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16)
             {
                 this->m_iLastPage += 4096;
-                Memory::VMM::MapPage(m_iLastPage, Pop());
+                Memory::VMM::MapPage(m_iLastPage, m_pStack[m_iSize - 1]);
+                m_iSize--;
             }
         }
     }
@@ -94,7 +94,7 @@ uint64 Lib::Stack::Pop()
     this->m_iSize--;
     uint64 ret = this->m_pStack[this->m_iSize];
 
-    if ((this->m_iSize + 64) % 512 == 0)
+    if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize > 4096 / 8 + 64)
     {
         Memory::VMM::UnmapPage(this->m_iLastPage);
     }
@@ -107,7 +107,7 @@ void Lib::Stack::Push(uint64 p)
     this->m_pStack[this->m_iSize] = p;
     this->m_iSize++;
 
-    if ((this->m_iSize + 32) % 512 == 0)
+    if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16)
     {
         Memory::VMM::MapPage(this->m_iLastPage + 4096);
         this->m_iLastPage += 4096;
