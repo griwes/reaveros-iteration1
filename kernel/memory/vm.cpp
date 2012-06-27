@@ -84,7 +84,7 @@ void Memory::VM::AddressSpace::RemoveRegion(Memory::VM::Region * pRegion)
 
 void Memory::VM::AddressSpace::MapPage(uint64 address)
 {
-    MapPages(address, 1, (Scheduler::Initialized ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop()));
+    MapPages(address, 4096, (Scheduler::Initialized ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop()));
 }
 
 void Memory::VM::AddressSpace::MapPage(Memory::VM::Page * )

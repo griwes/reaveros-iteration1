@@ -142,7 +142,7 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                     {
                         Memory::VMM::PushPage(oldaddr);
                     }
-                    
+
                     uint64 addr = pBasePhysical;
                     pt->Entries[startpte].PageAddress = addr >> 12;
                     

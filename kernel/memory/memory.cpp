@@ -114,10 +114,9 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::RemapKernel();
     Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap, Memory::VM::FreePageStackBase);
     Memory::KernelHeap = new Heap(Memory::VM::HeapBase, Memory::VM::HeapLimit);
-    dbg;
     
     Memory::PlacementAddress = (void *)0;
-
+    
     return;
 }
 

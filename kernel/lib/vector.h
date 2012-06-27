@@ -84,7 +84,7 @@ namespace
             return *this;
         }
         
-        Iterator & operator++(int)
+        Iterator operator++(int)
         {
             Iterator tmp(*this);
             m_iIndex++;
@@ -97,7 +97,7 @@ namespace
             return *this;
         }
         
-        Iterator & operator--(int)
+        Iterator operator--(int)
         {
             Iterator tmp(*this);
             m_iIndex--;
