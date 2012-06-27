@@ -6,6 +6,13 @@ Lib::String::String()
 {
 }
 
+Lib::String::String(char c)
+    : m_pData(new char[2]), m_iLength(1)
+{
+    m_pData[0] = c;
+    m_pData[1] = 0;
+}
+
 Lib::String::String(const char * s)
     : m_pData(new char[Lib::Strlen(s) + 1]), m_iLength(Lib::Strlen(s) + 1)
 {
@@ -16,6 +23,11 @@ Lib::String::String(const Lib::String & s)
     : m_pData(new char[s.m_iLength]), m_iLength(s.m_iLength)
 {
     Memory::Copy(s.m_pData, this->m_pData, s.m_iLength);
+}
+
+Lib::String::~String()
+{
+    delete[] m_pData;
 }
 
 const char * Lib::String::Buffer() const
@@ -51,7 +63,7 @@ Lib::String & Lib::String::operator+=(const Lib::String & s)
 
 Lib::String & Lib::String::operator=(const Lib::String & s)
 {
-    delete this->m_pData;
+    delete[] this->m_pData;
     this->m_iLength = s.m_iLength;
     this->m_pData = new char[this->m_iLength];
     Memory::Copy(s.m_pData, this->m_pData, this->m_iLength);

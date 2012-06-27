@@ -149,10 +149,10 @@ namespace Memory
                 }
             }
 
-            void MapPages(uint64 s, uint64 e, uint64 b)
+            void MapPages(uint64 s, uint64 l, uint64 b, bool cache = false)
             {
                 m_lock.Lock();
-                m_pPML4->Map(s, e, b);
+                m_pPML4->Map(s, l, b, cache);
                 m_lock.Unlock();
             }
 

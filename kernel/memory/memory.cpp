@@ -128,9 +128,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::RemapKernel();
     Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap, Memory::VM::GlobalPageStackBase);
     Memory::KernelHeap = new Heap(Memory::VM::KernelHeapBase, Memory::VM::KernelHeapLimit);
-    
-    Memory::PlacementAddress = (void *)0;
-    
+        
     return;
 }
 
@@ -200,6 +198,8 @@ void Memory::InitializeRegions()
     VMAddressSpacePoolStackRegion->Base = VM::VMAddressSpacePoolStackBase;
     VMAddressSpacePoolStackRegion->End = VM::VMAddressSpacePoolStackBase + VM::VMAddressSpacePoolStackLimit;
     VMAddressSpacePoolStackRegion->KernelRegion = true;
+
+//    Memory::PlacementAddress = (void *)0;
 }
 
 void Memory::RemapKernel()

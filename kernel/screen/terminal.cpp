@@ -32,6 +32,8 @@
 #include "terminal.h"
 #include "../memory/memory.h"
 #include "../memory/paging.h"
+#include "../memory/vm.h"
+#include "../memory/vmm.h"
 
 Screen::Terminal::Terminal(Screen::TerminalDriver * pDrv, const Lib::String & sName)
             : m_sName(sName), m_pDriver(pDrv)
@@ -67,10 +69,17 @@ void Screen::ReaverTerminal::Print(const Lib::String & sString)
 
 }
 
+void Screen::ReaverTerminal::Print(const char * )
+{
+
+}
+
 Screen::BootTerminal::BootTerminal(Screen::VideoMode * pVideoMode, uint8 * pFont)
     : Terminal(0), x(0), y(0), maxx(pVideoMode->XResolution / 8), maxy(pVideoMode->YResolution / 16),
       m_pVideoMode(pVideoMode), m_pFont(pFont), r(0xbb), g(0xbb), b(0xbb)      
 {
+    Memory::VMM::MapPages(Memory::VM::VideoMemoryBase, m_pVideoMode->YResolution *
+        m_pVideoMode->BytesPerScanLine, m_pVideoMode->PhysBasePtr, true);
 }
 
 Screen::BootTerminal::~BootTerminal()
@@ -82,6 +91,14 @@ void Screen::BootTerminal::Print(const Lib::String & string)
     for (const char * i = string.Buffer(); *i != 0; i++)
     {
         this->_put_char(*i);
+    }
+}
+
+void Screen::BootTerminal::Print(const char * string)
+{
+    for (; *string != 0; string++)
+    {
+        _put_char(*string);
     }
 }
 
@@ -206,7 +223,7 @@ void Screen::BootTerminal::_put_char(char c)
 void Screen::BootTerminal::_put16(char c)
 {
     uint8 * character = &(this->m_pFont[c * 16]);
-    uint16 * dest = (uint16 *)(0xFFFFFFFF00000000 + this->y * this->m_pVideoMode->BytesPerScanLine * 16
+    uint16 * dest = (uint16 *)(Memory::VM::VideoMemoryBase + this->y * this->m_pVideoMode->BytesPerScanLine * 16
                     + this->x * this->m_pVideoMode->BitsPerPixel);
     
     uint16 iColor = ((this->r >> (8 - this->m_pVideoMode->RedMaskSize)) << this->m_pVideoMode->RedFieldPosition) |
@@ -246,7 +263,7 @@ void Screen::BootTerminal::_put16(char c)
 void Screen::BootTerminal::_put32(char c)
 {
     uint8 * character = &(this->m_pFont[c * 16]);
-    uint32 * dest = (uint32 *)(0xFFFFFFFF00000000 + this->y * this->m_pVideoMode->BytesPerScanLine * 16
+    uint32 * dest = (uint32 *)(Memory::VM::VideoMemoryBase + this->y * this->m_pVideoMode->BytesPerScanLine * 16
                 + this->x * this->m_pVideoMode->BitsPerPixel);
     
     uint32 iColor = (this->r << this->m_pVideoMode->RedFieldPosition) |
@@ -286,4 +303,26 @@ void Screen::BootTerminal::_put32(char c)
 void Screen::BootTerminal::_scroll()
 {
 
+}
+
+void Screen::BootTerminal::Clear()
+{
+/*    if (m_pVideoMode->XResolution == 0)
+    {
+        _clear80x25();
+    }
+
+    else*/
+    _clear();
+}
+
+void Screen::BootTerminal::_clear()
+{
+    for (uint64 i = 0; i < m_pVideoMode->YResolution; i++)
+    {
+        for (uint64 j = 0; j < m_pVideoMode->BytesPerScanLine; j++)
+        {
+            ((uint8 *)Memory::VM::VideoMemoryBase)[i * m_pVideoMode->BytesPerScanLine + j] = 0;
+        }
+    }
 }

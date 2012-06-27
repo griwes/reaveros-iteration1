@@ -49,6 +49,12 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     *bout << "Reading memory map..." << nl << nl;
 
     Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
+
+    *bout << "Video mode: " << pVideoMode->XResolution << "x" << pVideoMode->YResolution << "." << nl;
+    *bout << "Video memory: " << pVideoMode->LinearBytesPerScanLine * pVideoMode->YResolution << " bytes at 0x";
+    bout->Hex();
+    *bout << pVideoMode->PhysBasePtr << "." << nl << nl;
+    bout->Dec();
     
     *bout << "Entering long mode...";
 
@@ -79,8 +85,8 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // for additional stuff to be put on placement stack
 
     uint64 size = Memory::CountPagingStructures(0xFFFFFFFF80000000, Memory::AlignToNextPage(placement)
-                                + 16 * 1024 * 1024 + Memory::TotalMemory / 512);
-    size += Memory::AlignToNextPage(16 * 1024 * 1024 + Memory::TotalMemory / 512);
+                                + 32 * 1024 * 1024 + Memory::TotalMemory / 512);
+    size += Memory::AlignToNextPage(32 * 1024 * 1024 + Memory::TotalMemory / 512);
     
     Memory::Map(placement, placement + size, Memory::iFirstFreePageAddress);
     

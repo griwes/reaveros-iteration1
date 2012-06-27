@@ -96,7 +96,7 @@ uint64 Lib::Stack::Pop()
     {
         Memory::VMM::UnmapPage(this->m_iLastPage);
     }
-
+    
     return m_pStack[m_iSize];
 }
 

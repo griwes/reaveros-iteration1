@@ -42,4 +42,5 @@ namespace Screen
 void Screen::Initialize(Screen::VideoMode * pVideoMode, uint8 * pFont)
 {
     Screen::kout = new Screen::Console(new BootTerminal(pVideoMode, pFont));
+    Screen::kout->Clear();
 }

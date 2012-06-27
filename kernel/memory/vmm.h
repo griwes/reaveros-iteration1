@@ -40,7 +40,7 @@
 namespace Memory
 {
     namespace VMM
-    {        
+    {
         void * AllocPagingPages(uint64);
 
         inline void MapPage(uint64 p)
@@ -58,9 +58,9 @@ namespace Memory
             Memory::CurrentVAS->MapPages(s, e);
         }
         
-        inline void MapPages(uint64 s, uint64 e, uint64 b)
+        inline void MapPages(uint64 s, uint64 l, uint64 b, bool cache = false)
         {
-            Memory::CurrentVAS->MapPages(s, e, b);
+            Memory::CurrentVAS->MapPages(s, l, b, cache);
         }
         
         inline void UnmapPage(uint64 p)

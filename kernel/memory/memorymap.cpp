@@ -132,6 +132,7 @@ Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMap
             iAdditionalBase = pKernelEntry->End();
             iAdditionalLength = pMemMap[i].End() - iAdditionalBase;
             iAdditionalType = pMemMap[i].Type();
+            pMemMap[i].Length() = pKernelEntry->Base() - pMemMap[i].Base();
         }
     }
 

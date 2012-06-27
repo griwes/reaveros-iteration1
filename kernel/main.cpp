@@ -68,14 +68,13 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     Memory::InitializeRegions();
     
     *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
-    for (;;) ;
-    *kout << "Printing memory map." << nl << nl;
+
+    *kout << "Printing memory map..." << nl << nl;
 
     Memory::SystemMemoryMap->PrintMemoryMap();
-    
-    *kout << nl << "Initializing processor... " << nl;
-    Processor::Initialize();
 
+    *kout << nl << "Initializing processor... ";
+    Processor::Initialize();
     *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
     Processor::PrintStatus();
 

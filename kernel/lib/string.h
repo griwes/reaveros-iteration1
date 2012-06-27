@@ -24,8 +24,10 @@ namespace Lib
     {
     public:
         String();
+        String(char);
         String(const char *);
         String(const String &);
+        ~String();
 
         uint64 Length() const;
         const char * Buffer() const;

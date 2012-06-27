@@ -116,6 +116,8 @@ namespace Screen
             this->m_i16Width = w;
         }
 
+        void Clear();
+
     protected:
         uint64 m_iBase;
         uint64 m_iWidth;
@@ -144,13 +146,22 @@ Screen::Console & Screen::Console::operator<<(T i)
 
         if (this->m_i16Width != 0)
         {
-            for (int64 j = sizeof(T) / 16; j >= 0; j--)
+            for (int64 j = sizeof(T) / 16; j > 0; j--)
             {
                 if ((i & (0xf << j)) != 0)
                     break;
                 *this << '0';
             }
         }
+        
+        const char * digits = "0123456789ABCDEF";
+        
+        for (int64 j = sizeof(T) * 8 - 4; j >= 0; j -= 4)
+        {
+            *this << (digits[(i >> j) & 0xF]);
+        }
+
+        return *this;
     }
 
     if (this->m_iWidth != 0)

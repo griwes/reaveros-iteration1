@@ -39,6 +39,11 @@ namespace Memory
     }
 }
 
+namespace
+{
+    uint64 offset = 0;
+}
+
 void * Memory::VMM::AllocPagingPages(uint64 iCount)
 {
     if (VMM::Ready)
@@ -49,11 +54,8 @@ void * Memory::VMM::AllocPagingPages(uint64 iCount)
 
     else
     {
-        Memory::AlignPlacementToPage();
-        void * ret = Memory::PlacementAddress;
-        uint64 _ = (uint64)Memory::PlacementAddress;
-        _ += (iCount * 4096);
-        Memory::PlacementAddress = (void *)_;
-        return ret;
+        offset -= iCount * 4096;
+        uint64 ret = Memory::StackStart - 20 * 1024 - offset;
+        return (void *)ret;
     }
 }

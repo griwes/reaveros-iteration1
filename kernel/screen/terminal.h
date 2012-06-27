@@ -53,6 +53,9 @@ namespace Screen
         virtual ~Terminal() = 0;
 
         virtual void Print(const Lib::String &) = 0;
+        virtual void Print(const char *) = 0;
+
+        virtual void Clear() = 0;
         
         virtual void ScrollUp();
         virtual void ScrollDown();
@@ -81,8 +84,11 @@ namespace Screen
         virtual ~BootTerminal();
 
         virtual void Print(const Lib::String &);
+        virtual void Print(const char *);
 
         virtual void SetColor(Screen::Color);
+
+        virtual void Clear();
 
     private:
         void _put_char(char);
@@ -90,6 +96,8 @@ namespace Screen
 
         void _put16(char);
         void _put32(char);
+
+        void _clear();
 
         uint64 x, y;
         uint64 maxx, maxy;
@@ -105,5 +113,6 @@ namespace Screen
         virtual ~ReaverTerminal();
 
         virtual void Print(const Lib::String &);
+        virtual void Print(const char *);
     };
 }

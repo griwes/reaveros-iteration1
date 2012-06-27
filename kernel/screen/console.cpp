@@ -32,31 +32,40 @@
 #include "console.h"
 #include "terminal.h"
 
-Screen::Console::Console(Screen::Terminal * )
+Screen::Console::Console(Screen::Terminal * pTerminal)
+    : m_iBase(10), m_iWidth(0), m_b16(false), m_i16Width(0), m_pTerminal(pTerminal)
 {
-
 }
 
 Screen::Console::~Console()
 {
 }
 
-Screen::Console & Screen::Console::operator<<(char )
+Screen::Console & Screen::Console::operator<<(char c)
 {
+    m_pTerminal->Print(c);
     return *this;
 }
 
-Screen::Console & Screen::Console::operator<<(const char * )
+Screen::Console & Screen::Console::operator<<(const char * str)
 {
+    m_pTerminal->Print(str);
     return *this;
 }
 
-Screen::Console & Screen::Console::operator<<(const Lib::String & )
+Screen::Console & Screen::Console::operator<<(const Lib::String & str)
 {
+    m_pTerminal->Print(str);
     return *this;
 }
 
 Screen::Console & Screen::Console::operator<<(Screen::Color color)
 {
     this->m_pTerminal->SetColor(color);
+    return *this;
+}
+
+void Screen::Console::Clear()
+{
+    m_pTerminal->Clear();
 }
