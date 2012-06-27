@@ -147,7 +147,7 @@ void Memory::RemapKernel()
     Memory::StackStart = 0xFFFFFFFF80000000 + p->Length();
 
     CurrentVAS->SetActive();
-    CurrentVAS->m_pPML4->m_iBase = 0;
+    Paging::PML4::s_iBase = 0;
 
     return;
 }

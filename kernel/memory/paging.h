@@ -131,7 +131,7 @@ namespace Paging
     {
         PML4Entry Entries[512];
         PageDirectoryPointerTable * PointerTables[512];
-        uint64 m_iBase;
+        static uint64 s_iBase;
 
         void * operator new(uint64);
         void * operator new[](uint64);
@@ -140,7 +140,7 @@ namespace Paging
         
         uint64 GetPhysicalAddress(uint64 pAddr)
         {
-            if (this->m_iBase == 0)
+            if (s_iBase == 0)
             {
                 if (!Entries[(pAddr >> 39) & 511].Present)
                 {
@@ -175,7 +175,7 @@ namespace Paging
 
             else
             {
-                return pAddr - 0xFFFFFFFF80000000 + this->m_iBase;
+                return pAddr - 0xFFFFFFFF80000000 + s_iBase;
             }
         }
 

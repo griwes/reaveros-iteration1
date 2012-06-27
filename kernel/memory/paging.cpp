@@ -34,12 +34,14 @@
 #include "heap.h"
 #include "vmm.h"
 
+uint64 Paging::PML4::s_iBase = 0;
+
 Paging::PML4::PML4(uint64 iBase)
 {
     Memory::Zero(&this->Entries, 512);
     Memory::Zero(&this->PointerTables, 512);
 
-    this->m_iBase = iBase;
+    s_iBase = iBase;
 }
 
 void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical, bool bCacheDisable,
@@ -51,6 +53,7 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
     }
 
     uint64 pEnd = pBaseVirtual + iLength;
+    pEnd = (pEnd + 4095) & ~(uint64)4095;
     
     uint64 startpml4e = (pBaseVirtual >> 39) & 511;
     uint64 startpdpte = (pBaseVirtual >> 30) & 511;
