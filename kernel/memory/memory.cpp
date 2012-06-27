@@ -48,6 +48,20 @@ namespace Memory
     Lib::Stack * GlobalPages = 0;
     Lib::Stack * CorePages = 0;
     VM::Region * KernelRegion = 0;
+    VM::Region * VideoBackbufferRegion = 0;
+    VM::Region * VideoMemoryRegion = 0;
+    VM::Region * KernelHeapRegion = 0;
+    VM::Region * PagingStructuresPoolRegion = 0;
+    VM::Region * PagingStructuresPoolStackRegion = 0;
+    VM::Region * GlobalPageStackRegion = 0;
+    VM::Region * VMPagePoolRegion = 0;
+    VM::Region * VMPagePoolStackRegion = 0;
+    VM::Region * VMRegionPoolRegion = 0;
+    VM::Region * VMRegionPoolStackRegion = 0;
+    VM::Region * VMAddressSpacePoolRegion = 0;
+    VM::Region * VMAddressSpacePoolStackRegion = 0;
+    VM::Region * CoreDataRegion = 0;
+    VM::Region * CorePageStackRegion = 0;
     VM::AddressSpace * CurrentVAS = 0;
 }
 
@@ -112,12 +126,81 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::SystemMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
 
     Memory::RemapKernel();
-    Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap, Memory::VM::FreePageStackBase);
-    Memory::KernelHeap = new Heap(Memory::VM::HeapBase, Memory::VM::HeapLimit);
+    Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap, Memory::VM::GlobalPageStackBase);
+    Memory::KernelHeap = new Heap(Memory::VM::KernelHeapBase, Memory::VM::KernelHeapLimit);
+    Memory::InitializeRegions();
     
     Memory::PlacementAddress = (void *)0;
     
     return;
+}
+
+void Memory::InitializeRegions()
+{
+    KernelRegion = new VM::Region;
+    KernelRegion->Base = VM::KernelBase;
+    KernelRegion->End = VM::KernelBase + VM::KernelLimit;
+    KernelRegion->KernelRegion = true;
+
+    VideoBackbufferRegion = new VM::Region;
+    VideoBackbufferRegion->Base = VM::VideoBackbufferBase;
+    VideoBackbufferRegion->End = VM::VideoBackbufferBase + VM::VideoBackbufferLimit;
+    VideoBackbufferRegion->KernelRegion = true;
+
+    VideoMemoryRegion = new VM::Region;
+    VideoMemoryRegion->Base = VM::VideoMemoryBase;
+    VideoMemoryRegion->End = VM::VideoMemoryBase + VM::VideoMemoryLimit;
+    VideoMemoryRegion->KernelRegion = true;
+
+    KernelHeapRegion = new VM::Region;
+    KernelHeapRegion->Base = VM::KernelHeapBase;
+    KernelHeapRegion->End = VM::KernelHeapBase + VM::KernelHeapLimit;
+    KernelHeapRegion->KernelRegion = true;
+
+    PagingStructuresPoolRegion = new VM::Region;
+    PagingStructuresPoolRegion->Base = VM::PagingStructuresPoolBase;
+    PagingStructuresPoolRegion->End = VM::PagingStructuresPoolBase + VM::PagingStructuresPoolLimit;
+    PagingStructuresPoolRegion->KernelRegion = true;
+
+    PagingStructuresPoolStackRegion = new VM::Region;
+    PagingStructuresPoolStackRegion->Base = VM::PagingStructuresPoolStackBase;
+    PagingStructuresPoolStackRegion->End = VM::PagingStructuresPoolStackBase + VM::PagingStructuresPoolStackLimit;
+    PagingStructuresPoolStackRegion->KernelRegion = true;
+
+    GlobalPageStackRegion = new VM::Region;
+    GlobalPageStackRegion->Base = VM::GlobalPageStackBase;
+    GlobalPageStackRegion->End = VM::GlobalPageStackBase + VM::GlobalPageStackLimit;
+    GlobalPageStackRegion->KernelRegion = true;
+
+    VMPagePoolRegion = new VM::Region;
+    VMPagePoolRegion->Base = VM::VMPagePoolBase;
+    VMPagePoolRegion->End = VM::VMPagePoolBase + VM::VMPagePoolLimit;
+    VMPagePoolRegion->KernelRegion = true;
+
+    VMPagePoolStackRegion = new VM::Region;
+    VMPagePoolStackRegion->Base = VM::VMPagePoolStackBase;
+    VMPagePoolStackRegion->End = VM::VMPagePoolStackBase + VM::VMPagePoolStackLimit;
+    VMPagePoolStackRegion->KernelRegion = true;
+
+    VMRegionPoolRegion = new VM::Region;
+    VMRegionPoolRegion->Base = VM::VMRegionPoolBase;
+    VMRegionPoolRegion->End = VM::VMRegionPoolBase + VM::VMRegionPoolLimit;
+    VMRegionPoolRegion->KernelRegion = true;
+
+    VMRegionPoolStackRegion = new VM::Region;
+    VMRegionPoolStackRegion->Base = VM::VMRegionPoolStackBase;
+    VMRegionPoolStackRegion->End = VM::VMRegionPoolStackBase + VM::VMRegionPoolStackLimit;
+    VMRegionPoolStackRegion->KernelRegion = true;
+
+    VMAddressSpacePoolRegion = new VM::Region;
+    VMAddressSpacePoolRegion->Base = VM::VMAddressSpacePoolBase;
+    VMAddressSpacePoolRegion->End = VM::VMAddressSpacePoolBase + VM::VMAddressSpacePoolLimit;
+    VMAddressSpacePoolRegion->KernelRegion = true;
+
+    VMAddressSpacePoolStackRegion = new VM::Region;
+    VMAddressSpacePoolStackRegion->Base = VM::VMAddressSpacePoolStackBase;
+    VMAddressSpacePoolStackRegion->End = VM::VMAddressSpacePoolStackBase + VM::VMAddressSpacePoolStackLimit;
+    VMAddressSpacePoolStackRegion->KernelRegion = true;
 }
 
 void Memory::RemapKernel()

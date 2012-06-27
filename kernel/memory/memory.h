@@ -59,7 +59,8 @@ namespace Memory
     
     void PreInitialize(void *);
     void Initialize(Memory::MemoryMapEntry *, uint32);
-
+    void InitializeRegions();
+    
     void RemapKernel();
 
     void AlignPlacementToPage();
@@ -98,6 +99,20 @@ namespace Memory
     extern Lib::Stack * GlobalPages;
     extern Lib::Stack * CorePages;
     extern VM::Region * KernelRegion;
+    extern VM::Region * VideoBackbufferRegion;
+    extern VM::Region * VideoMemoryRegion;
+    extern VM::Region * KernelHeapRegion;
+    extern VM::Region * PagingStructuresPoolRegion;
+    extern VM::Region * PagingStructuresPoolStackRegion;
+    extern VM::Region * GlobalPageStackRegion;
+    extern VM::Region * VMPagePoolRegion;
+    extern VM::Region * VMPagePoolStackRegion;
+    extern VM::Region * VMRegionPoolRegion;
+    extern VM::Region * VMRegionPoolStackRegion;
+    extern VM::Region * VMAddressSpacePoolRegion;
+    extern VM::Region * VMAddressSpacePoolStackRegion;
+    extern VM::Region * CoreDataRegion;
+    extern VM::Region * CorePageStackRegion;
     extern VM::AddressSpace * CurrentVAS;
 }
 

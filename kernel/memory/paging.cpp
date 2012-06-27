@@ -144,6 +144,8 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                     if (oldaddr != 0)
                     {
                         Memory::VMM::PushPage(oldaddr);
+                        // Memory::VM::FlushTLB(pBaseVirtual);
+                        // pBaseVirtual += 4096;
                     }
 
                     uint64 addr = pBasePhysical;
