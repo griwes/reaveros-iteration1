@@ -192,21 +192,21 @@ namespace Memory
         const uint64 KernelHeapBase = VideoMemoryBase - KernelHeapLimit;
         const uint64 PagingStructuresPoolLimit = 1025ull * 1024 * 1024 * 1024;
         const uint64 PagingStructuresPoolBase = KernelHeapBase - PagingStructuresPoolLimit;
-        const uint64 PagingStructuresPoolStackLimit = 1025ull * 1024 * 1024;
+        const uint64 PagingStructuresPoolStackLimit = 1025ull * 1024 * 256;
         const uint64 PagingStructuresPoolStackBase = PagingStructuresPoolBase - PagingStructuresPoolStackLimit;
         const uint64 GlobalPageStackLimit = 512ull * 1024 * 1024 * 1024;
         const uint64 GlobalPageStackBase = PagingStructuresPoolStackBase - GlobalPageStackLimit;
-        const uint64 VMPagePoolLimit = sizeof(Page) * 256ull * 1024 * 1024 * 1024;
+        const uint64 VMPagePoolLimit = sizeof(Page) * 256ull * 1024 * 1024;
         const uint64 VMPagePoolBase = GlobalPageStackBase - VMPagePoolLimit;
-        const uint64 VMPagePoolStackLimit = 256ull * 1024 * 1024 * 1024;
+        const uint64 VMPagePoolStackLimit = sizeof(Page *) * 256ull * 1024 * 1024;
         const uint64 VMPagePoolStackBase = VMPagePoolBase - VMPagePoolStackLimit;
-        const uint64 VMRegionPoolLimit = sizeof(Region) * 1024ull * 1024 * 1024;
+        const uint64 VMRegionPoolLimit = sizeof(Region) * 1024ull * 1024;
         const uint64 VMRegionPoolBase = VMPagePoolStackBase - VMRegionPoolLimit;
-        const uint64 VMRegionPoolStackLimit = 1024ull * 1024 * 1024;
+        const uint64 VMRegionPoolStackLimit = sizeof(Region *) * 1024ull * 1024;
         const uint64 VMRegionPoolStackBase = VMRegionPoolBase - VMRegionPoolStackLimit;
-        const uint64 VMAddressSpacePoolLimit = sizeof(AddressSpace) * 1024ull * 1024;
+        const uint64 VMAddressSpacePoolLimit = sizeof(AddressSpace) * 1024ull * 64;
         const uint64 VMAddressSpacePoolBase = VMRegionPoolStackBase - VMAddressSpacePoolLimit;
-        const uint64 VMAddressSpacePoolStackLimit = 1024ull * 1024;
+        const uint64 VMAddressSpacePoolStackLimit = 1024ull * 64;
         const uint64 VMAddressSpacePoolStackBase = VMAddressSpacePoolBase - VMAddressSpacePoolStackLimit;
         
         // core structures addresses and limits

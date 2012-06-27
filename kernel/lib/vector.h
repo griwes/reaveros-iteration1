@@ -202,8 +202,38 @@ namespace Lib
         {
             delete[] m_pBuffer;
         }
-        
-        
+
+        Iterator PushBack(const T & val)
+        {
+            if (m_iSize + 1 > m_iCapacity)
+            {
+                _realloc();
+            }
+
+            m_pBuffer[m_iSize++] = val;
+
+            return Iterator(this, m_iSize - 1);
+        }
+
+        Iterator PushFront(const T & val)
+        {
+            if (m_iSize + 1 > m_iCapacity)
+            {
+                _realloc();
+            }
+
+            for (uint64 i = 0; i < m_iSize; i++)
+            {
+                Memory::Copy(m_pBuffer + m_iSize - i - 1, m_pBuffer + m_iSize);
+            }
+
+            m_iSize++;
+
+            m_pBuffer[0] = val;
+
+            return Begin();
+        }
+
         Iterator Insert(const T & val)
         {
             return Insert(val, Iterator(this, m_iSize - 1));
@@ -230,7 +260,7 @@ namespace Lib
             {
                 for (uint64 i = 0; i + it.m_iIndex < m_iSize; i++)
                 {
-                    Memory::Copy(m_pBuffer + m_iSize - i - 1, m_pBuffer + m_iSize - 1);
+                    Memory::Copy(m_pBuffer + m_iSize - i - 1, m_pBuffer + m_iSize);
                 }
                 
                 m_pBuffer[it.m_iIndex + 1] = val;

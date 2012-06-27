@@ -39,6 +39,8 @@
 #include "vm.h"
 #include "vmm.h"
 
+const uint64 TopMemory = 256ull * 1024 * 1024 * 1024 * 1024;
+
 namespace Memory
 {
     void * PlacementAddress = 0;
@@ -47,6 +49,16 @@ namespace Memory
     uint64 StackStart = 0;
     Lib::Stack * GlobalPages = 0;
     Lib::Stack * CorePages = 0;
+    Lib::Stack * PagingStructures = 0;
+    Lib::Stack * VMPages = 0;
+    Lib::Stack * VMRegions = 0;
+    Lib::Stack * VMAddressSpaces = 0;
+
+    uint64 PagingStructuresCount = 0;
+    uint64 VMPagesCount = 0;
+    uint64 VMRegionsCount = 0;
+    uint64 VMAddressSpacesCount = 0;
+    
     VM::Region * KernelRegion = 0;
     VM::Region * VideoBackbufferRegion = 0;
     VM::Region * VideoMemoryRegion = 0;
@@ -63,6 +75,7 @@ namespace Memory
     VM::Region * CoreDataRegion = 0;
     VM::Region * CorePageStackRegion = 0;
     VM::AddressSpace * CurrentVAS = 0;
+    uint64 AvailableMemory = 0;
 }
 
 void * operator new(uint64 iSize)
@@ -124,6 +137,8 @@ void Memory::PreInitialize(void * pPlacementAddress)
 void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
 {
     Memory::SystemMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
+
+    Memory::AvailableMemory = SystemMemoryMap->CountUsableMemory();
 
     Memory::RemapKernel();
     Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap, Memory::VM::GlobalPageStackBase);
@@ -199,7 +214,29 @@ void Memory::InitializeRegions()
     VMAddressSpacePoolStackRegion->End = VM::VMAddressSpacePoolStackBase + VM::VMAddressSpacePoolStackLimit;
     VMAddressSpacePoolStackRegion->KernelRegion = true;
 
-//    Memory::PlacementAddress = (void *)0;
+    CurrentVAS->AddRegion(KernelRegion);
+    CurrentVAS->AddRegion(VideoBackbufferRegion);
+    CurrentVAS->AddRegion(VideoMemoryRegion);
+    CurrentVAS->AddRegion(KernelHeapRegion);
+    CurrentVAS->AddRegion(PagingStructuresPoolRegion);
+    CurrentVAS->AddRegion(PagingStructuresPoolStackRegion);
+    CurrentVAS->AddRegion(GlobalPageStackRegion);
+    CurrentVAS->AddRegion(VMPagePoolRegion);
+    CurrentVAS->AddRegion(VMPagePoolStackRegion);
+    CurrentVAS->AddRegion(VMRegionPoolRegion);
+    CurrentVAS->AddRegion(VMRegionPoolStackRegion);
+    CurrentVAS->AddRegion(VMAddressSpacePoolRegion);
+    CurrentVAS->AddRegion(VMAddressSpacePoolStackRegion);
+
+    PagingStructures = new Lib::Stack(0, 1024 * 1024, VM::PagingStructuresPoolStackBase);
+    VMPages = new Lib::Stack(0, 1024 * 1024, VM::VMPagePoolStackBase);
+    VMRegions = new Lib::Stack(0, 1024, VM::VMRegionPoolStackBase);
+    VMAddressSpaces = new Lib::Stack(0, 1024, VM::VMAddressSpacePoolStackBase);
+
+    PagingStructuresCount = 1024 * 1024;
+    VMPagesCount = 1024 * 1024;
+    VMRegionsCount = 1024;
+    VMAddressSpacesCount = 1024;
 }
 
 void Memory::RemapKernel()

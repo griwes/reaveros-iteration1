@@ -98,6 +98,20 @@ namespace Memory
     extern uint64 StackStart;
     extern Lib::Stack * GlobalPages;
     extern Lib::Stack * CorePages;
+    extern Lib::Stack * PagingStructures;
+    extern Lib::Stack * VMPages;
+    extern Lib::Stack * VMRegions;
+    extern Lib::Stack * VMAddressSpaces;
+
+    extern uint64 PagingStructuresCount;
+    const uint64 PagingStructuresMax = 1025ull * 1024 * 256;
+    extern uint64 VMPagesCount;
+    const uint64 VMPagesMax = 1025ull * 1024 * 256;
+    extern uint64 VMRegionsCount;
+    const uint64 VMRegionsMax = 1024ull * 1024ull;
+    extern uint64 VMAddressSpacesCount;
+    const uint64 VMAddressSpacesMax = 1024ull * 64;
+    
     extern VM::Region * KernelRegion;
     extern VM::Region * VideoBackbufferRegion;
     extern VM::Region * VideoMemoryRegion;
@@ -114,6 +128,7 @@ namespace Memory
     extern VM::Region * CoreDataRegion;
     extern VM::Region * CorePageStackRegion;
     extern VM::AddressSpace * CurrentVAS;
+    extern uint64 AvailableMemory;
 }
 
 #endif

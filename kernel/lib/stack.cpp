@@ -80,6 +80,30 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
     }
 }
 
+Lib::Stack::Stack(uint64 start, uint64 end, uint64 base)
+{
+    m_iSize = 0;
+    m_pStack = (uint64 *)base;
+    m_iLastPage = 0;
+    
+    for (; start != end; start++)
+    {
+        if (m_iLastPage == 0)
+        {
+            Memory::VMM::MapPage(base);
+            m_iLastPage = base;
+        }
+
+        m_pStack[m_iSize++] = start;
+
+        if (((m_iLastPage + 4096 - base) / 8) - m_iSize < 16)
+        {
+            m_iLastPage += 4096;
+            Memory::VMM::MapPage(m_iLastPage);
+        }
+    }
+}
+
 Lib::Stack::~Stack()
 {
 }

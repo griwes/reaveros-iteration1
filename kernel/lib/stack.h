@@ -41,7 +41,7 @@ namespace Lib
     {
     public:
         Stack(Memory::MemoryMap *, uint64);
-        Stack(uint64, uint64);
+        Stack(uint64, uint64, uint64);
         ~Stack();
         
         uint64 Pop();

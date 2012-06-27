@@ -49,9 +49,38 @@ void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 limit, Region * reg
     
     if (region == nullptr)
     {
-        Region * region = new Region;
+        region = new Region;
         region->Base = base;
         region->End = base + limit;
+    }
+
+    if (Regions.Size() == 0)
+    {
+        Regions.PushBack(region);
+        
+        m_lock.Unlock();
+        return;
+    }
+
+    if (Regions.Size() == 1)
+    {
+        if (Regions[0]->End < base)
+        {
+            Regions.PushFront(region);
+        }
+
+        else if (Regions[0]->Base > base + limit)
+        {
+            Regions.PushBack(region);
+        }
+
+        else
+        {
+            PANIC();
+        }
+
+        m_lock.Unlock();
+        return;
     }
 
     auto it = Regions.Begin() + 1;
@@ -76,6 +105,7 @@ void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 limit, Region * reg
         }
     }
 
+    dbg;
     Regions.Insert(region, it);
 
     m_lock.Lock();
@@ -83,7 +113,7 @@ void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 limit, Region * reg
 
 void Memory::VM::AddressSpace::AddRegion(Memory::VM::Region * pRegion)
 {
-    AddRegion(pRegion->Base, pRegion->End, pRegion);
+    AddRegion(pRegion->Base, pRegion->End - pRegion->Base, pRegion);
 }
 
 void Memory::VM::AddressSpace::RemoveRegion(uint64 base)
