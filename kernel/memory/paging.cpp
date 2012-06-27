@@ -213,7 +213,7 @@ static void * _alloc(uint64 iSize)
         return ret;
     }
     
-    return Memory::VMM::AllocPagingPages(iSize / 4096 + (iSize % 4096 ? 1 : 0));
+    return Memory::VMM::AllocPagingPages(iSize / 4096);
 }
 
 void * Paging::PageTable::operator new(uint64 iSize)
