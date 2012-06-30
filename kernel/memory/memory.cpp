@@ -80,7 +80,7 @@ namespace Memory
 
 void * operator new(uint64 iSize)
 {
-    if (!Memory::PlacementAddress)
+    if (Memory::KernelHeap)
     {
         return Memory::KernelHeap->Alloc(iSize);
     }
@@ -95,7 +95,7 @@ void * operator new(uint64 iSize)
 // hope no-one will ever try to free placed memory...
 void operator delete(void * pPointer)
 {
-    if (!Memory::PlacementAddress)
+    if (Memory::KernelHeap)
     {
         Memory::KernelHeap->Free(pPointer);
     }
@@ -108,7 +108,7 @@ void * operator new[](uint64 iSize)
 
 void operator delete[](void * pPointer)
 {
-    if (!Memory::PlacementAddress)
+    if (Memory::KernelHeap)
     {
         Memory::KernelHeap->Free(pPointer);
     }
@@ -214,7 +214,7 @@ void Memory::InitializeRegions()
     VMAddressSpacePoolStackRegion->End = VM::VMAddressSpacePoolStackBase + VM::VMAddressSpacePoolStackLimit;
     VMAddressSpacePoolStackRegion->KernelRegion = true;
 
-    CurrentVAS->AddRegion(KernelRegion);
+/*    CurrentVAS->AddRegion(KernelRegion);
     CurrentVAS->AddRegion(VideoBackbufferRegion);
     CurrentVAS->AddRegion(VideoMemoryRegion);
     CurrentVAS->AddRegion(KernelHeapRegion);
@@ -236,7 +236,7 @@ void Memory::InitializeRegions()
     PagingStructuresCount = 1024 * 1024;
     VMPagesCount = 1024 * 1024;
     VMRegionsCount = 1024;
-    VMAddressSpacesCount = 1024;
+    VMAddressSpacesCount = 1024;*/
 }
 
 void Memory::RemapKernel()

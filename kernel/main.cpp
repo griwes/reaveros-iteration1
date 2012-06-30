@@ -54,7 +54,7 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     Memory::Initialize(pMemoryMap, iMemoryMapSize);
 
     Screen::Initialize(pVideoMode, pFont);
-
+    
     using Screen::kout;
     using Screen::nl;
     

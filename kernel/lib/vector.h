@@ -29,6 +29,8 @@
  *
  **/
 
+// TODO: REWRITE THIS SHIT
+
 #ifndef __rose_kernel_lib_vector_h__
 #define __rose_kernel_lib_vector_h__
 

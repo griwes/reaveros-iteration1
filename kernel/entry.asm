@@ -51,7 +51,7 @@ highmemory:
     mov     rax, rsi
 
     ; stupid loop, TODO: sanity checks
-    ; the loop below moves kernel stack at the end currently (and later) mapped area
+    ; the loop below moves kernel stack at the end of currently (and later) mapped area
     ; (I was little clueless, when I looked at this few days after writing it)
     .loop:          
         cmp     dword [rax + 16], 0xffff

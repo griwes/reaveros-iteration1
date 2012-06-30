@@ -1,6 +1,6 @@
-all: clean chdd bochs
+all: chdd bochs
 
-q: clean chdd qemu
+q: chdd qemu
 
 bochs:
 	cd builds && bochs -q
