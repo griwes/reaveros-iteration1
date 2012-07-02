@@ -2,14 +2,22 @@ all: chdd bochs
 
 q: chdd qemu
 
+u: cuefi qemu-uefi
+
 bochs:
 	cd builds && bochs -q
 
 qemu:
 	cd builds && qemu-system-x86_64 -hda hdd.img -monitor stdio -no-kvm -m 2048
 
+qemu-uefi:
+	cd builds/efi && qemu-system-x86_64 -L . -bios OVMF.fd -m 2048 -cpu kvm64 -hda efidisk.hdd -enable-kvm
+
 chdd:
 	colormake hdd
+
+cuefi:
+	colormake uefi
 
 hdd:
 	cd loader/hdd; \
@@ -26,8 +34,23 @@ hdd:
 	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img stage3.img; \
 	dd if=a.img of=hdd.img conv=notrunc
 
+uefi:
+	cd loader/uefi; \
+	#colormake
+	cd builds/efi; \
+	sudo losetup --offset 1048576 --sizelimit 66060288 /dev/loop0 efidisk.hdd; \
+	sudo mount /dev/loop0 ./mount; \
+	$(shell sudo rm ./mount/EFI/BOOT/BOOTX64.EFI)
+	cd builds/efi; \
+	cp $(UDKPATH)/MyWorkSpace/Build/MdeModule/RELEASE_GCC46/X64/roseuefi.efi ./EFI/BOOT/BOOTX64.EFI; \
+	$(shell sudo mv ./EFI/BOOT/BOOTX64.EFI ./mount/EFI/BOOT/BOOTX64.EFI) \
+	sudo umount ./mount; \
+	sudo losetup -d /dev/loop0
+
 clean:
 	cd loader/booter; \
+	colormake clean
+	cd loader/uefi; \
 	colormake clean
 	cd kernel; \
 	colormake clean
