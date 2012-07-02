@@ -1,8 +1,6 @@
 all:
-	cp * $(UDKPATH)/MyWorkSpace/MdeModulePkg/Application/RoseUefi/
-	cd $(UDKPATH)/MyWorkSpace/; \
+	cp -rf * $(UDKPATH)/MyWorkSpace/MdeModulePkg/Application/RoseUefi/
 	build -p MdeModulePkg/MdeModulePkg.dsc -a X64 -m MdeModulePkg/Application/RoseUefi/uefi.inf
 
 clean:
-	cd $(UDKPATH)/MyWorkSpace/; \
 	build -p MdeModulePkg/MdeModulePkg.dsc -a X64 -m MdeModulePkg/Application/RoseUefi/uefi.inf clean

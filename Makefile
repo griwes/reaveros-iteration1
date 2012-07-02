@@ -36,16 +36,17 @@ hdd:
 
 uefi:
 	cd loader/uefi; \
-	#colormake
-	cd builds/efi; \
-	sudo losetup --offset 1048576 --sizelimit 66060288 /dev/loop0 efidisk.hdd; \
-	sudo mount /dev/loop0 ./mount; \
-	$(shell sudo rm ./mount/EFI/BOOT/BOOTX64.EFI)
+	colormake
 	cd builds/efi; \
 	cp $(UDKPATH)/MyWorkSpace/Build/MdeModule/RELEASE_GCC46/X64/roseuefi.efi ./EFI/BOOT/BOOTX64.EFI; \
-	$(shell sudo mv ./EFI/BOOT/BOOTX64.EFI ./mount/EFI/BOOT/BOOTX64.EFI) \
-	sudo umount ./mount; \
-	sudo losetup -d /dev/loop0
+	sudo losetup --offset 1048576 --sizelimit 66060288 /dev/loop0 efidisk.hdd; \
+	sudo mount /dev/loop0 ./mount; \
+	sudo mv ./EFI/BOOT/BOOTX64.EFI ./mount/EFI/BOOT/BOOTX64.EFI
+	sleep 3s
+	make unmount
+
+unmount:
+	cd builds/efi && sudo umount ./mount && sudo losetup -d /dev/loop0
 
 clean:
 	cd loader/booter; \
