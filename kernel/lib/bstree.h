@@ -127,15 +127,17 @@ namespace Lib
                 
                 Iterator & operator++()
                 {
+                    Node * orig = m_pNode;
+                    
                     if (m_pNode)
                     {
-                        if (m_pNode->m_pParent == nullptr)
+                        if (!m_pNode->m_pParent)
                         {
                             m_pNode = m_pNode->m_pRight;
                             
-                            if (m_pNode != nullptr)
+                            if (m_pNode)
                             {
-                                while (m_pNode->m_pLeft != nullptr)
+                                while (m_pNode->m_pLeft)
                                 {
                                     m_pNode = m_pNode->m_pLeft;
                                 }
@@ -144,22 +146,24 @@ namespace Lib
                         
                         else
                         {
-                            while (m_pNode->m_pRight == nullptr)
+                            if (m_pNode->m_pRight)
                             {
-                                m_pNode = m_pNode->m_pParent;
+                                m_pNode = m_pNode->m_pRight;
                                 
-                                if (m_pNode->m_pParent == nullptr)
+                                while (m_pNode->m_pLeft)
                                 {
-                                    this->m_pNode = nullptr;
-                                    break;
+                                    m_pNode = m_pNode->m_pLeft;
                                 }
                             }
                             
-                            m_pNode = m_pNode->m_pRight;
-                            
-                            while (m_pNode->m_pLeft != nullptr)
+                            else
                             {
-                                m_pNode = m_pNode->m_pLeft;
+                                auto idx = m_pNode->m_tIndex;
+                                
+                                while (m_pNode && m_pNode->m_tIndex <= idx)
+                                {
+                                    m_pNode = m_pNode->m_pParent;
+                                }
                             }
                         }
                     }
@@ -170,21 +174,23 @@ namespace Lib
                 Iterator operator++(int)
                 {
                     Iterator tmp(*this);
-                    ++tmp;
+                    ++this;
                     return tmp;
                 }
                 
                 Iterator & operator--()
                 {
+                    Node * orig = m_pNode;
+                    
                     if (m_pNode)
                     {
-                        if (m_pNode->m_pParent == nullptr)
+                        if (!m_pNode->m_pParent)
                         {
                             m_pNode = m_pNode->m_pLeft;
                             
-                            if (m_pNode != nullptr)
+                            if (m_pNode)
                             {
-                                while (m_pNode->m_pRight != nullptr)
+                                while (m_pNode->m_pRight)
                                 {
                                     m_pNode = m_pNode->m_pRight;
                                 }
@@ -193,22 +199,24 @@ namespace Lib
                         
                         else
                         {
-                            while (m_pNode->m_pLeft == nullptr)
+                            if (m_pNode->m_pLeft)
                             {
-                                m_pNode = m_pNode->m_pParent;
+                                m_pNode = m_pNode->m_pLeft;
                                 
-                                if (m_pNode->m_pParent == nullptr)
+                                while (m_pNode->m_pRight)
                                 {
-                                    this->m_pNode = nullptr;
-                                    break;
+                                    m_pNode = m_pNode->m_pRight;
                                 }
                             }
                             
-                            m_pNode = m_pNode->m_pLeft;
-                            
-                            while (m_pNode->m_pRight != nullptr)
+                            else
                             {
-                                m_pNode = m_pNode->m_pRight;
+                                auto idx = m_pNode->m_tIndex;
+                                
+                                while (m_pNode && m_pNode->m_tIndex <= idx)
+                                {
+                                    m_pNode = m_pNode->m_pParent;
+                                }
                             }
                         }
                     }
@@ -219,8 +227,13 @@ namespace Lib
                 Iterator operator--(int)
                 {
                     Iterator tmp(*this);
-                    --tmp;
+                    --this;
                     return tmp;
+                }
+                
+                bool operator==(Iterator it)
+                {
+                    return !(it != *this);
                 }
                 
                 bool operator!=(Iterator it)
@@ -253,9 +266,9 @@ namespace Lib
                 delete m_pRoot;
             }
             
-            Iterator Insert(_index tIndex, _value tValue)
+            Iterator Insert(_index tIndex, _value tValue = _value())
             {
-                if (m_pRoot == nullptr)
+                if (!m_pRoot)
                 {
                     m_pRoot = new Node(this, nullptr, tIndex, tValue);
                     return Iterator(m_pRoot);
@@ -272,9 +285,10 @@ namespace Lib
                     
                     if (current->m_tIndex > tIndex)
                     {
-                        if (current->m_pLeft == nullptr)
+                        if (!current->m_pLeft)
                         {
                             current->m_pLeft = new Node(this, current, tIndex, tValue);
+                            m_iSize++;
                             return Iterator(current->m_pLeft);
                         }
                         
@@ -283,9 +297,10 @@ namespace Lib
                     
                     else
                     {
-                        if (current->m_pRight == nullptr)
+                        if (!current->m_pRight)
                         {
                             current->m_pRight = new Node(this, current, tIndex, tValue);
+                            m_iSize++;
                             return Iterator(current->m_pRight);
                         }
                         
@@ -298,7 +313,7 @@ namespace Lib
             {
                 Node * current = m_pRoot;
                 
-                if (current == nullptr)
+                if (!current)
                 {
                     return true;
                 }
@@ -307,14 +322,14 @@ namespace Lib
                 {
                     if (current->m_tIndex == tIndex)
                     {
-                        if (current->m_pLeft == nullptr && current->m_pRight == nullptr)
+                        if (!current->m_pLeft && !current->m_pRight)
                         {
                             delete current;
                             
                             return true;
                         }
                         
-                        else if (current == m_pRoot && current->m_pLeft == nullptr)
+                        else if (current == m_pRoot && !current->m_pLeft)
                         {
                             m_pRoot = current->m_pRight;
                             current->m_pRight->m_pParent = nullptr;
@@ -324,7 +339,7 @@ namespace Lib
                             return true;
                         }
                         
-                        else if (current == m_pRoot && current->m_pRight == nullptr)
+                        else if (current == m_pRoot && !current->m_pRight)
                         {
                             m_pRoot = current->m_pLeft;
                             current->m_pLeft->m_pParent = nullptr;
@@ -334,7 +349,7 @@ namespace Lib
                             return true;
                         }
                         
-                        else if (current->m_pLeft == nullptr)
+                        else if (!current->m_pLeft)
                         {
                             Node * pRightLeaf = current->m_pRight;
                             
@@ -360,7 +375,7 @@ namespace Lib
                             return true;
                         }
                         
-                        else if (current->m_pRight == nullptr)
+                        else if (!current->m_pRight)
                         {
                             Node * pLeftLeaf = current->m_pLeft;
                             
@@ -487,12 +502,12 @@ namespace Lib
                 
                 while (true)
                 {
-                    if (current == nullptr)
+                    if (!current)
                     {
                         return End();
                     }
                     
-                    if (current->m_pLeft != nullptr)
+                    if (current->m_pLeft)
                     {
                         current = current->m_pLeft;
                     }
@@ -515,4 +530,5 @@ namespace Lib
         };
     }
 }
+
 #endif
