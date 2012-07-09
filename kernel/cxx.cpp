@@ -29,8 +29,27 @@
  *
  **/
 
+#include "types.h"
+#include "screen/screen.h"
+
 extern "C" void __cxa_pure_virtual()
 {
-    // should panic...
+    PANIC("Pure virtual function called!");
 }
 
+void _panic(const char * X, const char * FILE, uint64 LINE, const char * FUNC)
+{
+    using Screen::kout;
+    using Screen::nl;
+    
+    if (kout)
+    {
+        *kout << nl << Screen::Red;
+        *kout << "PANIC: " << Screen::Gray << "\"" << X << "\"" << nl;
+        *kout << "File: " << FILE << ", line " << LINE << nl;
+        *kout << "Function:  " << FUNC << nl;;
+    }
+    
+    __asm("hlt");
+}
+    

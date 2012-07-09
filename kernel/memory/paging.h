@@ -144,28 +144,28 @@ namespace Paging
             {
                 if (!Entries[(pAddr >> 39) & 511].Present)
                 {
-                    PANIC();
+                    PANIC("Requested physical address of unmapped page.");
                 }
                 
                 auto a = PointerTables[(pAddr >> 39) & 511];
 
                 if (!a->Entries[(pAddr >> 30) & 511].Present)
                 {
-                    PANIC();
+                    PANIC("Requested physical address of unmapped page.");
                 }
 
                 auto b = a->PageDirectories[(pAddr >> 30) & 511];
 
                 if (!b->Entries[(pAddr >> 21) & 511].Present)
                 {
-                    PANIC();
+                    PANIC("Requested physical address of unmapped page.");
                 }
 
                 auto c = b->PageTables[(pAddr >> 21) & 511];
 
                 if (!c->Entries[(pAddr >> 12) & 511].Present)
                 {
-                    PANIC();
+                    PANIC("Requested physical address of unmapped page.");
                 }
 
                 auto & d = c->Entries[(pAddr >> 12) & 511];

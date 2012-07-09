@@ -248,7 +248,7 @@ void Screen::BootTerminal::_put16(char c)
     
     this->x++;
     
-    if (this->x > this->maxx)
+    if (this->x == this->maxx)
     {
         this->x = 0;
         this->y++;
@@ -288,7 +288,7 @@ void Screen::BootTerminal::_put32(char c)
     
     this->x++;
     
-    if (this->x > this->maxx)
+    if (this->x == this->maxx)
     {
         this->x = 0;
         this->y++;

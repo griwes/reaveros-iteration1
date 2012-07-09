@@ -76,7 +76,7 @@ namespace
                 return m_pParent->m_pBuffer[m_iIndex];
             }
 
-            PANIC();
+            PANIC("Tried to dereference invalid vector iterator.");
             return *(T *)0; // for the sake of dropping compiler warning
         }
         
@@ -245,7 +245,7 @@ namespace Lib
         {
             if (it.m_pParent != this || it.m_iRevision != m_iRevision)
             {
-                PANIC();
+                PANIC("Tried to insert at position represented by invalid iterator.");
             }
             
             if (m_iSize + 1 > m_iCapacity)
@@ -363,7 +363,7 @@ namespace Lib
         {
             if (ind >= m_iSize)
             {
-                PANIC();
+                PANIC("Out of bounds access.");
             }
             
             return m_pBuffer[ind];

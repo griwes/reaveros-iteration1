@@ -55,8 +55,10 @@ inline T abs(T i)
     return i;
 }
 
-// for now
-#define PANIC(X) __asm __volatile__("movl %0, %%eax" :: "r"(__LINE__) : "%eax"); __asm("hlt")
+#define PANIC(X) _panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+
+void _panic(const char *, const char *, uint64, const char *);
+
 #define dbg __asm("xchg %bx, %bx")
 
 #endif
