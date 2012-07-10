@@ -59,7 +59,7 @@ namespace Lib
                         m_pTree->m_pRoot = nullptr;
                     }
                 }
-                
+
             private:
                 _index m_tIndex;
                 _value m_tValue;
@@ -104,9 +104,9 @@ namespace Lib
                     
                     else
                     {
-                        // PANIC();
+                        PANIC("Tried to dereference invalid binary search tree iterator!");
                         
-                        return _index(); // valid code, isn't it?
+                        return *(_index *)0; // valid code, isn't it?
                     }
                 }
                 
@@ -119,7 +119,7 @@ namespace Lib
                     
                     else
                     {
-                        // PANIC();
+                        PANIC("Tried to dereference invalid binary search tree iterator!");
                         
                         return *(_value *)0; // we don't like compiler warnings
                     }
@@ -174,7 +174,7 @@ namespace Lib
                 Iterator operator++(int)
                 {
                     Iterator tmp(*this);
-                    ++this;
+                    ++*this;
                     return tmp;
                 }
                 
@@ -227,7 +227,7 @@ namespace Lib
                 Iterator operator--(int)
                 {
                     Iterator tmp(*this);
-                    --this;
+                    --*this;
                     return tmp;
                 }
                 
@@ -238,7 +238,23 @@ namespace Lib
                 
                 bool operator!=(Iterator it)
                 {
-                    return (m_pNode != it.m_pNode);
+                    if (m_pNode != nullptr && it.m_pNode != nullptr)
+                    {
+                        if (m_pNode->m_pTree != it.m_pNode->m_pTree)
+                        {
+                            return true;
+                        }
+                        
+                        else
+                        {
+                            return m_pNode != it.m_pNode;
+                        }
+                    }
+                    
+                    else
+                    {
+                        return (bool)m_pNode;
+                    }
                 }
                 
             private:
@@ -257,7 +273,7 @@ namespace Lib
             friend class _details::_bs_tree_node<_index, _value>;
             
             BinarySearch()
-            : m_pRoot(nullptr)
+            : m_pRoot(nullptr), m_iSize(0)
             {
             }
             
@@ -309,6 +325,11 @@ namespace Lib
                 }
             }
             
+            bool Remove(Iterator it)
+            {
+                return Remove(it.Index());
+            }
+            
             bool Remove(_index tIndex)
             {
                 Node * current = m_pRoot;
@@ -326,6 +347,8 @@ namespace Lib
                         {
                             delete current;
                             
+                            m_iSize--;
+                            
                             return true;
                         }
                         
@@ -336,6 +359,8 @@ namespace Lib
                             current->m_pRight = nullptr;
                             delete current;
                             
+                            m_iSize--;
+                            
                             return true;
                         }
                         
@@ -345,6 +370,8 @@ namespace Lib
                             current->m_pLeft->m_pParent = nullptr;
                             current->m_pLeft = nullptr;
                             delete current;
+                            
+                            m_iSize--;
                             
                             return true;
                         }
@@ -372,6 +399,8 @@ namespace Lib
                             
                             delete current;
                             
+                            m_iSize;
+                            
                             return true;
                         }
                         
@@ -397,6 +426,9 @@ namespace Lib
                             current->m_pLeft = nullptr;
                             
                             delete current;
+                            
+                            m_iSize--;
+                            
                             return true;
                         }
                         
@@ -421,6 +453,8 @@ namespace Lib
                             current->m_pRight = nullptr;
                             
                             delete current;
+                            
+                            m_iSize--;
                             
                             return true;
                         }
@@ -453,7 +487,11 @@ namespace Lib
                             current->m_pLeft = nullptr;
                             current->m_pRight = nullptr;
                             
+                            m_iSize--;
+                            
                             delete current;
+                            
+                            return true;
                         }
                     }
                     
@@ -522,6 +560,11 @@ namespace Lib
             Iterator End()
             {
                 return Iterator();
+            }
+            
+            uint64 Size()
+            {
+                return m_iSize;
             }
             
         private:
