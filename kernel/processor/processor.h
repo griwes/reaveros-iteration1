@@ -36,6 +36,7 @@
 #include "../memory/paging.h"
 #include "smp.h"
 #include "core.h"
+#include "../acpi/acpit/acpitables.h"
 
 namespace Processor
 {
@@ -47,6 +48,7 @@ namespace Processor
 
     extern Processor::SMP::Core * Core;
     extern Processor::SMP::Environment * Cores;
+    extern ACPI::Tables * Tables;
 }
 
 #endif

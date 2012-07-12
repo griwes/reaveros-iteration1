@@ -63,20 +63,92 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     *kout << "ReaverOS 0.1: Cotyledon" << nl;
     *kout << "Copyright (C) 2011-2012 Reaver Project Team" << nl << nl;
 
-    *kout << "Initializing virtual memory manager... ";
+    *kout << " - Initializing virtual memory manager... ";
 
     Memory::InitializeRegions();
     
     *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
 
-    *kout << "Printing memory map..." << nl << nl;
+    *kout << " - Printing memory map..." << nl;
 
     Memory::SystemMemoryMap->PrintMemoryMap();
 
-    *kout << nl << "Initializing processor... ";
+    *kout << " - Printing screen status..." << nl;
+
+//    Screen::PrintStatus();
+
+    *kout << " - Initializing processor... ";
+    
     Processor::Initialize();
+
     *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
+    *kout << " - Printing environment info and status..." << nl;
+
     Processor::PrintStatus();
+
+//    for (;;) ;
+
+    *kout << " - Validating InitRD... ";
+
+//    InitRD::Driver * pInitRDDriver = new InitRD::Driver(pInitRD);
+//    pInitRDDriver->Validate();
+
+    *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
+    *kout << " - Initializing VFS... ";
+
+//    VFS::Initialize();
+
+    *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
+    *kout << " - Mounting InitRD... ";
+
+//    VFS::Mount("/boot", pInitRDDriver);
+
+    *kout << Screen::Green << "done" << Screen::Gray << "." << nl;    
+    *kout << " - Initializing driver storage... ";
+
+//    DriverStorage::Initialize();
+
+    *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
+    *kout << " - Registering and initializing storage driver... ";
+
+//    DriverStorage::Register(new Drivers::Storage(VFS::LoadFile("/boot/storage.drv")));
+//    Drivers::Storage * pStorage = DriverStorage::GetDriver("storage/boot");
+
+    *kout << Screen::Green << "done." << Screen::Gray << "." << nl;
+    *kout << " - Printing storage and storage driver details..." << nl;
+
+//    pStorage->PrintDetails();
+
+    *kout << " - Registering and initializing filesystem driver... ";
+
+//    DriverStorage::Register(new Drivers::Filesystem(VFS::LoadFile("/boot/filesystem.drv")));
+//    Drivers::Filesystem * pFilesystem = DriverStorage::GetDriver("filesystem/boot", pStorage);
+
+    *kout << Screen::Green << "done." << Screen::Gray << "." << nl;
+    *kout << " - Printing filesystem driver details..." << nl;
+
+//    pFilesystem->PrintDetails();
+
+    *kout << " - Looking for system partition... ";
+
+//    VFS::FindSystemPartition(pFilesystem);
+
+    *kout << Screen::Green << "done." << Screen::Gray << "." << nl;
+    *kout << " - Printing system partition and its storage device details..." << nl;
+
+//    pFilesystem->PrintParitionDetails();
+//    pStorage->PrintDeviceDetails();
+
+    *kout << " - Mounting system partition... ";
+
+//    VFS::Mount("/system", pFilesystem);
+
+    *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
+    *kout << " - Loading system configuration... ";
+
+//    Config::Config * pConfig = Config::LoadConfiguration("/system/config.ini");
+
+    *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
 
     for (;;) ;
     

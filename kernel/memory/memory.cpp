@@ -75,6 +75,7 @@ namespace Memory
     VM::Region * CoreDataRegion = 0;
     VM::Region * CorePageStackRegion = 0;
     VM::AddressSpace * CurrentVAS = 0;
+    
     uint64 AvailableMemory = 0;
 }
 
@@ -214,7 +215,7 @@ void Memory::InitializeRegions()
     VMAddressSpacePoolStackRegion->End = VM::VMAddressSpacePoolStackBase + VM::VMAddressSpacePoolStackLimit;
     VMAddressSpacePoolStackRegion->KernelRegion = true;
 
-/*    CurrentVAS->AddRegion(KernelRegion);
+    CurrentVAS->AddRegion(KernelRegion);
     CurrentVAS->AddRegion(VideoBackbufferRegion);
     CurrentVAS->AddRegion(VideoMemoryRegion);
     CurrentVAS->AddRegion(KernelHeapRegion);
@@ -236,7 +237,7 @@ void Memory::InitializeRegions()
     PagingStructuresCount = 1024 * 1024;
     VMPagesCount = 1024 * 1024;
     VMRegionsCount = 1024;
-    VMAddressSpacesCount = 1024;*/
+    VMAddressSpacesCount = 1024;
 }
 
 void Memory::RemapKernel()

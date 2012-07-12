@@ -42,8 +42,9 @@ extern "C"
 
 namespace Processor
 {
-    Processor::SMP::Core * Core = (Processor::SMP::Core *)0xffffffff40000000;
-    Processor::SMP::Environment * Cores = nullptr;
+    Processor::SMP::Core * Core = 0;
+    Processor::SMP::Environment * Cores = 0;
+    ACPI::Tables * Tables = 0;
 }
 
 void Processor::Initialize()

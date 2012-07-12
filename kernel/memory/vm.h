@@ -37,6 +37,7 @@
 #include "../processor/synchronization.h"
 #include "../processor/processor.h"
 #include "../lib/vector.h"
+#include "../lib/rangemap.h"
 #include "memory.h"
 
 namespace Scheduler
@@ -174,11 +175,11 @@ namespace Memory
             }
 
             Scheduler::Process * Parent;
-            Lib::Vector<Region *> Regions;
 
         private:
             Processor::Spinlock m_lock;
             Paging::PML4 * m_pPML4;
+            Lib::RangeMap<Region *> m_mRegions;
         };
         
         // kernel global addresses and limits

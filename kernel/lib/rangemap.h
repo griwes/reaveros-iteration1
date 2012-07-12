@@ -121,9 +121,9 @@ namespace Lib
             typedef _range_map_iterator<_value> Iterator;
             typedef _details::_range<uint64> Range;
             
-            friend class RangeMap;
+            friend class RangeMap<_value>;
             
-            _range_map_iterator()
+            _range_map_iterator() : m_tTreeIter(nullptr)
             {
             }
             
@@ -134,7 +134,12 @@ namespace Lib
             ~_range_map_iterator()
             {
             }
-            
+
+            operator bool()
+            {
+                return (m_tTreeIter != nullptr);
+            }
+
             Range GetRange()
             {
                 return m_tTreeIter.Index();
@@ -211,10 +216,10 @@ namespace Lib
         
         bool Remove(uint64 v)
         {
-            Iterator it = m_tTree.Get(v);
+            Iterator it = Get(v);
             if (it != m_tTree.End())
             {
-                return m_tTree.Remove(it);
+                return m_tTree.Remove(it.m_tTreeIter);
             }
             
             return false;

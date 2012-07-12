@@ -155,7 +155,12 @@ namespace Lib
                         return *(_value *)0; // we don't like compiler warnings
                     }
                 }
-                
+
+                operator bool()
+                {
+                    return (m_pNode != nullptr);
+                }
+
                 Iterator & operator++()
                 {
                     Node * orig = m_pNode;

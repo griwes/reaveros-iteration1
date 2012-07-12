@@ -43,99 +43,38 @@ Memory::VM::AddressSpace::~AddressSpace()
 
 }
 
-void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 limit, Region * region)
+void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 end, Region * region)
 {
-/*    m_lock.Lock();
-    
-    if (region == nullptr)
-    {
-        region = new Region;
-        region->Base = base;
-        region->End = base + limit;
-    }
+    m_lock.Lock();
 
-    if (Regions.Size() == 0)
-    {
-        Regions.PushBack(region);
-        
-        m_lock.Unlock();
-        return;
-    }
+    m_mRegions.Insert(base, end, region);
 
-    if (Regions.Size() == 1)
-    {
-        if (Regions[0]->End < base)
-        {
-            Regions.PushFront(region);
-        }
-
-        else if (Regions[0]->Base > base + limit)
-        {
-            Regions.PushBack(region);
-        }
-
-        else
-        {
-            PANIC();
-        }
-
-        m_lock.Unlock();
-        return;
-    }
-
-    auto it = Regions.Begin() + 1;
-    for (; it != Regions.End(); it++)
-    {
-        if ((*it - 1)->Base == base)
-        {
-            PANIC();
-        }
-
-        if ((*it - 1)->Base < base && (*(it))->Base > base)
-        {
-            if ((*it - 1)->End < base && (*(it))->Base < base + limit)
-            {
-                break;
-            }
-
-            else
-            {
-                PANIC();
-            }
-        }
-    }
-
-    dbg;
-    Regions.Insert(region, it);
-
-    m_lock.Unlock();*/
+    m_lock.Unlock();
 }
 
 void Memory::VM::AddressSpace::AddRegion(Memory::VM::Region * pRegion)
 {
-    AddRegion(pRegion->Base, pRegion->End - pRegion->Base, pRegion);
+    AddRegion(pRegion->Base, pRegion->End, pRegion);
 }
 
 void Memory::VM::AddressSpace::RemoveRegion(uint64 base)
 {
-/*    m_lock.Lock();
-    
-    auto it = Regions.Begin() + 1;
-    for (; it != Regions.End(); it++)
-    {
-        if ((*it - 1)->Base == base)
-        {
-            Regions.Remove(it - 1);
-            return;
-        }
+    m_lock.Lock();
 
-        if ((*it - 1)->Base < base && (*(it))->Base > base)
+    if (auto it = m_mRegions.Get(base))
+    {
+        if (!m_mRegions.Remove(it))
         {
-            PANIC();
+            PANIC("Failed to remove region from regions range map.");
         }
     }
 
-    m_lock.Unlock();*/
+    else
+    {
+        PANIC("Tried to remove unexistent region from regions range map.");
+    }
+
+    m_lock.Unlock();
 }
 
 void Memory::VM::AddressSpace::RemoveRegion(Memory::VM::Region * pRegion)

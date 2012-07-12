@@ -34,7 +34,10 @@
 
 namespace ACPI
 {
-    
+    class Tables
+    {
+        
+    };
 }
 
 #endif
