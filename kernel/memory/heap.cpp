@@ -157,13 +157,13 @@ void Memory::Heap::_check_sanity()
     {
         if (this->m_pBiggest != nullptr || this->m_pSmallest != nullptr)
         {
-//            PANIC("only one nullptr!");
+            PANIC("Only one nullptr.");
         }
     }
     
-    if (this->m_iEnd > this->m_iLimit)
+    if (m_iEnd > m_iStart + m_iLimit)
     {
-//        PANIC("limit exceeded!");
+        PANIC("Heap limit exceeded.");
     }
 }
 
@@ -256,7 +256,7 @@ void Memory::Heap::_merge(Memory::AllocationBlockHeader * first, Memory::Allocat
 {
     if (first == second)
     {
-//        PANIC("trying to merge AllocationBlockHeader with itself!");
+        PANIC("Tried to merge AllocationBlockHeader with itself.");
     }
     
     if ((uint64)first > (uint64)second)
@@ -266,7 +266,7 @@ void Memory::Heap::_merge(Memory::AllocationBlockHeader * first, Memory::Allocat
     
     if (first->Next() != second)
     {
-//        PANIC("trying to merge not adjacent AllocationBlockHeaders!");
+        PANIC("Tried to merge not adjacent AllocationBlockHeader.");
     }
     
     if (first->Bigger != nullptr)
@@ -449,17 +449,17 @@ void * Memory::Heap::_validate(void * pAddress, bool bShouldBeAllocated)
     AllocationBlockHeader * head = (AllocationBlockHeader *)((uint8 *)pAddress - sizeof(AllocationBlockHeader));
     if (head->Magic != 0xFEA7EFA1 || head->Footer()->Magic != 0xFEA7EFA1)
     {
-//        PANIC("invalid magic number!");
+        PANIC("Invalid magic number in allocation structures.");
     }
     
     if (bShouldBeAllocated && (head->Flags & 1) != 1)
     {
-//        PANIC("block should've been marked as allocated!");
+        PANIC("Not allocated block should be allocated.");
     }
     
     if (!bShouldBeAllocated && (head->Flags & 1) == 1)
     {
-//        PANIC("block shouldn't have been marked as allocated!");
+        PANIC("Allocated block shouldn't be allocated.");
     }
     
     return pAddress;
