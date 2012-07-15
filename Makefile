@@ -10,7 +10,7 @@ bochs:
 qemu:
 	cd builds && qemu-system-x86_64 -hda hdd.img -monitor stdio -no-kvm -m 2048
 
-qemu-uefi:
+uefi-qemu:
 	cd builds/efi && qemu-system-x86_64 -L . -bios OVMF.fd -m 2048 -cpu kvm64 -hda efidisk.hdd -enable-kvm
 
 chdd:
@@ -51,7 +51,9 @@ unmount:
 clean:
 	cd loader/booter; \
 	colormake clean
-	cd loader/uefi; \
-	colormake clean
 	cd kernel; \
+	colormake clean
+
+uefi-clean: clean
+	cd loader/uefi; \
 	colormake clean

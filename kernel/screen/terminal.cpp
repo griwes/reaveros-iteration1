@@ -183,7 +183,7 @@ void Screen::BootTerminal::_put_char(char c)
         this->x = 0;
         this->y++;
 
-        if (this->y > maxy)
+        if (this->y == this->maxy)
         {
             this->_scroll();
         }
@@ -253,7 +253,7 @@ void Screen::BootTerminal::_put16(char c)
         this->x = 0;
         this->y++;
 
-        if (this->y > this->maxy)
+        if (this->y == this->maxy)
         {
             this->_scroll();
         }
@@ -293,7 +293,7 @@ void Screen::BootTerminal::_put32(char c)
         this->x = 0;
         this->y++;
 
-        if (this->y > this->maxy)
+        if (this->y == this->maxy)
         {
             this->_scroll();
         }
@@ -302,7 +302,8 @@ void Screen::BootTerminal::_put32(char c)
 
 void Screen::BootTerminal::_scroll()
 {
-
+    Memory::Copy((uint8 *)Memory::VM::VideoMemoryBase + m_pVideoMode->BytesPerScanLine * 16,
+                 (uint8 *)Memory::VM::VideoMemoryBase, m_pVideoMode->BytesPerScanLine * (m_pVideoMode->YResolution - 16));
 }
 
 void Screen::BootTerminal::Clear()

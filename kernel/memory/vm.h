@@ -108,8 +108,6 @@ namespace Memory
             uint64 ReadOnly:1;
             uint64 KillOnRead:1;
 
-            Lib::Vector<Page *> Pages;
-
             uint64 Base;
             uint64 End;
 
@@ -118,13 +116,18 @@ namespace Memory
 
             File * MappedFile;
 
-            Processor::Spinlock Lock;
+        private:
+            Processor::Spinlock m_lock;
+            Lib::RangeMap<Page *> m_mPages;
         };
 
         class AddressSpace
         {
         public:
             friend void Memory::RemapKernel();
+
+            friend class Region;
+            friend class Page;
             
             AddressSpace(uint64 = 0);
             ~AddressSpace();

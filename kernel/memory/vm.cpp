@@ -40,11 +40,20 @@ Memory::VM::AddressSpace::AddressSpace(uint64 base)
 
 Memory::VM::AddressSpace::~AddressSpace()
 {
+    for (auto it = m_mRegions.Begin(), end = m_mRegions.End(); it != end; ++it)
+    {
+        delete it.Value();
+    }
 }
 
 void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 end, Region * region)
 {
     m_lock.Lock();
+
+    for (auto it = m_mRegions.Get(base), en = m_mRegions.Get(end); it != en; ++it)
+    {
+        PANIC("Tried to add overlapping region.");
+    }
 
     if (!region)
     {
@@ -53,7 +62,7 @@ void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 end, Region * regio
         region->End = end;
     }
 
-    m_mRegions.Insert(base, end, region);
+    m_mRegions.Insert(base, end - 1, region);
 
     m_lock.Unlock();
 }
@@ -87,9 +96,22 @@ void Memory::VM::AddressSpace::RemoveRegion(Memory::VM::Region * pRegion)
 {
     m_lock.Lock();
 
-    if (m_mRegions.Get(pRegion->Base).Value() != pRegion)
+    if (auto it = m_mRegions.Get(pRegion->Base))
     {
-        PANIC("Region mismatch - tried to remove invalid region from address space.");
+        if (it.Value() != pRegion)
+        {
+            PANIC("Region mismatch - tried to remove invalid region from address space.");
+        }
+
+        if (!m_mRegions.Remove(it))
+        {
+            PANIC("Failed to remove region from range map.");
+        }
+    }
+
+    else
+    {
+        PANIC("Tried to remove unexistent region from regions range map.");
     }
 
     m_lock.Unlock();
@@ -134,9 +156,17 @@ void Memory::VM::AddressSpace::MapPage(Memory::VM::Page * pPage)
 void Memory::VM::AddressSpace::UnmapPage(uint64 address)
 {
     m_lock.Lock();
-    
-    m_mRegions.Get(address).Value()->DeletePage(address);
 
+    if (auto it = m_mRegions.Get(address))
+    {
+        m_mRegions.Get(address).Value()->DeletePage(address);
+    }
+
+    else
+    {
+        PANIC("Tried to unmap page outside any region.");
+    }
+    
     m_lock.Unlock();
 }
 
@@ -149,21 +179,70 @@ Memory::VM::Region::Region()
 
 Memory::VM::Region::~Region()
 {
+    for (auto it = m_mPages.Begin(), end = m_mPages.End(); it != end; it++)
+    {
+        delete it.Value();
+    }
 }
 
-void Memory::VM::Region::AddPage(Memory::VM::Page * )
+void Memory::VM::Region::AddPage(Memory::VM::Page * pPage)
 {
+    m_lock.Lock();
 
+    if (m_mPages.Get(pPage->VirtualAddress))
+    {
+        PANIC("Tried to map already mapped page.");
+    }
+
+    if (!pPage->Allocated && pPage->PhysicalAddress)
+    {
+        m_mPages.Insert(pPage->VirtualAddress, pPage->VirtualAddress + 4095, pPage);
+        Parent->m_pPML4->Map(pPage->VirtualAddress, 4096, pPage->PhysicalAddress);
+    }
+
+    m_lock.Unlock();
 }
 
-void Memory::VM::Region::DeletePage(Memory::VM::Page * )
+void Memory::VM::Region::DeletePage(Memory::VM::Page * pPage)
 {
+    m_lock.Lock();
 
+    if (auto it = m_mPages.Get(pPage->VirtualAddress))
+    {
+        if (it.Value() != pPage)
+        {
+            PANIC("Tried to remove not matching page.");
+        }
+
+        if (!m_mPages.Remove(it))
+        {
+            PANIC("Failed to remove page.");
+        }
+    }
+
+    else
+    {
+        PANIC("Tried to remove unexistent page.");
+    }
+
+    m_lock.Unlock();
 }
 
-void Memory::VM::Region::DeletePage(uint64 )
+void Memory::VM::Region::DeletePage(uint64 iAddress)
 {
+    m_lock.Lock();
 
+    if (auto it = m_mPages.Get(iAddress))
+    {
+        m_mPages.Remove(it);
+    }
+
+    else
+    {
+        PANIC("Tried to remove unexistent page.");
+    }
+
+    m_lock.Unlock();
 }
 
 Memory::VM::Page::Page()
@@ -175,4 +254,37 @@ Memory::VM::Page::Page()
 
 Memory::VM::Page::~Page()
 {
+    if (CoWCopy || CowBase)
+    {
+        if (CoWCounter == 1)
+        {
+            CoWCopies[0]->CoWBase = nullptr;
+            CoWCopies[0]->CoWCounter = 0;
+            CoWCopies[0]->CoWCopy = 0;
+
+            return;
+        }
+
+        Page * base;
+        
+        if (CowBase)
+        {
+            base = CoWCopies[0];
+        }
+
+        for (auto it = CoWCopies.Begin(), end = CoWCopies.End(); it != end; ++it)
+        {
+            (*it)->CoWCounter--;
+
+            if (CowBase)
+            {
+                (*it)->CoWBase = base;
+
+                if (it == CoWCopies.Begin())
+                {
+                    (*it)->CowBase = true;
+                }
+            }
+        }
+    }
 }
