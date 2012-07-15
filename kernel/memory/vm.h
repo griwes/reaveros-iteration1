@@ -93,6 +93,7 @@ namespace Memory
 
             void AddPage(Page *);
             void DeletePage(Page *);
+            void DeletePage(uint64);
 
             uint64 Userspace:1;
             uint64 AutoAllocate:1;

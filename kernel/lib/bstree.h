@@ -163,8 +163,6 @@ namespace Lib
 
                 Iterator & operator++()
                 {
-                    Node * orig = m_pNode;
-                    
                     if (m_pNode)
                     {
                         if (!m_pNode->m_pParent)
@@ -435,7 +433,7 @@ namespace Lib
                             
                             delete current;
                             
-                            m_iSize;
+                            m_iSize--;
                             
                             return true;
                         }

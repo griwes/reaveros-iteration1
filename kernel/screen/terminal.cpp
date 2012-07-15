@@ -318,11 +318,5 @@ void Screen::BootTerminal::Clear()
 
 void Screen::BootTerminal::_clear()
 {
-    for (uint64 i = 0; i < m_pVideoMode->YResolution; i++)
-    {
-        for (uint64 j = 0; j < m_pVideoMode->BytesPerScanLine; j++)
-        {
-            ((uint8 *)Memory::VM::VideoMemoryBase)[i * m_pVideoMode->BytesPerScanLine + j] = 0;
-        }
-    }
+    Memory::Zero((uint8 *)Memory::VM::VideoMemoryBase, m_pVideoMode->BytesPerScanLine * m_pVideoMode->YResolution);
 }

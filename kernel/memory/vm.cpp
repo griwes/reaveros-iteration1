@@ -40,12 +40,18 @@ Memory::VM::AddressSpace::AddressSpace(uint64 base)
 
 Memory::VM::AddressSpace::~AddressSpace()
 {
-
 }
 
 void Memory::VM::AddressSpace::AddRegion(uint64 base, uint64 end, Region * region)
 {
     m_lock.Lock();
+
+    if (!region)
+    {
+        region = new Region;
+        region->Base = base;
+        region->End = end;
+    }
 
     m_mRegions.Insert(base, end, region);
 
@@ -79,22 +85,59 @@ void Memory::VM::AddressSpace::RemoveRegion(uint64 base)
 
 void Memory::VM::AddressSpace::RemoveRegion(Memory::VM::Region * pRegion)
 {
+    m_lock.Lock();
+
+    if (m_mRegions.Get(pRegion->Base).Value() != pRegion)
+    {
+        PANIC("Region mismatch - tried to remove invalid region from address space.");
+    }
+
+    m_lock.Unlock();
+
     RemoveRegion(pRegion->Base);
 }
 
 void Memory::VM::AddressSpace::MapPage(uint64 address)
 {
-    MapPages(address, 4096, (Scheduler::Initialized ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop()));
+    if (!Memory::PlacementAddress)
+    {
+        Page * pPage = new Page;
+        pPage->VirtualAddress = address;
+        pPage->PhysicalAddress = (Scheduler::Initialized ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop());
+
+        MapPage(pPage);
+    }
+
+    else
+    {
+        m_pPML4->Map(address, 4096, (Scheduler::Initialized ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop()));
+    }
 }
 
-void Memory::VM::AddressSpace::MapPage(Memory::VM::Page * )
+void Memory::VM::AddressSpace::MapPage(Memory::VM::Page * pPage)
 {
+    m_lock.Lock();
+    
+    if (auto it = m_mRegions.Get(pPage->VirtualAddress))
+    {
+        it.Value()->AddPage(pPage);
+    }
 
+    else
+    {
+        PANIC("Tried to map page outside any region.");
+    }
+
+    m_lock.Unlock();
 }
 
-void Memory::VM::AddressSpace::UnmapPage(uint64 )
+void Memory::VM::AddressSpace::UnmapPage(uint64 address)
 {
+    m_lock.Lock();
+    
+    m_mRegions.Get(address).Value()->DeletePage(address);
 
+    m_lock.Unlock();
 }
 
 Memory::VM::Region::Region()
@@ -106,7 +149,6 @@ Memory::VM::Region::Region()
 
 Memory::VM::Region::~Region()
 {
-
 }
 
 void Memory::VM::Region::AddPage(Memory::VM::Page * )
@@ -119,12 +161,18 @@ void Memory::VM::Region::DeletePage(Memory::VM::Page * )
 
 }
 
-Memory::VM::Page::Page()
+void Memory::VM::Region::DeletePage(uint64 )
 {
 
 }
 
+Memory::VM::Page::Page()
+    : Allocated(0), Userspace(0), AutoAllocate(0), CoWCopy(0), CowBase(0), CacheDisable(0), WriteThrough(0),
+      ChangedSinceSwitch(0), MMIOPage(0), ReadOnly(0), KillOnWrite(0), Global(0), PhysicalAddress(0),
+      VirtualAddress(0), Parent(nullptr), CoWBase(nullptr), CoWCounter(0)
+{
+}
+
 Memory::VM::Page::~Page()
 {
-
 }

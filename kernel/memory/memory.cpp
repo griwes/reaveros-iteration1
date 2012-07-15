@@ -140,7 +140,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::SystemMemoryMap = new MemoryMap(pMemMap, iMemoryMapSize);
 
     Memory::AvailableMemory = SystemMemoryMap->CountUsableMemory();
-
+    
     Memory::RemapKernel();
     Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap, Memory::VM::GlobalPageStackBase);
     Memory::KernelHeap = new Heap(Memory::VM::KernelHeapBase, Memory::VM::KernelHeapLimit);
