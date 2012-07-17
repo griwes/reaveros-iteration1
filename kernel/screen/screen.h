@@ -54,8 +54,10 @@ namespace Screen
     } __attribute__((__packed__));
 
     extern char nl;
+    extern Screen::VideoMode * Mode;
     
     void Initialize(Screen::VideoMode *, uint8 *);
+    void PrintStatus();
 }
 
 #endif

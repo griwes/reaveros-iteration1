@@ -59,7 +59,7 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     using Screen::nl;
     
     *kout << Screen::Gray;
-    
+
     *kout << "ReaverOS 0.1: Cotyledon" << nl;
     *kout << "Copyright (C) 2011-2012 Reaver Project Team" << nl << nl;
 
@@ -75,7 +75,7 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
 
     *kout << " - Printing screen status..." << nl;
 
-//    Screen::PrintStatus();
+    Screen::PrintStatus();
 
     *kout << " - Initializing processor... ";
     

@@ -48,8 +48,7 @@ void * Memory::VMM::AllocPagingPages(uint64 iCount)
 {
     if (VMM::Ready)
     {
-        // this will be totally crazy, utilizing some tricks I'm yet to invent
-        // and flushing TLB few times, if edge case is encountered...
+        return nullptr;
     }
 
     else

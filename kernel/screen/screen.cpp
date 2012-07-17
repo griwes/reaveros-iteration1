@@ -32,15 +32,31 @@
 #include "screen.h"
 #include "terminal.h"
 #include "console.h"
+#include "../memory/vm.h"
 
 namespace Screen
 {
     Screen::Console * kout = 0;
     char nl = '\n';
+    Screen::VideoMode * Mode = 0;
 }
 
 void Screen::Initialize(Screen::VideoMode * pVideoMode, uint8 * pFont)
 {
+    Mode = pVideoMode;
     Screen::kout = new Screen::Console(new BootTerminal(pVideoMode, pFont));
     Screen::kout->Clear();
+}
+
+void Screen::PrintStatus()
+{
+    *kout << "Screen resolution: " << Mode->XResolution << "x" << Mode->YResolution << nl;
+    *kout << "Color depth: " << Mode->BitsPerPixel << nl;
+    *kout << "Size of linear frame buffer: " << Mode->YResolution * Mode->BytesPerScanLine << " bytes" << nl;
+    *kout << "Physical base address of LFB: ";
+    kout->HexNumbers(16);
+    *kout << Mode->PhysBasePtr << nl;
+    *kout << "Virtual base address of LFB: " << Memory::VM::VideoMemoryBase << nl;
+    *kout << "Virtual base address of LFB backbuffer: " << Memory::VM::VideoBackbufferBase << nl << nl;
+    kout->SetBase(10);
 }

@@ -140,7 +140,7 @@ void Memory::VM::AddressSpace::MapPage(Memory::VM::Page * pPage)
 {
     m_lock.Lock();
     
-    if (auto it = m_mRegions.Get(pPage->VirtualAddress))
+    if (Lib::RangeMap<Region *>::Iterator it = m_mRegions.Get(pPage->VirtualAddress))
     {
         it.Value()->AddPage(pPage);
     }
