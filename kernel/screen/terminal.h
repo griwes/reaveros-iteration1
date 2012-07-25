@@ -104,6 +104,8 @@ namespace Screen
         VideoMode * m_pVideoMode;
         uint8 * m_pFont;
         uint8 r, g, b;
+        
+        bool m_bBackbuffer;
     };
 
     class ReaverTerminal : public Terminal

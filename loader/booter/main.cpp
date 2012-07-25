@@ -87,7 +87,7 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     uint64 size = Memory::CountPagingStructures(0xFFFFFFFF80000000, Memory::AlignToNextPage(placement)
                                 + 32 * 1024 * 1024 + Memory::TotalMemory / 512);
     size += Memory::AlignToNextPage(32 * 1024 * 1024 + Memory::TotalMemory / 512);
-    
+
     Memory::Map(placement, placement + size, Memory::iFirstFreePageAddress);
     
     // and this one updates memory map, setting size to type 0xFFFF entry (kernel-used memory)

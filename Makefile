@@ -31,7 +31,7 @@ hdd:
 	colormake; \
 	mv builds/kernel.img ../builds/
 	cd builds; \
-	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img stage3.img; \
+	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img stage1.img; \
 	dd if=a.img of=hdd.img conv=notrunc
 
 uefi:
@@ -62,6 +62,11 @@ prepare:
 	mkdir -p builds
 	mkdir -p loader/booter/builds
 	mkdir -p kernel/builds
+	cd builds && dd if=/dev/zero of=a.img bs=1G count=1
+	cd builds && g++ -std=c++0x ../utils/mkrfloppy/main.cpp -o mkrfloppy
 
 tools:
 	cd utils && ./build-tools.sh
+
+build-bochs:
+	cd utils && ./build-bochs.sh

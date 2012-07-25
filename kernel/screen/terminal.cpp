@@ -77,14 +77,10 @@ void Screen::ReaverTerminal::Print(const char * )
 
 Screen::BootTerminal::BootTerminal(Screen::VideoMode * pVideoMode, uint8 * pFont)
     : Terminal(0), x(0), y(0), maxx(pVideoMode->XResolution / 8), maxy(pVideoMode->YResolution / 16),
-      m_pVideoMode(pVideoMode), m_pFont(pFont), r(0xbb), g(0xbb), b(0xbb)      
+      m_pVideoMode(pVideoMode), m_pFont(pFont), r(0xbb), g(0xbb), b(0xbb), m_bBackbuffer(false)
 {
     Memory::VMM::MapPages(Memory::VM::VideoMemoryBase, m_pVideoMode->YResolution *
         m_pVideoMode->BytesPerScanLine, m_pVideoMode->PhysBasePtr, true);
-
-    // we're going to do little trickery...
-    Memory::VMM::MapPages(Memory::VM::VideoBackbufferBase, m_pVideoMode->YResolution *
-        m_pVideoMode->BytesPerScanLine);
 }
 
 Screen::BootTerminal::~BootTerminal()
@@ -243,10 +239,21 @@ void Screen::BootTerminal::_put16(char c)
     {
         uint8 data = character[i];
         
-        for (uint8 i = 0; i < 8; i++)
+        if (m_bBackbuffer)
         {
-            dest_backbuffer[i] = (data >> (7 - i)) & 1 ? iColor : iBgcolor;
-            dest[i] = dest_backbuffer[i];
+            for (uint8 i = 0; i < 8; i++)
+            {
+                dest_backbuffer[i] = (data >> (7 - i)) & 1 ? iColor : iBgcolor;
+                dest[i] = dest_backbuffer[i];
+            }
+        }
+        
+        else
+        {
+            for (uint8 i = 0; i < 8; i++)
+            {
+                dest[i] = (data >> (7 - 1)) & 1 ? iColor : iBgcolor;
+            }
         }
         
         uint64 _ = (uint64)dest;
@@ -286,10 +293,21 @@ void Screen::BootTerminal::_put32(char c)
     {
         uint8 data = character[i];
         
-        for (uint8 i = 0; i < 8; i++)
+        if (m_bBackbuffer)
+        {        
+            for (uint8 i = 0; i < 8; i++)
+            {
+                dest_backbuffer[i] = (data >> (7 - i)) & 1 ? iColor : iBgcolor;
+                dest[i] = dest_backbuffer[i];
+            }
+        }
+        
+        else
         {
-            dest_backbuffer[i] = (data >> (7 - i)) & 1 ? iColor : iBgcolor;
-            dest[i] = dest_backbuffer[i];
+            for (uint8 i = 0; i < 8; i++)
+            {
+                dest[i] = (data >> (7 - i)) & 1 ? iColor : iBgcolor;
+            }
         }
         
         uint64 _ = (uint64)dest;
@@ -313,12 +331,24 @@ void Screen::BootTerminal::_put32(char c)
 
 void Screen::BootTerminal::_scroll()
 {
-    Memory::Copy((uint8 *)Memory::VM::VideoBackbufferBase + m_pVideoMode->BytesPerScanLine * 16,
+    if (m_bBackbuffer)
+    {
+        Memory::Copy((uint8 *)Memory::VM::VideoBackbufferBase + m_pVideoMode->BytesPerScanLine * 16,
                  (uint8 *)Memory::VM::VideoBackbufferBase, m_pVideoMode->BytesPerScanLine * (m_pVideoMode->YResolution - 16));
-    Memory::Zero((uint8 *)Memory::VM::VideoBackbufferBase + m_pVideoMode->BytesPerScanLine * (m_pVideoMode->YResolution - 16),
+        Memory::Zero((uint8 *)Memory::VM::VideoBackbufferBase + m_pVideoMode->BytesPerScanLine * (m_pVideoMode->YResolution - 16),
                  m_pVideoMode->BytesPerScanLine * 16);
-    Memory::Copy((uint8 *)Memory::VM::VideoBackbufferBase, (uint8 *)Memory::VM::VideoMemoryBase, m_pVideoMode->YResolution *
+        Memory::Copy((uint8 *)Memory::VM::VideoBackbufferBase, (uint8 *)Memory::VM::VideoMemoryBase, m_pVideoMode->YResolution *
                  m_pVideoMode->BytesPerScanLine);
+    }
+    
+    else
+    {
+        Memory::Copy((uint8 *)Memory::VM::VideoMemoryBase + m_pVideoMode->BytesPerScanLine * 16,
+                 (uint8 *)Memory::VM::VideoMemoryBase, m_pVideoMode->BytesPerScanLine * (m_pVideoMode->YResolution - 16));
+        Memory::Zero((uint8 *)Memory::VM::VideoMemoryBase + m_pVideoMode->BytesPerScanLine * (m_pVideoMode->YResolution - 16),
+                 m_pVideoMode->BytesPerScanLine * 16);
+    }
+    
     --y;
 }
 

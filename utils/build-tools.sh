@@ -33,4 +33,5 @@ make all-gcc
 make install-gcc
 make all-target-libgcc
 make install-target-libgcc
-rm -rf *
+cd ../..
+rm -rf .gcc
