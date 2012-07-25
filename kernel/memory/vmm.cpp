@@ -48,7 +48,15 @@ void * Memory::VMM::AllocPagingPages(uint64 iCount)
 {
     if (VMM::Ready)
     {
-        return nullptr;
+        if (PagingStructures)
+        {
+            // this implementation and milion-case code hell is hereby declared to be started writing tomorrow
+        }
+        
+        else
+        {
+            PANIC("VMM::Ready = true, but PagingStructures = nullptr!");
+        }
     }
 
     else

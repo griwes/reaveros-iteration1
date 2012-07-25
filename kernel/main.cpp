@@ -68,6 +68,12 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     Memory::InitializeRegions();
     
     *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
+    
+    *kout << " - Initializing boot terminal backbuffer... ";
+    
+//    Screen::InitializeBackbuffer();
+    
+    *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
 
     *kout << " - Printing memory map..." << nl;
 

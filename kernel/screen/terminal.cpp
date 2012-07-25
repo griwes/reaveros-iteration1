@@ -252,7 +252,7 @@ void Screen::BootTerminal::_put16(char c)
         {
             for (uint8 i = 0; i < 8; i++)
             {
-                dest[i] = (data >> (7 - 1)) & 1 ? iColor : iBgcolor;
+                dest[i] = (data >> (7 - i)) & 1 ? iColor : iBgcolor;
             }
         }
         
