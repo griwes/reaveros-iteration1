@@ -57,3 +57,11 @@ clean:
 uefi-clean: clean
 	cd loader/uefi; \
 	colormake clean
+
+prepare:
+	mkdir -p builds
+	mkdir -p loader/booter/builds
+	mkdir -p kernel/builds
+
+tools:
+	cd utils && ./build-tools.sh

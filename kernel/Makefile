@@ -1,12 +1,12 @@
-CC=g++
-LD=ld
+CC=../utils/tools/bin/x86_64-elf-g++
+LD=../utils/tools/bin/x86_64-elf-ld
 CFLAGS=-c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno-exceptions -fno-rtti \
 		-fno-stack-protector -std=c++0x -ffreestanding -mcmodel=large -mno-mmx -mno-sse -mno-sse2 \
 		-mno-sse3 -mno-3dnow -mno-red-zone
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=$(shell find . -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=builds/kernel.img
+EXECUTABLE=./builds/kernel.img
 
 all: $(SOURCES) $(EXECUTABLE)
 

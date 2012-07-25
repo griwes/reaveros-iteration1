@@ -3,3 +3,5 @@ utils/builder/build/*
 *.o
 *.img
 builds/*
+utils/tools/*
+.gcc/*
