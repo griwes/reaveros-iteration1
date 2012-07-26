@@ -239,7 +239,7 @@ void Memory::InitializeRegions()
     VMRegionsCount = 1024;
     VMAddressSpacesCount = 1024;
     
-    VMM::Ready = true;
+//    VMM::Ready = true;
 }
 
 void Memory::RemapKernel()
