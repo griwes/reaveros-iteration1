@@ -140,12 +140,9 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
                     pt->Entries[startpte].WriteThrough = bWriteThrough;
                     pt->Entries[startpte].CacheDisable = bCacheDisable;
 
-                    uint64 oldaddr = pt->Entries[startpte].PageAddress << 12;
-                    if (oldaddr != 0)
+                    if (pt->Entries[startpte].Present && Memory::PlacementAddress == 0)
                     {
-                        Memory::VMM::PushPage(oldaddr);
-                        // Memory::VM::FlushTLB(pBaseVirtual);
-                        // pBaseVirtual += 4096;
+                        PANIC("Tried to remap already mapped page!");
                     }
 
                     uint64 addr = pBasePhysical;
@@ -193,12 +190,70 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
     }
 }
 
+uint64 Paging::PML4::ArePSAvailable(uint64 address)
+{
+    auto a = PointerTables[(address >> 39) & 511];
+
+    if (a)
+    {
+        auto b = a->PageDirectories[(address >> 30) & 511];
+    
+        if (b)
+        {
+            auto c = b->PageTables[(address >> 21) & 511];
+        
+            if (c)
+            {
+                return 3;
+            }
+            
+            return 2;
+        }
+        
+        return 1;
+    }
+    
+    return 0;
+}
+
+// use with caution
+void Paging::PML4::SetPS(uint64 address, uint64 ipdpt, uint64 ipd, uint64 ipt)
+{
+    auto a = PointerTables[(address >> 39) & 511];
+    auto b = a->PageDirectories[(address >> 30) & 511];
+
+    PageDirectoryPointerTable * pdpt = (PageDirectoryPointerTable *)ipdpt;
+    
+    PointerTables[(address >> 39) & 511] = pdpt;
+    Entries[(address >> 39) & 511].PDPTAddress = ipdpt ? GetPhysicalAddress(ipdpt) >> 12 : 0;
+    Entries[(address >> 39) & 511].Present = 1;
+    
+    PageDirectory * pd = (PageDirectory *)ipd;
+        
+    a->PageDirectories[(address >> 30) & 511] = pd;
+    a->Entries[(address >> 30) & 511].PageDirectoryAddress = ipd ? GetPhysicalAddress(ipd) >> 12 : 0;
+    a->Entries[(address >> 30) & 511].Present = 1;
+
+    PageTable * pt = (PageTable *)ipt;
+            
+    b->PageTables[(address >> 21) & 511] = pt;
+    b->Entries[(address >> 21) & 511].PageTableAddress = ipt ? GetPhysicalAddress(ipt) >> 12 : 0;
+    b->Entries[(address >> 21) & 511].Present = 1;
+
+    Paging::Invlpg(address);
+}
+
 uint64 Paging::PML4::Unmap(uint64 pAddr)
 {
     uint64 physical = this->GetPhysicalAddress(pAddr);
     Memory::Zero(&this->PointerTables[(pAddr >> 39) & 511]->PageDirectories[(pAddr >> 30) & 511]->PageTables[(pAddr >> 21) & 511]
                     ->Entries[(pAddr >> 39) & 511]);
     return physical;
+}
+
+void Paging::Invlpg(uint64 addr)
+{
+    asm volatile ("invlpg (%0)" :: "r"(addr) : "memory");
 }
 
 static void * _alloc(uint64 iSize)
@@ -212,8 +267,8 @@ static void * _alloc(uint64 iSize)
         Memory::PlacementAddress = (void *)_;
         return ret;
     }
-    
-    return Memory::VMM::AllocPagingPages(iSize / 4096);
+        
+    return Memory::VMM::AllocPagingPages();
 }
 
 void * Paging::PageTable::operator new(uint64 iSize)

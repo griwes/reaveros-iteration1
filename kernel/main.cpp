@@ -40,6 +40,7 @@
 #include "processor/processor.h"
 #include "screen/screen.h"
 #include "memory/memorymap.h"
+#include "memory/vmm.h"
 #include "screen/console.h"
 
 namespace InitRD
@@ -66,6 +67,7 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
     *kout << Screen::White << "[MEM]" << Screen::Gray << " Initializing virtual memory manager... ";
 
     Memory::InitializeRegions();
+    Memory::VMM::MapPage(Memory::VM::VideoBackbufferBase);
     
     *kout << Screen::Green << "done" << Screen::Gray << "." << nl;
     

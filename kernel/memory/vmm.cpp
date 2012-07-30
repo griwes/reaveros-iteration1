@@ -39,18 +39,26 @@ namespace Memory
     }
 }
 
-namespace
-{
-    uint64 offset = 0;
-}
-
-void * Memory::VMM::AllocPagingPages(uint64 iCount)
+void * Memory::VMM::AllocPagingPages()
 {
     if (VMM::Ready)
     {
         if (PagingStructures)
         {
-            // this implementation and milion-case code hell is hereby declared to be started writing tomorrow
+            void * pgs = (void *)(VM::PagingStructuresPoolBase + PagingStructures->Pop() * 2 * 4096);
+            
+            switch (CurrentVAS->m_pPML4->ArePSAvailable((uint64)pgs))
+            {
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                default:
+                    ;
+            }
         }
         
         else
@@ -61,8 +69,6 @@ void * Memory::VMM::AllocPagingPages(uint64 iCount)
 
     else
     {
-        offset -= iCount * 4096;
-        uint64 ret = Memory::StackStart - 20 * 1024 - offset;
-        return (void *)ret;
+        PANIC("");
     }
 }

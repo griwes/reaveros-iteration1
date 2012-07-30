@@ -39,6 +39,7 @@
 #include "../lib/vector.h"
 #include "../lib/rangemap.h"
 #include "memory.h"
+#include "vmm.h"
 
 namespace Scheduler
 {
@@ -48,7 +49,7 @@ namespace Scheduler
 class File;
 
 namespace Memory
-{
+{    
     namespace VM
     {
         class AddressSpace;
@@ -125,6 +126,7 @@ namespace Memory
         {
         public:
             friend void Memory::RemapKernel();
+            friend void * Memory::VMM::AllocPagingPages();
 
             friend class Region;
             friend class Page;

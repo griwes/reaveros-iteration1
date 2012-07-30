@@ -144,7 +144,7 @@ void Memory::Initialize(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMapSize)
     Memory::RemapKernel();
     Memory::GlobalPages = new Lib::Stack(Memory::SystemMemoryMap, Memory::VM::GlobalPageStackBase);
     Memory::KernelHeap = new Heap(Memory::VM::KernelHeapBase, Memory::VM::KernelHeapLimit);
-        
+    
     return;
 }
 
@@ -239,7 +239,8 @@ void Memory::InitializeRegions()
     VMRegionsCount = 1024;
     VMAddressSpacesCount = 1024;
     
-//    VMM::Ready = true;
+    VMM::Ready = true;
+    PlacementAddress = 0;
 }
 
 void Memory::RemapKernel()

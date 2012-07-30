@@ -59,7 +59,7 @@ namespace Paging
 
         void * operator new(uint64);
         void * operator new[](uint64);
-    };
+    } __attribute__((__packed__));
     
     struct PageDirectoryEntry
     {
@@ -84,7 +84,7 @@ namespace Paging
 
         void * operator new(uint64);
         void * operator new[](uint64);
-    };
+    } __attribute__((__packed__));
     
     struct PageDirectoryPointerTableEntry
     {
@@ -109,7 +109,7 @@ namespace Paging
         
         void * operator new(uint64);
         void * operator new[](uint64);
-    };
+    } __attribute__((__packed__));
     
     struct PML4Entry
     {
@@ -180,8 +180,13 @@ namespace Paging
         }
 
         void Map(uint64, uint64, uint64, bool = false, bool = true, bool = false, bool = false, PML4 * = 0);
+        uint64 ArePSAvailable(uint64);
+        void SetPS(uint64, uint64, uint64 = 0, uint64 = 0);
+        uint64 Remap(uint64);
         uint64 Unmap(uint64);
-    };
+    } __attribute__((__packed__));
+    
+    void Invlpg(uint64);
 }
 
 #endif
