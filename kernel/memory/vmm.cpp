@@ -51,10 +51,10 @@ void * Memory::VMM::AllocPagingPages()
     if (VMM::Ready)
     {
         if (PagingStructures)
-        {
+        {            
             auto PSPool = /*(CorePagingStructures ? CorePagingStructures : */PagingStructures;//);
             
-            void * pgs = (void *)(VM::PagingStructuresPoolBase + PSPool->Pop() * 2 * 4096);
+            void * pgs = (void *)(VM::PagingStructuresPoolBase + PSPool->PopSpecial() * 2 * 4096);
             
             uint64 aiFreePages[6] = {0, 0, 0, 0, 0, 0};
                         
@@ -63,31 +63,33 @@ void * Memory::VMM::AllocPagingPages()
                 case 0:
                     for (uint64 i = 0; i < 2; i++)
                     {
-                        aiFreePages[i] = (CorePages ? CorePages->Pop() : GlobalPages->Pop());
+                        aiFreePages[i] = (CorePages ? CorePages->PopSpecial() : GlobalPages->PopSpecial());
                     }
                     
-                    MapPage(VM::PagingStructuresPoolBase, aiFreePages[0]);
-                    MapPage(VM::PagingStructuresPoolBase + 4096, aiFreePages[1]);
+                    dbg;
+                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase, 4096, aiFreePages[0]);
+                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 4096, 4096, aiFreePages[1]);
                     
                     CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase);
                 case 1:
                     for (uint64 i = 2; i < 4; i++)
                     {
-                        aiFreePages[i] = (CorePages ? CorePages->Pop() : GlobalPages->Pop());
+                        aiFreePages[i] = (CorePages ? CorePages->PopSpecial() : GlobalPages->PopSpecial());
                     }
                     
-                    MapPage(VM::PagingStructuresPoolBase + 2 * 4096, aiFreePages[2]);
-                    MapPage(VM::PagingStructuresPoolBase + 3 * 4096, aiFreePages[3]);
+                    
+                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 2 * 4096, 4096, aiFreePages[2]);
+                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 3 * 4096, 4096, aiFreePages[3]);
                     
                     CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase + 2 * 4096);
                 case 2:
                     for (uint64 i = 4; i < 6; i++)
                     {
-                        aiFreePages[i] = (CorePages ? CorePages->Pop() : GlobalPages->Pop());
+                        aiFreePages[i] = (CorePages ? CorePages->PopSpecial() : GlobalPages->PopSpecial());
                     }
                     
-                    MapPage(VM::PagingStructuresPoolBase + 4 * 4096, aiFreePages[4]);
-                    MapPage(VM::PagingStructuresPoolBase + 5 * 4096, aiFreePages[5]);
+                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 4 * 4096, 4096, aiFreePages[4]);
+                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 5 * 4096, 4096, aiFreePages[5]);
                     
                     CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase + 4 * 4096);
                 case 3:
@@ -104,6 +106,6 @@ void * Memory::VMM::AllocPagingPages()
 
     else
     {
-        PANIC("");
+        PANIC("This panic is so ridiculous I don't even want to fill it.");
     }
 }

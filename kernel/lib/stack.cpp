@@ -114,24 +114,35 @@ uint64 Lib::Stack::Count()
 
 uint64 Lib::Stack::Pop()
 {
-    m_iSize--;
+    uint64 r = PopSpecial();
+    
     if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize > 4096 / 8 + 64 && Memory::VMM::Ready)
     {
         Memory::VMM::UnmapPage(this->m_iLastPage);
     }
+    
+    return r;
+}
+
+uint64 Lib::Stack::PopSpecial()
+{
+    m_iSize--;
     
     return m_pStack[m_iSize];
 }
 
 void Lib::Stack::Push(uint64 p)
 {
-    this->m_pStack[this->m_iSize++] = p;
-
+    PushSpecial(p);
+    
     if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16 && Memory::VMM::Ready)
     {
         Memory::VMM::MapPage(this->m_iLastPage + 4096);
         this->m_iLastPage += 4096;
     }
+}
 
-    return;
+void Lib::Stack::PushSpecial(uint64 p)
+{
+    this->m_pStack[this->m_iSize++] = p;    
 }

@@ -45,7 +45,9 @@ namespace Lib
         ~Stack();
         
         uint64 Pop();
+        uint64 PopSpecial();
         void Push(uint64);
+        void PushSpecial(uint64);
 
         uint64 Count();
     private:
