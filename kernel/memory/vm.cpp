@@ -125,14 +125,14 @@ void Memory::VM::AddressSpace::MapPage(uint64 address)
     {
         Page * pPage = new Page;
         pPage->VirtualAddress = address;
-        pPage->PhysicalAddress = (Scheduler::Initialized ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop());
+        pPage->PhysicalAddress = (CorePages ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop());
 
         MapPage(pPage);
     }
 
     else
     {
-        m_pPML4->Map(address, 4096, (Scheduler::Initialized ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop()));
+        m_pPML4->Map(address, 4096, (CorePages ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop()));
     }
 }
 
@@ -196,10 +196,11 @@ void Memory::VM::Region::AddPage(Memory::VM::Page * pPage)
 
     if (!pPage->Allocated && pPage->PhysicalAddress)
     {
-        m_mPages.Insert(pPage->VirtualAddress, pPage->VirtualAddress + 4095, pPage);
         Parent->m_pPML4->Map(pPage->VirtualAddress, 4096, pPage->PhysicalAddress);
     }
 
+    m_mPages.Insert(pPage->VirtualAddress, pPage->VirtualAddress + 4095, pPage);
+    
     m_lock.Unlock();
 }
 

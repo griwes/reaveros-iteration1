@@ -48,6 +48,8 @@ namespace Memory
 // something else than 3
 void * Memory::VMM::AllocPagingPages()
 {
+    dbg;
+    
     if (VMM::Ready)
     {
         if (PagingStructures)
@@ -65,11 +67,14 @@ void * Memory::VMM::AllocPagingPages()
                     {
                         aiFreePages[i] = (CorePages ? CorePages->PopSpecial() : GlobalPages->PopSpecial());
                     }
-                    
-                    dbg;
+                                        
                     CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase, 4096, aiFreePages[0]);
+                    Paging::Invlpg(VM::PagingStructuresPoolBase);
                     CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 4096, 4096, aiFreePages[1]);
+                    Paging::Invlpg(VM::PagingStructuresPoolBase + 4096);
                     
+                    Memory::Zero((Paging::PageDirectory *)VM::PagingStructuresPoolBase);
+                                        
                     CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase);
                 case 1:
                     for (uint64 i = 2; i < 4; i++)
@@ -77,9 +82,12 @@ void * Memory::VMM::AllocPagingPages()
                         aiFreePages[i] = (CorePages ? CorePages->PopSpecial() : GlobalPages->PopSpecial());
                     }
                     
-                    
                     CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 2 * 4096, 4096, aiFreePages[2]);
+                    Paging::Invlpg(VM::PagingStructuresPoolBase + 2 * 4096);
                     CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 3 * 4096, 4096, aiFreePages[3]);
+                    Paging::Invlpg(VM::PagingStructuresPoolBase + 3 * 4096);
+                    
+                    Memory::Zero((Paging::PageDirectory *)(VM::PagingStructuresPoolBase + 2 * 4096));
                     
                     CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase + 2 * 4096);
                 case 2:
@@ -89,7 +97,11 @@ void * Memory::VMM::AllocPagingPages()
                     }
                     
                     CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 4 * 4096, 4096, aiFreePages[4]);
+                    Paging::Invlpg(VM::PagingStructuresPoolBase + 4 * 4096);
                     CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 5 * 4096, 4096, aiFreePages[5]);
+                    Paging::Invlpg(VM::PagingStructuresPoolBase + 5 * 4096);
+                    
+                    Memory::Zero((Paging::PageDirectory *)(VM::PagingStructuresPoolBase + 4 * 4096));
                     
                     CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase + 4 * 4096);
                 case 3:

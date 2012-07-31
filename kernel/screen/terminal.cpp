@@ -97,14 +97,20 @@ void Screen::BootTerminal::Print(const Lib::String & string)
 
 void Screen::BootTerminal::Print(const char * string)
 {
+    lock.Lock();
+    
     for (; *string != 0; string++)
     {
         _put_char(*string);
     }
+    
+    lock.Unlock();
 }
 
 void Screen::BootTerminal::SetColor(Screen::Color color)
 {
+    lock.Lock();
+    
     switch (color)
     {
         case Black:
@@ -170,6 +176,8 @@ void Screen::BootTerminal::SetColor(Screen::Color color)
         default:
             this->r = this->g = this->b = 0xbb;
     }
+    
+    lock.Unlock();
 }
 
 void Screen::BootTerminal::_put_char(char c)

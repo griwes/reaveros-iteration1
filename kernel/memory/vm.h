@@ -39,6 +39,7 @@
 #include "../lib/vector.h"
 #include "../lib/rangemap.h"
 #include "memory.h"
+#include "../lib/stack.h"
 
 namespace Scheduler
 {
@@ -52,6 +53,7 @@ namespace Memory
     namespace VMM
     {
         void * AllocPagingPages();
+        inline void UnmapPagesSpecial(uint64, uint64);
     }
 
     namespace VM
@@ -131,6 +133,8 @@ namespace Memory
         public:
             friend void Memory::RemapKernel();
             friend void * Memory::VMM::AllocPagingPages();
+            friend inline void Memory::VMM::UnmapPagesSpecial(uint64, uint64);
+            friend void Lib::Stack::RegisterPages();
 
             friend class Region;
             friend class Page;

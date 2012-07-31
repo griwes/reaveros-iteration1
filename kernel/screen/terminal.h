@@ -31,6 +31,7 @@
 
 #include "../lib/string.h"
 #include "console.h"
+#include "../processor/synchronization.h"
 
 namespace Screen
 {
@@ -106,6 +107,8 @@ namespace Screen
         uint8 r, g, b;
         
         bool m_bBackbuffer;
+        
+        Processor::Spinlock lock;
     };
 
     class ReaverTerminal : public Terminal

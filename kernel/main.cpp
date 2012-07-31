@@ -63,7 +63,7 @@ extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * p
 
     *kout << "ReaverOS 0.1: Cotyledon" << nl;
     *kout << "Copyright (C) 2011-2012 Reaver Project Team" << nl << nl;
-
+    
     *kout << Screen::White << "[MEM]" << Screen::Gray << " Initializing virtual memory manager... ";
 
     Memory::InitializeRegions();

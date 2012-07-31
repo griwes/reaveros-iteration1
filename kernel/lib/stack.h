@@ -50,6 +50,8 @@ namespace Lib
         void PushSpecial(uint64);
 
         uint64 Count();
+        
+        void RegisterPages();
     private:
         uint64 * m_pStack;
         uint64 m_iLastPage;

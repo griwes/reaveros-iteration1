@@ -229,7 +229,7 @@ void Memory::InitializeRegions()
     CurrentVAS->AddRegion(VMAddressSpacePoolRegion);
     CurrentVAS->AddRegion(VMAddressSpacePoolStackRegion);
 
-    PagingStructures = new Lib::Stack(2, 1024 * 1024, VM::PagingStructuresPoolStackBase);
+    PagingStructures = new Lib::Stack(6, 1024 * 1024, VM::PagingStructuresPoolStackBase);
     VMPages = new Lib::Stack(0, 1024 * 1024, VM::VMPagePoolStackBase);
     VMRegions = new Lib::Stack(0, 1024, VM::VMRegionPoolStackBase);
     VMAddressSpaces = new Lib::Stack(0, 1024, VM::VMAddressSpacePoolStackBase);
@@ -239,12 +239,18 @@ void Memory::InitializeRegions()
     VMRegionsCount = 1024;
     VMAddressSpacesCount = 1024;
     
-    VMM::Ready = true;
-    PlacementAddress = 0;
+    GlobalPages->RegisterPages();
+    PagingStructures->RegisterPages();
+    VMPages->RegisterPages();
+    VMRegions->RegisterPages();
+    VMAddressSpaces->RegisterPages();
     
     // helper pages for VMM::AllocPagingPages()
     VMM::MapPages(VM::PagingStructuresPoolBase, 6 * 4096, 0);
-    VMM::UnmapPages(VM::PagingStructuresPoolBase, 6 * 4096);
+    VMM::UnmapPagesSpecial(VM::PagingStructuresPoolBase, 6 * 4096);
+
+    VMM::Ready = true;
+    PlacementAddress = 0;
 }
 
 void Memory::RemapKernel()
@@ -268,8 +274,8 @@ void Memory::RemapKernel()
     
     CurrentVAS = new VM::AddressSpace(p->Base());
     
-    VMM::MapPages(0xFFFFFFFF80000000, p->Length() - 20 * 1024, p->Base());
-    VMM::MapPages(0xFFFFFFFF80000000 + p->Length() - 16 * 1024, 16 * 1024, p->End() - 16 * 1024);
+    VMM::MapPages(0xFFFFFFFF80000000, p->Length() - 5 * 4096, p->Base());
+    VMM::MapPages(0xFFFFFFFF80000000 + p->Length() - 4 * 4096, 4 * 4096, p->End() - 4 * 4096);
     
     Memory::StackStart = 0xFFFFFFFF80000000 + p->Length();
 

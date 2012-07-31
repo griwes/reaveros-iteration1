@@ -146,3 +146,16 @@ void Lib::Stack::PushSpecial(uint64 p)
 {
     this->m_pStack[this->m_iSize++] = p;    
 }
+
+void Lib::Stack::RegisterPages()
+{
+    for (uint64 s = (uint64)m_pStack; s <= m_iLastPage; s += 4096)
+    {
+        Memory::VM::Page * p = new Memory::VM::Page;
+        p->Allocated = 1;
+        p->VirtualAddress = s;
+        p->PhysicalAddress = Memory::CurrentVAS->m_pPML4->GetPhysicalAddress(s);
+        
+        Memory::CurrentVAS->MapPage(p);
+    }
+}
