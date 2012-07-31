@@ -39,22 +39,57 @@ namespace Memory
     }
 }
 
+// few things are known here:
+// 1. if there are no paging structures for given area in PagingStructuresPool, then it's being used for the first time
+//     (always true, as PSPool PSs are never freed and on the start, they are sorted)
+// 2. when pool index is put back on stack, it has already created PSs out there 
+//     (always true, as when id is given back, it must have been already used and mapped)
+// when you connect those, you must never worry about recursive AllocPagingPages call's ArePSAvailable call returns 
+// something else than 3
 void * Memory::VMM::AllocPagingPages()
 {
     if (VMM::Ready)
     {
         if (PagingStructures)
         {
-            void * pgs = (void *)(VM::PagingStructuresPoolBase + PagingStructures->Pop() * 2 * 4096);
+            auto PSPool = /*(CorePagingStructures ? CorePagingStructures : */PagingStructures;//);
             
+            void * pgs = (void *)(VM::PagingStructuresPoolBase + PSPool->Pop() * 2 * 4096);
+            
+            uint64 aiFreePages[6] = {0, 0, 0, 0, 0, 0};
+                        
             switch (CurrentVAS->m_pPML4->ArePSAvailable((uint64)pgs))
             {
                 case 0:
-                    break;
+                    for (uint64 i = 0; i < 2; i++)
+                    {
+                        aiFreePages[i] = (CorePages ? CorePages->Pop() : GlobalPages->Pop());
+                    }
+                    
+                    MapPage(VM::PagingStructuresPoolBase, aiFreePages[0]);
+                    MapPage(VM::PagingStructuresPoolBase + 4096, aiFreePages[1]);
+                    
+                    CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase);
                 case 1:
-                    break;
+                    for (uint64 i = 2; i < 4; i++)
+                    {
+                        aiFreePages[i] = (CorePages ? CorePages->Pop() : GlobalPages->Pop());
+                    }
+                    
+                    MapPage(VM::PagingStructuresPoolBase + 2 * 4096, aiFreePages[2]);
+                    MapPage(VM::PagingStructuresPoolBase + 3 * 4096, aiFreePages[3]);
+                    
+                    CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase + 2 * 4096);
                 case 2:
-                    break;
+                    for (uint64 i = 4; i < 6; i++)
+                    {
+                        aiFreePages[i] = (CorePages ? CorePages->Pop() : GlobalPages->Pop());
+                    }
+                    
+                    MapPage(VM::PagingStructuresPoolBase + 4 * 4096, aiFreePages[4]);
+                    MapPage(VM::PagingStructuresPoolBase + 5 * 4096, aiFreePages[5]);
+                    
+                    CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase + 4 * 4096);
                 case 3:
                 default:
                     ;

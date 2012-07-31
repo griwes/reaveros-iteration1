@@ -39,7 +39,6 @@
 #include "../lib/vector.h"
 #include "../lib/rangemap.h"
 #include "memory.h"
-#include "vmm.h"
 
 namespace Scheduler
 {
@@ -50,6 +49,11 @@ class File;
 
 namespace Memory
 {    
+    namespace VMM
+    {
+        void * AllocPagingPages();
+    }
+
     namespace VM
     {
         class AddressSpace;

@@ -222,25 +222,80 @@ void Paging::PML4::SetPS(uint64 address, uint64 ipdpt, uint64 ipd, uint64 ipt)
     auto a = PointerTables[(address >> 39) & 511];
     auto b = a->PageDirectories[(address >> 30) & 511];
 
-    PageDirectoryPointerTable * pdpt = (PageDirectoryPointerTable *)ipdpt;
+    if (ipdpt != 0xFFFFFFFFFFFFFFFF)
+    {
+        PageDirectoryPointerTable * pdpt = (PageDirectoryPointerTable *)ipdpt;
     
-    PointerTables[(address >> 39) & 511] = pdpt;
-    Entries[(address >> 39) & 511].PDPTAddress = ipdpt ? GetPhysicalAddress(ipdpt) >> 12 : 0;
-    Entries[(address >> 39) & 511].Present = 1;
+        PointerTables[(address >> 39) & 511] = pdpt;
+        Entries[(address >> 39) & 511].PDPTAddress = ipdpt ? GetPhysicalAddress(ipdpt) >> 12 : 0;
+        Entries[(address >> 39) & 511].Present = 1;
+    }
     
-    PageDirectory * pd = (PageDirectory *)ipd;
+    if (ipd != 0xFFFFFFFFFFFFFFFF)
+    {
+        PageDirectory * pd = (PageDirectory *)ipd;
         
-    a->PageDirectories[(address >> 30) & 511] = pd;
-    a->Entries[(address >> 30) & 511].PageDirectoryAddress = ipd ? GetPhysicalAddress(ipd) >> 12 : 0;
-    a->Entries[(address >> 30) & 511].Present = 1;
-
-    PageTable * pt = (PageTable *)ipt;
+        a->PageDirectories[(address >> 30) & 511] = pd;
+        a->Entries[(address >> 30) & 511].PageDirectoryAddress = ipd ? GetPhysicalAddress(ipd) >> 12 : 0;
+        a->Entries[(address >> 30) & 511].Present = 1;
+    }
+    
+    if (ipt != 0xFFFFFFFFFFFFFFFF)
+    {
+        PageTable * pt = (PageTable *)ipt;
             
-    b->PageTables[(address >> 21) & 511] = pt;
-    b->Entries[(address >> 21) & 511].PageTableAddress = ipt ? GetPhysicalAddress(ipt) >> 12 : 0;
-    b->Entries[(address >> 21) & 511].Present = 1;
+        b->PageTables[(address >> 21) & 511] = pt;
+        b->Entries[(address >> 21) & 511].PageTableAddress = ipt ? GetPhysicalAddress(ipt) >> 12 : 0;
+        b->Entries[(address >> 21) & 511].Present = 1;
+    }
 
     Paging::Invlpg(address);
+}
+
+void Paging::PML4::InjectPS(uint64 pAddr, uint64 pPS)
+{
+    auto a = PointerTables[(pAddr >> 39) & 511];
+    
+    if (a)
+    {
+        auto b = a->PageDirectories[(pAddr >> 30) & 511];
+        
+        if (b)
+        {
+            auto c = b->PageTables[(pAddr >> 21) & 511];
+            
+            if (c)
+            {
+                PANIC("Tried to inject paging structure address for address with already allocated paging structures.");
+            }
+            
+            PageTable * pt = (PageTable *)pPS;
+            
+            b->PageTables[(pAddr >> 21) & 511] = pt;
+            b->Entries[(pAddr >> 21) & 511].PageTableAddress = GetPhysicalAddress(pPS) >> 12;
+            b->Entries[(pAddr >> 21) & 511].Present = 1;
+        }
+        
+        else
+        {
+            PageDirectory * pd = (PageDirectory *)pPS;
+            
+            a->PageDirectories[(pAddr >> 30) & 511] = pd;
+            a->Entries[(pAddr >> 30) & 511].PageDirectoryAddress = GetPhysicalAddress(pPS) >> 12;
+            a->Entries[(pAddr >> 30) & 511].Present = 1;
+        }
+    }
+    
+    else
+    {
+        PageDirectoryPointerTable * pdpt = (PageDirectoryPointerTable *)pPS;
+        
+        PointerTables[(pAddr >> 39) & 511] = pdpt;
+        Entries[(pAddr >> 39) & 511].PDPTAddress = GetPhysicalAddress(pPS) >> 12;
+        Entries[(pAddr >> 39) & 511].Present = 1;
+    }
+    
+    Paging::Invlpg(pAddr);
 }
 
 uint64 Paging::PML4::Unmap(uint64 pAddr)

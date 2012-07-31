@@ -32,7 +32,6 @@
 #include "stack.h"
 #include "../memory/vmm.h"
 #include "../memory/memory.h"
-#include "../scheduler/scheduler.h"
 
 Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
 {
@@ -116,7 +115,7 @@ uint64 Lib::Stack::Count()
 uint64 Lib::Stack::Pop()
 {
     m_iSize--;
-    if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize > 4096 / 8 + 64 && Scheduler::Initialized)
+    if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize > 4096 / 8 + 64 && Memory::VMM::Ready)
     {
         Memory::VMM::UnmapPage(this->m_iLastPage);
     }
@@ -128,7 +127,7 @@ void Lib::Stack::Push(uint64 p)
 {
     this->m_pStack[this->m_iSize++] = p;
 
-    if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16 && Scheduler::Initialized)
+    if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16 && Memory::VMM::Ready)
     {
         Memory::VMM::MapPage(this->m_iLastPage + 4096);
         this->m_iLastPage += 4096;

@@ -50,7 +50,7 @@ Memory::Heap::Heap(uint64 start, uint64 limit)
 
 Memory::Heap::~Heap()
 {
-    VMM::UnmapPages(this->m_iStart, this->m_iEnd);
+    VMM::UnmapPages(m_iStart, m_iEnd - m_iStart);
 }
 
 void * Memory::Heap::Alloc(uint64 iSize)

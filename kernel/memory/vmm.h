@@ -32,23 +32,17 @@
 #ifndef __rose_kernel_memory_vmm_h__
 #define __rose_kernel_memory_vmm_h__
 
+#include "../types.h"
+#include "memory.h"
+#include "../lib/stack.h"
+#include "vm.h"
+
 namespace Memory
 {
     namespace VMM
     {
         void * AllocPagingPages();
-    }
-}
-
-#include "../types.h"
-#include "memory.h"
-#include "vm.h"
-#include "../lib/stack.h"
-
-namespace Memory
-{
-    namespace VMM
-    {
+        
         inline void MapPage(uint64 p)
         {
             Memory::CurrentVAS->MapPage(p);
@@ -74,9 +68,9 @@ namespace Memory
             Memory::CurrentVAS->UnmapPage(p);
         }
         
-        inline void UnmapPages(uint64 s, uint64 e)
+        inline void UnmapPages(uint64 s, uint64 l)
         {
-            Memory::CurrentVAS->UnmapPages(s, e);
+            Memory::CurrentVAS->UnmapPages(s, s + l);
         }
 
         inline void PushPage(uint64 p)
