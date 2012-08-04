@@ -50,6 +50,6 @@ void _panic(const char * X, const char * FILE, uint64 LINE, const char * FUNC)
         *kout << "Function:  " << FUNC << nl;;
     }
     
-    __asm("hlt");
+    __asm("cli; hlt");
 }
     

@@ -47,9 +47,7 @@ namespace Memory
 // when you connect those, you must never worry about recursive AllocPagingPages call's ArePSAvailable call returns 
 // something else than 3
 void * Memory::VMM::AllocPagingPages()
-{
-    dbg;
-    
+{    
     if (VMM::Ready)
     {
         if (PagingStructures)
@@ -108,6 +106,13 @@ void * Memory::VMM::AllocPagingPages()
                 default:
                     ;
             }
+                        
+            Paging::PageDirectoryPointerTable * pdpt = (aiFreePages[0] ? (Paging::PageDirectoryPointerTable *)
+                (VM::PagingStructuresPoolBase) : nullptr);
+            Paging::PageDirectory * pd = (aiFreePages[2] ? (Paging::PageDirectory *)(VM::PagingStructuresPoolBase +
+                2 * 4096) : nullptr);
+            Paging::PageTable * pt = (aiFreePages[4] ? (Paging::PageTable *)(VM::PagingStructuresPoolBase + 4 * 4096)
+                : nullptr);
         }
         
         else

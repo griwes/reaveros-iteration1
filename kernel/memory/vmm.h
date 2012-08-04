@@ -75,10 +75,9 @@ namespace Memory
         
         inline void UnmapPagesSpecial(uint64 s, uint64 l)
         {
-            while (l > 0)
-            {            
-                Memory::CurrentVAS->m_pPML4->Unmap(s);
-                l -= 4096;
+            for (uint64 L = 0; L < l; L += 4096)
+            {
+                GlobalPages->PushSpecial(Memory::CurrentVAS->m_pPML4->Unmap(s + L));
             }
         }
 

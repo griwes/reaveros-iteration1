@@ -199,7 +199,7 @@ void Memory::VM::Region::AddPage(Memory::VM::Page * pPage)
         Parent->m_pPML4->Map(pPage->VirtualAddress, 4096, pPage->PhysicalAddress);
     }
 
-    m_mPages.Insert(pPage->VirtualAddress, pPage->VirtualAddress + 4095, pPage);
+    m_mPages.Insert(pPage->VirtualAddress, pPage);
     
     m_lock.Unlock();
 }

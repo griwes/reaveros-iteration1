@@ -245,10 +245,12 @@ void Memory::InitializeRegions()
     VMRegions->RegisterPages();
     VMAddressSpaces->RegisterPages();
     
+//     KernelHeap->RegisterPages();
+        
     // helper pages for VMM::AllocPagingPages()
     VMM::MapPages(VM::PagingStructuresPoolBase, 6 * 4096, 0);
     VMM::UnmapPagesSpecial(VM::PagingStructuresPoolBase, 6 * 4096);
-
+    
     VMM::Ready = true;
     PlacementAddress = 0;
 }

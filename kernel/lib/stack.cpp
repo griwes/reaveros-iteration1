@@ -30,6 +30,7 @@
  **/
 
 #include "stack.h"
+#include "../memory/vm.h"
 #include "../memory/vmm.h"
 #include "../memory/memory.h"
 
@@ -119,6 +120,7 @@ uint64 Lib::Stack::Pop()
     if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize > 4096 / 8 + 64 && Memory::VMM::Ready)
     {
         Memory::VMM::UnmapPage(this->m_iLastPage);
+        m_iLastPage -= 4096;
     }
     
     return r;
@@ -137,8 +139,8 @@ void Lib::Stack::Push(uint64 p)
     
     if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16 && Memory::VMM::Ready)
     {
-        Memory::VMM::MapPage(this->m_iLastPage + 4096);
         this->m_iLastPage += 4096;
+        Memory::VMM::MapPage(this->m_iLastPage);
     }
 }
 
@@ -149,13 +151,15 @@ void Lib::Stack::PushSpecial(uint64 p)
 
 void Lib::Stack::RegisterPages()
 {
+    auto reg = Memory::CurrentVAS->GetRegion((uint64)m_pStack);
+    
     for (uint64 s = (uint64)m_pStack; s <= m_iLastPage; s += 4096)
     {
         Memory::VM::Page * p = new Memory::VM::Page;
         p->Allocated = 1;
         p->VirtualAddress = s;
         p->PhysicalAddress = Memory::CurrentVAS->m_pPML4->GetPhysicalAddress(s);
-        
-        Memory::CurrentVAS->MapPage(p);
+
+        reg->AddPage(p);
     }
 }

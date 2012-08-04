@@ -125,7 +125,7 @@ namespace Memory
 
         private:
             Processor::Spinlock m_lock;
-            Lib::RangeMap<Page *> m_mPages;
+            Lib::Trees::BinarySearch<uint64, Page *> m_mPages;
         };
 
         class AddressSpace
@@ -146,6 +146,11 @@ namespace Memory
             void AddRegion(Region *);
             void RemoveRegion(uint64);
             void RemoveRegion(Region *);
+            
+            Region * GetRegion(uint64 addr)
+            {
+                return m_mRegions.Get(addr).Value();
+            }
             
             void MapPage(uint64);
             void MapPage(uint64 s, uint64 b)
