@@ -106,6 +106,10 @@ Lib::Stack::Stack(uint64 start, uint64 end, uint64 base)
 
 Lib::Stack::~Stack()
 {
+    for (uint64 i = (uint64)m_pStack; i <= m_iLastPage; i += 4096)
+    {
+        Memory::VMM::UnmapPage(i);
+    }
 }
 
 uint64 Lib::Stack::Count()

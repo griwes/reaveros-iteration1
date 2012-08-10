@@ -47,72 +47,30 @@ namespace Memory
 // when you connect those, you must never worry about recursive AllocPagingPages call's ArePSAvailable call returns 
 // something else than 3
 void * Memory::VMM::AllocPagingPages()
-{    
+{   
     if (VMM::Ready)
     {
         if (PagingStructures)
-        {            
+        {               
             auto PSPool = /*(CorePagingStructures ? CorePagingStructures : */PagingStructures;//);
-            
+
             void * pgs = (void *)(VM::PagingStructuresPoolBase + PSPool->PopSpecial() * 2 * 4096);
             
-            uint64 aiFreePages[6] = {0, 0, 0, 0, 0, 0};
-                        
-            switch (CurrentVAS->m_pPML4->ArePSAvailable((uint64)pgs))
+            uint64 nextidx = PSPool->PopSpecial();
+            uint64 next = nextidx * 2 * 4096;
+            next += VM::PagingStructuresPoolBase;
+            
+            switch (CurrentVAS->m_pPML4->ArePSAvailable(next))
             {
                 case 0:
-                    for (uint64 i = 0; i < 2; i++)
-                    {
-                        aiFreePages[i] = (CorePages ? CorePages->PopSpecial() : GlobalPages->PopSpecial());
-                    }
-                                        
-                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase, 4096, aiFreePages[0]);
-                    Paging::Invlpg(VM::PagingStructuresPoolBase);
-                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 4096, 4096, aiFreePages[1]);
-                    Paging::Invlpg(VM::PagingStructuresPoolBase + 4096);
-                    
-                    Memory::Zero((Paging::PageDirectory *)VM::PagingStructuresPoolBase);
-                                        
-                    CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase);
                 case 1:
-                    for (uint64 i = 2; i < 4; i++)
-                    {
-                        aiFreePages[i] = (CorePages ? CorePages->PopSpecial() : GlobalPages->PopSpecial());
-                    }
-                    
-                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 2 * 4096, 4096, aiFreePages[2]);
-                    Paging::Invlpg(VM::PagingStructuresPoolBase + 2 * 4096);
-                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 3 * 4096, 4096, aiFreePages[3]);
-                    Paging::Invlpg(VM::PagingStructuresPoolBase + 3 * 4096);
-                    
-                    Memory::Zero((Paging::PageDirectory *)(VM::PagingStructuresPoolBase + 2 * 4096));
-                    
-                    CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase + 2 * 4096);
                 case 2:
-                    for (uint64 i = 4; i < 6; i++)
-                    {
-                        aiFreePages[i] = (CorePages ? CorePages->PopSpecial() : GlobalPages->PopSpecial());
-                    }
-                    
-                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 4 * 4096, 4096, aiFreePages[4]);
-                    Paging::Invlpg(VM::PagingStructuresPoolBase + 4 * 4096);
-                    CurrentVAS->m_pPML4->Map(VM::PagingStructuresPoolBase + 5 * 4096, 4096, aiFreePages[5]);
-                    Paging::Invlpg(VM::PagingStructuresPoolBase + 5 * 4096);
-                    
-                    Memory::Zero((Paging::PageDirectory *)(VM::PagingStructuresPoolBase + 4 * 4096));
-                    
-                    CurrentVAS->m_pPML4->InjectPS((uint64)pgs, VM::PagingStructuresPoolBase + 4 * 4096);
+                    break;
                 case 3:
-                default:
-                    ;
+                    VMM::MapPage(next);
             }
-                        
-            Paging::PageDirectoryPointerTable * pdpt = (aiFreePages[0] ? (Paging::PageDirectoryPointerTable *)
-                (VM::PagingStructuresPoolBase) : nullptr);
-            Paging::PageDirectory * pd = (aiFreePages[2] ? (Paging::PageDirectory *)(VM::PagingStructuresPoolBase +
-                2 * 4096) : nullptr);
-            Paging::PageTable * pt = (aiFreePages[4] ? (Paging::PageTable *)(VM::PagingStructuresPoolBase + 4 * 4096)
-                : nullptr);
+            
+            PSPool->PushSpecial(nextidx);
         }
         
         else

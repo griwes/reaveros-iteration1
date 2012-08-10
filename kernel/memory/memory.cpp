@@ -229,7 +229,7 @@ void Memory::InitializeRegions()
     CurrentVAS->AddRegion(VMAddressSpacePoolRegion);
     CurrentVAS->AddRegion(VMAddressSpacePoolStackRegion);
 
-    PagingStructures = new Lib::Stack(6, 1024 * 1024, VM::PagingStructuresPoolStackBase);
+    PagingStructures = new Lib::Stack(0, 1024 * 1024, VM::PagingStructuresPoolStackBase);
     VMPages = new Lib::Stack(0, 1024 * 1024, VM::VMPagePoolStackBase);
     VMRegions = new Lib::Stack(0, 1024, VM::VMRegionPoolStackBase);
     VMAddressSpaces = new Lib::Stack(0, 1024, VM::VMAddressSpacePoolStackBase);
@@ -246,10 +246,18 @@ void Memory::InitializeRegions()
     VMAddressSpaces->RegisterPages();
     
 //     KernelHeap->RegisterPages();
-        
-    // helper pages for VMM::AllocPagingPages()
-    VMM::MapPages(VM::PagingStructuresPoolBase, 6 * 4096, 0);
-    VMM::UnmapPagesSpecial(VM::PagingStructuresPoolBase, 6 * 4096);
+    
+    uint64 idx[4] = {0};
+    for (uint64 i = 0; i < 4; i++)
+    {
+        uint64 idx[i] = PagingStructures->PopSpecial();
+        VMM::MapPages(VM::PagingStructuresPoolBase + idx * 2 * 4096, VM::PagingStructuresPoolBase + idx * 4 * 4096);
+    }
+    
+    for (uint64 i = 0; i < 4; i++)
+    {
+        PagingStructures->PushSpecial(idx[i]);
+    }
     
     VMM::Ready = true;
     PlacementAddress = 0;

@@ -51,7 +51,7 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
     {
         old = this;
     }
-
+    
     uint64 pEnd = pBaseVirtual + iLength;
     pEnd = (pEnd + 4095) & ~(uint64)4095;
     
@@ -322,7 +322,7 @@ static void * _alloc(uint64 iSize)
         Memory::PlacementAddress = (void *)_;
         return ret;
     }
-        
+
     return Memory::VMM::AllocPagingPages();
 }
 

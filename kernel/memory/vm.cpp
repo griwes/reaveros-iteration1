@@ -126,13 +126,17 @@ void Memory::VM::AddressSpace::MapPage(uint64 address)
         Page * pPage = new Page;
         pPage->VirtualAddress = address;
         pPage->PhysicalAddress = (CorePages ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop());
-
+        
         MapPage(pPage);
     }
 
     else
     {
+        m_lock.Lock();
+        
         m_pPML4->Map(address, 4096, (CorePages ? Memory::CorePages->Pop() : Memory::GlobalPages->Pop()));
+        
+        m_lock.Unlock();
     }
 }
 

@@ -53,7 +53,6 @@ namespace Memory
     namespace VMM
     {
         void * AllocPagingPages();
-        inline void UnmapPagesSpecial(uint64, uint64);
     }
 
     namespace VM
