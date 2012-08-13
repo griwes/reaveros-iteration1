@@ -61,7 +61,7 @@ Screen::Console & Screen::Console::operator<<(const Lib::String & str)
 
 Screen::Console & Screen::Console::operator<<(Screen::Color color)
 {
-    this->m_pTerminal->SetColor(color);
+    m_pTerminal->SetColor(color);
     return *this;
 }
 

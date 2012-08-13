@@ -36,7 +36,7 @@
 Rose::Utils::DirectoryThread::DirectoryThread(boost::filesystem::path p)
         : m_path(p)
 {
-    this->m_thread = std::thread(std::bind(&DirectoryThread::_thread, this));
+    m_thread = std::thread(std::bind(&DirectoryThread::_thread, this));
 }
 
 Rose::Utils::DirectoryThread::~DirectoryThread()

@@ -55,7 +55,7 @@ namespace Memory
 
         inline AllocationBlockFooter * Footer()
         {
-            return (AllocationBlockFooter *)((uint8 *)this + sizeof(AllocationBlockHeader) + this->Size);
+            return (AllocationBlockFooter *)((uint8 *)this + sizeof(AllocationBlockHeader) + Size);
         }
 
         inline AllocationBlockHeader * Previous()
@@ -65,7 +65,7 @@ namespace Memory
 
         inline AllocationBlockHeader * Next()
         {
-            return (AllocationBlockHeader *)((uint8 *)this->Footer() + sizeof(AllocationBlockFooter));
+            return (AllocationBlockHeader *)((uint8 *)Footer() + sizeof(AllocationBlockFooter));
         }
     } __attribute__((__packed__));
 

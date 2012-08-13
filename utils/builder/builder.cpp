@@ -46,7 +46,7 @@ int Rose::Utils::Builder::Run(std::string arg)
  
     boost::filesystem::create_directory(path.string() + "/build");
     
-    this->_create_directory_thread(path);
+    _create_directory_thread(path);
     
     std::vector<boost::filesystem::path> v;
     std::copy(boost::filesystem::directory_iterator(path), boost::filesystem::directory_iterator(),
@@ -54,7 +54,7 @@ int Rose::Utils::Builder::Run(std::string arg)
     
     for (auto it = v.begin(); it != v.end(); it++)
     {
-        this->_create_directory_thread(*it);
+        _create_directory_thread(*it);
     }
 }
 
@@ -65,6 +65,6 @@ void Rose::Utils::Builder::_create_directory_thread(boost::filesystem3::path pat
         return;
     }
     
-    this->m_mThreads.insert(std::make_pair("directory_thread:" + path.string(), new Rose::Utils::DirectoryThread(path)));
-    this->m_mThreads[std::string("directory_thread" + path.string())]->Run();
+    m_mThreads.insert(std::make_pair("directory_thread:" + path.string(), new Rose::Utils::DirectoryThread(path)));
+    m_mThreads[std::string("directory_thread" + path.string())]->Run();
 }

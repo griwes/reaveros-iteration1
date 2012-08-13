@@ -83,37 +83,37 @@ namespace Screen
 
         uint64 GetBase()
         {
-            return this->m_iBase;
+            return m_iBase;
         }
         
         void SetBase(uint64 newbase)
         {
             if (newbase > 32 || newbase < 2)
             {
-                this->m_iBase = 36;
+                m_iBase = 36;
             }
             
             else
             {
-                this->m_iBase = newbase;
+                m_iBase = newbase;
             }
         }
         
         uint64 GetWidth()
         {
-            return this->m_iWidth;
+            return m_iWidth;
         }
         
         void SetWidth(uint64 newwidth)
         {
-            this->m_iWidth = newwidth;
+            m_iWidth = newwidth;
         }
 
         void HexNumbers(uint64 w, bool x0 = true)
         {
-            this->m_iBase = 16;
-            this->m_b16 = x0;
-            this->m_i16Width = w;
+            m_iBase = 16;
+            m_b16 = x0;
+            m_i16Width = w;
         }
 
         void Clear();
@@ -131,20 +131,20 @@ template<typename T>
 Screen::Console & Screen::Console::operator<<(T i)
 {
     // first part for the sake of leaving warning away
-    if (!(i > 0 || i == 0) && this->m_iBase == 10)
+    if (!(i > 0 || i == 0) && m_iBase == 10)
     {
         *this << '-';
         i = -i;
     }
 
-    if (this->m_iBase == 16)
+    if (m_iBase == 16)
     {
-        if (this->m_b16)
+        if (m_b16)
         {
             *this << "0x";
         }
 
-        if (this->m_i16Width != 0)
+        if (m_i16Width != 0)
         {
             for (int64 j = sizeof(T) / 16; j > 0; j--)
             {
@@ -164,10 +164,10 @@ Screen::Console & Screen::Console::operator<<(T i)
         return *this;
     }
 
-    if (this->m_iWidth != 0)
+    if (m_iWidth != 0)
     {
-        uint64 w = this->m_iWidth;
-        for (uint64 j = i; w > 0 && j > 0; j /= this->m_iBase, w--) ;
+        uint64 w = m_iWidth;
+        for (uint64 j = i; w > 0 && j > 0; j /= m_iBase, w--) ;
         while (w-- > 0)
         {
             *this << '0';
@@ -179,8 +179,8 @@ Screen::Console & Screen::Console::operator<<(T i)
         *this << '0';
     }
     
-    T div = i / this->m_iBase;
-    T mod = i % this->m_iBase;
+    T div = i / m_iBase;
+    T mod = i % m_iBase;
     
     if (div != 0)
     {
@@ -195,17 +195,17 @@ Screen::Console & Screen::Console::operator<<(T i)
 template<typename T>
 Screen::Console & Screen::Console::operator<<(T * p)
 {
-    uint64 base = this->m_iBase;
-    bool b = this->m_b16;
-    uint64 w16 = this->m_i16Width;
+    uint64 base = m_iBase;
+    bool b = m_b16;
+    uint64 w16 = m_i16Width;
     
-    this->HexNumbers(16, true);
+    HexNumbers(16, true);
 
     *this << (uint64)p;
 
-    this->m_iBase = base;
-    this->m_b16 = b;
-    this->m_i16Width = w16;
+    m_iBase = base;
+    m_b16 = b;
+    m_i16Width = w16;
 
     return *this;
 }

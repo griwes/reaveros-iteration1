@@ -48,9 +48,9 @@ namespace Memory
 
         MemoryMapEntry & operator=(const MemoryMapEntry & rhs)
         {
-            this->m_iBase = rhs.m_iBase;
-            this->m_iLength = rhs.m_iLength;
-            this->m_iType = rhs.m_iType;
+            m_iBase = rhs.m_iBase;
+            m_iLength = rhs.m_iLength;
+            m_iType = rhs.m_iType;
 
             return *this;
         }
@@ -58,19 +58,19 @@ namespace Memory
         Lib::String TypeDescription();
         inline uint32 & Type()
         {
-            return (uint32 &)this->m_iType;
+            return (uint32 &)m_iType;
         }
         inline uint64 & Base()
         {
-            return (uint64 &)this->m_iBase;
+            return (uint64 &)m_iBase;
         }
         inline uint64 & Length()
         {
-            return (uint64 &)this->m_iLength;
+            return (uint64 &)m_iLength;
         }
         inline uint64 End()
         {
-            return this->m_iBase + this->m_iLength;
+            return m_iBase + m_iLength;
         }
 
     private:

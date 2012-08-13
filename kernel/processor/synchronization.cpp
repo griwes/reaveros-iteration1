@@ -48,12 +48,12 @@ Processor::Spinlock::~Spinlock()
 
 void Processor::Spinlock::Lock()
 {
-    _lock(&this->m_iLock);
+    _lock(&m_iLock);
 }
 
 void Processor::Spinlock::Unlock()
 {
-    _unlock(&this->m_iLock);
+    _unlock(&m_iLock);
 }
 
 Processor::Corelock::Corelock() : m_pCore(nullptr), m_iCount(0)
@@ -68,7 +68,8 @@ void Processor::Corelock::Lock()
 {
     m_internal.Lock();
     
-    Processor::SMP::Core * current = Scheduler::GetCurrentCore();
+    //Processor::SMP::Core * current = Processor::Core->Id();
+    Processor::SMP::Core * current = (Processor::SMP::Core *)~(uint64)0;
     
     if (!m_pCore)
     {
@@ -102,7 +103,8 @@ void Processor::Corelock::Unlock()
 {
     m_internal.Lock();
     
-    Processor::SMP::Core * current = Scheduler::GetCurrentCore();
+    //Processor::SMP::Core * current = Processor::Core->Id();
+    Processor::SMP::Core * current = (Processor::SMP::Core *)~(uint64)0;
     
     if (current == m_pCore)
     {

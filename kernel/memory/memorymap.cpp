@@ -41,7 +41,7 @@ Lib::String Memory::MemoryMapEntry::TypeDescription()
 {
     const char * description;
         
-    switch (this->m_iType)
+    switch (m_iType)
     {
         case 1:
             description = "Free memory";
@@ -70,18 +70,18 @@ Lib::String Memory::MemoryMapEntry::TypeDescription()
 
 Memory::MemoryMapEntry * Memory::MemoryMap::GetEntries()
 {
-    return this->m_pEntries;
+    return m_pEntries;
 }
 
 uint64 Memory::MemoryMap::CountUsableMemory()
 {
     uint64 iSize = 0;
 
-    for (uint32 i = 0; i < this->m_iSize; i++)
+    for (uint32 i = 0; i < m_iSize; i++)
     {
-        if (this->m_pEntries[i].Type() == 1)
+        if (m_pEntries[i].Type() == 1)
         {
-            iSize += this->m_pEntries[i].Length();
+            iSize += m_pEntries[i].Length();
         }
     }
 
@@ -136,8 +136,8 @@ Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMap
         }
     }
 
-    this->m_pEntries = new MemoryMapEntry[iMemoryMapSize + (iAdditionalLength != 0 ? 1 : 0)];
-    this->m_iSize = iMemoryMapSize + (iAdditionalLength != 0 ? 1 : 0);
+    m_pEntries = new MemoryMapEntry[iMemoryMapSize + (iAdditionalLength != 0 ? 1 : 0)];
+    m_iSize = iMemoryMapSize + (iAdditionalLength != 0 ? 1 : 0);
 
     uint64 iLowestBase = 0xFFFFFFFFFFFFFFFF;
     uint64 iLowestIndex = 0;
@@ -157,14 +157,14 @@ Memory::MemoryMap::MemoryMap(Memory::MemoryMapEntry * pMemMap, uint32 iMemoryMap
 
         if (iAdditionalBase < iLowestBase)
         {
-            this->m_pEntries[j].Type() = iAdditionalType;
-            this->m_pEntries[j].Base() = iAdditionalBase;
-            this->m_pEntries[j].Length() = iAdditionalLength;
+            m_pEntries[j].Type() = iAdditionalType;
+            m_pEntries[j].Base() = iAdditionalBase;
+            m_pEntries[j].Length() = iAdditionalLength;
 
             j++;
         }
 
-        this->m_pEntries[j] = pMemMap[iLowestIndex];
+        m_pEntries[j] = pMemMap[iLowestIndex];
 
         pMemMap[iLowestIndex].Type() = 0;
     }
@@ -178,7 +178,7 @@ void Memory::MemoryMap::PrintMemoryMap()
     *kout << "Base address       | Length             | Type" << nl;
     *kout << "-------------------|--------------------|----------------------------" << nl;
 
-    for (uint32 i = 0; i < this->m_iSize; i++)
+    for (uint32 i = 0; i < m_iSize; i++)
     {
         *kout << Memory::SystemMemoryMap->GetEntries()[i].Base();
         *kout << " | ";
@@ -202,16 +202,16 @@ void Memory::MemoryMap::PrintMemoryMap()
 
 uint32 Memory::MemoryMap::GetNumberOfEntries()
 {
-    return this->m_iSize;
+    return m_iSize;
 }
 
 uint32 Memory::MemoryMap::GetMemoryType(uint64 addr)
 {
-    for (uint32 i = 0; i < this->m_iSize; i++)
+    for (uint32 i = 0; i < m_iSize; i++)
     {
-        if (this->m_pEntries[i].Base() <= addr && this->m_pEntries[i].End() > addr)
+        if (m_pEntries[i].Base() <= addr && m_pEntries[i].End() > addr)
         {
-            return this->m_pEntries[i].Type();
+            return m_pEntries[i].Type();
         }
     }
 
@@ -220,11 +220,11 @@ uint32 Memory::MemoryMap::GetMemoryType(uint64 addr)
 
 Lib::String Memory::MemoryMap::GetMemoryTypeDescription(uint64 addr)
 {
-    for (uint32 i = 0; i < this->m_iSize; i++)
+    for (uint32 i = 0; i < m_iSize; i++)
     {
-        if (this->m_pEntries[i].Base() <= addr && this->m_pEntries[i].End() > addr)
+        if (m_pEntries[i].Base() <= addr && m_pEntries[i].End() > addr)
         {
-            return this->m_pEntries[i].TypeDescription();
+            return m_pEntries[i].TypeDescription();
         }
     }
     

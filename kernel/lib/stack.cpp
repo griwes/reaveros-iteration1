@@ -36,10 +36,10 @@
 
 Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
 {
-    this->m_iSize = 0;
+    m_iSize = 0;
 
-    this->m_pStack = (uint64 *)base;
-    this->m_iLastPage = 0;
+    m_pStack = (uint64 *)base;
+    m_iLastPage = 0;
 
     for (uint64 i = 0; i < pMemoryMap->GetNumberOfEntries(); i++)
     {
@@ -66,14 +66,14 @@ Lib::Stack::Stack(Memory::MemoryMap * pMemoryMap, uint64 base)
                 continue;
             }
 
-            this->m_pStack[this->m_iSize] = start;
-            this->m_iSize++;
+            m_pStack[m_iSize] = start;
+            m_iSize++;
 
             start += 4096;
 
             if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16)
             {
-                this->m_iLastPage += 4096;
+                m_iLastPage += 4096;
                 Memory::VMM::MapPage(m_iLastPage, m_pStack[--m_iSize]);
             }
         }
@@ -114,7 +114,7 @@ Lib::Stack::~Stack()
 
 uint64 Lib::Stack::Count()
 {
-    return this->m_iSize;
+    return m_iSize;
 }
 
 uint64 Lib::Stack::Pop()
@@ -123,7 +123,7 @@ uint64 Lib::Stack::Pop()
     
     if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize > 4096 / 8 + 64 && Memory::VMM::Ready)
     {
-        Memory::VMM::UnmapPage(this->m_iLastPage);
+        Memory::VMM::UnmapPage(m_iLastPage);
         m_iLastPage -= 4096;
     }
     
@@ -143,14 +143,14 @@ void Lib::Stack::Push(uint64 p)
     
     if (((m_iLastPage + 4096 - (uint64)m_pStack) / 8) - m_iSize < 16 && Memory::VMM::Ready)
     {
-        this->m_iLastPage += 4096;
-        Memory::VMM::MapPage(this->m_iLastPage);
+        m_iLastPage += 4096;
+        Memory::VMM::MapPage(m_iLastPage);
     }
 }
 
 void Lib::Stack::PushSpecial(uint64 p)
 {
-    this->m_pStack[this->m_iSize++] = p;    
+    m_pStack[m_iSize++] = p;    
 }
 
 void Lib::Stack::RegisterPages()

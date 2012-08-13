@@ -37,16 +37,16 @@ Rose::Utils::BuilderThread::~BuilderThread()
 
 void Rose::Utils::BuilderThread::Lock()
 {
-    this->m_lock.lock();
+    m_lock.lock();
 }
 
 void Rose::Utils::BuilderThread::Unlock()
 {
-    this->m_lock.unlock();
+    m_lock.unlock();
 }
 
 int Rose::Utils::BuilderThread::Run()
 {
-    this->m_thread.join();
+    m_thread.join();
 }
 

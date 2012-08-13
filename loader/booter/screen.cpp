@@ -58,16 +58,16 @@ uint8 OutputStream::Base(uint8 base)
 {
     if (!(base < 2 || base > 32))
     {
-        this->m_iBase = base;
+        m_iBase = base;
     }
     
-    return this->m_iBase;
+    return m_iBase;
 }
 
 void OutputStream::Initialize(VideoModeWrapper * pVideoMode)
 {
-    this->m_iBase = 10;
-    this->m_pVideoMode = pVideoMode;
+    m_iBase = 10;
+    m_pVideoMode = pVideoMode;
 }
 
 uint64 Screen::SaveProcessedVideoModeDescription(uint64 pDestAddress)
@@ -97,30 +97,30 @@ uint64 Screen::SaveProcessedVideoModeDescription(uint64 pDestAddress)
 
 void VideoModeWrapper::Initialize(void * pFont, VideoMode * pVideoMode)
 {
-    this->m_pVideoMode = pVideoMode;
+    m_pVideoMode = pVideoMode;
 
-    if (this->m_pVideoMode->LinearBlueFieldPosition == 0 && this->m_pVideoMode->LinearGreenFieldPosition == 0
-            && this->m_pVideoMode->LinearRedFieldPosition == 0 && this->m_pVideoMode->LinearBytesPerScanLine == 0)
+    if (m_pVideoMode->LinearBlueFieldPosition == 0 && m_pVideoMode->LinearGreenFieldPosition == 0
+            && m_pVideoMode->LinearRedFieldPosition == 0 && m_pVideoMode->LinearBytesPerScanLine == 0)
     {
-        this->m_pVideoMode->LinearRedFieldPosition = this->m_pVideoMode->RedFieldPosition;
-        this->m_pVideoMode->LinearGreenFieldPosition = this->m_pVideoMode->GreenFieldPosition;
-        this->m_pVideoMode->LinearBlueFieldPosition = this->m_pVideoMode->BlueFieldPosition;
-        this->m_pVideoMode->LinearRedMaskSize = this->m_pVideoMode->RedMaskSize;
-        this->m_pVideoMode->LinearGreenMaskSize = this->m_pVideoMode->GreenMaskSize;
-        this->m_pVideoMode->LinearBlueMaskSize = this->m_pVideoMode->BlueMaskSize;
-        this->m_pVideoMode->LinearBytesPerScanLine = this->m_pVideoMode->BytesPerScanLine;
+        m_pVideoMode->LinearRedFieldPosition = m_pVideoMode->RedFieldPosition;
+        m_pVideoMode->LinearGreenFieldPosition = m_pVideoMode->GreenFieldPosition;
+        m_pVideoMode->LinearBlueFieldPosition = m_pVideoMode->BlueFieldPosition;
+        m_pVideoMode->LinearRedMaskSize = m_pVideoMode->RedMaskSize;
+        m_pVideoMode->LinearGreenMaskSize = m_pVideoMode->GreenMaskSize;
+        m_pVideoMode->LinearBlueMaskSize = m_pVideoMode->BlueMaskSize;
+        m_pVideoMode->LinearBytesPerScanLine = m_pVideoMode->BytesPerScanLine;
     }
 
-    this->maxx = this->m_pVideoMode->XResolution / 8;
-    this->maxy = this->m_pVideoMode->YResolution / 16;
+    maxx = m_pVideoMode->XResolution / 8;
+    maxy = m_pVideoMode->YResolution / 16;
 
-    this->x = 0;
-    this->y = 0;
+    x = 0;
+    y = 0;
 
-    this->r = this->g = this->b = 0xc0;
-    this->_ = 0;
+    r = g = b = 0xc0;
+    _ = 0;
 
-    this->m_pFontData = pFont;
+    m_pFontData = pFont;
 }
 
 OutputStream & operator << (OutputStream & s, const char * str)
@@ -142,28 +142,28 @@ void VideoModeWrapper::PrintCharacter(char c)
 
     if (c == '\n')
     {
-        this->y++;
-        this->x = 0;
+        y++;
+        x = 0;
         return;
     }
 
     if (c == '\t')
     {
-        this->x += (8 - this->x % 8);
+        x += (8 - x % 8);
         return;
     }
 
-    switch (this->m_pVideoMode->BitsPerPixel)
+    switch (m_pVideoMode->BitsPerPixel)
     {
         case 16:
         {
-            this->_put16(c);
+            _put16(c);
             return;
         }
 
         case 32:
         {
-            this->_put32(c);
+            _put32(c);
             return;
         }
     }
@@ -171,13 +171,13 @@ void VideoModeWrapper::PrintCharacter(char c)
 
 void VideoModeWrapper::_put16(char c)
 {
-    uint8 * character = &((uint8 *)this->m_pFontData)[c * 16];
-    uint16 * dest = (uint16 *)(this->m_pVideoMode->PhysBasePtr + this->y * this->m_pVideoMode->LinearBytesPerScanLine * 16
-                    + this->x * this->m_pVideoMode->BitsPerPixel);
+    uint8 * character = &((uint8 *)m_pFontData)[c * 16];
+    uint16 * dest = (uint16 *)(m_pVideoMode->PhysBasePtr + y * m_pVideoMode->LinearBytesPerScanLine * 16
+                    + x * m_pVideoMode->BitsPerPixel);
 
-    uint16 iColor = ((this->r >> (8 - this->m_pVideoMode->LinearRedMaskSize)) << this->m_pVideoMode->LinearRedFieldPosition) |
-                ((this->g >> (8 - this->m_pVideoMode->LinearGreenMaskSize)) << this->m_pVideoMode->LinearGreenFieldPosition) |
-                ((this->b >> (8 - this->m_pVideoMode->LinearBlueMaskSize)) << this->m_pVideoMode->LinearBlueFieldPosition);
+    uint16 iColor = ((r >> (8 - m_pVideoMode->LinearRedMaskSize)) << m_pVideoMode->LinearRedFieldPosition) |
+                ((g >> (8 - m_pVideoMode->LinearGreenMaskSize)) << m_pVideoMode->LinearGreenFieldPosition) |
+                ((b >> (8 - m_pVideoMode->LinearBlueMaskSize)) << m_pVideoMode->LinearBlueFieldPosition);
 
     uint16 iBgcolor = 0;
                     
@@ -191,28 +191,28 @@ void VideoModeWrapper::_put16(char c)
         }
 
         uint32 _ = (uint32)dest;
-        _ += this->m_pVideoMode->BytesPerScanLine ;
+        _ += m_pVideoMode->BytesPerScanLine ;
         dest = (uint16 *)_;
     }
 
-    this->x++;
+    x++;
 
-    if (this->x > this->maxx)
+    if (x > maxx)
     {
-        this->x = 0;
-        this->y++;
+        x = 0;
+        y++;
     }
 }
 
 void VideoModeWrapper::_put32(char c)
 {
-    uint8 * character = &((uint8 *)this->m_pFontData)[c * 16];
-    uint32 * dest = (uint32 *)(this->m_pVideoMode->PhysBasePtr + this->y * this->m_pVideoMode->LinearBytesPerScanLine * 16
-                    + this->x * this->m_pVideoMode->BitsPerPixel);
+    uint8 * character = &((uint8 *)m_pFontData)[c * 16];
+    volatile uint32 * dest = (uint32 *)(m_pVideoMode->PhysBasePtr + y * m_pVideoMode->LinearBytesPerScanLine * 16
+                    + x * m_pVideoMode->BitsPerPixel);
 
-    uint32 iColor = (this->r << this->m_pVideoMode->LinearRedFieldPosition) |
-                    (this->g << this->m_pVideoMode->LinearGreenFieldPosition) |
-                    (this->b << this->m_pVideoMode->LinearBlueFieldPosition);
+    uint32 iColor = (r << m_pVideoMode->LinearRedFieldPosition) |
+                    (g << m_pVideoMode->LinearGreenFieldPosition) |
+                    (b << m_pVideoMode->LinearBlueFieldPosition);
 
     uint32 iBgcolor = 0;
     
@@ -226,24 +226,24 @@ void VideoModeWrapper::_put32(char c)
         }
 
         uint32 _ = (uint32)dest;
-        _ += this->m_pVideoMode->BytesPerScanLine;
+        _ += m_pVideoMode->BytesPerScanLine;
         dest = (uint32 *)_;
     }
 
-    this->x++;
+    x++;
     
-    if (this->x > this->maxx)
+    if (x > maxx)
     {
-        this->x = 0;
-        this->y++;
+        x = 0;
+        y++;
     }
 }
 
 void OutputStream::UpdatePagingStructures()
 {    
-    uint64 vidmem = this->m_pVideoMode->m_pVideoMode->PhysBasePtr;
-    uint64 vidmemsize = this->m_pVideoMode->m_pVideoMode->YResolution *
-            this->m_pVideoMode->m_pVideoMode->LinearBytesPerScanLine;
+    uint64 vidmem = m_pVideoMode->m_pVideoMode->PhysBasePtr;
+    uint64 vidmemsize = m_pVideoMode->m_pVideoMode->YResolution *
+            m_pVideoMode->m_pVideoMode->LinearBytesPerScanLine;
 
     Memory::Map(vidmem, vidmem + vidmemsize, vidmem, true);
 }

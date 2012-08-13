@@ -1,6 +1,7 @@
-CC=../../utils/tools/bin/i686-elf-g++
+#CC=../../utils/tools/bin/i686-elf-g++
+CC=clang++
 LD=../../utils/tools/bin/i686-elf-ld
-CFLAGS=-m32 -c -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -fno-exceptions -fno-rtti -fno-stack-protector -std=c++0x
+CFLAGS=-m32 -c -Wall -Wextra -nostdlib -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -std=c++0x
 LDFLAGS=-T booter.ld --oformat binary -nostdlib
 SOURCES=main.cpp screen.cpp memory.cpp processor.cpp
 OBJECTS=$(SOURCES:.cpp=.o)

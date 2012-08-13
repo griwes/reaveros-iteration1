@@ -1,8 +1,8 @@
-all: chdd bochs
+all: hdd bochs
 
-q: chdd qemu
+q: hdd qemu
 
-u: cuefi qemu-uefi
+u: uefi qemu-uefi
 
 bochs:
 	cd builds && bochs -q
@@ -13,22 +13,16 @@ qemu:
 uefi-qemu:
 	cd builds/efi && qemu-system-x86_64 -L . -bios OVMF.fd -m 2048 -cpu kvm64 -hda efidisk.hdd -enable-kvm
 
-chdd:
-	colormake hdd
-
-cuefi:
-	colormake uefi
-
 hdd:
 	cd loader/hdd; \
 	yasm stage1.asm -o ../../builds/stage1.img
 	cd loader/hdd/stage2; \
 	yasm stage2.asm -o ../../../builds/stage2.img
 	cd loader/booter; \
-	colormake; \
+	make; \
 	mv builds/booter.img ../../builds/
 	cd kernel; \
-	colormake; \
+	make; \
 	mv builds/kernel.img ../builds/
 	cd builds; \
 	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img stage1.img; \
@@ -36,7 +30,7 @@ hdd:
 
 uefi:
 	cd loader/uefi; \
-	colormake
+	make
 	cd builds/efi; \
 	cp $(UDKPATH)/MyWorkSpace/Build/MdeModule/RELEASE_GCC46/X64/roseuefi.efi ./EFI/BOOT/BOOTX64.EFI; \
 	sudo losetup --offset 1048576 --sizelimit 66060288 /dev/loop0 efidisk.hdd; \
@@ -50,13 +44,13 @@ unmount:
 
 clean:
 	cd loader/booter; \
-	colormake clean
+	make clean
 	cd kernel; \
-	colormake clean
+	make clean
 
 uefi-clean: clean
 	cd loader/uefi; \
-	colormake clean
+	make clean
 
 prepare:
 	mkdir -p builds

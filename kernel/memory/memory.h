@@ -41,8 +41,8 @@ namespace Lib
 
 namespace Paging
 {
-    class PML4;
-    class PageDirectory;
+    struct PML4;
+    struct PageDirectory;
 }
 
 namespace Memory

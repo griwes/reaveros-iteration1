@@ -35,7 +35,7 @@
 
 namespace Screen
 {
-    class VideoMode;
+    struct VideoMode;
     
     class TerminalDriver
     {
@@ -65,12 +65,12 @@ namespace Screen
 
         virtual Lib::String GetName()
         {
-            return this->m_sName;
+            return m_sName;
         }
         
         virtual void SetName(const Lib::String & s)
         {
-            this->m_sName = s;
+            m_sName = s;
         }
 
     protected:

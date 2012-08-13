@@ -48,7 +48,7 @@ uint64 Memory::TotalMemory;
 
 const char * MemoryMapEntry::Type()
 {
-    switch (this->type)
+    switch (type)
     {
         case 1:
             return "Free memory (1)";

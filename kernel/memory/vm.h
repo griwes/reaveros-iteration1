@@ -162,7 +162,7 @@ namespace Memory
             {
                 while (start < end)
                 {
-                    this->MapPage(start);
+                    MapPage(start);
                     start += 4096;
                 }
             }
@@ -181,7 +181,7 @@ namespace Memory
             {
                 while (start < end)
                 {
-                    this->UnmapPage(start);
+                    UnmapPage(start);
                     start += 4096;
                 }
             }

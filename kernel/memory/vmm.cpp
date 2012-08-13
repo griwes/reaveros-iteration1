@@ -93,11 +93,15 @@ void * Memory::VMM::AllocPagingPages()
         else
         {
             PANIC("VMM::Ready = true, but PagingStructures = nullptr!");
+            
+            return nullptr;
         }
     }
 
     else
     {
         PANIC("This panic is so ridiculous I don't even want to fill it.");
+        
+        return nullptr;
     }
 }

@@ -32,17 +32,20 @@
 #ifndef _rose_kernel_types_h_
 #define _rose_kernel_types_h_
 
-typedef __SIZE_TYPE__ size;
-typedef __INT8_TYPE__ int8;
-typedef __INT16_TYPE__ int16;
-typedef __INT32_TYPE__ int32;
-typedef __INT64_TYPE__ int64;
-typedef __UINT8_TYPE__ uint8;
-typedef __UINT16_TYPE__ uint16;
-typedef __UINT32_TYPE__ uint32;
-typedef __UINT64_TYPE__ uint64;
-typedef __INTPTR_TYPE__ intptr;
-typedef __UINTPTR_TYPE__ uintptr;
+#include <cstdint>
+#include <cstddef>
+
+typedef size_t size;
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+typedef intptr_t intptr;
+typedef uintptr_t uintptr;
 
 template<typename T>
 inline T abs(T i)

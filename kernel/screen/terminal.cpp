@@ -48,12 +48,12 @@ Screen::Terminal::~Terminal()
 
 void Screen::Terminal::ScrollUp()
 {
-    this->m_pDriver->ScrollUp();
+    m_pDriver->ScrollUp();
 }
 
 void Screen::Terminal::ScrollDown()
 {
-    this->m_pDriver->ScrollDown();
+    m_pDriver->ScrollDown();
 }
 
 Screen::ReaverTerminal::ReaverTerminal(Screen::TerminalDriver * pDrv, const Lib::String & sName)
@@ -91,7 +91,7 @@ void Screen::BootTerminal::Print(const Lib::String & string)
 {
     for (const char * i = string.Buffer(); *i != 0; i++)
     {
-        this->_put_char(*i);
+        _put_char(*i);
     }
 }
 
@@ -114,67 +114,67 @@ void Screen::BootTerminal::SetColor(Screen::Color color)
     switch (color)
     {
         case Black:
-            this->r = this->g = this->b = 0x00;
+            r = g = b = 0x00;
             break;
         case Blue:
-            this->r = this->g = 0x00;
-            this->b = 0xbb;
+            r = g = 0x00;
+            b = 0xbb;
             break;
         case Green:
-            this->r = this->b = 0x00;
-            this->g = 0xbb;
+            r = b = 0x00;
+            g = 0xbb;
             break;
         case Cyan:
-            this->r = 0x00;
-            this->g = this->b = 0xbb;
+            r = 0x00;
+            g = b = 0xbb;
             break;
         case Red:
-            this->r = 0xbb;
-            this->g = this->b = 0x00;
+            r = 0xbb;
+            g = b = 0x00;
             break;
         case Magenta:
-            this->r = this->b = 0xbb;
-            this->g = 0x00;
+            r = b = 0xbb;
+            g = 0x00;
             break;
         case Brown:
-            this->r = this->g = 0xbb;
-            this->b = 0x00;
+            r = g = 0xbb;
+            b = 0x00;
             break;
         case Gray:
-            this->r = this->g = this->b = 0xbb;
+            r = g = b = 0xbb;
             break;
         case Charcoal:
-            this->r = this->g = this->b = 0x55;
+            r = g = b = 0x55;
             break;
         case BrightBlue:
-            this->r = this->g = 0x55;
-            this->b = 0xff;
+            r = g = 0x55;
+            b = 0xff;
             break;
         case BrightGreen:
-            this->r = this->b = 0x55;
-            this->g = 0xff;
+            r = b = 0x55;
+            g = 0xff;
             break;
         case BrightCyan:
-            this->r = 0x55;
-            this->g = this->b = 0xff;
+            r = 0x55;
+            g = b = 0xff;
             break;
         case Orange:
-            this->r = 0x55;
-            this->g = this->b = 0xff;
+            r = 0x55;
+            g = b = 0xff;
             break;
         case Pink:
-            this->r = this->b = 0xff;
-            this->g = 0x55;
+            r = b = 0xff;
+            g = 0x55;
             break;
         case Yellow:
-            this->r = this->g = 0xff;
-            this->b = 0x55;
+            r = g = 0xff;
+            b = 0x55;
             break;
         case White:
-            this->r = this->g = this->b = 0xff;
+            r = g = b = 0xff;
             break;
         default:
-            this->r = this->g = this->b = 0xbb;
+            r = g = b = 0xbb;
     }
     
     lock.Unlock();
@@ -189,12 +189,12 @@ void Screen::BootTerminal::_put_char(char c)
 
     if (c == '\n')
     {
-        this->x = 0;
-        this->y++;
+        x = 0;
+        y++;
 
-        if (this->y == this->maxy)
+        if (y == maxy)
         {
-            this->_scroll();
+            _scroll();
         }
 
         return;
@@ -202,44 +202,44 @@ void Screen::BootTerminal::_put_char(char c)
 
     if (c == '\r')
     {
-        this->x = 0;
+        x = 0;
         return;
     }
 
     if (c == '\t')
     {
-        this->x += (8 - this->x % 8);
+        x += (8 - x % 8);
         return;
     }
 
     // TODO:
-/*    if (this->m_pVideoMode->XResolution == 0)
+/*    if (m_pVideoMode->XResolution == 0)
     {
-        this->_put80x25(c);
+        _put80x25(c);
         return;
     }*/
 
-    switch (this->m_pVideoMode->BitsPerPixel)
+    switch (m_pVideoMode->BitsPerPixel)
     {
         case 16:
-            this->_put16(c);
+            _put16(c);
             break;
         case 32:
-            this->_put32(c);
+            _put32(c);
     }
 }
 
 void Screen::BootTerminal::_put16(char c)
 {
-    uint8 * character = &(this->m_pFont[c * 16]);
+    uint8 * character = &(m_pFont[c * 16]);
     uint16 * dest = (uint16 *)(Memory::VM::VideoMemoryBase + y * m_pVideoMode->BytesPerScanLine * 16 + x *
                     m_pVideoMode->BitsPerPixel);
     uint16 * dest_backbuffer = (uint16 *)(Memory::VM::VideoBackbufferBase + y * m_pVideoMode->BytesPerScanLine * 16
                     + x * m_pVideoMode->BitsPerPixel);
     
-    uint16 iColor = ((this->r >> (8 - this->m_pVideoMode->RedMaskSize)) << this->m_pVideoMode->RedFieldPosition) |
-                ((this->g >> (8 - this->m_pVideoMode->GreenMaskSize)) << this->m_pVideoMode->GreenFieldPosition) |
-                ((this->b >> (8 - this->m_pVideoMode->BlueMaskSize)) << this->m_pVideoMode->BlueFieldPosition);
+    uint16 iColor = ((r >> (8 - m_pVideoMode->RedMaskSize)) << m_pVideoMode->RedFieldPosition) |
+                ((g >> (8 - m_pVideoMode->GreenMaskSize)) << m_pVideoMode->GreenFieldPosition) |
+                ((b >> (8 - m_pVideoMode->BlueMaskSize)) << m_pVideoMode->BlueFieldPosition);
     
     uint16 iBgcolor = 0;
     
@@ -265,35 +265,35 @@ void Screen::BootTerminal::_put16(char c)
         }
         
         uint64 _ = (uint64)dest;
-        _ += this->m_pVideoMode->BytesPerScanLine ;
+        _ += m_pVideoMode->BytesPerScanLine ;
         dest = (uint16 *)_;
     }
     
-    this->x++;
+    x++;
     
-    if (this->x == this->maxx)
+    if (x == maxx)
     {
-        this->x = 0;
-        this->y++;
+        x = 0;
+        y++;
 
-        if (this->y == this->maxy)
+        if (y == maxy)
         {
-            this->_scroll();
+            _scroll();
         }
     }
 }
 
 void Screen::BootTerminal::_put32(char c)
 {
-    uint8 * character = &(this->m_pFont[c * 16]);
+    uint8 * character = &(m_pFont[c * 16]);
     uint32 * dest = (uint32 *)(Memory::VM::VideoMemoryBase + y * m_pVideoMode->BytesPerScanLine * 16 + x *
                     m_pVideoMode->BitsPerPixel);
     uint32 * dest_backbuffer = (uint32 *)(Memory::VM::VideoBackbufferBase + y * m_pVideoMode->BytesPerScanLine * 16
                     + x * m_pVideoMode->BitsPerPixel);
     
-    uint32 iColor = (this->r << this->m_pVideoMode->RedFieldPosition) |
-                (this->g << this->m_pVideoMode->GreenFieldPosition) |
-                (this->b << this->m_pVideoMode->BlueFieldPosition);
+    uint32 iColor = (r << m_pVideoMode->RedFieldPosition) |
+                (g << m_pVideoMode->GreenFieldPosition) |
+                (b << m_pVideoMode->BlueFieldPosition);
     
     uint32 iBgcolor = 0;
     
@@ -319,20 +319,20 @@ void Screen::BootTerminal::_put32(char c)
         }
         
         uint64 _ = (uint64)dest;
-        _ += this->m_pVideoMode->BytesPerScanLine;
+        _ += m_pVideoMode->BytesPerScanLine;
         dest = (uint32 *)_;
     }
     
-    this->x++;
+    x++;
     
-    if (this->x == this->maxx)
+    if (x == maxx)
     {
-        this->x = 0;
-        this->y++;
+        x = 0;
+        y++;
 
-        if (this->y == this->maxy)
+        if (y == maxy)
         {
-            this->_scroll();
+            _scroll();
         }
     }
 }

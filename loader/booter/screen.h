@@ -142,12 +142,12 @@ public:
 
     void Hex()
     {
-        this->Base(16);
+        Base(16);
     }
     
     void Dec()
     {
-        this->Base(10);
+        Base(10);
     }
     
     uint8 Base(uint8 = 0);

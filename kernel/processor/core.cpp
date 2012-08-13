@@ -53,7 +53,7 @@ void Processor::SMP::Core::EnableInterrupts()
 
 uint64 Processor::SMP::Core::Id()
 {
-
+    
 }
 
 Processor::LAPIC * Processor::SMP::Core::LAPIC()

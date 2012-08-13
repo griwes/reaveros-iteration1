@@ -36,16 +36,16 @@ Memory::Heap::Heap(uint64 start, uint64 limit)
         : m_pBiggest((AllocationBlockHeader *)start), m_pSmallest((AllocationBlockHeader *)start),
           m_iStart(start), m_iEnd(start + 64 * 1024), m_iLimit(limit)
 {
-    Memory::VMM::MapPages(this->m_iStart, this->m_iEnd);
+    Memory::VMM::MapPages(m_iStart, m_iEnd);
 
-    this->m_pBiggest->Magic = 0xFEA7EFA1;
-    this->m_pBiggest->Size = 64 * 1024 - sizeof(AllocationBlockHeader) - sizeof(AllocationBlockFooter);
-    this->m_pBiggest->Bigger = nullptr;
-    this->m_pBiggest->Smaller = nullptr;
-    this->m_pBiggest->Flags = 0;
+    m_pBiggest->Magic = 0xFEA7EFA1;
+    m_pBiggest->Size = 64 * 1024 - sizeof(AllocationBlockHeader) - sizeof(AllocationBlockFooter);
+    m_pBiggest->Bigger = nullptr;
+    m_pBiggest->Smaller = nullptr;
+    m_pBiggest->Flags = 0;
     
-    this->m_pBiggest->Footer()->Magic = 0xFEA7EFA1;
-    this->m_pBiggest->Footer()->Header = this->m_pBiggest;
+    m_pBiggest->Footer()->Magic = 0xFEA7EFA1;
+    m_pBiggest->Footer()->Header = m_pBiggest;
 }
 
 Memory::Heap::~Heap()
@@ -55,70 +55,70 @@ Memory::Heap::~Heap()
 
 void * Memory::Heap::Alloc(uint64 iSize)
 {
-    this->m_lock.Lock();
+    m_lock.Lock();
 
-    this->_check_sanity();
+    _check_sanity();
     
     iSize += 15;
     iSize &= ~(uint64)15;
     
     if (iSize == 0)
     {
-        this->m_lock.Unlock();
+        m_lock.Unlock();
         return nullptr;
     }
     
-    AllocationBlockHeader * list = this->_find_closest(iSize);
+    AllocationBlockHeader * list = _find_closest(iSize);
     while (list == nullptr || list->Size < iSize)
     {
-        this->_expand();
-        this->_check_sanity();
+        _expand();
+        _check_sanity();
         
-        list = this->_find_closest(iSize);
+        list = _find_closest(iSize);
     }
     
-    void * ret = this->_allocate(list, iSize);
-    this->m_lock.Unlock();
+    void * ret = _allocate(list, iSize);
+    m_lock.Unlock();
     return ret;
 }
 
 void * Memory::Heap::AllocAligned(uint64 iSize)
 {
-    this->m_lock.Lock();
+    m_lock.Lock();
     
-    this->_check_sanity();
+    _check_sanity();
     
     if (iSize == 0)
     {
-        this->m_lock.Unlock();
+        m_lock.Unlock();
         return nullptr;
     }
     
-    AllocationBlockHeader * last = ((AllocationBlockFooter *)(this->m_iEnd - sizeof(AllocationBlockFooter)))->Header;
+    AllocationBlockHeader * last = ((AllocationBlockFooter *)(m_iEnd - sizeof(AllocationBlockFooter)))->Header;
     
-    if (!this->_is_free(last))
+    if (!_is_free(last))
     {
-        this->_expand();
+        _expand();
     }
     
     uint64 iModSize = iSize % 4096;
     
     if (iModSize > 0)
     {
-        this->_expand();
+        _expand();
     }
     
     if (iModSize + sizeof(AllocationBlockFooter) > 4096)
     {
-        this->_expand();
+        _expand();
     }
     
     for (uint64 i = 0; i < iSize - iModSize; i += 4096)
     {
-        this->_expand();
+        _expand();
     }
     
-    AllocationBlockHeader * block = (this->_is_free(last) ? last : last->Next());
+    AllocationBlockHeader * block = (_is_free(last) ? last : last->Next());
     uint64 pAddress = (uint64)block + sizeof(AllocationBlockHeader);
     uint64 pAddressAligned = pAddress + 4095;
     pAddressAligned &= ~(uint64)4095;
@@ -127,38 +127,38 @@ void * Memory::Heap::AllocAligned(uint64 iSize)
     
     // FIXME: this way of allocating wastes up to 4095 bytes
     // FIXME: add _break() (counter-_merge()) to solve this problem
-    this->_allocate(block, iBlockSize);
+    _allocate(block, iBlockSize);
     
-    this->m_lock.Unlock();
+    m_lock.Unlock();
 
     return (void *)pAddressAligned;
 }
 
 void Memory::Heap::Free(void * pAddress)
 {
-    this->m_lock.Lock();
+    m_lock.Lock();
     
-    this->_check_sanity();
+    _check_sanity();
     
     if (pAddress == nullptr)
     {
         return;
     }
     
-    this->_validate(pAddress);
+    _validate(pAddress);
     
     AllocationBlockHeader * newhead = (AllocationBlockHeader *)((uint8 *)pAddress - sizeof(AllocationBlockHeader));
     newhead->Flags ^= 1;
-    this->_insert(newhead);
+    _insert(newhead);
 
-    this->m_lock.Unlock();
+    m_lock.Unlock();
 }
 
 void Memory::Heap::_check_sanity()
 {
-    if (this->m_pBiggest == nullptr || this->m_pSmallest == nullptr)
+    if (m_pBiggest == nullptr || m_pSmallest == nullptr)
     {
-        if (this->m_pBiggest != nullptr || this->m_pSmallest != nullptr)
+        if (m_pBiggest != nullptr || m_pSmallest != nullptr)
         {
             PANIC("Only one nullptr.");
         }
@@ -172,12 +172,12 @@ void Memory::Heap::_check_sanity()
 
 void Memory::Heap::_expand()
 {
-    this->m_iEnd += 4096;
-    this->_check_sanity();
+    m_iEnd += 4096;
+    _check_sanity();
 
-    Memory::VMM::MapPage(this->m_iEnd - 4096);
+    Memory::VMM::MapPage(m_iEnd - 4096);
     
-    AllocationBlockHeader * newhead = (AllocationBlockHeader *)(this->m_iEnd - 4096);
+    AllocationBlockHeader * newhead = (AllocationBlockHeader *)(m_iEnd - 4096);
     newhead->Magic = 0xFEA7EFA1;
     newhead->Size = 4096 - sizeof(AllocationBlockHeader) - sizeof(AllocationBlockFooter);
     newhead->Flags = 1 << 1;
@@ -187,44 +187,44 @@ void Memory::Heap::_expand()
     newhead->Smaller = nullptr;
     newhead->Bigger = nullptr;
     
-    this->_insert(newhead);
+    _insert(newhead);
 }
 
 void Memory::Heap::_insert(AllocationBlockHeader * newhead)
 {
-    this->_check_sanity();
+    _check_sanity();
     
-    if (this->m_pBiggest == nullptr)
+    if (m_pBiggest == nullptr)
     {
-        this->m_pBiggest = newhead;
-        this->m_pSmallest = newhead;
+        m_pBiggest = newhead;
+        m_pSmallest = newhead;
         newhead->Bigger = nullptr;
         newhead->Smaller = nullptr;
         
         return;
     }
     
-    if (this->_is_free(newhead->Previous()))
+    if (_is_free(newhead->Previous()))
     {
-        this->_merge(newhead->Previous(), newhead);
+        _merge(newhead->Previous(), newhead);
         return;
     }
     
-    if (this->_is_free(newhead->Next()))
+    if (_is_free(newhead->Next()))
     {
-        this->_merge(newhead, newhead->Next());
+        _merge(newhead, newhead->Next());
         return;
     }
     
     if ((newhead->Flags & 2) != 2 && newhead->Size + sizeof(AllocationBlockHeader)
-        + sizeof(AllocationBlockFooter) >= 4096 && this->m_iEnd == (uint64)newhead->Footer()
+        + sizeof(AllocationBlockFooter) >= 4096 && m_iEnd == (uint64)newhead->Footer()
         + sizeof(AllocationBlockFooter))
     {
-        this->_shrink(newhead);
+        _shrink(newhead);
         return;
     }
     
-    AllocationBlockHeader * list = this->_find_closest(newhead->Size);
+    AllocationBlockHeader * list = _find_closest(newhead->Size);
     
     if (newhead->Size <= list->Size)
     {
@@ -232,9 +232,9 @@ void Memory::Heap::_insert(AllocationBlockHeader * newhead)
         newhead->Bigger = list;
         list->Smaller = newhead;
         
-        if (this->m_pSmallest == list)
+        if (m_pSmallest == list)
         {
-            this->m_pSmallest = newhead;
+            m_pSmallest = newhead;
         }
     }
     
@@ -244,15 +244,15 @@ void Memory::Heap::_insert(AllocationBlockHeader * newhead)
         newhead->Smaller = list;
         list->Bigger = newhead;
         
-        if (this->m_pBiggest == list)
+        if (m_pBiggest == list)
         {
-            this->m_pBiggest = newhead;
+            m_pBiggest = newhead;
         }
     }
     
     newhead->Flags ^= 2;
     
-    this->_check_sanity();
+    _check_sanity();
 }
 
 void Memory::Heap::_merge(Memory::AllocationBlockHeader * first, Memory::AllocationBlockHeader * second)
@@ -264,7 +264,7 @@ void Memory::Heap::_merge(Memory::AllocationBlockHeader * first, Memory::Allocat
     
     if ((uint64)first > (uint64)second)
     {
-        return this->_merge(second, first);
+        return _merge(second, first);
     }
     
     if (first->Next() != second)
@@ -292,24 +292,24 @@ void Memory::Heap::_merge(Memory::AllocationBlockHeader * first, Memory::Allocat
         second->Smaller->Bigger = second->Bigger;
     }
     
-    if (first == this->m_pBiggest)
+    if (first == m_pBiggest)
     {
-        this->m_pBiggest = first->Smaller;
+        m_pBiggest = first->Smaller;
     }
     
-    if (first == this->m_pSmallest)
+    if (first == m_pSmallest)
     {
-        this->m_pSmallest = first->Bigger;
+        m_pSmallest = first->Bigger;
     }
     
-    if (second == this->m_pBiggest)
+    if (second == m_pBiggest)
     {
-        this->m_pBiggest = second->Smaller;
+        m_pBiggest = second->Smaller;
     }
     
-    if (second == this->m_pSmallest)
+    if (second == m_pSmallest)
     {
-        this->m_pSmallest = second->Bigger;
+        m_pSmallest = second->Bigger;
     }
     
     first->Size += second->Size + sizeof(AllocationBlockHeader) + sizeof(AllocationBlockFooter);
@@ -320,7 +320,7 @@ void Memory::Heap::_merge(Memory::AllocationBlockHeader * first, Memory::Allocat
         first->Flags |= 2;
     }
     
-    this->_insert(first);
+    _insert(first);
 }
 
 void * Memory::Heap::_allocate(Memory::AllocationBlockHeader * block, uint64 iSize)
@@ -339,14 +339,14 @@ void * Memory::Heap::_allocate(Memory::AllocationBlockHeader * block, uint64 iSi
             block->Smaller->Bigger = block->Bigger;
         }
         
-        if (block == this->m_pBiggest)
+        if (block == m_pBiggest)
         {
-            this->m_pBiggest = block->Smaller;
+            m_pBiggest = block->Smaller;
         }
         
-        if (block == this->m_pSmallest)
+        if (block == m_pSmallest)
         {
-            this->m_pSmallest = block->Bigger;
+            m_pSmallest = block->Bigger;
         }
         
         return (void *)((uint8 *)block + sizeof(AllocationBlockHeader));
@@ -371,14 +371,14 @@ void * Memory::Heap::_allocate(Memory::AllocationBlockHeader * block, uint64 iSi
             block->Smaller->Bigger = block->Bigger;
         }
         
-        if (block == this->m_pBiggest)
+        if (block == m_pBiggest)
         {
-            this->m_pBiggest = block->Smaller;
+            m_pBiggest = block->Smaller;
         }
         
-        if (block == this->m_pSmallest)
+        if (block == m_pSmallest)
         {
-            this->m_pSmallest = block->Bigger;
+            m_pSmallest = block->Bigger;
         }
         
         AllocationBlockHeader * newhead = block->Next();
@@ -388,7 +388,7 @@ void * Memory::Heap::_allocate(Memory::AllocationBlockHeader * block, uint64 iSi
         
         newhead->Footer()->Header = newhead;
         
-        this->_insert(newhead);
+        _insert(newhead);
         
         return (void *)((uint8 *)block + sizeof(AllocationBlockHeader));
     }
@@ -398,14 +398,14 @@ Memory::AllocationBlockHeader * Memory::Heap::_find_closest(uint64 iSize)
 {
     AllocationBlockHeader * list = nullptr;
     
-    if (this->m_pBiggest == nullptr)
+    if (m_pBiggest == nullptr)
     {
         return nullptr;
     }
     
-    if (abs((int64)this->m_pBiggest->Size - (int64)iSize) < abs((int64)this->m_pSmallest->Size - (int64)iSize))
+    if (abs((int64)m_pBiggest->Size - (int64)iSize) < abs((int64)m_pSmallest->Size - (int64)iSize))
     {
-        list = this->m_pBiggest;
+        list = m_pBiggest;
         
         while (list->Size != iSize && list->Smaller != nullptr && list->Smaller->Size >= iSize)
         {
@@ -415,7 +415,7 @@ Memory::AllocationBlockHeader * Memory::Heap::_find_closest(uint64 iSize)
     
     else
     {
-        list = this->m_pSmallest;
+        list = m_pSmallest;
         
         while (list->Size != iSize && list->Bigger != nullptr && list->Bigger->Size <= iSize)
         {
@@ -428,7 +428,7 @@ Memory::AllocationBlockHeader * Memory::Heap::_find_closest(uint64 iSize)
 
 bool Memory::Heap::_is_free(Memory::AllocationBlockHeader * block)
 {
-    if ((uint64)block >= this->m_iStart && (uint64)block->Footer() + sizeof(AllocationBlockFooter) <= this->m_iEnd &&
+    if ((uint64)block >= m_iStart && (uint64)block->Footer() + sizeof(AllocationBlockFooter) <= m_iEnd &&
         block->Magic == 0xFEA7EFA1 && block->Footer()->Magic == 0xFEA7EFA1 && (block->Flags & 1) == 0)
     {
         return true;
@@ -444,7 +444,7 @@ void Memory::Heap::_shrink(Memory::AllocationBlockHeader * head)
 {
     // TODO
     head->Flags |= 2;
-    this->_insert(head);
+    _insert(head);
 }
 
 void * Memory::Heap::_validate(void * pAddress, bool bShouldBeAllocated)

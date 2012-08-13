@@ -38,8 +38,8 @@ uint64 Paging::PML4::s_iBase = 0;
 
 Paging::PML4::PML4(uint64 iBase)
 {
-    Memory::Zero(&this->Entries, 512);
-    Memory::Zero(&this->PointerTables, 512);
+    Memory::Zero(&Entries, 512);
+    Memory::Zero(&PointerTables, 512);
 
     s_iBase = iBase;
 }
@@ -69,9 +69,9 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
     {
         PageDirectoryPointerTable * pdpt;
         
-        if (this->Entries[startpml4e].Present == 1)
+        if (Entries[startpml4e].Present == 1)
         {
-            pdpt = this->PointerTables[startpml4e];
+            pdpt = PointerTables[startpml4e];
         }
         
         else
@@ -80,10 +80,10 @@ void Paging::PML4::Map(uint64 pBaseVirtual, uint64 iLength, uint64 pBasePhysical
 
             Memory::Zero(pdpt);
             
-            this->Entries[startpml4e].Present = 1;
-            this->Entries[startpml4e].PDPTAddress = old->GetPhysicalAddress((uint64)pdpt) >> 12;
+            Entries[startpml4e].Present = 1;
+            Entries[startpml4e].PDPTAddress = old->GetPhysicalAddress((uint64)pdpt) >> 12;
             
-            this->PointerTables[startpml4e] = pdpt;
+            PointerTables[startpml4e] = pdpt;
         }
 
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
@@ -300,8 +300,8 @@ void Paging::PML4::InjectPS(uint64 pAddr, uint64 pPS)
 
 uint64 Paging::PML4::Unmap(uint64 pAddr)
 {
-    uint64 physical = this->GetPhysicalAddress(pAddr);
-    Memory::Zero(&this->PointerTables[(pAddr >> 39) & 511]->PageDirectories[(pAddr >> 30) & 511]->PageTables[(pAddr >> 21) & 511]
+    uint64 physical = GetPhysicalAddress(pAddr);
+    Memory::Zero(&PointerTables[(pAddr >> 39) & 511]->PageDirectories[(pAddr >> 30) & 511]->PageTables[(pAddr >> 21) & 511]
                     ->Entries[(pAddr >> 39) & 511]);
     return physical;
 }

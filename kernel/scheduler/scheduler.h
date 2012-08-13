@@ -36,8 +36,6 @@
 namespace Scheduler
 {
     extern bool Initialized;
-    
-    Processor::SMP::Core * GetCurrentCore();
 }
 
 #endif

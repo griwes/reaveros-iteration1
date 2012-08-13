@@ -47,7 +47,7 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     *bout << "Booter: ReaverOS' bootloader 0.2" << nl;
     *bout << "Copyright (c) 2011-2012 Reaver Project Team" << nl << nl;
     *bout << "Reading memory map..." << nl << nl;
-
+    
     Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
 
     *bout << "Video mode: " << pVideoMode->XResolution << "x" << pVideoMode->YResolution << "." << nl;
