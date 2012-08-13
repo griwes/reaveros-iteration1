@@ -59,6 +59,9 @@ void * Memory::Heap::Alloc(uint64 iSize)
 
     this->_check_sanity();
     
+    iSize += 15;
+    iSize &= ~(uint64)15;
+    
     if (iSize == 0)
     {
         this->m_lock.Unlock();

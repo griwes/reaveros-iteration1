@@ -31,10 +31,13 @@
 
 #ifndef __rose_kernel_scheduler_scheduler_h__
 #define __rose_kernel_scheduler_scheduler_h__
+#include "../processor/core.h"
 
 namespace Scheduler
 {
     extern bool Initialized;
+    
+    Processor::SMP::Core * GetCurrentCore();
 }
 
 #endif

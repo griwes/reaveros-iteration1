@@ -39,13 +39,6 @@ namespace Memory
     }
 }
 
-// few things are known here:
-// 1. if there are no paging structures for given area in PagingStructuresPool, then it's being used for the first time
-//     (always true, as PSPool PSs are never freed and on the start, they are sorted)
-// 2. when pool index is put back on stack, it has already created PSs out there 
-//     (always true, as when id is given back, it must have been already used and mapped)
-// when you connect those, you must never worry about recursive AllocPagingPages call's ArePSAvailable call returns 
-// something else than 3
 void * Memory::VMM::AllocPagingPages()
 {   
     if (VMM::Ready)
@@ -54,23 +47,47 @@ void * Memory::VMM::AllocPagingPages()
         {               
             auto PSPool = /*(CorePagingStructures ? CorePagingStructures : */PagingStructures;//);
 
-            void * pgs = (void *)(VM::PagingStructuresPoolBase + PSPool->PopSpecial() * 2 * 4096);
+            void * pgs = (void *)(VM::PagingStructuresPoolBase + PSPool->Pop() * 2 * 4096);
             
-            uint64 nextidx = PSPool->PopSpecial();
+            uint64 nextidx = PSPool->Pop();
             uint64 next = nextidx * 2 * 4096;
             next += VM::PagingStructuresPoolBase;
+            
+            uint64 counter = 0;
             
             switch (CurrentVAS->m_pPML4->ArePSAvailable(next))
             {
                 case 0:
+                    CurrentVAS->m_pPML4->InjectPS(next, PSPool->Pop());
+                    counter++;
                 case 1:
+                    CurrentVAS->m_pPML4->InjectPS(next, PSPool->Pop());
+                    counter++;
                 case 2:
-                    break;
+                {
+                    CurrentVAS->m_pPML4->InjectPS(next, PSPool->Pop());
+                    counter++;
+                    
+                    uint64 indices[3] = {0};
+                    
+                    for (uint64 i = 0; i < counter; i++)
+                    {
+                        indices[i] = PSPool->Pop();
+                        VMM::MapPage(VM::PagingStructuresPoolBase + indices[i] * 2 * 4096);
+                    }
+                    
+                    for (uint64 i = counter; i > 0; i--)
+                    {
+                        PSPool->PushSpecial(i - 1);
+                    }
+                }
                 case 3:
                     VMM::MapPage(next);
             }
             
             PSPool->PushSpecial(nextidx);
+            
+            return pgs;
         }
         
         else

@@ -250,8 +250,8 @@ void Memory::InitializeRegions()
     uint64 idx[4] = {0};
     for (uint64 i = 0; i < 4; i++)
     {
-        uint64 idx[i] = PagingStructures->PopSpecial();
-        VMM::MapPages(VM::PagingStructuresPoolBase + idx * 2 * 4096, VM::PagingStructuresPoolBase + idx * 4 * 4096);
+        idx[i] = PagingStructures->PopSpecial();
+        VMM::MapPages(VM::PagingStructuresPoolBase + idx[i] * 2 * 4096, VM::PagingStructuresPoolBase + idx[i] * 4 * 4096);
     }
     
     for (uint64 i = 0; i < 4; i++)

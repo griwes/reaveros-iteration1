@@ -30,6 +30,7 @@
  **/
 
 #include "synchronization.h"
+#include "../scheduler/scheduler.h"
 
 extern "C"
 {
@@ -37,13 +38,12 @@ extern "C"
     void _unlock(uint8 *);
 }
 
-Processor::Spinlock::Spinlock()
+Processor::Spinlock::Spinlock() : m_iLock(0)
 {
 }
 
 Processor::Spinlock::~Spinlock()
 {
-    this->Unlock();
 }
 
 void Processor::Spinlock::Lock()
@@ -54,4 +54,65 @@ void Processor::Spinlock::Lock()
 void Processor::Spinlock::Unlock()
 {
     _unlock(&this->m_iLock);
+}
+
+Processor::Corelock::Corelock() : m_pCore(nullptr), m_iCount(0)
+{
+}
+
+Processor::Corelock::~Corelock()
+{
+}
+
+void Processor::Corelock::Lock()
+{
+    m_internal.Lock();
+    
+    Processor::SMP::Core * current = Scheduler::GetCurrentCore();
+    
+    if (!m_pCore)
+    {
+        m_pCore = current;
+    }
+    
+    if (current == m_pCore)
+    {
+        m_iCount++;
+    }
+    
+    else
+    {
+        m_internal.Unlock();
+        
+        while (m_iCount || m_pCore == current)
+        {
+            __asm volatile ("pause" ::: "memory");
+        }
+        
+        m_internal.Lock();
+        
+        m_pCore = current;
+        m_iCount++;
+    }
+    
+    m_internal.Unlock();
+}
+
+void Processor::Corelock::Unlock()
+{
+    m_internal.Lock();
+    
+    Processor::SMP::Core * current = Scheduler::GetCurrentCore();
+    
+    if (current == m_pCore)
+    {
+        m_iCount--;
+        
+        if (!m_iCount)
+        {
+            m_pCore = nullptr;
+        }
+    }
+    
+    m_internal.Unlock();
 }

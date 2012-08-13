@@ -191,7 +191,12 @@ Memory::VM::Region::~Region()
 
 void Memory::VM::Region::AddPage(Memory::VM::Page * pPage)
 {
-    m_lock.Lock();
+    if (!m_pLock)
+    {
+        m_pLock = (KernelRegion ? (Processor::Lock *)new Processor::Corelock : (Processor::Lock *)new Processor::Spinlock);
+    }
+    
+    m_pLock->Lock();
 
     if (m_mPages.Get(pPage->VirtualAddress))
     {
@@ -205,12 +210,17 @@ void Memory::VM::Region::AddPage(Memory::VM::Page * pPage)
 
     m_mPages.Insert(pPage->VirtualAddress, pPage);
     
-    m_lock.Unlock();
+    m_pLock->Unlock();
 }
 
 void Memory::VM::Region::DeletePage(Memory::VM::Page * pPage)
 {
-    m_lock.Lock();
+    if (!m_pLock)
+    {
+        m_pLock = (KernelRegion ? (Processor::Lock *)new Processor::Corelock : (Processor::Lock *)new Processor::Spinlock);
+    }
+    
+    m_pLock->Lock();
 
     if (auto it = m_mPages.Get(pPage->VirtualAddress))
     {
@@ -230,12 +240,17 @@ void Memory::VM::Region::DeletePage(Memory::VM::Page * pPage)
         PANIC("Tried to remove unexistent page.");
     }
 
-    m_lock.Unlock();
+    m_pLock->Unlock();
 }
 
 void Memory::VM::Region::DeletePage(uint64 iAddress)
 {
-    m_lock.Lock();
+    if (!m_pLock)
+    {
+        m_pLock = (KernelRegion ? (Processor::Lock *)new Processor::Corelock : (Processor::Lock *)new Processor::Spinlock);
+    }
+    
+    m_pLock->Lock();
 
     if (auto it = m_mPages.Get(iAddress))
     {
@@ -247,7 +262,7 @@ void Memory::VM::Region::DeletePage(uint64 iAddress)
         PANIC("Tried to remove unexistent page.");
     }
 
-    m_lock.Unlock();
+    m_pLock->Unlock();
 }
 
 Memory::VM::Page::Page()

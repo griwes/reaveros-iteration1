@@ -33,19 +33,48 @@
 #define __rose_kernel_processor_synchronization_h__
 
 #include "../types.h"
+#include "processor.h"
 
 namespace Processor
 {
-    class Spinlock
+    class LockPrimitive
+    {
+    public:
+        LockPrimitive() {}
+        virtual ~LockPrimitive() {}
+        
+        virtual void Lock() = 0;
+        virtual void Unlock() = 0;
+    };
+    
+    typedef LockPrimitive Lock;
+    
+    class Spinlock : public LockPrimitive
     {
     public:
         Spinlock();
-        ~Spinlock();
+        virtual ~Spinlock();
         
-        void Lock();
-        void Unlock();
+        virtual void Lock();
+        virtual void Unlock();
     private:
         uint8 m_iLock;
+    };
+    
+    class Corelock : public LockPrimitive
+    {
+    public:
+        Corelock();
+        virtual ~Corelock();
+        
+        virtual void Lock();
+        virtual void Unlock();
+        
+        Processor::SMP::Core * GetOwner();
+    private:
+        Spinlock m_internal;
+        Processor::SMP::Core * m_pCore;
+        uint64 m_iCount;
     };
 }
 

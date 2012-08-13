@@ -123,7 +123,7 @@ namespace Memory
             File * MappedFile;
 
         private:
-            Processor::Spinlock m_lock;
+            Processor::Lock * m_pLock;
             Lib::Trees::BinarySearch<uint64, Page *> m_mPages;
         };
 
@@ -132,7 +132,6 @@ namespace Memory
         public:
             friend void Memory::RemapKernel();
             friend void * Memory::VMM::AllocPagingPages();
-            friend inline void Memory::VMM::UnmapPagesSpecial(uint64, uint64);
             friend void Lib::Stack::RegisterPages();
 
             friend class Region;

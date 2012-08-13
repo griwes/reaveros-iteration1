@@ -35,3 +35,8 @@ namespace Scheduler
 {
     bool Initialized = false;
 }
+
+Processor::SMP::Core* Scheduler::GetCurrentCore()
+{
+    return (Processor::SMP::Core *)~(uint64)0;
+}
