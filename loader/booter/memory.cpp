@@ -169,10 +169,10 @@ uint64 Memory::Copy(uint32 pSource, uint32 iSize, uint64 pDestination)
     {
         iSize = 4 * 1024;
     }
-
+    
     Memory::Map(pDestination, pDestination + iSize, Memory::iFirstFreePageAddress);
     Memory::Map(0x8000000, 0x8000000 + iSize, p);
-
+    
     iSize /= 4;
     _copy(pSource, 0x8000000, iSize);
     
@@ -361,13 +361,13 @@ uint64 Memory::CountPagingStructures(uint64 pBegin, uint64 pEnd)
     uint64 endpde = (pEnd >> 21) & 511;
     
     uint64 iSize = 0;
-    
+        
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde))
     {
         iSize += sizeof(PageDirectoryPointerTable);
 
         pEnd += sizeof(PageDirectoryPointerTable);
-
+        
         endpml4e = (pEnd >> 39) & 511;
         endpdpte = (pEnd >> 30) & 511;
         endpde = (pEnd >> 21) & 511;

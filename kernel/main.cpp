@@ -48,7 +48,7 @@ namespace InitRD
     class InitRD;
 }
 
-extern "C" void kernel_main(InitRD::InitRD * pInitRD, Memory::MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize,
+extern "C" void kernel_main(InitRD::InitRD * /*pInitRD*/, Memory::MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize,
                             void * pPlacementAddress, Screen::VideoMode * pVideoMode, uint8 * pFont)
 {
     Memory::PreInitialize(pPlacementAddress);

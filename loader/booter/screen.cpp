@@ -172,7 +172,7 @@ void VideoModeWrapper::PrintCharacter(char c)
 void VideoModeWrapper::_put16(char c)
 {
     uint8 * character = &((uint8 *)m_pFontData)[c * 16];
-    uint16 * dest = (uint16 *)(m_pVideoMode->PhysBasePtr + y * m_pVideoMode->LinearBytesPerScanLine * 16
+    volatile uint16 * dest = (uint16 *)(m_pVideoMode->PhysBasePtr + y * m_pVideoMode->LinearBytesPerScanLine * 16
                     + x * m_pVideoMode->BitsPerPixel);
 
     uint16 iColor = ((r >> (8 - m_pVideoMode->LinearRedMaskSize)) << m_pVideoMode->LinearRedFieldPosition) |

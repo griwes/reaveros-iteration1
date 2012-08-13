@@ -49,12 +49,12 @@ struct PageTableEntry
     uint64 PageAddress:40;
     uint64 Ignored2:11;
     uint64 Reserved:1;
-};
+} __attribute__((packed));
 
 struct PageTable
 {
     PageTableEntry Entries[512];
-};
+} __attribute__((packed));
 
 struct PageDirectoryEntry
 {
@@ -70,13 +70,13 @@ struct PageDirectoryEntry
     uint64 PageTableAddress:40;
     uint64 Ignored3:11;
     uint64 Reserved2:1;
-};
+} __attribute__((packed));
 
 struct PageDirectory
 {
     PageDirectoryEntry Entries[512];
-    PageTable * PageTables[512];
-};
+    PageTable * PageTables[1024];
+} __attribute__((packed));
 
 struct PageDirectoryPointerTableEntry
 {
@@ -92,13 +92,13 @@ struct PageDirectoryPointerTableEntry
     uint64 PageDirectoryAddress:40;
     uint64 Ignored3:11;
     uint64 Reserved2:1;
-};
+} __attribute__((packed));
 
 struct PageDirectoryPointerTable
 {
     PageDirectoryPointerTableEntry Entries[512];
-    PageDirectory * PageDirectories[512];
-};
+    PageDirectory * PageDirectories[1024];
+} __attribute__((packed));
 
 struct PML4Entry
 {
@@ -114,12 +114,12 @@ struct PML4Entry
     uint64 PDPTAddress:40;
     uint64 Ignored3:11;
     uint64 Reserved2:1;
-};
+} __attribute__((packed));
 
 struct PML4
 {
     PML4Entry Entries[512];
-    PageDirectoryPointerTable * PointerTables[512];
-};
+    PageDirectoryPointerTable * PointerTables[1024];
+} __attribute__((packed));
 
 #endif

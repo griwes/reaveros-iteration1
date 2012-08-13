@@ -29,6 +29,9 @@
  *
  **/
 
+#ifndef __rose_kernel_sreen_terminal_terminal_h__
+#define __rose_kernel_sreen_terminal_terminal_h__
+
 #include "../lib/string.h"
 #include "console.h"
 #include "../processor/synchronization.h"
@@ -121,3 +124,5 @@ namespace Screen
         virtual void Print(const char *);
     };
 }
+
+#endif

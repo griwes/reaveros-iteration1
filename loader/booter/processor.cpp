@@ -75,7 +75,7 @@ void Processor::EnterLongMode()
     _enable_paging(cr3);
     
     Screen::bout->UpdatePagingStructures();
-
+    
     return;
 }
 

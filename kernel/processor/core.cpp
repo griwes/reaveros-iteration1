@@ -53,12 +53,12 @@ void Processor::SMP::Core::EnableInterrupts()
 
 uint64 Processor::SMP::Core::Id()
 {
-    
+    return 0;
 }
 
 Processor::LAPIC * Processor::SMP::Core::LAPIC()
 {
-
+    return nullptr;
 }
 
 void Processor::SMP::Core::Sleep()

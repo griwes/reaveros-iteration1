@@ -37,7 +37,7 @@
 using Screen::bout;
 using Screen::nl;
 
-extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, void * pPlacementAddress,
+extern "C" void __attribute__((cdecl)) booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, void * pPlacementAddress,
                             uint32 pKernel, uint32 pKernelSize, uint32 pKernelInitRDSize, VideoMode * pVideoMode,
                             void * pFont)
 {
@@ -72,22 +72,22 @@ extern "C" void booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, 
     // 2. copy data to those pages sitting in low memory of VAS
 
     *bout << "Preparing kernel memory...";
-    
+
     uint64 end = Memory::Copy(pKernel, pKernelSize * 512, 0xFFFFFFFF80000000); // -2 GB
     uint64 videofont = Memory::Copy(pKernel + pKernelSize * 512, pKernelInitRDSize * 512, Memory::AlignToNextPage(end));
     uint64 video = Memory::Copy((uint32)pFont, 4096, Memory::AlignToNextPage(videofont));
     uint64 memmap = Screen::SaveProcessedVideoModeDescription(video);
     uint64 placement = Memory::CreateMemoryMap(pMemoryMap, iMemoryMapSize, memmap);
-    
+
     // magic call. maps memory from kernel start.
     // amount of memory to map should be enough for kernel to recreate paging structures
     // in it's own, completely known space (part of boot protocol), as well as additional 16 MiB
     // for additional stuff to be put on placement stack
 
     uint64 size = Memory::CountPagingStructures(0xFFFFFFFF80000000, Memory::AlignToNextPage(placement)
-                                + 32 * 1024 * 1024 + Memory::TotalMemory / 512);
-    size += Memory::AlignToNextPage(32 * 1024 * 1024 + Memory::TotalMemory / 512);
-
+                                + 32 * 1024 * 1024);
+    size += 32 * 1024 * 1024;
+    
     Memory::Map(placement, placement + size, Memory::iFirstFreePageAddress);
     
     // and this one updates memory map, setting size to type 0xFFFF entry (kernel-used memory)

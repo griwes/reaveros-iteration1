@@ -52,4 +52,3 @@ void _panic(const char * X, const char * FILE, uint64 LINE, const char * FUNC)
     
     __asm("cli; hlt");
 }
-    
