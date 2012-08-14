@@ -3,7 +3,7 @@ CC=clang++
 LD=../utils/tools/bin/x86_64-elf-ld
 CFLAGS=-c -Wall -Wextra -pedantic -Werror -nostdlib -fno-builtin -fno-exceptions -fno-rtti -fno-stack-protector -std=c++0x \
 		-ffreestanding -mcmodel=large -mno-mmx -mno-sse -mno-sse2 \
-		-mno-sse3 -mno-3dnow -mno-red-zone
+		-mno-sse3 -mno-3dnow -mno-red-zone -ffreestanding
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=$(shell find . -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)

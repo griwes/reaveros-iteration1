@@ -154,9 +154,10 @@ void * Memory::PlacePageAligned(uint32 size)
 
 void Memory::Zero(char * buf, uint32 size)
 {
-    while (size--)
+    while (size)
     {
         *buf++ = 0;
+        size--;
     }
 }
 
@@ -196,7 +197,7 @@ void Memory::Map(uint64 pBegin, uint64 pEnd, uint64 & pPhysicalStart, bool bCach
     uint64 endpte = (pEnd >> 12) & 511;
 
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
-    {
+    {        
         PageDirectoryPointerTable * pdpt;
         
         if (pml4->Entries[startpml4e].Present == 1)
@@ -234,7 +235,7 @@ void Memory::Map(uint64 pBegin, uint64 pEnd, uint64 & pPhysicalStart, bool bCach
             else
             {
                 pd = (PageDirectory *)Memory::PlacePageAligned(sizeof(PageDirectory));
-                
+            
                 Memory::Zero((char *)pd, sizeof(PageDirectory));
                 
                 pdpt->Entries[startpdpte].Present = 1;
@@ -348,77 +349,15 @@ uint64 Memory::CreateMemoryMap(MemoryMapEntry * pMemoryMap, uint32 iCount, uint6
     return Memory::AlignToNextPage(pDestinationAddress + sizeof(MemoryMapEntry) * (iCount + 1));
 }
 
+// that /= 350 was roughly estimated
 uint64 Memory::CountPagingStructures(uint64 pBegin, uint64 pEnd)
 {
     pEnd = Memory::AlignToNextPage(pEnd);
     
-    uint64 startpml4e = (pBegin >> 39) & 511;
-    uint64 startpdpte = (pBegin >> 30) & 511;
-    uint64 startpde = (pBegin >> 21) & 511;
+    uint64 iSize = pEnd - pBegin;
+    iSize /= 350;
+    iSize = Memory::AlignToNextPage(iSize);
     
-    uint64 endpml4e = (pEnd >> 39) & 511;
-    uint64 endpdpte = (pEnd >> 30) & 511;
-    uint64 endpde = (pEnd >> 21) & 511;
-    
-    uint64 iSize = 0;
-        
-    while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde))
-    {
-        iSize += sizeof(PageDirectoryPointerTable);
-
-        pEnd += sizeof(PageDirectoryPointerTable);
-        
-        endpml4e = (pEnd >> 39) & 511;
-        endpdpte = (pEnd >> 30) & 511;
-        endpde = (pEnd >> 21) & 511;
-        
-        while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde) && startpdpte < 512)
-        {
-            iSize += sizeof(PageDirectory);
-
-            pEnd += sizeof(PageDirectory);
-
-            endpml4e = (pEnd >> 39) & 511;
-            endpdpte = (pEnd >> 30) & 511;
-            endpde = (pEnd >> 21) & 511;
-            
-            while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde) && startpde < 512)
-            {
-                iSize += sizeof(PageTable);
-
-                pEnd += sizeof(PageTable);
-
-                endpml4e = (pEnd >> 39) & 511;
-                endpdpte = (pEnd >> 30) & 511;
-                endpde = (pEnd >> 21) & 511;
-                
-                startpde++;
-            }
-
-            if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde))
-            {
-                startpde = 0;
-                startpdpte++;
-            }
-
-            else
-            {
-                return iSize;
-            }
-        }
-
-        if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde))
-        {
-            startpdpte = 0;
-            startpml4e++;
-        }
-
-        else
-        {
-            return iSize;
-        }
-    }
-
     return iSize;
 }
 
