@@ -173,6 +173,7 @@ uint64 Memory::Copy(uint32 pSource, uint32 iSize, uint64 pDestination)
     
     Memory::Map(pDestination, pDestination + iSize, Memory::iFirstFreePageAddress);
     Memory::Map(0x8000000, 0x8000000 + iSize, p);
+    asm volatile ("invlpg (0x8000000)" ::: "memory");
     
     iSize /= 4;
     _copy(pSource, 0x8000000, iSize);
@@ -371,6 +372,6 @@ void Memory::UpdateMemoryMap(uint64 size)
     }
 
     p->Length = size;
-
+    
     return;
 }

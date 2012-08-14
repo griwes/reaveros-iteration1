@@ -41,6 +41,8 @@ highmemory:
     push    rbp
     mov     rbp, rsp
 
+    xchg    bx, bx
+    
     mov     rdi, qword [rsp + 8]
     mov     rsi, qword [rsp + 16]
     mov     edx, dword [rsp + 24]
@@ -49,22 +51,31 @@ highmemory:
     mov     r9, qword [rsp + 44]
 
     mov     rax, rsi
+    mov     r10d, edx
 
     ; stupid loop, TODO: sanity checks
     ; the loop below moves kernel stack at the end of currently (and later) mapped area
     ; (I was little clueless, when I looked at this few days after writing it)
-    .loop:          
+    .loop:      
         cmp     dword [rax + 16], 0xffff
-        je     .after
+        je      .after
 
         add     rax, 24
+        dec     r10d
+        
+        cmp     r10d, 0
+        je      .fail
+        
         jmp     .loop
 
     .after:
         mov     rsp, qword [rax + 8]
         mov     rax, qword 0xFFFFFFFF80000000
         add     rsp, rax
-
+        
     mov     rbp, rsp
 
     jmp     kernel_main
+    
+    .fail:
+        hlt
