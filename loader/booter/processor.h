@@ -41,7 +41,7 @@ namespace Processor
 {
     void EnterLongMode();
     void SetupGDT();
-    void Execute(uint32, uint64, uint64, uint32, uint64, uint64, uint64);
+    void __attribute__((cdecl)) Execute(uint32, uint64, uint64, uint32, uint64, uint64, uint64);
 
     extern PML4 * PagingStructures;
 }

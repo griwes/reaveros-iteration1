@@ -195,7 +195,7 @@ void Memory::Map(uint64 pBegin, uint64 pEnd, uint64 & pPhysicalStart, bool bCach
     uint64 endpdpte = (pEnd >> 30) & 511;
     uint64 endpde = (pEnd >> 21) & 511;
     uint64 endpte = (pEnd >> 12) & 511;
-
+    
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {        
         PageDirectoryPointerTable * pdpt;

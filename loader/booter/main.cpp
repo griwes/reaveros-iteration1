@@ -54,6 +54,7 @@ extern "C" void __attribute__((cdecl)) booter_main(MemoryMapEntry * pMemoryMap, 
     *bout << "Video memory: " << pVideoMode->LinearBytesPerScanLine * pVideoMode->YResolution << " bytes at 0x";
     bout->Hex();
     *bout << pVideoMode->PhysBasePtr << "." << nl << nl;
+    *bout << "pKernel = " << pKernel << nl << nl;
     bout->Dec();
     
     *bout << "Entering long mode...";

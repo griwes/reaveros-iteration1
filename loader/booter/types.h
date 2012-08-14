@@ -32,8 +32,8 @@
 #ifndef __booter_types_h__
 #define __booter_types_h__
 
-#include <cstdint>
-#include <cstddef>
+#include <stdint.h>
+#include <stddef.h>
 
 typedef size_t size;
 typedef int8_t int8;

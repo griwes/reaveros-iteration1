@@ -149,15 +149,19 @@ _setup_gdt:
     ret
 
 _execute:
-    mov     esp, ebp
+    add     esp, 0x50
 
+    pop     eax
+    pop     eax
     pop     eax
     pop     eax
     pop     eax
 
     push    dword 0x8
     push    eax
-
+    
+    xchg bx, bx
+    
     retf
 
 gdt_start:
