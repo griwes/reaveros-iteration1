@@ -38,18 +38,18 @@ entry:
     jmp     rax
 
 highmemory:
-    push    rbp
     mov     rbp, rsp
 
     xchg    bx, bx
-    
-    mov     rdi, qword [rsp + 8]
-    mov     rsi, qword [rsp + 16]
-    mov     edx, dword [rsp + 24]
-    mov     rcx, qword [rsp + 28]
-    mov     r8, qword [rsp + 36]
-    mov     r9, qword [rsp + 44]
 
+    pop     rdi
+    pop     rsi
+    mov     edx, dword [rsp]
+    add     rsp, 4
+    pop     rcx
+    pop     r8
+    pop     r9
+    
     mov     rax, rsi
     mov     r10d, edx
 
