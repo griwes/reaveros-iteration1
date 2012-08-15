@@ -330,6 +330,8 @@ uint64 Memory::CreateMemoryMap(MemoryMapEntry * pMemoryMap, uint32 iCount, uint6
     Memory::Map(pDestinationAddress, pDestinationAddress + sizeof(MemoryMapEntry) * (iCount + 1),
                 Memory::iFirstFreePageAddress);
     Memory::Map(0x8000000, 0x8000000 + sizeof(MemoryMapEntry) * (iCount + 1), p);
+    
+    asm volatile ("invlpg (0x8000000)" ::: "memory");
 
     MemoryMapEntry * pKernelMemoryMap = (MemoryMapEntry *)0x8000000;
     

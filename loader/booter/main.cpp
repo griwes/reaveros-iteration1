@@ -78,7 +78,7 @@ extern "C" void __attribute__((cdecl)) booter_main(MemoryMapEntry * pMemoryMap, 
     uint64 video = Memory::Copy((uint32)pFont, 4096, Memory::AlignToNextPage(videofont));
     uint64 memmap = Screen::SaveProcessedVideoModeDescription(video);
     uint64 placement = Memory::CreateMemoryMap(pMemoryMap, iMemoryMapSize, memmap);
-
+    
     // magic call. maps memory from kernel start.
     // amount of memory to map should be enough for kernel to recreate paging structures
     // in it's own, completely known space (part of boot protocol), as well as additional 16 MiB
@@ -96,6 +96,7 @@ extern "C" void __attribute__((cdecl)) booter_main(MemoryMapEntry * pMemoryMap, 
     Memory::UpdateMemoryMap(placement - 0xFFFFFFFF80000000 + size);
     
     *bout << " done." << nl;
+    
     bout->Hex();
     *bout << "Memory from " << 0xFFFFFFFF80000000 << " to " << placement + size << " available for kernel usage." << nl;
     *bout << "Executing kernel...";
