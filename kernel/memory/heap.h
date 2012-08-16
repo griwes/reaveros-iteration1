@@ -43,6 +43,7 @@ namespace Memory
     {
         uint32 Magic;
         AllocationBlockHeader * Header;
+        uint32 _;
     } __attribute__((__packed__));
     
     struct AllocationBlockHeader
@@ -78,6 +79,8 @@ namespace Memory
         void * Alloc(uint64);
         void * AllocAligned(uint64);    // for allocating paging structures
         void Free(void *);
+        
+        void RegisterPages();
 
     private:
         AllocationBlockHeader * m_pBiggest;

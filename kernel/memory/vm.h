@@ -40,6 +40,7 @@
 #include "../lib/rangemap.h"
 #include "memory.h"
 #include "../lib/stack.h"
+#include "heap.h"
 
 namespace Scheduler
 {
@@ -133,6 +134,7 @@ namespace Memory
             friend void Memory::RemapKernel();
             friend void * Memory::VMM::AllocPagingPages();
             friend void Lib::Stack::RegisterPages();
+            friend void Memory::Heap::RegisterPages();
 
             friend class Region;
             friend class Page;

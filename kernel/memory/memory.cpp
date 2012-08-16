@@ -245,7 +245,7 @@ void Memory::InitializeRegions()
     VMRegions->RegisterPages();
     VMAddressSpaces->RegisterPages();
     
-//     KernelHeap->RegisterPages();
+    KernelHeap->RegisterPages();
     
     uint64 idx[4] = {0};
     for (uint64 i = 0; i < 4; i++)

@@ -467,3 +467,18 @@ void * Memory::Heap::_validate(void * pAddress, bool bShouldBeAllocated)
     
     return pAddress;
 }
+
+void Memory::Heap::RegisterPages()
+{
+    auto reg = Memory::CurrentVAS->GetRegion(m_iStart);
+    
+    for (uint64 s = m_iStart; s < m_iEnd; s += 4096)
+    {
+        Memory::VM::Page * p = new Memory::VM::Page;
+        p->Allocated = 1;
+        p->VirtualAddress = s;
+        p->PhysicalAddress = Memory::CurrentVAS->m_pPML4->GetPhysicalAddress(s);
+        
+        reg->AddPage(p);
+    }
+}

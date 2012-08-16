@@ -40,8 +40,6 @@ entry:
 highmemory:
     mov     rbp, rsp
 
-    xchg    bx, bx
-
     pop     rdi
     pop     rsi
     mov     edx, dword [rsp]
