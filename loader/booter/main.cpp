@@ -1,110 +1,50 @@
-/**
- * ReaverOS
- * loader/booter/main.cpp
- * Booter main file.
- */
+#include <stdint.h>
+#include <stddef.h>
 
-/**
- * Reaver Project OS, Rose License
- * 
- * Copyright (C) 2011-2012 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
- * 
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- * 
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- * 
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation is required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- * 
- * Michał "Griwes" Dominiak
- * 
- **/
-
-#include "types.h"
-#include "memory.h"
-#include "screen.h"
-#include "processor.h"
-
-using Screen::bout;
-using Screen::nl;
-
-extern "C" void __attribute__((cdecl)) booter_main(MemoryMapEntry * pMemoryMap, uint32 iMemoryMapSize, void * pPlacementAddress,
-                            uint32 pKernel, uint32 pKernelSize, uint32 pKernelInitRDSize, VideoMode * pVideoMode,
-                            void * pFont)
+namespace memory
 {
-    Memory::Initialize(pPlacementAddress);
-    Screen::Initialize(pVideoMode, pFont);
+    class map_entry_t;
+    class map_t;
     
-    *bout << "Booter: ReaverOS' bootloader 0.2" << nl;
-    *bout << "Copyright (c) 2011-2012 Reaver Project Team" << nl << nl;
-    *bout << "Reading memory map..." << nl << nl;
-    
-    Memory::PrintMemoryMap(pMemoryMap, iMemoryMapSize);
+    void initialize(uint32_t);
+}
 
-    *bout << "Video mode: " << pVideoMode->XResolution << "x" << pVideoMode->YResolution << "." << nl;
-    *bout << "Video memory: " << pVideoMode->LinearBytesPerScanLine * pVideoMode->YResolution << " bytes at 0x";
-    bout->Hex();
-    *bout << pVideoMode->PhysBasePtr << "." << nl << nl;
-    bout->Dec();
+namespace screen
+{
+    class boot_mode_t;
     
-    *bout << "Entering long mode...";
+    void initialize(boot_mode_t *, void *);
+    
+    template<typename... T>
+    void printl(T &... a, uint32_t = 1);
+    
+    template<typename... T>
+    void print(T &... a);
+    
+    template<typename... T>
+    void printf(const char *, T &... a);
+    
+    template<typename T>
+    void print(T &);
+}
 
-    Processor::EnterLongMode();
-
-    *bout << " done." << nl;
-
-    Processor::SetupGDT();
-
-    // copy kernel and initrd, put video mode description after it
-    // emplace (not finished) memory map back there
-
-    // algorithm for this:
-    // 1. map enough pages to make a copy at both destination address and address in low memory
-    // 2. copy data to those pages sitting in low memory of VAS
-
-    *bout << "Preparing kernel memory...";
-
-    uint64 end = Memory::Copy(pKernel, pKernelSize * 512, 0xFFFFFFFF80000000); // -2 GB
-    uint64 videofont = Memory::Copy(pKernel + pKernelSize * 512, pKernelInitRDSize * 512, Memory::AlignToNextPage(end));
-    uint64 video = Memory::Copy((uint32)pFont, 4096, Memory::AlignToNextPage(videofont));
-    uint64 memmap = Screen::SaveProcessedVideoModeDescription(video);
-    uint64 placement = Memory::CreateMemoryMap(pMemoryMap, iMemoryMapSize, memmap);
+extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry_t * memory_map, uint32_t memory_map_size, 
+                uint32_t placement, uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, 
+                screen::boot_mode_t video_mode, void * font)
+{
+    memory::initialize(placement);
+    screen::initialize(video_mode, font);
     
-    // magic call. maps memory from kernel start.
-    // amount of memory to map should be enough for kernel to recreate paging structures
-    // in it's own, completely known space (part of boot protocol), as well as additional 16 MiB
-    // for additional stuff to be put on placement stack
+    memory::map_t mem_map(memory_map, memory_map_size);
     
-    uint64 size = Memory::CountPagingStructures(0xFFFFFFFF80000000, Memory::AlignToNextPage(placement)
-                                + 32 * 1024 * 1024);
-    size += 32 * 1024 * 1024;
+    screen::printl("Booter, Reaver Project Bootloader v0.3");
+    screen::printl("Copyrights (C) 2012 Reaver Project Team", 2);
     
-    Memory::Map(placement, placement + size, Memory::iFirstFreePageAddress);
+    screen::printl("[MEM] Reading memory map...");
     
-    // and this one updates memory map, setting size to type 0xFFFF entry (kernel-used memory)
-    // that starts at 64 MiB in physical memory
-        
-    Memory::UpdateMemoryMap(placement - 0xFFFFFFFF80000000 + size);
+    screen::printl(mem_map, 2);
     
-    *bout << " done." << nl;
+    screen::printl("[MEM] Sanitizing memory map...");
     
-    bout->Hex();
-    *bout << "Memory from " << 0xFFFFFFFF80000000 << " to " << placement + size << " available for kernel usage." << nl;
-    *bout << "Executing kernel...";
-    
-    Processor::Execute(pKernel, Memory::AlignToNextPage(end), memmap, iMemoryMapSize + 1,
-                       Memory::AlignToNextPage(placement), video, videofont);
-    
-    for (;;) ;
-    
-    return;
+    memory::map_t * sane_map = mem_map.sanitize();
 }
