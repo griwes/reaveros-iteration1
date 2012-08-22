@@ -10,7 +10,8 @@ EXECUTABLE=builds/booter.img
 all: $(SOURCES) $(EXECUTABLE)
 	
 $(EXECUTABLE): $(OBJECTS) 
-	$(LD) $(LDFLAGS) $(OBJECTS) -o $@
+	yasm -f elf -o entry.o entry.asm
+	$(LD) $(LDFLAGS) entry.o $(OBJECTS) -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

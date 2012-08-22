@@ -45,6 +45,13 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry_t * memory_
     processor::setup_gdt();
     screen::printl("done.");
     
+    screen::print("[ACPI] Looking for RSDP... ");
+    acpi::rsdp_t * rsdp = acpi::find_rsdp();
+    screen::printl("done.");
+    
+    screen::printl("[ACPI] Printing RSDP info...");
+    screen::printl(rsdp);
+    
     screen::print("[ACPI] Looking for NUMA domains... ");
     processor::numa_env_t * env = acpi::find_numa_domains();
     screen::printl("done.");
