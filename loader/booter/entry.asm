@@ -1,10 +1,4 @@
 ;
-; ReaverOS
-; loader/booter/entry.asm
-; Entry point for booter.
-;
-
-;
 ; Reaver Project OS, Rose License
 ;
 ; Copyright (C) 2011-2012 Reaver Project Team:
