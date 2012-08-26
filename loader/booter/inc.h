@@ -23,30 +23,13 @@
  * 
  **/
 
+#pragma once
+
 #include <cstdint>
 #include <cstddef>
 
-#include "screen/screen.h"
+#define dbg asm ("xchg %bx, %bx")
 
-inline void * operator new(uint32_t, void * addr)
-{
-    return addr;
-}
+#define PANIC(X) _panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 
-extern "C" void __cxa_pure_virtual()
-{
-    asm ("hlt");
-}
-
-void _panic(const char * X, const char * FILE, uint64_t LINE, const char * FUNC)
-{
-    if (screen::ready)
-    {
-        screen::printl();
-        screen::printl("PANIC: \"", X, "\"");
-        screen::printl("File: ", FILE, ", line ", LINE);
-        screen::printl("Function:  ", FUNC);
-    }
-    
-    __asm("cli; hlt");
-}
+void _panic(const char *, const char *, uint64_t, const char *);

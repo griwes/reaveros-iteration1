@@ -87,3 +87,52 @@ bool memory::map_t::usable(uint64_t addr, uint32_t domain)
         return false;
     }
 }
+
+uint64_t memory::map_t::next_usable(uint64_t addr, uint32_t domain)
+{
+    if (entries)
+    {
+        auto entry = entries;
+        
+        for (uint64_t i = 0; i < num_entries; i++)
+        {
+            if (entry->base > addr)
+            {
+                if (entry->type == 1)
+                {
+                    if (domain != ~(uint32_t)0)
+                    {
+                        if (entry->proximity_domain == domain)
+                        {
+                            return entry->base;
+                        }
+                        
+                        continue;
+                    }
+                    
+                    return entry->base;
+                }
+            }
+        }
+        
+        return 0;
+    }
+    
+    else
+    {
+        auto entry = sequence_entries;
+        
+        for (uint64_t i = 0 ; i < num_entries; i++)
+        {
+            if (entry->base > addr)
+            {
+                if (entry->type == 1)
+                {
+                    return entry->base;
+                }
+            }
+        }
+        
+        return 0;
+    }
+}

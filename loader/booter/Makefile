@@ -14,7 +14,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(LD) $(LDFLAGS) entry.o $(OBJECTS) -o $@
 
 .cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@ -I. -include inc.h
 
 clean:
 	@rm -rfv *.o

@@ -23,6 +23,8 @@ namespace screen
     void print(const T &);
     
     void line();
+    
+    extern bool ready;
 }
 
 #endif

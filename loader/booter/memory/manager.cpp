@@ -45,13 +45,22 @@ memory::manager::placement_allocator_t::~placement_allocator_t()
 {
 }
 
-void* memory::manager::placement_allocator_t::allocate(uint32_t size)
+void * memory::manager::placement_allocator_t::allocate(uint32_t size)
 {
-    if (memory_map.usable(placement_address) && memory_map.usable(placement_address + size - 1))
+    while (!memory_map.usable(placement_address) || !memory_map.usable(placement_address + size -1))
     {
-        auto ret = placement_address;
+        placement_address = memory_map.next_usable(placement_address);
         
-        placement_address += 15;
-        placement_address &= ~(uint32_t)15;
+        if (placement_address == 0)
+        {
+            PANIC("Not enough memory installed on the system.");
+        }
     }
+    
+    auto ret = placement_address;
+        
+    placement_address += 15;
+    placement_address &= ~(uint32_t)15;
+    
+    return (void *)ret;
 }
