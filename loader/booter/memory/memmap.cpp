@@ -41,7 +41,7 @@ bool memory::map_t::usable(uint64_t addr, uint32_t domain)
     {
         auto entry = entries;
         
-        for (uint64_t i = 0; i < num_entries; i++)
+        for (uint32_t i = 0; i < num_entries; ++i)
         {
             if (addr >= entry->base && addr < entry->base + entry->length)
             {
@@ -62,6 +62,8 @@ bool memory::map_t::usable(uint64_t addr, uint32_t domain)
                 
                 return false;
             }
+            
+            entry = entry->next;
         }
         
         return false;
@@ -71,7 +73,7 @@ bool memory::map_t::usable(uint64_t addr, uint32_t domain)
     {
         auto entry = sequence_entries;
         
-        for (uint64_t i = 0; i < num_entries; i++)
+        for (uint32_t i = 0; i < num_entries; ++i)
         {
             if (addr >= entry->base && addr < entry->base + entry->length)
             {
@@ -82,6 +84,8 @@ bool memory::map_t::usable(uint64_t addr, uint32_t domain)
                 
                 return false;
             }
+            
+            ++entry;
         }
         
         return false;
@@ -94,7 +98,7 @@ uint64_t memory::map_t::next_usable(uint64_t addr, uint32_t domain)
     {
         auto entry = entries;
         
-        for (uint64_t i = 0; i < num_entries; i++)
+        for (uint32_t i = 0; i < num_entries; ++i)
         {
             if (entry->base > addr)
             {
@@ -113,6 +117,8 @@ uint64_t memory::map_t::next_usable(uint64_t addr, uint32_t domain)
                     return entry->base;
                 }
             }
+            
+            entry = entry->next;
         }
         
         return 0;
@@ -122,17 +128,24 @@ uint64_t memory::map_t::next_usable(uint64_t addr, uint32_t domain)
     {
         auto entry = sequence_entries;
         
-        for (uint64_t i = 0 ; i < num_entries; i++)
+        uint64_t lowest = 0;
+        
+        for (uint32_t i = 0; i < num_entries; ++i)
         {
             if (entry->base > addr)
             {
                 if (entry->type == 1)
                 {
-                    return entry->base;
+                    if (!lowest || lowest > entry->base)
+                    {
+                        lowest = entry->base;
+                    }
                 }
             }
+            
+            ++entry;
         }
         
-        return 0;
+        return lowest;
     }
 }
