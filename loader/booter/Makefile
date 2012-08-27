@@ -18,3 +18,4 @@ $(EXECUTABLE): $(OBJECTS)
 
 clean:
 	@rm -rfv *.o
+	@rm -rfv */*.o

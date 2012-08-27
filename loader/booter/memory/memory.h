@@ -36,11 +36,11 @@ namespace memory
 {    
     namespace manager
     {
-        class allocator_t;
+        class allocator;
     }
     
-    extern manager::allocator_t * default_allocator;
+    extern manager::allocator * default_allocator;
     
-    void initialize(uint32_t, map_t &);
+    void initialize(uint32_t, map &);
     void prepare_long_mode();
 }

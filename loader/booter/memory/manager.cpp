@@ -27,25 +27,25 @@
 
 void * operator new(uint32_t, void *);
 
-memory::manager::allocator_t * memory::manager::make_placement_allocator(uint32_t placement, map_t & memory_map)
+memory::manager::allocator * memory::manager::make_placement_allocator(uint32_t placement, map & memory_map)
 {
     placement += 15;
     placement &= ~(uint32_t)15;
     
-    return new((void *)placement) placement_allocator_t((placement + sizeof(placement_allocator_t) + 15) & ~(uint32_t)15,
+    return new((void *)placement) placement_allocator((placement + sizeof(placement_allocator) + 15) & ~(uint32_t)15,
             memory_map);
 }
 
-memory::manager::placement_allocator_t::placement_allocator_t(uint32_t placement, memory::map_t & memory_map)
+memory::manager::placement_allocator::placement_allocator(uint32_t placement, memory::map & memory_map)
     : memory_map(memory_map), placement_address(placement)
 {
 }
 
-memory::manager::placement_allocator_t::~placement_allocator_t()
+memory::manager::placement_allocator::~placement_allocator()
 {
 }
 
-void * memory::manager::placement_allocator_t::allocate(uint32_t size)
+void * memory::manager::placement_allocator::allocate(uint32_t size)
 {
     while (!memory_map.usable(placement_address) || !memory_map.usable(placement_address + size -1))
     {
@@ -63,4 +63,11 @@ void * memory::manager::placement_allocator_t::allocate(uint32_t size)
     placement_address &= ~(uint32_t)15;
     
     return (void *)ret;
+}
+
+void memory::manager::placement_allocator::deallocate(void *)
+{
+    // no-op for placement
+    
+    return;
 }

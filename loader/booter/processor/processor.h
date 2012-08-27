@@ -3,7 +3,7 @@
 
 namespace processor
 {
-    class numa_env_t;
+    class numa_env;
     
     void check_long_mode();
     void enter_long_mode();

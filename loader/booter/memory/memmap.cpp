@@ -25,17 +25,17 @@
 
 #include "memmap.h"
 
-memory::map_t::map_t(memory::map_entry_t * base_map, uint32_t map_size)
+memory::map::map(memory::map_entry * base_map, uint32_t map_size)
     : sequence_entries(base_map), entries(nullptr), num_entries(map_size)
 {
 }
 
-memory::map_t::~map_t()
+memory::map::~map()
 {
 
 }
 
-bool memory::map_t::usable(uint64_t addr, uint32_t domain)
+bool memory::map::usable(uint64_t addr, uint32_t domain)
 {
     if (entries)
     {
@@ -92,7 +92,7 @@ bool memory::map_t::usable(uint64_t addr, uint32_t domain)
     }
 }
 
-uint64_t memory::map_t::next_usable(uint64_t addr, uint32_t domain)
+uint64_t memory::map::next_usable(uint64_t addr, uint32_t domain)
 {
     if (entries)
     {

@@ -3,9 +3,9 @@
 
 namespace screen
 {
-    class boot_mode_t;
+    class boot_mode;
     
-    void initialize(boot_mode_t *, void *);
+    void initialize(boot_mode *, void *);
     
     template<typename... T>
     void printl(const T &... a);

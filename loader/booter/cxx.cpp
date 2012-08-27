@@ -27,8 +27,20 @@
 #include <cstddef>
 
 #include "screen/screen.h"
+#include "memory/memory.h"
+#include "memory/manager.h"
 
-inline void * operator new(uint32_t, void * addr)
+void * operator new(uint32_t size)
+{
+    return memory::default_allocator->allocate(size);
+}
+
+void operator delete(void * ptr)
+{
+    return memory::default_allocator->deallocate(ptr);
+}
+
+void * operator new(uint32_t, void * addr)
 {
     return addr;
 }
@@ -38,14 +50,14 @@ extern "C" void __cxa_pure_virtual()
     asm ("hlt");
 }
 
-void _panic(const char * X, const char * FILE, uint64_t LINE, const char * FUNC)
+void _panic(const char * /*X*/, const char * /*FILE*/, uint64_t /*LINE*/, const char * /*FUNC*/)
 {
     if (screen::ready)
     {
-        screen::printl();
-        screen::printl("PANIC: \"", X, "\"");
-        screen::printl("File: ", FILE, ", line ", LINE);
-        screen::printl("Function:  ", FUNC);
+//        screen::printl();
+  //      screen::printl("PANIC: \"", X, "\"");
+    //    screen::printl("File: ", FILE, ", line ", LINE);
+      //  screen::printl("Function:  ", FUNC);
     }
     
     __asm("cli; hlt");

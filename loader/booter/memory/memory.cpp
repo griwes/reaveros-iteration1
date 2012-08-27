@@ -28,10 +28,10 @@
 
 namespace memory
 {
-    manager::allocator_t * default_allocator;
+    manager::allocator * default_allocator;
 }
 
-void memory::initialize(uint32_t placement, map_t & memory_map)
+void memory::initialize(uint32_t placement, map & memory_map)
 {
     default_allocator = manager::make_placement_allocator(placement, memory_map);
 }

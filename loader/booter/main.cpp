@@ -32,16 +32,16 @@
 #include "memory/memory.h"
 #include "memory/memmap.h"
 
-extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry_t * memory_map, uint32_t memory_map_size, 
+extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t placement, uint32_t /*kernel*/, uint32_t /*kernel_size*/, uint32_t /*initrd_size*/,
-                screen::boot_mode_t * video_mode, void * font)
+                screen::boot_mode * video_mode, void * font)
 {
-    memory::map_t mem_map(memory_map, memory_map_size);
+    memory::map mem_map(memory_map, memory_map_size);
     
     memory::initialize(placement, mem_map);
     screen::initialize(video_mode, font);
     
-    screen::printl("Booter, Reaver Project Bootloader v0.3");
+/*    screen::printl("Booter, Reaver Project Bootloader v0.3");
     screen::printl("Copyrights (C) 2012 Reaver Project Team");
     screen::line();
     
@@ -49,7 +49,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry_t * memory_
     screen::printl(mem_map, 2);
     
     screen::printl("[MEM ] Sanitizing memory map...");
-    memory::map_t * sane_map = mem_map.sanitize();
+    memory::map * sane_map = mem_map.sanitize();
     
     screen::printl("[MEM ] Printing sanitized memory map...");
     screen::printl(*sane_map);
@@ -71,14 +71,14 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry_t * memory_
     screen::printl("done.");
     
     screen::print("[ACPI] Looking for RSDP... ");
-    acpi::rsdp_t * rsdp = acpi::find_rsdp();
+    acpi::rsdp * rsdp = acpi::find_rsdp();
     screen::printl("done.");
     
     screen::printl("[ACPI] Printing RSDP info...");
     screen::printl(rsdp);
     
     screen::print("[ACPI] Looking for NUMA domains... ");
-    processor::numa_env_t * env = acpi::find_numa_domains();
+    processor::numa_env * env = acpi::find_numa_domains();
     screen::printl("done.");
     
     screen::printl("[ACPI] Printing NUMA domain info...");
@@ -89,5 +89,5 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry_t * memory_
     screen::printl("done.");
     
     screen::printl("[MEM ] Printing NUMA-affected memory map... ");
-    screen::printl(*sane_map);
+    screen::printl(*sane_map);*/
 }

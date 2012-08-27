@@ -34,30 +34,30 @@ namespace memory
 {
     namespace manager
     {
-        class allocator_t
+        class allocator
         {
         public:
-            allocator_t() {}
-            virtual ~allocator_t() = 0;
+            allocator() {}
+            virtual ~allocator() {}
             
             virtual void * allocate(uint32_t) = 0;
-            virtual void deallocate(uint32_t) = 0;
+            virtual void deallocate(void *) = 0;
         };
         
-        class placement_allocator_t : public allocator_t
+        class placement_allocator : public allocator
         {
         public:
-            placement_allocator_t(uint32_t, map_t &);
-            virtual ~placement_allocator_t();
+            placement_allocator(uint32_t, map &);
+            virtual ~placement_allocator();
             
             virtual void * allocate(uint32_t);
-            virtual void deallocate(uint32_t);
+            virtual void deallocate(void *);
             
         private:
-            map_t & memory_map;
+            map & memory_map;
             uint32_t placement_address;
         };
         
-        allocator_t * make_placement_allocator(uint32_t, map_t &);
+        allocator * make_placement_allocator(uint32_t, map &);
     }
 }

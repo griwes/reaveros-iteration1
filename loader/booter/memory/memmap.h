@@ -32,7 +32,7 @@
 
 namespace memory
 {
-    class map_entry_t
+    class map_entry
     {
     public:
         uint64_t base;
@@ -41,32 +41,32 @@ namespace memory
         uint32_t extended_attribs;
     } __attribute__((packed));
     
-    class chained_map_entry_t : public map_entry_t
+    class chained_map_entry : public map_entry
     {
     public:
         uint32_t proximity_domain;
         
-        chained_map_entry_t * prev;
-        chained_map_entry_t * next;
+        chained_map_entry * prev;
+        chained_map_entry * next;
     } __attribute__((packed));
     
-    class map_t
+    class map
     {
     public:
-        map_t(map_entry_t *, uint32_t);
-        ~map_t();
+        map(map_entry *, uint32_t);
+        ~map();
         
-        map_t * sanitize();
-        void apply_numa(processor::numa_env_t *);
+        map * sanitize();
+        void apply_numa(processor::numa_env *);
         
         bool usable(uint64_t, uint32_t = -1);
         uint64_t next_usable(uint64_t, uint32_t = -1);
         
-        map_entry_t ** split_numa_memmaps();
+        map_entry ** split_numa_memmaps();
         
     private:
-        map_entry_t * sequence_entries;
-        chained_map_entry_t * entries;
+        map_entry * sequence_entries;
+        chained_map_entry * entries;
         uint32_t num_entries;
         bool sane;
     };
