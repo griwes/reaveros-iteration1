@@ -4,6 +4,7 @@
 namespace screen
 {
     class boot_mode;
+    class console;
     
     void initialize(boot_mode *, void *);
     
@@ -24,7 +25,7 @@ namespace screen
     
     void line();
     
-    extern bool ready;
+    extern console * output;
 }
 
 #endif

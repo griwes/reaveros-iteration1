@@ -1,5 +1,7 @@
 #pragma once
 
+#include "mode.h"
+
 namespace screen
 {
     // a bit different than kernel's console-terminal-driver scheme, but this class
@@ -8,18 +10,35 @@ namespace screen
     // any file
     
     // unlike kernel's console-terminal-driver scheme, here the console is only
-    // meant to write individual characters to screen and serial port, conversions
-    // from ints or structs to chars is done with screen::print[X[X]] calls
+    // meant to write individual characters to screen, conversions from ints or 
+    // structs to chars is done with screen::print[X[X]]() calls
     
     // proper console-terminal-driver scheme, with full standard stream interface,
     // will be available in kernel only - I don't want to implement the same full
     // scheme in both booter and kernel, and I don't want to link kernel-mode stdlib
     // to booter as well, as booter doesn't provide proper environment for stdlib
     
-    // that said, time to start writing librose's stdlib...
+    // that said, time to start writing librose stdlib implementation...
     
     class console
     {
+    public:
+        console(boot_mode *, void *);
+        ~console();
         
+        void put_char(char);
+        
+    private:
+        void _put_16(char);
+        void _put_32(char);
+        
+        void _scroll();
+        void _clear();
+        
+        mode * _mode;
+        uint8_t * _font;
+        
+        uint16_t _x, _y;
+        uint16_t _maxx, _maxy;
     };
 }

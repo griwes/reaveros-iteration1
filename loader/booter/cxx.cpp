@@ -52,7 +52,7 @@ extern "C" void __cxa_pure_virtual()
 
 void _panic(const char * /*X*/, const char * /*FILE*/, uint64_t /*LINE*/, const char * /*FUNC*/)
 {
-    if (screen::ready)
+    if (screen::output)
     {
 //        screen::printl();
   //      screen::printl("PANIC: \"", X, "\"");

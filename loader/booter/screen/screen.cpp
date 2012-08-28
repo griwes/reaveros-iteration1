@@ -1,13 +1,14 @@
 #include "screen.h"
+#include "console.h"
 
 namespace screen
 {
-    bool ready = false;
+    console * output = nullptr;
 }
 
-void screen::initialize(screen::boot_mode * , void * )
+void screen::initialize(screen::boot_mode * mode, void * font)
 {
-
+    output = new console(mode, font);
 }
 
 void screen::line()
