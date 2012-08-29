@@ -35,7 +35,7 @@ namespace screen
         void _scroll();
         void _clear();
         
-        mode * _mode;
+        mode _mode;
         uint8_t * _font;
         
         uint16_t _x, _y;
