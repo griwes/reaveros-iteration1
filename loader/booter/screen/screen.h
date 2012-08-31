@@ -1,5 +1,4 @@
-#ifndef __rose_loader_booter_screen_h__
-#define __rose_loader_booter_screen_h__
+#pragma once
 
 namespace screen
 {
@@ -7,6 +6,11 @@ namespace screen
     class console;
     
     void initialize(boot_mode *, void *);
+    
+    void printl(const char *);
+    void print(const char *);
+    void printl(char);
+    void print(char);
     
     template<typename... T>
     void printl(const T &... a);
@@ -27,5 +31,3 @@ namespace screen
     
     extern console * output;
 }
-
-#endif

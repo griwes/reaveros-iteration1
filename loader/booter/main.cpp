@@ -40,10 +40,12 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     memory::initialize(placement, mem_map);
     screen::initialize(video_mode, font);
-        
+            
     screen::printl("Booter, Reaver Project Bootloader v0.3");
     screen::printl("Copyrights (C) 2012 Reaver Project Team");
     screen::line();
+    
+    for (;;);
     
 /*    screen::printl("[MEM ] Reading memory map...");
     screen::printl(mem_map);

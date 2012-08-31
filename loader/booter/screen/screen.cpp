@@ -13,5 +13,30 @@ void screen::initialize(screen::boot_mode * mode, void * font)
 
 void screen::line()
 {
+    output->put_char('\n');
+}
 
+void screen::print(const char * str)
+{
+    while (*str != 0)
+    {
+        output->put_char(*str++);
+    }
+}
+
+void screen::printl(const char * str)
+{
+    print(str);
+    output->put_char('\n');
+}
+
+void screen::print(char c)
+{
+    output->put_char(c);
+}
+
+void screen::printl(char c)
+{
+    output->put_char(c);
+    output->put_char('\n');
 }
