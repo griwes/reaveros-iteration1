@@ -152,36 +152,36 @@ uint64_t memory::map::next_usable(uint64_t addr, uint32_t domain)
 
 void print(memory::map_entry * entry)
 {
-    screen::printf("| 0x%16h | 0x%16h | ", entry->base, entry->length);
+    screen::printf("| 0x%016x | 0x%016x | ", entry->base, entry->length);
     
     switch (entry->type)
     {
         case 1:
-            screen::print("Free memory");
+            screen::print("Free memory                ");
             break;
         case 2:
-            screen::print("Reserved memory");
+            screen::print("Reserved memory            ");
             break;
         case 3:
-            screen::print("ACPI reclaimable memory");
+            screen::print("ACPI reclaimable memory    ");
             break;
         case 4:
-            screen::print("ACPI NVS memory");
+            screen::print("ACPI NVS memory            ");
             break;
         case 5:
-            screen::print("Bad memory");
+            screen::print("Bad memory                 ");
             break;
         case 6:
-            screen::print("Booter paging memory");
+            screen::print("Booter paging memory       ");
             break;
         case 7:
-            screen::print("ISA DMA memory");
+            screen::print("ISA DMA memory             ");
             break;
         case 8:
-            screen::print("Kernel memory");
+            screen::print("Kernel memory              ");
             break;
         case 9:
-            screen::print("Initrd memory");
+            screen::print("Initrd memory              ");
             break;
     }
     
