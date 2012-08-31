@@ -29,6 +29,7 @@
 #include <cstddef>
 
 #include "../processor/processor.h"
+#include "../screen/screen.h"
 
 namespace memory
 {
@@ -69,5 +70,14 @@ namespace memory
         chained_map_entry * entries;
         uint32_t num_entries;
         bool sane;
-    };
+    };    
+}
+
+namespace screen
+{
+    template<>
+    inline void print<memory::map>(const memory::map &)
+    {
+        screen::print("tralala");
+    }
 }

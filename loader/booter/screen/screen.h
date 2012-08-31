@@ -12,22 +12,30 @@ namespace screen
     void printl(char);
     void print(char);
     
-    template<typename... T>
-    void printl(const T &... a);
+    void line();
     
     template<typename... T>
     void print(const T &... a);
     
     template<typename... T>
+    void printl(const T &... a)
+    {
+        print(a...);
+        line();
+    }
+    
+    template<typename... T>
     void printf(const char *, T &... a);
     
     template<typename... T>
-    void printfl(const char *, T &... a);
+    void printfl(const char * s, T &... a)
+    {
+        printf(s, a...);
+        line();
+    }
     
     template<typename T>
     void print(const T &);
-    
-    void line();
     
     extern console * output;
 }

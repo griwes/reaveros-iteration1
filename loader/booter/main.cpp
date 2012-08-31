@@ -44,13 +44,13 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("Booter, Reaver Project Bootloader v0.3");
     screen::printl("Copyrights (C) 2012 Reaver Project Team");
     screen::line();
-    
+        
+    screen::printl("[MEM ] Reading memory map...");
+    screen::printl(mem_map);
+  
     for (;;);
     
-/*    screen::printl("[MEM ] Reading memory map...");
-    screen::printl(mem_map);
-    
-    screen::printl("[MEM ] Sanitizing memory map...");
+/*    screen::printl("[MEM ] Sanitizing memory map...");
     memory::map * sane_map = mem_map.sanitize();
     
     screen::printl("[MEM ] Printing sanitized memory map...");
