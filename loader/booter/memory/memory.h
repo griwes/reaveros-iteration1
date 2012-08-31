@@ -43,4 +43,22 @@ namespace memory
     
     void initialize(uint32_t, map &);
     void prepare_long_mode();
+    
+    template<typename T>
+    void zero(T * ptr, uint32_t size = 1)
+    {
+        while (size-- > 0)
+        {
+            *ptr++ = 0;
+        }
+    }
+    
+    template<typename T>
+    void copy(T * src, T * dest, uint32_t size = 1)
+    {
+        while (size-- > 0)
+        {
+            *dest++ = *src++;
+        }
+    }
 }

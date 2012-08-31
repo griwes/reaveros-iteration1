@@ -93,7 +93,7 @@ void screen::console::_put_16(char c)
 void screen::console::_put_32(char c)
 {
     uint8_t * character = &(_font[c * 16]);
-    uint32_t * dest = (uint32_t *)(_mode.addr + _y * _mode.bytes_per_line * 16 + _x * 16);
+    uint32_t * dest = (uint32_t *)(_mode.addr + _y * _mode.bytes_per_line * 16 + _x * 32);
     
     uint32_t color = ((0xc0 >> (8 - _mode.red_size)) << _mode.red_pos) | ((0xc0 >> (8 - _mode.green_size)) 
         << _mode.green_pos) | ((0xc0 >> (8 - _mode.blue_size)) << _mode.blue_pos);
@@ -115,10 +115,11 @@ void screen::console::_put_32(char c)
 
 void screen::console::_clear()
 {
-    memory::zero(_mode.addr, _mode.resolution_y * _mode.bytes_per_line);
+    memory::zero((uint8_t *)_mode.addr, _mode.resolution_y * _mode.bytes_per_line);
 }
 
 void screen::console::_scroll()
 {
-    memory::copy(_mode.addr + _mode.bytes_per_line, _mode.addr, (_mode.resolution_y - 1) * _mode.bytes_per_line);
+    memory::copy((uint8_t *)_mode.addr + _mode.bytes_per_line, (uint8_t *)_mode.addr, (_mode.resolution_y - 1) 
+        * _mode.bytes_per_line);
 }

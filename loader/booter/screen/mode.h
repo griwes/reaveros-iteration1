@@ -55,8 +55,19 @@ namespace screen
     class mode
     {
     public:
-        mode(boot_mode *);
-        ~mode();
+        mode(::screen::boot_mode * boot_mode) : addr(boot_mode->addr), resolution_x(boot_mode->resolution_x),
+            resolution_y(boot_mode->resolution_y), bytes_per_line(boot_mode->linear_bytes_per_line ?
+            boot_mode->linear_bytes_per_line : boot_mode->bytes_per_line), bpp(boot_mode->bpp), 
+            red_size(boot_mode->linear_red_size ? boot_mode->linear_red_size : boot_mode->red_size), 
+            red_pos(boot_mode->linear_red_pos ? boot_mode->linear_red_pos : boot_mode->red_pos), 
+            green_size(boot_mode->linear_green_size ? boot_mode->linear_green_size : boot_mode->green_size),
+            green_pos(boot_mode->linear_green_pos ? boot_mode->linear_green_pos : boot_mode->green_pos), 
+            blue_size(boot_mode->linear_blue_size ? boot_mode->linear_blue_size : boot_mode->blue_size), 
+            blue_pos(boot_mode->linear_blue_pos ? boot_mode->linear_blue_pos: boot_mode->blue_pos),
+            rsvd_size(boot_mode->linear_rsvd_size ? boot_mode->linear_rsvd_size : boot_mode->rsvd_size),
+            rsvd_pos(boot_mode->linear_rsvd_pos ? boot_mode->linear_rsvd_pos : boot_mode->rsvd_pos)
+        {
+        }
         
         uint32_t addr;
         uint16_t resolution_x;
