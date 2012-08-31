@@ -150,7 +150,72 @@ uint64_t memory::map::next_usable(uint64_t addr, uint32_t domain)
     }
 }
 
-template<>
-void screen::print(const memory::map &)
+void print(memory::map_entry * entry)
 {
+    screen::printf("| 0x%16h | 0x%16h | ", entry->base, entry->length);
+    
+    switch (entry->type)
+    {
+        case 1:
+            screen::print("Free memory");
+            break;
+        case 2:
+            screen::print("Reserved memory");
+            break;
+        case 3:
+            screen::print("ACPI reclaimable memory");
+            break;
+        case 4:
+            screen::print("ACPI NVS memory");
+            break;
+        case 5:
+            screen::print("Bad memory");
+            break;
+        case 6:
+            screen::print("Booter paging memory");
+            break;
+        case 7:
+            screen::print("ISA DMA memory");
+            break;
+        case 8:
+            screen::print("Kernel memory");
+            break;
+        case 9:
+            screen::print("Initrd memory");
+            break;
+    }
+    
+    screen::printl(" |");
+}
+
+template<>
+void screen::print(const memory::map & map)
+{
+    printl("|--------------------|--------------------|-----------------------------|");
+    printl("| Base address       | Length             | Type                        |");
+    printl("|--------------------|--------------------|-----------------------------|");
+    
+    if (map.entries)
+    {
+        auto entry = map.entries;
+        
+        for (uint32_t i = 0; i < map.num_entries; ++i)
+        {
+            ::print(entry);
+            entry = entry->next;
+        }
+    }
+    
+    else
+    {
+        auto entry = map.sequence_entries;
+        
+        for (uint32_t i = 0; i < map.num_entries; ++i)
+        {
+            ::print(entry);
+            ++entry;
+        }
+    }
+
+    printl("|--------------------|--------------------|-----------------------------|");
 }

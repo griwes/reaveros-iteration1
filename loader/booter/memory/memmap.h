@@ -54,6 +54,9 @@ namespace memory
     class map
     {
     public:
+        template<typename T>
+        friend void screen::print(const T &);
+        
         map(map_entry *, uint32_t);
         ~map();
         

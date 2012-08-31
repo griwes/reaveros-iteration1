@@ -29,8 +29,8 @@ namespace screen
         line();
     }
     
-    template<typename... T>
-    void printf(const char *, T &... a);
+    template<typename First, typename... T>
+    void printf(const char * str, const First & first, const T &... rest);
     
     template<typename... T>
     void printfl(const char * s, T &... a)
