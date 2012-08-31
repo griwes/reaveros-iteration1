@@ -72,12 +72,3 @@ namespace memory
         bool sane;
     };    
 }
-
-namespace screen
-{
-    template<>
-    inline void print<memory::map>(const memory::map &)
-    {
-        screen::print("tralala");
-    }
-}

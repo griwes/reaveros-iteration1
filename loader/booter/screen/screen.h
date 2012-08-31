@@ -7,15 +7,20 @@ namespace screen
     
     void initialize(boot_mode *, void *);
     
-    void printl(const char *);
     void print(const char *);
-    void printl(char);
     void print(char);
     
     void line();
     
-    template<typename... T>
-    void print(const T &... a);
+    template<typename T>
+    void print(const T & a);
+    
+    template<typename First, typename... T>
+    void print(const First & first, const T &... rest)
+    {
+        print(first);
+        print(rest...);
+    }
     
     template<typename... T>
     void printl(const T &... a)
@@ -33,9 +38,6 @@ namespace screen
         printf(s, a...);
         line();
     }
-    
-    template<typename T>
-    void print(const T &);
     
     extern console * output;
 }

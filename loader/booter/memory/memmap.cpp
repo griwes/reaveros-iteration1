@@ -149,3 +149,8 @@ uint64_t memory::map::next_usable(uint64_t addr, uint32_t domain)
         return lowest;
     }
 }
+
+template<>
+void screen::print(const memory::map &)
+{
+}
