@@ -47,7 +47,10 @@ memory::manager::placement_allocator::~placement_allocator()
 
 void * memory::manager::placement_allocator::allocate(uint32_t size)
 {
-    while (!memory_map.usable(placement_address) || !memory_map.usable(placement_address + size -1))
+    size += 15;
+    size &= ~(uint32_t)15;
+    
+    while (!memory_map.usable(placement_address) || !memory_map.usable(placement_address + size -1 ))
     {
         placement_address = memory_map.next_usable(placement_address);
         
@@ -58,9 +61,6 @@ void * memory::manager::placement_allocator::allocate(uint32_t size)
     }
     
     auto ret = placement_address;
-        
-    placement_address += 15;
-    placement_address &= ~(uint32_t)15;
     
     return (void *)ret;
 }
