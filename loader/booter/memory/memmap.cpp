@@ -247,11 +247,11 @@ memory::map * memory::map::sanitize() // and sort, don't forget sorting!
 
 void memory::map::add_entry(memory::chained_map_entry * entry)
 {
-    if (sequence_entries != nullptr && num_entries != 0)
+    if (sequence_entries)
     {
         PANIC("Trying to add chained entry to sequenced memory map!");
     }
-    
+        
     if (num_entries == 0)
     {
         entries = entry;
