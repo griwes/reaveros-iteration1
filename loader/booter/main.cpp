@@ -47,16 +47,17 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
         
     screen::printl("[MEM ] Reading memory map...");
     screen::printl(mem_map);
-  
-    for (;;);
     
-/*    screen::printl("[MEM ] Sanitizing memory map...");
+    screen::print("[MEM ] Sanitizing memory map... ");
     memory::map * sane_map = mem_map.sanitize();
+    screen::printl("done.");
     
     screen::printl("[MEM ] Printing sanitized memory map...");
     screen::printl(*sane_map);
+  
+    for (;;);
     
-    screen::print("[CPU ] Checking CPU's long mode support... ");
+/*    screen::print("[CPU ] Checking CPU's long mode support... ");
     processor::check_long_mode();
     screen::printl("done.");
     

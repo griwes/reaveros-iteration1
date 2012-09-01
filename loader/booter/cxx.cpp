@@ -50,14 +50,14 @@ extern "C" void __cxa_pure_virtual()
     asm ("hlt");
 }
 
-void _panic(const char * /*X*/, const char * /*FILE*/, uint64_t /*LINE*/, const char * /*FUNC*/)
+void _panic(const char * X, const char * FILE, uint64_t /*LINE*/, const char * FUNC)
 {
     if (screen::output)
     {
-//        screen::printl();
-  //      screen::printl("PANIC: \"", X, "\"");
-    //    screen::printl("File: ", FILE, ", line ", LINE);
-      //  screen::printl("Function:  ", FUNC);
+        screen::line();
+        screen::printl("PANIC: \"", X, "\"");
+        screen::printl("File: ", FILE); //, ", line ", LINE);
+        screen::printl("Function:  ", FUNC);
     }
     
     __asm("cli; hlt");

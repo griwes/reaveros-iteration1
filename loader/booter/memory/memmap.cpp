@@ -25,6 +25,10 @@
 
 #include "memmap.h"
 
+memory::map::map() : sequence_entries(nullptr), entries(nullptr), num_entries(0)
+{
+}
+
 memory::map::map(memory::map_entry * base_map, uint32_t map_size)
     : sequence_entries(base_map), entries(nullptr), num_entries(map_size)
 {
@@ -218,4 +222,40 @@ void screen::print(const memory::map & map)
     }
 
     printl("|--------------------|--------------------|-----------------------------|");
+}
+
+memory::map * memory::map::sanitize() // and sort, don't forget sorting!
+{
+    // linked-list map is not sanitizeable, because only initial memory map can be insane (let's hope so)
+    if (entries)
+    {
+        return nullptr;
+    }
+    
+    map * sane_map = new memory::map();
+    
+    screen::print(*sane_map);
+    screen::print("A");
+    
+    for (uint32_t i = 0; i < num_entries; ++i)
+    {
+        sane_map->add_entry(new chained_map_entry(&sequence_entries[i]));
+    }
+    
+    return sane_map;
+}
+
+void memory::map::add_entry(memory::chained_map_entry * entry)
+{
+    if (sequence_entries != nullptr && num_entries != 0)
+    {
+        PANIC("Trying to add chained entry to sequenced memory map!");
+    }
+    
+    if (num_entries == 0)
+    {
+        entries = entry;
+    }
+    
+    ++num_entries;
 }

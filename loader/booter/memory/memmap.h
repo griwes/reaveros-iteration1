@@ -36,6 +36,11 @@ namespace memory
     class map_entry
     {
     public:
+        map_entry(map_entry * old) : base(old->base), length(old->length), type(old->type), 
+            extended_attribs(old->extended_attribs)
+        {
+        }
+        
         uint64_t base;
         uint64_t length;
         uint32_t type;
@@ -45,6 +50,10 @@ namespace memory
     class chained_map_entry : public map_entry
     {
     public:
+        chained_map_entry(map_entry * old) : map_entry(old), proximity_domain(-1), prev(nullptr), next(nullptr)
+        {
+        }
+        
         uint32_t proximity_domain;
         
         chained_map_entry * prev;
@@ -57,10 +66,12 @@ namespace memory
         template<typename T>
         friend void screen::print(const T &);
         
+        map();
         map(map_entry *, uint32_t);
         ~map();
         
         map * sanitize();
+        void add_entry(chained_map_entry *);
         void apply_numa(processor::numa_env *);
         
         bool usable(uint64_t, uint32_t = -1);
