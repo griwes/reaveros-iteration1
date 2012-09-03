@@ -24,6 +24,7 @@
  **/
 
 #include "memmap.h"
+#include "memory.h"
 
 memory::map::map() : sequence_entries(nullptr), entries(nullptr), num_entries(0)
 {
@@ -232,12 +233,9 @@ memory::map * memory::map::sanitize() // and sort, don't forget sorting!
         return nullptr;
     }
     
-    map * sane_map = new memory::map();
-    
-    screen::print(*sane_map);
-    screen::print("A");
-    
-    for (uint32_t i = 0; i < num_entries; ++i)
+    map * sane_map = new memory::map;
+
+    for (uint32_t i = 0; i < 1; ++i)// num_entries; ++i)
     {
         sane_map->add_entry(new chained_map_entry(&sequence_entries[i]));
     }

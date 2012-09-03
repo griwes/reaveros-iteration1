@@ -67,6 +67,8 @@ namespace screen
                                                 }
                                                 
                                                 ++str;
+                                                
+                                                return;
                                         }
                                 }
                         }
@@ -86,6 +88,13 @@ namespace screen
         }
         
         printf(str, rest...);
+        
+        if (*str == 0)
+        {
+            return; 
+        }
+        
+        printf(str);
     }
     
     template<typename... T>

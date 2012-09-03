@@ -61,6 +61,7 @@ void * memory::manager::placement_allocator::allocate(uint32_t size)
     }
     
     auto ret = placement_address;
+    placement_address += size;
     
     return (void *)ret;
 }
