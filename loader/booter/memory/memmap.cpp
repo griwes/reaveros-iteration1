@@ -26,12 +26,12 @@
 #include "memmap.h"
 #include "memory.h"
 
-memory::map::map() : sequence_entries(nullptr), entries(nullptr), num_entries(0)
+memory::map::map() : _sequence_entries(nullptr), _entries(nullptr), _num_entries(0)
 {
 }
 
 memory::map::map(memory::map_entry * base_map, uint32_t map_size)
-    : sequence_entries(base_map), entries(nullptr), num_entries(map_size)
+    : _sequence_entries(base_map), _entries(nullptr), _num_entries(map_size)
 {
 }
 
@@ -42,11 +42,11 @@ memory::map::~map()
 
 bool memory::map::usable(uint64_t addr, uint32_t domain)
 {
-    if (entries)
+    if (_entries)
     {
-        auto entry = entries;
+        auto entry = _entries;
         
-        for (uint32_t i = 0; i < num_entries; ++i)
+        for (uint32_t i = 0; i < _num_entries; ++i)
         {
             if (addr >= entry->base && addr < entry->base + entry->length)
             {
@@ -76,9 +76,9 @@ bool memory::map::usable(uint64_t addr, uint32_t domain)
     
     else
     {
-        auto entry = sequence_entries;
+        auto entry = _sequence_entries;
         
-        for (uint32_t i = 0; i < num_entries; ++i)
+        for (uint32_t i = 0; i < _num_entries; ++i)
         {
             if (addr >= entry->base && addr < entry->base + entry->length)
             {
@@ -99,11 +99,11 @@ bool memory::map::usable(uint64_t addr, uint32_t domain)
 
 uint64_t memory::map::next_usable(uint64_t addr, uint32_t domain)
 {
-    if (entries)
+    if (_entries)
     {
-        auto entry = entries;
+        auto entry = _entries;
         
-        for (uint32_t i = 0; i < num_entries; ++i)
+        for (uint32_t i = 0; i < _num_entries; ++i)
         {
             if (entry->base > addr)
             {
@@ -131,11 +131,11 @@ uint64_t memory::map::next_usable(uint64_t addr, uint32_t domain)
     
     else
     {
-        auto entry = sequence_entries;
+        auto entry = _sequence_entries;
         
         uint64_t lowest = 0;
         
-        for (uint32_t i = 0; i < num_entries; ++i)
+        for (uint32_t i = 0; i < _num_entries; ++i)
         {
             if (entry->base > addr)
             {
@@ -177,15 +177,12 @@ void print(memory::map_entry * entry)
             screen::print("Bad memory                 ");
             break;
         case 6:
-            screen::print("Booter paging memory       ");
-            break;
-        case 7:
             screen::print("ISA DMA memory             ");
             break;
-        case 8:
+        case 7:
             screen::print("Kernel memory              ");
             break;
-        case 9:
+        case 8:
             screen::print("Initrd memory              ");
             break;
     }
@@ -200,11 +197,11 @@ void screen::print(const memory::map & map)
     printl("| Base address       | Length             | Type                        |");
     printl("|--------------------|--------------------|-----------------------------|");
     
-    if (map.entries)
+    if (map._entries)
     {
-        auto entry = map.entries;
+        auto entry = map._entries;
         
-        for (uint32_t i = 0; i < map.num_entries; ++i)
+        for (uint32_t i = 0; i < map._num_entries; ++i)
         {
             ::print(entry);
             entry = entry->next;
@@ -213,9 +210,9 @@ void screen::print(const memory::map & map)
     
     else
     {
-        auto entry = map.sequence_entries;
+        auto entry = map._sequence_entries;
         
-        for (uint32_t i = 0; i < map.num_entries; ++i)
+        for (uint32_t i = 0; i < map._num_entries; ++i)
         {
             ::print(entry);
             ++entry;
@@ -228,32 +225,115 @@ void screen::print(const memory::map & map)
 memory::map * memory::map::sanitize() // and sort, don't forget sorting!
 {
     // linked-list map is not sanitizeable, because only initial memory map can be insane (let's hope so)
-    if (entries)
+    if (_entries)
     {
         return nullptr;
     }
     
     map * sane_map = new memory::map;
 
-    for (uint32_t i = 0; i < 1; ++i)// num_entries; ++i)
+    for (uint32_t i = 0; i < _num_entries; ++i)
     {
-        sane_map->add_entry(new chained_map_entry(&sequence_entries[i]));
+        sane_map->add_entry(new chained_map_entry(&_sequence_entries[i]));
     }
+    
+    chained_map_entry * isa_dma = new chained_map_entry();
+    isa_dma->base = 1024 * 1024;
+    isa_dma->length = 15 * 1024 * 1024;
+    isa_dma->type = 6;
+    
+    sane_map->add_entry(isa_dma);
     
     return sane_map;
 }
 
+namespace 
+{
+    inline bool _intersect(memory::chained_map_entry * first, memory::chained_map_entry * second)
+    {
+        return !(first->base + first->length <= second->base || second->base + second->length <= first->base);
+    }
+    
+    bool _this_or_next(memory::chained_map_entry * first, memory::chained_map_entry * second)
+    {
+        if (!second->next)
+        {
+            return true;
+        }
+        
+        else if (_intersect(first, second))
+        {
+            return true;
+        }
+        
+        else
+        {
+            if (_intersect(first, second->next))
+            {
+                return false;
+            }
+            
+            else if ((int64_t)second->base - first->base > (int64_t)second->next->base - first->base)
+            {
+                return false;
+            }
+            
+            else
+            {
+                return true;
+            }
+        }
+    }
+    
+    memory::chained_map_entry * _combine_entries(memory::chained_map_entry *, memory::chained_map_entry *)
+    {
+        return nullptr;
+    }
+}
+
 void memory::map::add_entry(memory::chained_map_entry * entry)
 {
-    if (sequence_entries)
+    if (_sequence_entries)
     {
         PANIC("Trying to add chained entry to sequenced memory map!");
     }
         
-    if (num_entries == 0)
+    if (_num_entries == 0)
     {
-        entries = entry;
+        _entries = entry;
+        
+        _num_entries++;
+        
+        return;
     }
     
-    ++num_entries;
+    else
+    {
+        auto _entry = _entries;
+        
+        if (entry->base <= _entry->base)
+        {
+            if (auto e = _combine_entries(entry, _entry))
+            {
+                _entries = e;
+                
+                _num_entries++;
+            }
+            
+            return;
+        }
+        
+        for (uint64_t i = 0; i < _num_entries; ++i)
+        {
+            if (_this_or_next(_entry, entry))
+            {
+                if (_combine_entries(_entry, entry))
+                {
+                    _num_entries++;
+                    
+                    return;
+                }
+            }
+        }
+    }
 }

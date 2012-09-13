@@ -36,6 +36,10 @@ namespace memory
     class map_entry
     {
     public:
+        map_entry() : base(0), length(0), type(0), extended_attribs(0)
+        {
+        }
+        
         map_entry(map_entry * old) : base(old->base), length(old->length), type(old->type), 
             extended_attribs(old->extended_attribs)
         {
@@ -50,6 +54,10 @@ namespace memory
     class chained_map_entry : public map_entry
     {
     public:
+        chained_map_entry() : map_entry(), proximity_domain(-1), prev(nullptr), next(nullptr)
+        {
+        }
+        
         chained_map_entry(map_entry * old) : map_entry(old), proximity_domain(-1), prev(nullptr), next(nullptr)
         {
         }
@@ -80,9 +88,8 @@ namespace memory
         map_entry ** split_numa_memmaps();
         
     private:
-        map_entry * sequence_entries;
-        chained_map_entry * entries;
-        uint32_t num_entries;
-        bool sane;
+        map_entry * _sequence_entries;
+        chained_map_entry * _entries;
+        uint32_t _num_entries;
     };    
 }
