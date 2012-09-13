@@ -256,32 +256,19 @@ namespace
     
     bool _this_or_next(memory::chained_map_entry * first, memory::chained_map_entry * second)
     {
-        if (!second->next)
+        if (!second->next || _intersect(first, second))
         {
             return true;
         }
         
-        else if (_intersect(first, second))
+        else if (second->base < first->base)
         {
-            return true;
+            return false;
         }
         
         else
         {
-            if (_intersect(first, second->next))
-            {
-                return false;
-            }
-            
-            else if ((int64_t)second->base - first->base > (int64_t)second->next->base - first->base)
-            {
-                return false;
-            }
-            
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
     
