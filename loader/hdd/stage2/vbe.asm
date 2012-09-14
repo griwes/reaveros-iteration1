@@ -291,9 +291,6 @@ setup_video_mode:
         mov     si, finalprint
         call    print16
     
-        cli
-        hlt
-    
         xor     eax, eax
 
         ; set only bit D14 and D0-D8 (use linar frame buffer mode)
