@@ -46,6 +46,10 @@ num:            dw 0
 ; ax - number of sectors
 ;
 
+callint:        db 0x0a, 0x0d, "Calling interrupt...", 0x0d, 0x0a, 0
+pmode:          db "Going pmode...", 0x0d, 0x0a, 0
+rmode:          db "Back in rmode...", 0x0d, 0x0a, 0
+
 read_sectors_high_memory:
     push    ax
 
@@ -80,6 +84,9 @@ read_sectors_high_memory:
         mov     dl, byte [bootdrive]
         mov     word [num], ax
 
+        mov     si, callint
+        call    print16
+        
         mov     ah, 0x42
         mov     si, packet
 
@@ -90,6 +97,9 @@ read_sectors_high_memory:
         mov     si, progress
         call    print16
 
+        mov     si, pmode
+        call    print16
+        
         mov     edx, cr0
         mov     eax, cr0
         or      al, 1
@@ -135,6 +145,9 @@ bits    16
         pop     es
         pop     ds
 
+        mov     si, rmode
+        call    print16
+        
         add     dword [packet.exstart], 768
 
         mov     ax, word [num]
