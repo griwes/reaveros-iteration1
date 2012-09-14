@@ -49,3 +49,61 @@ print16:
     .done:
         popad
         ret
+        
+;
+; printnum16()
+; eax - number to be printed
+;
+
+printnum16:
+    pushad
+
+    xor     edx, edx
+    
+    mov     ebx, dword 10
+    div     ebx
+    
+    or      eax, eax
+    jz      .mod
+    
+    call    printnum16
+    
+    .mod:
+        mov     al, byte '0'
+        add     al, dl
+        
+        mov     ah, 0x0e
+        int     0x10
+        
+    popad
+    
+    ret
+    
+;
+; printhex16()
+; eax - number to be hex-printed
+;
+
+digits:     db "0123456789ABCDEF"
+
+printhex16:
+    pushad
+
+    xor     edx, edx
+    
+    mov     ebx, dword 16
+    div     ebx
+    
+    or      eax, eax
+    jz      .mod
+    
+    call    printhex16
+    
+    .mod:
+        mov     al, byte [digits + edx]
+        mov     ah, 0x0e
+        int     0x10
+            
+    popad
+
+    ret

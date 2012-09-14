@@ -57,7 +57,7 @@ starting:       dq 0
 
 msg:            db 0x0a, 0x0d, 0x0a, 0x0d, "ReaverOS Bootloader v0.2", 0x0a, 0x0d, 0
 kernel:         db "Loading Booter, kernel and initrd... ", 0
-done:           db " done.", 0x0a, 0x0d
+done:           db " done.", 0x0a, 0x0d, 0
 vbe:            db "Setting up graphical video mode...", 0x0a, 0x0d, 0
 error:          db 0x0a, 0x0d, "Problem with loading... press any key to reboot.", 0x0a, 0x0d, 0
 progress:       db ".", 0

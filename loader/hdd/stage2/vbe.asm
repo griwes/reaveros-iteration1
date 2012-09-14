@@ -97,6 +97,14 @@ video_mode_description:
     .maxpixelclock: db 0
     .reserved4:     times 189 db 0
 
+
+failmsg:        db "Failed to set VBE mode... staying in 80x25.", 0x0a, 0x0d, 0
+resprint:       db 0x0a, 0x0d, "Mode selected.", 0x0a, 0x0d, "Resolution: ", 0
+x:              db "x", 0
+bppprint:       db 0x0a, 0x0d, "Bits per pixel: ", 0
+bufferprint:    db 0x0a, 0x0d, "Buffer address: ", 0
+finalprint:     db 0x0a, 0x0d, 0x0a, 0x0d, 0
+
 ;
 ; get_controller_info()
 ; es:di - buffer for VBE Controller Info structure
@@ -252,7 +260,40 @@ setup_video_mode:
 
         mov     ax, bx
         call    get_mode_info
-
+        
+        mov     si, resprint
+        call    print16
+        
+        xor     eax, eax
+        
+        mov     ax, word [video_mode_description.xres]
+        call    printnum16
+        
+        mov     si, x
+        call    print16
+        
+        mov     ax, word [video_mode_description.yres]
+        call    printnum16
+        
+        mov     si, bppprint
+        call    print16
+        
+        xor     eax, eax
+        mov     al, byte [video_mode_description.bpp]
+        call    printnum16
+        
+        mov     si, bufferprint
+        call    print16
+        
+        mov     eax, dword [video_mode_description.physbaseaddr]
+        call    printhex16
+        
+        mov     si, finalprint
+        call    print16
+    
+        cli
+        hlt
+    
         xor     eax, eax
 
         ; set only bit D14 and D0-D8 (use linar frame buffer mode)
