@@ -185,6 +185,9 @@ void print(memory::map_entry * entry)
         case 8:
             screen::print("Initrd memory              ");
             break;
+        case 9:
+            screen::print("Video backbuffer           ");
+            break;
     }
     
     screen::printl(" |");

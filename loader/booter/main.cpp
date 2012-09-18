@@ -50,11 +50,12 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::print("[MEM ] Sanitizing memory map... ");
     memory::map * sane_map = mem_map.sanitize();
+    screen::output->save_backbuffer_info(sane_map);
     screen::printl("done.");
     
     screen::printl("[MEM ] Printing sanitized memory map...");
     screen::printl(*sane_map);
-  
+    
     for (;;);
     
 /*    screen::print("[CPU ] Checking CPU's long mode support... ");

@@ -2,6 +2,11 @@
 
 #include "mode.h"
 
+namespace memory
+{
+    class map;
+}
+
 namespace screen
 {
     // a bit different than kernel's console-terminal-driver scheme, but this class
@@ -27,6 +32,7 @@ namespace screen
         ~console();
         
         void put_char(char);
+        void save_backbuffer_info(memory::map *);
         
     private:
         void _put_16(char);
@@ -40,5 +46,7 @@ namespace screen
         
         uint16_t _x, _y;
         uint16_t _maxx, _maxy;
+        
+        uint32_t _backbuffer;
     };
 }
