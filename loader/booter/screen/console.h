@@ -28,7 +28,7 @@ namespace screen
     class console
     {
     public:
-        console(boot_mode *, void *);
+        console(boot_mode *, void *, memory::map &);
         ~console();
         
         void put_char(char);

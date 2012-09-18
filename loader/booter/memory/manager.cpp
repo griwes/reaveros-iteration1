@@ -72,3 +72,23 @@ void memory::manager::placement_allocator::deallocate(void *)
     
     return;
 }
+
+memory::manager::backwards_allocator::backwards_allocator(memory::map & map) : memory_map(map)
+{
+}
+
+memory::manager::backwards_allocator::~backwards_allocator()
+{
+}
+
+void * memory::manager::backwards_allocator::allocate(uint32_t size)
+{
+    
+}
+
+void memory::manager::backwards_allocator::deallocate(void *)
+{
+    // no-op for backwards
+    
+    return;
+}
