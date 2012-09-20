@@ -81,9 +81,12 @@ memory::manager::backwards_allocator::~backwards_allocator()
 {
 }
 
-void * memory::manager::backwards_allocator::allocate(uint32_t size)
+// TODO: write it
+// TODO: helper functions in memory::map
+// TODO: sanity checks with default_allocator 
+void * memory::manager::backwards_allocator::allocate(uint32_t )
 {
-    
+    return nullptr;
 }
 
 void memory::manager::backwards_allocator::deallocate(void *)

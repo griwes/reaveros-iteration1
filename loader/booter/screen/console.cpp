@@ -4,7 +4,7 @@
 
 screen::console::console(screen::boot_mode * mode, void * font, memory::map & map)
     : _mode(mode), _font((uint8_t *)font), _x(0), _y(0), _maxx(mode->resolution_x / 8), _maxy(mode->resolution_y / 16),
-      _backbuffer((uint32_t)((memory::backwards_allocator(map)).allocate(mode->bytes_per_line * mode->resolution_y)))
+      _backbuffer((uint32_t)((memory::manager::backwards_allocator(map)).allocate(mode->bytes_per_line * mode->resolution_y)))
 {
     _clear();
 }
