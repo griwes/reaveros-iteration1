@@ -19,7 +19,7 @@ each NUMA domain will be operating its own instance of the kernel.
 
  1. First stage HDD bootloader
  2. Second stage bootloader, featuring:
-   * Setting VBE video mode - done.
+   * Setting VBE video mode
    
 ##What's going to be here?
 
