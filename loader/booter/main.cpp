@@ -58,40 +58,83 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     for (;;);
     
-/*    screen::print("[CPU ] Checking CPU's long mode support... ");
-    processor::check_long_mode();
-    screen::printl("done.");
-    
-    screen::print("[MEM ] Preparing long mode paging... ");
-    memory::prepare_long_mode();
-    screen::printl("done.");
-    
-    screen::print("[CPU ] Entering long mode... ");
-    processor::enter_long_mode();
-    screen::printl("done.");
-    
-    screen::print("[CPU ] Installing long mode GDT... ");
-    processor::setup_gdt();
-    screen::printl("done.");
-    
-    screen::print("[ACPI] Looking for RSDP... ");
+/*    screen::print("[ACPI ] Looking for RSDP... ");
     acpi::rsdp * rsdp = acpi::find_rsdp();
     screen::printl("done.");
     
-    screen::printl("[ACPI] Printing RSDP info...");
+    screen::printl("[ACPI ] Printing RSDP info...");
     screen::printl(rsdp);
     
-    screen::print("[ACPI] Looking for NUMA domains... ");
+    screen::print("[ACPI ] Looking for NUMA domains... ");
     processor::numa_env * env = acpi::find_numa_domains();
     screen::printl("done.");
     
-    screen::printl("[ACPI] Printing NUMA domain info...");
+    screen::printl("[ACPI ] Printing NUMA domain info...");
     screen::printl(*env);
     
-    screen::print("[MEM ] Applying NUMA domains info to memory map... ");
+    screen::print("[MEM  ] Applying NUMA domains info to memory map... ");
     sane_map->apply_numa(env);
     screen::printl("done.");
     
-    screen::printl("[MEM ] Printing NUMA-affected memory map... ");
-    screen::printl(*sane_map);*/
+    screen::printl("[MEM  ] Printing NUMA-affected memory map... ");
+    screen::printl(*sane_map);
+    
+    screen::print("[CPU  ] Checking CPU's long mode support... ");
+    processor::check_long_mode();
+    screen::printl("done.");
+    
+    screen::print("[MEM  ] Preparing long mode paging... ");
+    memory::prepare_long_mode();
+    screen::printl("done.");
+    
+    screen::print("[CPU  ] Entering long mode... ");
+    processor::enter_long_mode();
+    screen::printl("done.");
+    
+    screen::print("[MEM  ] Preparing address spaces for NUMA domain bootstrap processors... ");
+    memory::prepare_address_spaces();
+    screen::printl("done.");
+    
+    screen::print("[CPU  ] Installing long mode GDT... ");
+    processor::setup_gdt();
+    screen::printl("done.");
+    
+    screen::print("[CPU  ] Installing long mode IDT... ");
+    processor::setup_idt();
+    screen::printl("done.");
+    
+    screen::print("[APIC ] Initializing I/O APICs... ");
+    processor::setup_io_apic();
+    screen::printl("done.");
+    
+    screen::print("[APIC ] Initializing LAPIC... ");
+    processor::setup_lapic();
+    screen::printl("done.");
+    
+    screen::printl("[APIC ] Printing APIC status...");
+    processor::print_apic_status();
+    
+    for (auto & domain : env)
+    {
+        screen::printfl("[NBP%02d] Booting NUMA domain #%2d... ", domain.id, domain.id);
+        processor::boot_core(domain.cores[0].id, domain.id, sane_map);
+        screen::printl("done.");
+    }
+    
+    screen::print("[MEM  ] Installing kernel instances... ");
+    uint64_t kernel_start = memory::install_kernel_instances(kernel, kernel_size);
+    screen::printl("done.");
+    
+    screen::print("[MEM  ] Installing InitRD for BSP... ");
+    uint64_t initrd_start = memory::install_initrd(kernel + kernel_size, initrd_size);
+    screen::printl("done.");
+    
+    screen::print("[CPU  ] Calling kernel...");
+    processor::call_kernel(0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(),
+        screen::get_vga_font, sane_map, env);
+    
+    // we will never get here
+    for (;;) ;
+    
+    return;
 }
