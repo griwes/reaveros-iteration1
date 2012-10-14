@@ -1,7 +1,7 @@
 CC=clang++
 LD=../../utils/tools/bin/i686-elf-ld
 CFLAGS=-m32 -c -Wall -Wextra -pedantic -Werror -nostdlib -fno-exceptions -fno-rtti -fno-stack-protector -std=c++0x \
-		-mno-sse -mno-sse2 -mno-sse3 -ffreestanding -O0
+		-mno-sse -mno-sse2 -mno-sse3 -ffreestanding -O0 -stdlib=libc++
 LDFLAGS=-T booter.ld --oformat binary -nostdlib
 SOURCES=$(shell find . -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)

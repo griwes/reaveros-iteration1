@@ -24,6 +24,13 @@ void screen::console::save_backbuffer_info(memory::map * map)
 
 void screen::console::put_char(char c)
 {
+    if (c != '\0')
+    {
+        outb(0x378, (unsigned char)c);
+        outb(0x37a, 0x0c);
+        outb(0x37a, 0x0d);
+    }
+    
     switch (c)
     {
         case '\0':

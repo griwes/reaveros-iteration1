@@ -33,3 +33,13 @@
 #define PANIC(X) _panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 
 void _panic(const char *, const char *, uint64_t, const char *);
+
+inline void inb(uint16_t, uint8_t);
+inline void inw(uint16_t, uint16_t);
+
+inline void outb(uint16_t port, uint8_t value)
+{
+    asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
+}
+
+inline void outw(uint16_t, uint16_t);

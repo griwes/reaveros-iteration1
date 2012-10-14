@@ -24,6 +24,7 @@
  **/
 
 #include "manager.h"
+#include "memory.h"
 
 void * operator new(uint32_t, void *);
 
@@ -84,9 +85,11 @@ memory::manager::backwards_allocator::~backwards_allocator()
 // TODO: write it
 // TODO: helper functions in memory::map
 // TODO: sanity checks with default_allocator 
-void * memory::manager::backwards_allocator::allocate(uint32_t )
+void * memory::manager::backwards_allocator::allocate(uint32_t size)
 {
-    return nullptr;
+    uint32_t top_placement = memory_map.find_last_usable(size);
+//    memory::default_allocator->notify(top_placement);
+    return (void *)top_placement;
 }
 
 void memory::manager::backwards_allocator::deallocate(void *)

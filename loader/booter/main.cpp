@@ -136,5 +136,5 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     // we will never get here
     for (;;) ;
     
-    return;
+    return;*/
 }

@@ -102,7 +102,7 @@ int main(int argc, char ** argv)
             return 4;
         }
         
-        std::fstream * file = new fstream(orig.c_str(), std::fstream::in | std::fstream::binary);
+        std::fstream * file = new std::fstream(orig.c_str(), std::fstream::in | std::fstream::binary);
         
         if (!file->good())
         {

@@ -188,6 +188,9 @@ void print(memory::map_entry * entry)
         case 9:
             screen::print("Video backbuffer           ");
             break;
+        case 10:
+            screen::print("Booter memory              ");
+            break;
     }
     
     screen::printl(" |");
@@ -326,4 +329,36 @@ void memory::map::add_entry(memory::chained_map_entry * entry)
             }
         }
     }
+}
+
+uint32_t memory::map::find_last_usable(uint32_t size)
+{
+    if (_entries)
+    {
+        PANIC("find_last_usable is not supposed to be called after memory map sanitizing.");
+    }
+    
+    for (uint32_t i = size; i > 0; --i)
+    {
+        auto entry = &_entries[i - 1];
+        
+        if (entry->base > 0xFFFFFFFF || entry->type != 1)
+        {
+            continue;
+        }
+        
+        if (entry->length == size)
+        {
+            return entry->base;
+        }
+            
+        if (entry->length > size)
+        {
+            return entry->base + (entry->length - size);
+        }
+    }
+    
+//    PANIC("call to find_last_usable failed.");
+    
+    return 0;
 }

@@ -76,7 +76,6 @@ namespace memory
             
         private:
             map & memory_map;
-            uint32_t top_address;
         };
         
         allocator * make_placement_allocator(uint32_t, map &);

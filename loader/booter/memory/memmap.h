@@ -85,6 +85,8 @@ namespace memory
         bool usable(uint64_t, uint32_t = -1);
         uint64_t next_usable(uint64_t, uint32_t = -1);
         
+        uint32_t find_last_usable(uint32_t);
+        
         map_entry ** split_numa_memmaps();
         
     private:
