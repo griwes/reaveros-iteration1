@@ -57,7 +57,7 @@ void _panic(const char * X, const char * FILE, uint64_t /*LINE*/, const char * F
         screen::line();
         screen::printl("PANIC: \"", X, "\"");
         screen::printl("File: ", FILE); //, ", line ", LINE);
-        screen::printl("Function:  ", FUNC);
+        screen::printl("Function: ", FUNC);
     }
     
     asm ("cli; hlt");

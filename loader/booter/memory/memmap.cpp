@@ -338,25 +338,26 @@ uint32_t memory::map::find_last_usable(uint32_t size)
         PANIC("find_last_usable is not supposed to be called after memory map sanitizing.");
     }
     
-    for (uint32_t i = size; i > 0; --i)
+    for (uint32_t i = _num_entries; i > 0; --i)
     {
-        auto entry = &_entries[i - 1];
-        
-        if (entry->base > 0xFFFFFFFF || entry->type != 1)
+        if (_entries[i].base > 0xFFFFFFFF || _entries[i].type != 1)
         {
             continue;
         }
         
-        if (entry->length == size)
+        if (_entries[i].length == size)
         {
-            return entry->base;
+            return _entries[i].base;
         }
             
-        if (entry->length > size)
+        if (_entries[i].length > size)
         {
-            return entry->base + (entry->length - size);
+            _entries[i].length -= size;
+            return _entries[i].base + _entries[i].length;
         }
     }
+    
+    dbg;
     
 //    PANIC("call to find_last_usable failed.");
     
