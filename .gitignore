@@ -1,3 +1,4 @@
+*.swp
 utils/builder/build/*
 *~
 *.o

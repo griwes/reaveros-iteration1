@@ -16,6 +16,7 @@ screen::console::~console()
 void screen::console::init_backbuffer(memory::map & map)
 {
     _backbuffer = (uint32_t)((memory::manager::backwards_allocator(map)).allocate(_mode.bytes_per_line * _mode.resolution_y));
+    memory::zero((uint8_t *)_backbuffer, _mode.resolution_y * _mode.bytes_per_line);
 }
 
 void screen::console::save_backbuffer_info(memory::map * map)
@@ -63,6 +64,20 @@ void screen::console::put_char(char c)
             return;
     }
     
+    
+    _x++;
+    
+    if (_x == _maxx)
+    {
+        _x = 0;
+        _y++;
+        
+        if (_y == _maxy)
+        {
+            _scroll();
+        }
+    }
+    
     switch (_mode.bpp)
     {
         case 16:
@@ -75,19 +90,6 @@ void screen::console::put_char(char c)
             
             break;
     }    
-    
-    _x++;
-    
-    if (_x >= _maxx)
-    {
-        _x = 0;
-        _y++;
-        
-        if (_y >= _maxy)
-        {
-            _scroll();
-        }
-    }
 }
 
 void screen::console::_put_16(char c)
@@ -177,8 +179,11 @@ void screen::console::_clear()
 
 void screen::console::_scroll()
 {
-    memory::copy((uint8_t *)_backbuffer + _mode.bytes_per_line * 16, (uint8_t *)_backbuffer, (_mode.resolution_y - 16)
-        * _mode.bytes_per_line);
-    memory::zero((uint8_t *)_backbuffer + _mode.bytes_per_line * (_mode.resolution_y - 16));
+    memory::copy((uint8_t *)_backbuffer + _mode.bytes_per_line * 16, (uint8_t *)_backbuffer, (_mode.resolution_y - 16 
+        - _mode.resolution_y % 16) * _mode.bytes_per_line);
+    memory::zero((uint8_t *)_backbuffer + _mode.bytes_per_line * (_mode.resolution_y - 16 - _mode.resolution_y % 16), 
+        _mode.bytes_per_line * 16);
     memory::copy((uint8_t *)_backbuffer, (uint8_t *)_mode.addr, _mode.bytes_per_line * _mode.resolution_y);
+    
+    _y--;
 }
