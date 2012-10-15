@@ -8,7 +8,7 @@ namespace screen
     
     extern console * output;
     
-    void initialize(boot_mode *, void *, memory::map &);
+    void initialize(boot_mode *, void *);
     
     void print(const char *);
     void print(char);

@@ -2,15 +2,20 @@
 #include "../memory/memory.h"
 #include "../memory/manager.h"
 
-screen::console::console(screen::boot_mode * mode, void * font, memory::map & map)
+screen::console::console(screen::boot_mode * mode, void * font)
     : _mode(mode), _font((uint8_t *)font), _x(0), _y(0), _maxx(mode->resolution_x / 8), _maxy(mode->resolution_y / 16),
-      _backbuffer((uint32_t)((memory::manager::backwards_allocator(map)).allocate(mode->bytes_per_line * mode->resolution_y)))
+      _backbuffer(0)
 {
     _clear();
 }
 
 screen::console::~console()
 {
+}
+
+void screen::console::init_backbuffer(memory::map & map)
+{
+    _backbuffer = (uint32_t)((memory::manager::backwards_allocator(map)).allocate(_mode.bytes_per_line * _mode.resolution_y));
 }
 
 void screen::console::save_backbuffer_info(memory::map * map)
@@ -89,7 +94,16 @@ void screen::console::_put_16(char c)
 {
     uint8_t * character = &(_font[c * 16]);
     uint16_t * dest = (uint16_t *)(_mode.addr + _y * _mode.bytes_per_line * 16 + _x * 16);
-    uint16_t * backdest = (uint16_t *)(_backbuffer + _y * _mode.bytes_per_line * 16 + _x * 16);
+    
+    uint16_t * backdest;
+    if (_backbuffer)
+    {
+        backdest = (uint16_t *)(_backbuffer + _y * _mode.bytes_per_line * 16 + _x * 16);
+    }
+    else
+    {
+        backdest = dest;
+    }
     
     uint16_t color = ((0xc0 >> (8 - _mode.red_size)) << _mode.red_pos) | ((0xc0 >> (8 - _mode.green_size)) 
         << _mode.green_pos) | ((0xc0 >> (8 - _mode.blue_size)) << _mode.blue_pos);
@@ -118,7 +132,16 @@ void screen::console::_put_32(char c)
 {
     uint8_t * character = &(_font[c * 16]);
     uint32_t * dest = (uint32_t *)(_mode.addr + _y * _mode.bytes_per_line * 16 + _x * 32);
-    uint32_t * backdest = (uint32_t *)(_backbuffer + _y * _mode.bytes_per_line * 16 + _x * 32);
+    
+    uint32_t * backdest;
+    if (_backbuffer)
+    {
+        backdest = (uint32_t *)(_backbuffer + _y * _mode.bytes_per_line * 16 + _x * 32);
+    }
+    else
+    {
+        backdest = dest;
+    }
     
     uint32_t color = ((0xc0 >> (8 - _mode.red_size)) << _mode.red_pos) | ((0xc0 >> (8 - _mode.green_size)) 
         << _mode.green_pos) | ((0xc0 >> (8 - _mode.blue_size)) << _mode.blue_pos);
@@ -146,7 +169,10 @@ void screen::console::_put_32(char c)
 void screen::console::_clear()
 {
     memory::zero((uint8_t *)_mode.addr, _mode.resolution_y * _mode.bytes_per_line);
-    memory::zero((uint8_t *)_backbuffer, _mode.resolution_y * _mode.bytes_per_line);
+    if (_backbuffer)
+    {
+        memory::zero((uint8_t *)_backbuffer, _mode.resolution_y * _mode.bytes_per_line);
+    }
 }
 
 void screen::console::_scroll()

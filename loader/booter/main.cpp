@@ -39,7 +39,9 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     memory::map mem_map(memory_map, memory_map_size);
     
     memory::initialize(placement, mem_map);
-    screen::initialize(video_mode, font, mem_map);
+    screen::initialize(video_mode, font);
+    
+    screen::output->init_backbuffer(mem_map);
             
     screen::printl("Booter, Reaver Project Bootloader v0.3");
     screen::printl("Copyrights (C) 2012 Reaver Project Team");

@@ -28,8 +28,10 @@ namespace screen
     class console
     {
     public:
-        console(boot_mode *, void *, memory::map &);
+        console(boot_mode *, void *);
         ~console();
+        
+        void init_backbuffer(memory::map &);
         
         void put_char(char);
         void save_backbuffer_info(memory::map *);
