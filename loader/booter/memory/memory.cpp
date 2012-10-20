@@ -60,7 +60,7 @@ void memory::init_protected_paging()
     uint32_t vidmemstart = screen::output->video_start();
     uint32_t vidmemend = screen::output->video_end();
     
-    while (vidmemstart != vidmemend)
+    while (vidmemstart < vidmemend)
     {
         x86::set_cache(vidmemstart, x86::write_combining);
         vidmemstart += 4096;

@@ -53,3 +53,8 @@ inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
 {
     asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
 }
+
+inline void invlpg(uint32_t address)
+{
+    asm volatile ("invlpg (%0)" :: "r"(address) : "memory");
+}

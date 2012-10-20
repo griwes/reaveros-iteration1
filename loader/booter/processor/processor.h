@@ -26,9 +26,15 @@
 #ifndef __rose_loader_booter_processor_h__
 #define __rose_loader_booter_processor_h__
 #include <memory/x86paging.h>
+#include <screen/screen.h>
 
 namespace processor
 {
+    namespace
+    {
+        extern "C" uint32_t _check_long_mode();
+    }
+    
     class numa_env;
     
     inline void set_cr3(memory::x86::page_directory * pd)
@@ -58,7 +64,18 @@ namespace processor
         asm volatile ("movl %%eax, %%cr0" :: "a"(cr0) : "memory");
     }
     
-    void check_long_mode();
+    inline void check_long_mode()
+    {
+        if (!_check_long_mode())
+        {
+            screen::printl("failed.");
+            screen::line();
+            screen::printl("This software cannot be executed on your PC, because your CPU does not support long mode.");
+            screen::printl("To run this software, upgrade your CPU to one supporting long mode (so called \"64-bit CPUs\").");
+            
+            asm volatile ("hlt");
+        }
+    }
     void enter_long_mode();
     void setup_gdt();
 }

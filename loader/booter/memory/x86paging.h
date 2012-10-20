@@ -122,6 +122,8 @@ namespace memory
             page_table_entry & pte = pt->entries[address >> 12 & 0x3FF];
             
             set_cache(pte, option);
+            
+            invlpg(address);
         }
     }
 }

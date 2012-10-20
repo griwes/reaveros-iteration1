@@ -47,6 +47,10 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("Copyrights (C) 2012 Reaver Project Team");
     screen::line();
     
+    screen::print("[CPU ] Checking CPU's long mode support... ");
+    processor::check_long_mode();
+    screen::printl("done.");
+    
     screen::print("[MEM ] Identity mapping first 4 GiB... ");
     memory::init_protected_paging();
     screen::printl("done.");
@@ -84,10 +88,6 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::printl("[MEM  ] Printing NUMA-affected memory map... ");
     screen::printl(*sane_map);
-    
-    screen::print("[CPU  ] Checking CPU's long mode support... ");
-    processor::check_long_mode();
-    screen::printl("done.");
     
     screen::print("[MEM  ] Preparing long mode paging... ");
     memory::prepare_long_mode();
