@@ -63,4 +63,28 @@ namespace memory
             *dest++ = *src++;
         }
     }
+    
+    inline void zero(uint8_t * ptr, uint32_t size)
+    {
+        zero((uint32_t *)ptr, size / 4);
+        
+        size %= 4;
+        
+        while (size-- > 0)
+        {
+            *ptr++ = {};
+        }
+    }
+    
+    inline void copy(uint8_t * src, uint8_t * dest, uint32_t size)
+    {
+        copy((uint32_t *)src, (uint32_t *)dest, size / 4);
+        
+        size %= 4;
+        
+        while (size-- > 0)
+        {
+            *dest++ = *src++;
+        }
+    }
 }

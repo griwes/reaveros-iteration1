@@ -54,7 +54,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::print("[MEM ] Identity mapping first 4 GiB... ");
     memory::init_protected_paging();
     screen::printl("done.");
-        
+    
     screen::printl("[MEM ] Reading memory map...");
     screen::printl(mem_map);
     
