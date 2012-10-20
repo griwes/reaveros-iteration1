@@ -49,7 +49,7 @@ num:            dw 0
 read_sectors_high_memory:
     push    ax
 
-    mov     edi, 0x800000
+    mov     edi, dword [booterstart]
 
     mov     ax, word [starting]
     mov     word [packet.exstart], ax

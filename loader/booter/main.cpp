@@ -33,12 +33,11 @@
 #include <memory/memmap.h>
 
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
-                uint32_t placement, uint32_t /*kernel*/, uint32_t /*kernel_size*/, uint32_t /*initrd_size*/,
-                screen::boot_mode * video_mode, void * font)
+                uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, screen::boot_mode * video_mode, void * font)
 {
     memory::map mem_map(memory_map, memory_map_size);
     
-    memory::initialize(placement, mem_map);
+    memory::initialize(kernel + kernel_size * 512 + initrd_size * 512, mem_map);
     screen::initialize(video_mode, font);
         
     screen::output->init_backbuffer(mem_map);

@@ -46,7 +46,7 @@ kernelsize:     dw 0            ; 12
 initrdsize:     dw 0            ; 14
 
 bootdrive:      dw 0
-booterstart:    dd 0x800000
+booterstart:    dd 0x100000
 memregcount:    dw 0
 
 starting:       dq 0
@@ -168,7 +168,7 @@ stage3:
     add     eax, dword [booterstart]
     push    eax
 
-    push    dword 0x100000
+;    push    dword 0x100000
 
     xor     eax, eax
     mov     ax, word [memregcount]
@@ -178,6 +178,7 @@ stage3:
     mov     ax, word 0x7c00
     push    eax
 
-    jmp     0x800000
+    xchg    bx, bx
+    jmp     0x100000
 
 selfsize:   dw $ - $$ + 2

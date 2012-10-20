@@ -95,7 +95,7 @@ namespace screen
             return;
         }
         
-        else if (a < 0)
+        else if (!(a > 0 || a == 0))
         {
             output->put_char('-');
         }
