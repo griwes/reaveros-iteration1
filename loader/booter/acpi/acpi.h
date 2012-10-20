@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../processor/processor.h"
+#include <processor/processor.h>
 
 namespace acpi
 {

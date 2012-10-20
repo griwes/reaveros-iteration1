@@ -23,8 +23,8 @@
  * 
  **/
 
-#include "manager.h"
-#include "memory.h"
+#include <memory/manager.h>
+#include <memory/memory.h>
 
 void * operator new(uint32_t, void *);
 

@@ -26,9 +26,9 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "screen/screen.h"
-#include "memory/memory.h"
-#include "memory/manager.h"
+#include <screen/screen.h>
+#include <memory/memory.h>
+#include <memory/manager.h>
 
 void * operator new(uint32_t size)
 {

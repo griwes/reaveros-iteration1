@@ -26,11 +26,11 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "processor/processor.h"
-#include "screen/screen.h"
-#include "acpi/acpi.h"
-#include "memory/memory.h"
-#include "memory/memmap.h"
+#include <processor/processor.h>
+#include <screen/screen.h>
+#include <acpi/acpi.h>
+#include <memory/memory.h>
+#include <memory/memmap.h>
 
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t placement, uint32_t /*kernel*/, uint32_t /*kernel_size*/, uint32_t /*initrd_size*/,
@@ -40,30 +40,33 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     memory::initialize(placement, mem_map);
     screen::initialize(video_mode, font);
-    
+        
     screen::output->init_backbuffer(mem_map);
             
     screen::printl("Booter, Reaver Project Bootloader v0.3");
     screen::printl("Copyrights (C) 2012 Reaver Project Team");
     screen::line();
     
-    screen::print("[CPU ] Checking CPU's long mode support... ");
+    screen::print("[CPU  ] Checking CPU's long mode support... ");
     processor::check_long_mode();
     screen::printl("done.");
     
-    screen::print("[MEM ] Identity mapping first 4 GiB... ");
+    screen::printl("[VIDEO] Printing video mode details...");
+    screen::output->print_mode_info();
+    
+    screen::print("[MEM  ] Identity mapping first 4 GiB... ");
     memory::init_protected_paging();
     screen::printl("done.");
-    
-    screen::printl("[MEM ] Reading memory map...");
+
+    screen::printl("[MEM  ] Reading memory map...");
     screen::printl(mem_map);
     
-    screen::print("[MEM ] Sanitizing memory map... ");
+    screen::print("[MEM  ] Sanitizing memory map... ");
     memory::map * sane_map = mem_map.sanitize();
     screen::output->save_backbuffer_info(sane_map);
     screen::printl("done.");
     
-    screen::printl("[MEM ] Printing sanitized memory map...");
+    screen::printl("[MEM  ] Printing sanitized memory map...");
     screen::printl(*sane_map);
     
     for (;;);

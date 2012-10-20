@@ -23,9 +23,9 @@
  * 
  **/
 
-#include "console.h"
-#include "../memory/memory.h"
-#include "../memory/manager.h"
+#include <screen/console.h>
+#include <memory/memory.h>
+#include <memory/manager.h>
 
 screen::console::console(screen::boot_mode * mode, void * font)
     : _mode(mode), _font((uint8_t *)font), _x(0), _y(0), _maxx(mode->resolution_x / 8), _maxy(mode->resolution_y / 16),
@@ -211,4 +211,11 @@ void screen::console::_scroll()
     memory::copy((uint8_t *)_backbuffer, (uint8_t *)_mode.addr, _mode.bytes_per_line * _mode.resolution_y);
     
     _y--;
+}
+
+void screen::console::print_mode_info()
+{
+    screen::printl("Resolution: ", _mode.resolution_x, "x", _mode.resolution_y);
+    screen::printl("Bits per pixel: ", _mode.bpp);
+    screen::line();
 }

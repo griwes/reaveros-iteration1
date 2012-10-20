@@ -25,7 +25,44 @@
 
 #pragma once
 
-#include "console.h"
+#include <screen/console.h>
+
+template<bool b, typename T = void>
+struct enable_if
+{
+};
+
+template<typename T>
+struct enable_if<true, T>
+{
+    typedef T type;
+};
+
+struct true_type
+{
+    static const bool value = true;
+};
+
+struct false_type
+{
+    static const bool value = false;
+};
+
+template<typename T>
+struct is_integral : false_type {};
+
+#define helper(x) template<> struct is_integral<x> : true_type {}
+
+helper(int8_t);
+helper(int16_t);
+helper(int32_t);
+helper(int64_t);
+helper(uint8_t);
+helper(uint16_t);
+helper(uint32_t);
+helper(uint64_t);
+
+#undef helper
 
 namespace screen
 {
@@ -41,7 +78,38 @@ namespace screen
     void line();
     
     template<typename T>
-    void print(const T & a);
+    void print_impl(const T &);
+    
+    template<typename T>
+    typename enable_if<!is_integral<T>::value>::type print(const T & a)
+    {
+        print_impl(a);
+    }
+        
+    template<typename T>
+    typename enable_if<is_integral<T>::value>::type print(const T & a)
+    {        
+        if (a == 0)
+        {
+            output->put_char('0');
+            return;
+        }
+        
+        else if (a < 0)
+        {
+            output->put_char('-');
+        }
+        
+        T div = a / 10;
+        T mod = a % 10;
+        
+        if (div != 0)
+        {
+            print(div);
+        }
+        
+        output->put_char('0' + mod);
+    }
     
     template<typename First, typename... T>
     void print(const First & first, const T &... rest)

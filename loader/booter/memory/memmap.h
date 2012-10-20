@@ -28,8 +28,8 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "../processor/processor.h"
-#include "../screen/screen.h"
+#include <processor/processor.h>
+#include <screen/screen.h>
 
 namespace memory
 {
@@ -72,7 +72,7 @@ namespace memory
     {
     public:
         template<typename T>
-        friend void screen::print(const T &);
+        friend void screen::print_impl(const T &);
         
         map();
         map(map_entry *, uint32_t);

@@ -28,9 +28,8 @@
 #include <cstdint>
 #include <cstddef>
 
-#include "memmap.h"
-
-#include "../processor/processor.h"
+#include <memory/memmap.h>
+#include <processor/processor.h>
 
 namespace memory
 {    

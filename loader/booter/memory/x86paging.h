@@ -26,7 +26,6 @@
 #pragma once
 
 #include <cstdint>
-#include <boost/config/posix_features.hpp>
 
 namespace memory
 {

@@ -23,9 +23,9 @@
  * 
  **/
 
-#include "screen.h"
-#include "console.h"
-#include "../memory/memmap.h"
+#include <screen/screen.h>
+#include <screen/console.h>
+#include <memory/memmap.h>
 
 namespace screen
 {

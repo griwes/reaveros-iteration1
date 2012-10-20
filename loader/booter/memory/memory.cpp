@@ -23,10 +23,10 @@
  * 
  **/
 
-#include "memory.h"
-#include "manager.h"
-#include "x86paging.h"
-#include "../processor/processor.h"
+#include <memory/memory.h>
+#include <memory/manager.h>
+#include <memory/x86paging.h>
+#include <processor/processor.h>
 
 namespace memory
 {

@@ -25,6 +25,7 @@
 
 #ifndef __rose_loader_booter_processor_h__
 #define __rose_loader_booter_processor_h__
+
 #include <memory/x86paging.h>
 #include <screen/screen.h>
 

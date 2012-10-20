@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "mode.h"
+#include <screen/mode.h>
 
 namespace memory
 {
@@ -60,6 +60,8 @@ namespace screen
         
         void put_char(char);
         void save_backbuffer_info(memory::map *);
+        
+        void print_mode_info();
         
         uint32_t video_start()
         {

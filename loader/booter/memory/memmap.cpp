@@ -23,8 +23,8 @@
  * 
  **/
 
-#include "memmap.h"
-#include "memory.h"
+#include <memory/memmap.h>
+#include <memory/memory.h>
 
 memory::map::map() : _sequence_entries(nullptr), _entries(nullptr), _num_entries(0)
 {
@@ -197,7 +197,7 @@ void print(memory::map_entry * entry)
 }
 
 template<>
-void screen::print(const memory::map & map)
+void screen::print_impl(const memory::map & map)
 {
     printl("|--------------------|--------------------|-----------------------------|");
     printl("| Base address       | Length             | Type                        |");
