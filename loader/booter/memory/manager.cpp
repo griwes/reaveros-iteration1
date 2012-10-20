@@ -82,13 +82,9 @@ memory::manager::backwards_allocator::~backwards_allocator()
 {
 }
 
-// TODO: write it
-// TODO: helper functions in memory::map
-// TODO: sanity checks with default_allocator 
 void * memory::manager::backwards_allocator::allocate(uint32_t size)
 {
     uint32_t top_placement = memory_map.find_last_usable(size);
-//    memory::default_allocator->notify(top_placement);
     return (void *)top_placement;
 }
 

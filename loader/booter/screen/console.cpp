@@ -49,7 +49,8 @@ void screen::console::save_backbuffer_info(memory::map * map)
     memory::chained_map_entry * backbuffer = new memory::chained_map_entry;
     backbuffer->base = _backbuffer;
     backbuffer->length = _mode.resolution_y * _mode.bytes_per_line;
-    backbuffer->type = 9;
+    backbuffer->length += 4096 - backbuffer->length % 4096;
+    backbuffer->type = 4;
     map->add_entry(backbuffer);
 }
 

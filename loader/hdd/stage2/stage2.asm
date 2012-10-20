@@ -178,7 +178,6 @@ stage3:
     mov     ax, word 0x7c00
     push    eax
 
-    xchg    bx, bx
     jmp     0x100000
 
 selfsize:   dw $ - $$ + 2

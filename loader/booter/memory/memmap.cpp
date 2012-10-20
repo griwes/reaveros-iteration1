@@ -33,6 +33,13 @@ memory::map::map() : _sequence_entries(nullptr), _entries(nullptr), _num_entries
 memory::map::map(memory::map_entry * base_map, uint32_t map_size)
     : _sequence_entries(base_map), _entries(nullptr), _num_entries(map_size)
 {
+    for (uint32_t i = 0; i < _num_entries; ++i)
+    {
+        if (_sequence_entries[i].type != 1)
+        {
+            _sequence_entries[i].type += 4;
+        }
+    }
 }
 
 memory::map::~map()
@@ -165,31 +172,28 @@ void print(memory::map_entry * entry)
             screen::print("Free memory                ");
             break;
         case 2:
-            screen::print("Reserved memory            ");
-            break;
-        case 3:
-            screen::print("ACPI reclaimable memory    ");
-            break;
-        case 4:
-            screen::print("ACPI NVS memory            ");
-            break;
-        case 5:
-            screen::print("Bad memory                 ");
-            break;
-        case 6:
-            screen::print("ISA DMA memory             ");
-            break;
-        case 7:
             screen::print("Kernel memory              ");
             break;
-        case 8:
+        case 3:
             screen::print("Initrd memory              ");
             break;
-        case 9:
+        case 4:
             screen::print("Video backbuffer           ");
             break;
-        case 10:
+        case 5:
             screen::print("Booter memory              ");
+            break;
+        case 6:
+            screen::print("Reserved memory            ");
+            break;
+        case 7:
+            screen::print("ACPI reclaimable memory    ");
+            break;
+        case 8:
+            screen::print("ACPI NVS memory            ");
+            break;
+        case 9:
+            screen::print("Bad memory                 ");
             break;
     }
     
@@ -243,44 +247,89 @@ memory::map * memory::map::sanitize() // and sort, don't forget sorting!
         sane_map->add_entry(new chained_map_entry(&_sequence_entries[i]));
     }
     
-    chained_map_entry * isa_dma = new chained_map_entry();
-    isa_dma->base = 1024 * 1024;
-    isa_dma->length = 15 * 1024 * 1024;
-    isa_dma->type = 6;
-    
-    sane_map->add_entry(isa_dma);
-    
     return sane_map;
 }
 
-namespace 
+void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::chained_map_entry * sequence)
 {
-    inline bool _intersect(memory::chained_map_entry * first, memory::chained_map_entry * second)
-    {
-        return !(first->base + first->length <= second->base || second->base + second->length <= first->base);
-    }
-    
-    bool _this_or_next(memory::chained_map_entry * first, memory::chained_map_entry * second)
-    {
-        if (!second->next || _intersect(first, second))
+    // 1) entry is below first in sequence, swap them and insert
+    if (entry->base + entry->length <= sequence->base)
+    {        
+        entry->base ^= sequence->base ^= entry->base ^= sequence->base;
+        entry->length ^= sequence->length ^= entry->length ^= sequence->length;
+        entry->type ^= sequence->type ^= entry->type ^= sequence->type;
+        
+        if (sequence->next)
         {
-            return true;
+            sequence->next->prev = entry;
         }
         
-        else if (second->base < first->base)
+        entry->next = sequence->next;
+        sequence->next = entry;
+        entry->prev = sequence;
+        
+        ++_num_entries;
+        
+        return;
+    }
+    
+    while (sequence->next)
+    {
+        // 2) entry is between two entries in sequence, insert
+        if (sequence->base + sequence->length <= entry->base && entry->base + entry->length <= sequence->next->base)
         {
-            return false;
+            entry->next = sequence->next;
+            entry->prev = sequence;
+            sequence->next->prev = entry;
+            sequence->next = entry;
+            
+            ++_num_entries;
+            
+            return;
+        }
+        
+        // 3) one of entries in sequence overlaps with beginning/end of entry, adjust new and insert
+        // 4) one of entries is in the middle of new_entry, split entry or adjust intersecting entry
+        
+        sequence = sequence->next;
+    }
+    
+    // 5) entry is above last in sequence
+    sequence->next = entry;
+    entry->prev = sequence;
+    
+    ++_num_entries;
+}
+
+void memory::map::_merge_siblings(memory::chained_map_entry * sequence)
+{
+    auto first = sequence;
+    
+    if (!sequence->next)
+    {
+        return;
+    }
+    
+    auto second = first->next;
+    
+    while (second->next)
+    {
+        if (first->type == second->type && first->base + first->length == second->base)
+        {
+            first->length += second->length;
+            first->next = second->next;
+            second->next->prev = first;
+            
+            second = first->next;
+            
+            --_num_entries;
         }
         
         else
         {
-            return true;
+            first = second;
+            second = second->next;
         }
-    }
-    
-    memory::chained_map_entry * _combine_entries(memory::chained_map_entry *, memory::chained_map_entry *)
-    {
-        return nullptr;
     }
 }
 
@@ -302,33 +351,10 @@ void memory::map::add_entry(memory::chained_map_entry * entry)
     
     else
     {
-        auto _entry = _entries;
-        
-        if (entry->base <= _entry->base)
-        {
-            if (auto e = _combine_entries(entry, _entry))
-            {
-                _entries = e;
-                
-                _num_entries++;
-            }
-            
-            return;
-        }
-        
-        for (uint64_t i = 0; i < _num_entries; ++i)
-        {
-            if (_this_or_next(_entry, entry))
-            {
-                if (_combine_entries(_entry, entry))
-                {
-                    _num_entries++;
-                    
-                    return;
-                }
-            }
-        }
+        _combine_entries(entry, _entries);
     }
+
+    _merge_siblings(_entries);
 }
 
 uint32_t memory::map::find_last_usable(uint32_t size)
@@ -337,6 +363,8 @@ uint32_t memory::map::find_last_usable(uint32_t size)
     {
         PANIC("find_last_usable is not supposed to be called after memory map sanitizing.");
     }
+    
+    size += 4096 - size % 4096;
     
     auto entry = &_sequence_entries[_num_entries - 1];
     

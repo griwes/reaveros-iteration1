@@ -87,7 +87,10 @@ namespace memory
         
         uint32_t find_last_usable(uint32_t);
         
-        map_entry ** split_numa_memmaps();
+        map * split_numa_memmaps();
+        
+        void _combine_entries(chained_map_entry *, chained_map_entry *);
+        void _merge_siblings(chained_map_entry *);
         
     private:
         map_entry * _sequence_entries;
