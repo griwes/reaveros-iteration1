@@ -42,6 +42,8 @@ namespace memory
             
             virtual void * allocate(uint32_t) = 0;
             virtual void deallocate(void *) = 0;
+            
+            virtual void align(uint32_t) = 0;
         };
         
         // this is standard placement allocator; no comment is required, I think
@@ -53,6 +55,8 @@ namespace memory
             
             virtual void * allocate(uint32_t);
             virtual void deallocate(void *);
+            
+            virtual void align(uint32_t);
             
         private:
             map & memory_map;
@@ -73,6 +77,8 @@ namespace memory
             
             virtual void * allocate(uint32_t);
             virtual void deallocate(void *);
+            
+            virtual void align(uint32_t) {}
             
         private:
             map & memory_map;

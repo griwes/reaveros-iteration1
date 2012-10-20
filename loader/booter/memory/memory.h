@@ -42,6 +42,8 @@ namespace memory
     extern manager::allocator * default_allocator;
     
     void initialize(uint32_t, map &);
+    void init_protected_paging();
+    void init_pat();
     void prepare_long_mode();
     
     template<typename T>
@@ -49,7 +51,7 @@ namespace memory
     {
         while (size-- > 0)
         {
-            *ptr++ = 0;
+            *ptr++ = {};
         }
     }
     

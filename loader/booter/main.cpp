@@ -46,6 +46,10 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("Booter, Reaver Project Bootloader v0.3");
     screen::printl("Copyrights (C) 2012 Reaver Project Team");
     screen::line();
+    
+    screen::print("[MEM ] Identity mapping first 4 GiB... ");
+    memory::init_protected_paging();
+    screen::printl("done.");
         
     screen::printl("[MEM ] Reading memory map...");
     screen::printl(mem_map);

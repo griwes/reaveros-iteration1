@@ -98,3 +98,9 @@ void memory::manager::backwards_allocator::deallocate(void *)
     
     return;
 }
+
+void memory::manager::placement_allocator::align(uint32_t a)
+{
+    placement_address += a - 1;
+    placement_address &= ~(a - 1);
+}
