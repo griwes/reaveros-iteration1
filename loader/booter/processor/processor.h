@@ -26,7 +26,6 @@
 #ifndef __rose_loader_booter_processor_h__
 #define __rose_loader_booter_processor_h__
 
-#include <memory/x86paging.h>
 #include <screen/screen.h>
 
 namespace processor
@@ -38,7 +37,7 @@ namespace processor
     
     class numa_env;
     
-    inline void set_cr3(memory::x86::page_directory * pd)
+    inline void set_cr3(uint32_t pd)
     {
         asm volatile ("movl %%eax, %%cr3" :: "a"(pd) : "memory");
     }
