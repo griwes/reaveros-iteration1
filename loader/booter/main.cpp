@@ -63,17 +63,17 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::printl("[MEM  ] Printing sanitized memory map...");
     screen::printl(*sane_map);
-    
-    for (;;);
-    
-/*    screen::print("[ACPI ] Looking for RSDP... ");
+        
+    screen::print("[ACPI ] Looking for RSDP... ");
     acpi::rsdp * rsdp = acpi::find_rsdp();
     screen::printl("done.");
     
     screen::printl("[ACPI ] Printing RSDP info...");
-    screen::printl(rsdp);
+    screen::printl(*rsdp);
     
-    screen::print("[ACPI ] Looking for NUMA domains... ");
+    for (;;) ;
+    
+    /*    screen::print("[ACPI ] Looking for NUMA domains... ");
     processor::numa_env * env = acpi::find_numa_domains();
     screen::printl("done.");
     

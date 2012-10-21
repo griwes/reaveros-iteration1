@@ -23,40 +23,50 @@
  * 
  **/
 
-#pragma once
+#include <acpi/acpi.h>
 
-#include <processor/processor.h>
-#include <screen/screen.h>
-
-namespace acpi
+template<>
+void screen::print_impl(const acpi::rsdp & rsdp)
 {
-    struct rsdp
+    screen::printl("Revision: ", rsdp.revision);
+    screen::printl("OEMID: ", rsdp.oemid);
+}
+
+acpi::rsdp * acpi::find_rsdp()
+{
+    uint32_t ebda = *(uint16_t *)0x40E << 4;
+    
+    rsdp * ptr = (rsdp *)ebda;
+    
+    while (ptr < (rsdp *)(ebda + 1024))
     {
-        char signature[8];
-        uint8_t checksum;
-        char oemid[6];
-        uint8_t revision;
-        uint32_t rsdt_ptr;
-        uint64_t xsdt_ptr;
-        uint8_t ext_checksum;
-        uint8_t reserved[3];
-        
-        bool validate()
+        if (ptr->validate())
         {
-            uint8_t checksum = 0;
-            
-            for (uint8_t i = 0; i < sizeof(rsdp); ++i)
-            {
-                checksum += *((uint8_t *)this + i);
-            }
-            
-            return signature[0] == 'R' && signature[1] == 'S' && signature[2] == 'D' && signature[3] == ' '
-                && signature[4] == 'P' && signature[5] == 'T' && signature[6] == 'R' && signature[7] == ' '
-                && !checksum;
+            return ptr;
         }
-    } __attribute__((packed));
+        
+        else
+        {
+            ptr = (rsdp *)((uint32_t)ptr + 16);
+        }
+    }
     
-    rsdp * find_rsdp();
+    ptr = (rsdp *)0xe0000;
     
-    processor::numa_env * find_numa_domains();
+    while (ptr < (rsdp *)0x100000)
+    {
+        if (ptr->validate())
+        {
+            return ptr;
+        }
+        
+        else
+        {
+            ptr = (rsdp *)((uint32_t)ptr + 16);
+        }
+    }
+    
+    PANIC("RSDP not found!");
+    
+    return nullptr;
 }
