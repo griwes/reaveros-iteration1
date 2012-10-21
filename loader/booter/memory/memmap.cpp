@@ -287,9 +287,85 @@ void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::ch
             
             return;
         }
+
+        // 3) element in sequence kills entry - swap values and proceed with 4)
+        if (entry->base >= sequence->base && entry->base + entry->length <= sequence->base + sequence->length)
+        {
+            entry->base ^= sequence->base ^= entry->base ^= sequence->base;
+            entry->length ^= sequence->length ^= entry->length ^= sequence->length;
+            entry->type ^= sequence->type ^= entry->type ^= sequence->type;
+        }
         
-        // 3) one of entries in sequence overlaps with beginning/end of entry, adjust new and insert
-        // 4) one of entries is in the middle of new_entry, split entry or adjust intersecting entry
+        // 4) entry "kills" element of sequence 
+        if (entry->base <= sequence->base && entry->base + entry->length >= sequence->base + sequence->length)
+        {
+            if (entry->type >= sequence->type)
+            {
+                if (sequence->prev)
+                {
+                    sequence->prev->next = sequence->next;
+                }
+                
+                else
+                {
+                    _entries = sequence->next;
+                }
+                
+                if (sequence->next)
+                {
+                    sequence->next->prev = sequence->prev;
+                }
+                
+                --_num_entries;
+                _combine_entries(entry, _entries);
+                
+                return;
+            }
+            
+            else
+            {
+                chained_map_entry * second = new chained_map_entry;
+                second->type = entry->type;
+                second->base = sequence->base + sequence->length;
+                second->length = entry->base + entry->length - second->base;
+                entry->length -= second->length - sequence->length;
+                
+                _combine_entries(entry, _entries);
+                _combine_entries(second, _entries);
+                
+                return;
+            }
+        }
+        
+        // 5) only parts of entries overlap
+        if (entry->base + entry->length > sequence->base && entry->base < sequence->base)
+        {
+            entry->base ^= sequence->base ^= entry->base ^= sequence->base;
+            entry->length ^= sequence->length ^= entry->length ^= sequence->length;
+            entry->type ^= sequence->type ^= entry->type ^= sequence->type;
+        }
+        
+        if (sequence->base + sequence->length > entry->base && entry->base > sequence->base)
+        {
+            if (sequence->type >= entry->type)
+            {
+                entry->length -= sequence->base + sequence->length - entry->base;
+                entry->base = sequence->base + sequence->length;
+                
+                _combine_entries(entry, _entries);
+                
+                return;
+            }
+            
+            else
+            {
+                sequence->length -= sequence->base + sequence->length - entry->base;
+                
+                _combine_entries(entry, _entries);
+                
+                return;
+            }
+        }
         
         sequence = sequence->next;
     }
@@ -303,13 +379,12 @@ void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::ch
 
 void memory::map::_merge_siblings(memory::chained_map_entry * sequence)
 {
-    auto first = sequence;
-    
     if (!sequence->next)
     {
         return;
     }
     
+    auto first = sequence;
     auto second = first->next;
     
     while (second->next)
