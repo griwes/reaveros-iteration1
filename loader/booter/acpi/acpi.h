@@ -37,6 +37,7 @@ namespace acpi
         char oemid[6];
         uint8_t revision;
         uint32_t rsdt_ptr;
+        uint32_t length;
         uint64_t xsdt_ptr;
         uint8_t ext_checksum;
         uint8_t reserved[3];
