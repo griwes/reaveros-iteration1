@@ -64,6 +64,14 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[MEM  ] Printing sanitized memory map...");
     screen::printl(*sane_map);
         
+    screen::print("[MEM  ] Preparing long mode paging... ");
+    memory::prepare_long_mode();
+    screen::printl("done.");
+    
+    screen::print("[CPU  ] Entering long mode... ");
+    processor::enter_long_mode();
+    screen::printl("done.");
+    
     screen::print("[ACPI ] Looking for RSDP... ");
     acpi::rsdp * rsdp = acpi::find_rsdp();
     screen::printl("done.");
@@ -87,15 +95,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[MEM  ] Printing NUMA-affected memory map... ");
     screen::printl(*sane_map);
     
-    screen::print("[MEM  ] Preparing long mode paging... ");
-    memory::prepare_long_mode();
-    screen::printl("done.");
-    
-    screen::print("[CPU  ] Entering long mode... ");
-    processor::enter_long_mode();
-    screen::printl("done.");
-    
-    screen::print("[MEM  ] Preparing address spaces for NUMA domain bootstrap processors... ");
+    screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
     memory::prepare_address_spaces();
     screen::printl("done.");
     
@@ -120,7 +120,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     for (auto & domain : env)
     {
-        screen::printfl("[NBP%02d] Booting NUMA domain #%2d... ", domain.id, domain.id);
+        screen::printfl("[NUMA ] Booting NUMA domain #%2d... ", domain.id, domain.id);
         processor::boot_core(domain.cores[0].id, domain.id, sane_map);
         screen::printl("done.");
     }

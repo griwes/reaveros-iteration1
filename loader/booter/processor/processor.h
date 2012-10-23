@@ -76,7 +76,8 @@ namespace processor
             asm volatile ("hlt");
         }
     }
-    void enter_long_mode();
+    
+    extern "C" void enter_long_mode();
     void setup_gdt();
 }
 

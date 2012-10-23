@@ -25,6 +25,7 @@
 bits    32
 
 global  _check_long_mode
+global  enter_long_mode
 
 _check_long_mode:
     mov     eax, 0x80000000
@@ -45,3 +46,20 @@ _check_long_mode:
         xor     eax, eax
 
         ret
+
+enter_long_mode:
+    mov     eax, cr4
+    or      eax, 1 << 5
+    mov     cr4, eax
+    
+    mov     ecx, 0xC0000080
+    rdmsr
+    or      eax, 1 << 8
+    wrmsr
+    
+    mov     eax, cr0
+    or      eax, 1 << 31
+    mov     cr0, eax
+    
+    ret
+        

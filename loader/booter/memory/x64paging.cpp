@@ -23,45 +23,21 @@
  * 
  **/
 
-#include <memory/memory.h>
-#include <memory/manager.h>
-#include <processor/processor.h>
 #include <memory/x64paging.h>
 
-namespace memory
+/*void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start)
 {
-    manager::allocator * default_allocator;
-}
-
-void memory::initialize(uint32_t placement, map & memory_map)
-{
-    default_allocator = manager::make_placement_allocator(placement, memory_map);
-}
-
-void memory::prepare_long_mode()
-{
-    default_allocator->align(4096);
-    x64::pml4 * pml4 = new x64::pml4;
+    virtual_start &= (uint64_t)4096;
+    virtual_end += 4095;
+    virtual_end &= ~(uint64_t)4095;
     
-    // identity map first 64 MiB
-    x64::pdpt * table = new x64::pdpt;
-    (*pml4)[0] = table;
+    uint64_t startpml4e = (virtual_start >> 39) & 511;
+    uint64_t startpdpte = (virtual_start >> 30) & 511;
+    uint64_t startpde = (virtual_start >> 21) & 511;
+    uint64_t startpte = (virtual_start >> 12) & 511;
     
-    x64::page_directory * pd = new x64::page_directory;
-    (*table)[0] = pd;
-    
-    for (uint32_t i = 0; i < 32; ++i)
-    {
-        x64::page_table * pt = new x64::page_table;
-        (*pd)[i] = pt;
-        
-        for (uint32_t j = 0; j < 512; ++j)
-        {
-            (*pt)[j] = i * 2 * 1024 * 1024 + j * 4 * 1024;
-        }
-    }
-    
-//    screen::output->map_screen_memory();
-    
-    processor::set_cr3((uint32_t)pml4);
-}
+    uint64_t endpml4e = (virtual_end >> 39) & 511;
+    uint64_t endpdpte = (virtual_end >> 30) & 511;
+    uint64_t endpde = (virtual_end >> 21) & 511;
+    uint64_t endpte = (virtual_end >> 12) & 511;
+}*/
