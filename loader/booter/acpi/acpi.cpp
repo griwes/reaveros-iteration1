@@ -26,11 +26,65 @@
 #include <acpi/acpi.h>
 #include <memory/memory.h>
 #include <memory/x64paging.h>
+#include <acpi/tables.h>
 
 namespace acpi
 {
     rsdt * root = nullptr;
     xsdt * new_root = nullptr;
+}
+
+namespace
+{
+    void install_rsdt(acpi::rsdp * ptr)
+    {
+        memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->rsdt_ptr);
+        
+        if (((acpi::rsdt *)(0xFFFFA000 + ptr->rsdt_ptr % 4096))->validate("RSDT"))
+        {
+            acpi::root = (acpi::rsdt *)(0xFFFFA000 + ptr->rsdt_ptr % 4096);
+            
+            return;
+        }
+        
+        else
+        {
+            PANIC("RSDT invalid");
+        }
+    }
+    
+    void install_xsdt(acpi::rsdp * ptr)
+    {
+        memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->xsdt_ptr);
+        
+        if (((acpi::xsdt *)0xFFFFA000 + ptr->xsdt_ptr % 4096)->validate("XSDT"))
+        {
+            acpi::new_root = (acpi::xsdt *)(0xFFFFA000 + ptr->xsdt_ptr % 4096);
+            
+            return;
+        }
+        
+        else
+        {
+            memory::vas->unmap(0xFFFFA000, 0xFFFFFFFF);
+            
+            screen::print(" (XSDT invalid, falling back to RSDT) ");
+            install_rsdt(ptr);
+        }
+    }
+    
+    void install_root(acpi::rsdp * ptr)
+    {
+        if (ptr->revision)
+        {
+            install_xsdt(ptr);
+        }
+        
+        else
+        {
+            install_rsdt(ptr);
+        }
+    }
 }
 
 template<>
@@ -50,17 +104,9 @@ acpi::rsdp * acpi::find_rsdp()
     {
         if (ptr->validate())
         {
-            if (ptr->revision)
-            {
-                new_root = (xsdt *)0xFFFFA000;
-                memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->xsdt_ptr);
-            }
+            install_root(ptr);
             
-            else
-            {
-                root = (rsdt *)0xFFFFA000;
-                memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->rsdt_ptr);
-            }
+            return ptr;
         }
         
         else
@@ -75,17 +121,7 @@ acpi::rsdp * acpi::find_rsdp()
     {
         if (ptr->validate())
         {
-            if (ptr->revision)
-            {
-                new_root = (xsdt *)0xFFFFA000;
-                memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->xsdt_ptr);
-            }
-            
-            else
-            {
-                root = (rsdt *)0xFFFFA000;
-                memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->rsdt_ptr);
-            }
+            install_root(ptr);
             
             return ptr;
         }
