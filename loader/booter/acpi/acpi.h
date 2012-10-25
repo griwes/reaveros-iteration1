@@ -25,11 +25,11 @@
 
 #pragma once
 
-#include <processor/processor.h>
+#include <processor/numa.h>
 #include <screen/screen.h>
 
 namespace acpi
-{
+{   
     struct rsdp
     {
         char signature[8];
@@ -46,7 +46,7 @@ namespace acpi
         {
             uint8_t checksum = 0;
             
-            for (uint8_t i = 0; i < sizeof(rsdp); ++i)
+            for (uint8_t i = 0; i < length; ++i)
             {
                 checksum += *((uint8_t *)this + i);
             }
@@ -56,6 +56,88 @@ namespace acpi
                 && !checksum;
         }
     } __attribute__((packed));
+
+    struct description_table_header
+    {
+        char signature[4];
+        uint32_t length;
+        uint8_t revision;
+        uint8_t checksum;
+        char oemid[6];
+        uint64_t oem_tableid;
+        uint32_t oem_revision;
+        uint32_t creator_id;
+        uint32_t creator_revision;
+        
+        bool validate(const char sign[])
+        {
+            uint8_t checksum = 0;
+            
+            for (uint32_t i = 0; i < length; ++i)
+            {
+                checksum += *((uint8_t *)this + i);
+            }
+            
+            return signature[0] == sign[0] && signature[1] == sign[1] && signature[2] == sign[2] && signature[3] == sign[3]
+                && !checksum;
+        }
+    } __attribute__((packed));
+    
+    struct rsdt : public description_table_header
+    {
+        uint32_t entries[1];
+    } __attribute__((packed));
+    
+    struct xsdt : public description_table_header
+    {
+        uint64_t entries[1];
+    } __attribute__((packed));
+    
+    struct srat_lapic_entry
+    {
+        uint8_t domain;
+        uint8_t apic_id;
+        uint32_t flags;
+        uint8_t sapic_eid;
+        uint8_t domain2;
+        uint16_t domain3;
+        uint32_t clock_domain;
+    } __attribute__((packed));
+    
+    struct srat_memory_entry
+    {
+        uint32_t domain;
+        uint16_t reserved;
+        uint64_t base;
+        uint64_t length;
+        uint32_t reserved2;
+        uint32_t flags;
+        uint64_t reserved3;
+    } __attribute__((packed));
+    
+    struct srat_x2apic_entry
+    {
+        uint16_t reserved;
+        uint32_t domain;
+        uint32_t x2apic_id;
+        uint32_t flags;
+        uint32_t clock_domain;
+        uint32_t reserved2;
+    } __attribute__((packed));
+    
+    struct srat_entry
+    {
+        uint8_t type;
+        uint8_t length;
+    } __attribute__((packed));
+    
+    struct srat : public description_table_header
+    {
+        srat_entry entries[1];
+    } __attribute__((packed));
+    
+    extern rsdt * root;
+    extern xsdt * new_root;
     
     rsdp * find_rsdp();
     

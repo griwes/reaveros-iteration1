@@ -24,6 +24,14 @@
  **/
 
 #include <acpi/acpi.h>
+#include <memory/memory.h>
+#include <memory/x64paging.h>
+
+namespace acpi
+{
+    rsdt * root = nullptr;
+    xsdt * new_root = nullptr;
+}
 
 template<>
 void screen::print_impl(const acpi::rsdp & rsdp)
@@ -42,7 +50,17 @@ acpi::rsdp * acpi::find_rsdp()
     {
         if (ptr->validate())
         {
-            return ptr;
+            if (ptr->revision)
+            {
+                new_root = (xsdt *)0xFFFFA000;
+                memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->xsdt_ptr);
+            }
+            
+            else
+            {
+                root = (rsdt *)0xFFFFA000;
+                memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->rsdt_ptr);
+            }
         }
         
         else
@@ -57,6 +75,18 @@ acpi::rsdp * acpi::find_rsdp()
     {
         if (ptr->validate())
         {
+            if (ptr->revision)
+            {
+                new_root = (xsdt *)0xFFFFA000;
+                memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->xsdt_ptr);
+            }
+            
+            else
+            {
+                root = (rsdt *)0xFFFFA000;
+                memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->rsdt_ptr);
+            }
+            
             return ptr;
         }
         
@@ -69,4 +99,19 @@ acpi::rsdp * acpi::find_rsdp()
     PANIC("RSDP not found!");
     
     return nullptr;
+}
+
+processor::numa_env * acpi::find_numa_domains()
+{
+    srat * resources = nullptr;
+    
+    if (new_root)
+    {
+        
+    }
+    
+    else
+    {
+        
+    }
 }

@@ -23,8 +23,7 @@
  * 
  **/
 
-#ifndef __rose_loader_booter_processor_h__
-#define __rose_loader_booter_processor_h__
+#pragma once
 
 #include <screen/screen.h>
 
@@ -34,8 +33,6 @@ namespace processor
     {
         extern "C" uint32_t _check_long_mode();
     }
-    
-    class numa_env;
     
     inline void set_cr3(uint32_t pd)
     {
@@ -80,5 +77,3 @@ namespace processor
     extern "C" void enter_long_mode();
     void setup_gdt();
 }
-
-#endif

@@ -28,7 +28,7 @@
 #include <cstdint>
 #include <cstddef>
 
-#include <processor/processor.h>
+#include <processor/numa.h>
 #include <screen/screen.h>
 
 namespace memory

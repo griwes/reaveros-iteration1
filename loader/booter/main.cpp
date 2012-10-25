@@ -29,6 +29,7 @@
 #include <memory/memory.h>
 #include <memory/memmap.h>
 #include <memory/x64paging.h>
+#include <processor/numa.h>
 
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, screen::boot_mode * video_mode, void * font)
@@ -79,16 +80,16 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[ACPI ] Printing RSDP info...");
     screen::printl(*rsdp);
     
-    for (;;) ;
-    
-    /*    screen::print("[ACPI ] Looking for NUMA domains... ");
+    screen::print("[ACPI ] Looking for NUMA domains... ");
     processor::numa_env * env = acpi::find_numa_domains();
     screen::printl("done.");
     
     screen::printl("[ACPI ] Printing NUMA domain info...");
     screen::printl(*env);
     
-    screen::print("[MEM  ] Applying NUMA domains info to memory map... ");
+    for (;;);
+    
+/*    screen::print("[MEM  ] Applying NUMA domains info to memory map... ");
     sane_map->apply_numa(env);
     screen::printl("done.");
     
@@ -106,6 +107,13 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::print("[CPU  ] Installing long mode IDT... ");
     processor::setup_idt();
     screen::printl("done.");
+
+    screen::print("[APIC ] Detecting I/O APICs... ");
+    processor::ioapic_env * ioapics = acpi::find_ioapics();
+    screen::printl("done.");
+    
+    screen::printl("[APIC ] Printing I/O APIC info...");
+    screen::print(*ioapics);
     
     screen::print("[APIC ] Initializing I/O APICs... ");
     processor::setup_io_apic();
