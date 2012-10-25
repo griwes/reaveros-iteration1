@@ -20,11 +20,11 @@ each NUMA domain will be operating its own instance of the kernel.
  1. First stage HDD bootloader
  2. Second stage bootloader, featuring:
    * Setting VBE video mode
+   * Making sense out of BIOS memory map
    
 ##What's going to be here?
 
  1. Booter - last stage bootloader, featuring:
-   * Making sense out of BIOS memory map - **WIP**
    * Booting NUMA Domain Bootstrap Processors - NBP
    * Starting kernel instances on each NUMA Domain
  2. Kernel, featuring:
