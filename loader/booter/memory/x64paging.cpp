@@ -25,9 +25,9 @@
 
 #include <memory/x64paging.h>
 
-/*void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start)
+void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start)
 {
-    virtual_start &= (uint64_t)4096;
+    virtual_start &= ~(uint64_t)4096;
     virtual_end += 4095;
     virtual_end &= ~(uint64_t)4095;
     
@@ -40,4 +40,76 @@
     uint64_t endpdpte = (virtual_end >> 30) & 511;
     uint64_t endpde = (virtual_end >> 21) & 511;
     uint64_t endpte = (virtual_end >> 12) & 511;
-}*/
+
+    while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+    {
+        if (!entries[startpml4e].present)
+        {
+            entries[startpml4e] = new pdpt;
+        }
+        
+        pdpt * table = (pdpt *)(entries[startpml4e].address << 12);
+        
+        while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+            && startpdpte < 512)
+        {
+            if (!(*table)[startpdpte].present)
+            {
+                (*table)[startpdpte] = new page_directory;
+            }
+            
+            page_directory * pd = (page_directory *)((*table)[startpdpte].address << 12);
+            
+            while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                && startpde < 512)
+            {
+                if (!(*pd)[startpde].present)
+                {
+                    (*pd)[startpde] = new page_table;
+                }
+                
+                page_table * pt = (page_table *)((*pd)[startpde].address << 12);
+                
+                while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                    && startpte < 512)
+                {
+                    (*pt)[startpte++] = physical_start;
+                    physical_start += 4096;
+                }
+                
+                if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+                {
+                    startpde++;
+                    startpte = 0;
+                }
+                
+                else
+                {
+                    return;
+                }
+            }
+            
+            if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+            {
+                startpde = 0;
+                startpdpte++;
+            }
+            
+            else
+            {
+                return;
+            }
+        }
+        
+        if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+        {
+            startpdpte = 0;
+            startpml4e++;
+        }
+        
+        else
+        {
+            return;
+        }
+    }
+}

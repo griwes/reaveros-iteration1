@@ -91,19 +91,6 @@ void screen::console::put_char(char c)
     }
     
     
-    _x++;
-    
-    if (_x == _maxx)
-    {
-        _x = 0;
-        _y++;
-        
-        if (_y == _maxy)
-        {
-            _scroll();
-        }
-    }
-    
     switch (_mode.bpp)
     {
         case 16:
@@ -115,6 +102,18 @@ void screen::console::put_char(char c)
             _put_32(c);
             
             break;
+    }    
+    _x++;
+    
+    if (_x == _maxx)
+    {
+        _x = 0;
+        _y++;
+        
+        if (_y == _maxy)
+        {
+            _scroll();
+        }
     }    
 }
 
@@ -218,5 +217,6 @@ void screen::console::print_mode_info()
 {
     screen::printl("Resolution: ", _mode.resolution_x, "x", _mode.resolution_y);
     screen::printl("Bits per pixel: ", _mode.bpp);
+    screen::printfl("Video memory: 0x%016x - 0x%016x", video_start(), video_end());
     screen::line();
 }

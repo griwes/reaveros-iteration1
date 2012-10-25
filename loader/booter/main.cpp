@@ -23,14 +23,12 @@
  * 
  **/
 
-#include <cstdint>
-#include <cstddef>
-
 #include <processor/processor.h>
 #include <screen/screen.h>
 #include <acpi/acpi.h>
 #include <memory/memory.h>
 #include <memory/memmap.h>
+#include <memory/x64paging.h>
 
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, screen::boot_mode * video_mode, void * font)
@@ -70,6 +68,8 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::print("[CPU  ] Entering long mode... ");
     processor::enter_long_mode();
+    memory::vas->map(screen::output->video_start(), screen::output->video_end(), screen::output->video_start());
+    memory::vas->map(screen::output->backbuffer_start(), screen::output->backbuffer_end(), screen::output->backbuffer_start());
     screen::printl("done.");
     
     screen::print("[ACPI ] Looking for RSDP... ");

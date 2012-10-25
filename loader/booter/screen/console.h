@@ -70,7 +70,17 @@ namespace screen
         
         uint32_t video_end()
         {
-            return _mode.addr + _y * _mode.bytes_per_line;
+            return _mode.addr + _mode.resolution_y * _mode.bytes_per_line;
+        }
+        
+        uint32_t backbuffer_start()
+        {
+            return _backbuffer;
+        }
+        
+        uint32_t backbuffer_end()
+        {
+            return _backbuffer + _mode.resolution_y * _mode.bytes_per_line;
         }
         
     private:

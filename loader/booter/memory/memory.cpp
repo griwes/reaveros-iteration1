@@ -31,6 +31,7 @@
 namespace memory
 {
     manager::allocator * default_allocator;
+    x64::pml4 * vas;
 }
 
 void memory::initialize(uint32_t placement, map & memory_map)
@@ -41,11 +42,11 @@ void memory::initialize(uint32_t placement, map & memory_map)
 void memory::prepare_long_mode()
 {
     default_allocator->align(4096);
-    x64::pml4 * pml4 = new x64::pml4;
+    vas = new x64::pml4;
     
     // identity map first 64 MiB
     x64::pdpt * table = new x64::pdpt;
-    (*pml4)[0] = table;
+    (*vas)[0] = table;
     
     x64::page_directory * pd = new x64::page_directory;
     (*table)[0] = pd;
@@ -61,7 +62,5 @@ void memory::prepare_long_mode()
         }
     }
     
-//    screen::output->map_screen_memory();
-    
-    processor::set_cr3((uint32_t)pml4);
+    processor::set_cr3((uint32_t)vas);
 }

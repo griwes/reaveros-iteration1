@@ -191,7 +191,7 @@ namespace screen
     }
     
     template<typename... T>
-    void printfl(const char * s, T &... a)
+    void printfl(const char * s, const T &... a)
     {
         printf(s, a...);
         line();

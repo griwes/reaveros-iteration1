@@ -59,7 +59,7 @@ namespace memory
             {
                 for (uint32_t i = 0; i < 512; ++i)
                 {
-                    entries[i] = {};
+                    entries[i] = page_table_entry();
                 }
             }
             
@@ -112,7 +112,7 @@ namespace memory
             {
                 for (uint32_t i = 0; i < 512; ++i)
                 {
-                    entries[i] = {};
+                    entries[i] = page_directory_entry();
                 }
             }
             
@@ -165,7 +165,7 @@ namespace memory
             {
                 for (uint32_t i = 0; i < 512; ++i)
                 {
-                    entries[i] = {};
+                    entries[i] = pdpt_entry();
                 }
             }
             
@@ -191,15 +191,6 @@ namespace memory
         
         struct pml4_entry
         {
-            pml4_entry & operator=(pml4 * pml)
-            {
-                present = 1;
-                read_write = 1;
-                address = (uint64_t)pml >> 12;
-                
-                return *this;
-            }
-            
             pml4_entry & operator=(pdpt * table)
             {
                 present = 1;
@@ -227,12 +218,10 @@ namespace memory
         {
             pml4()
             {
-                for (uint32_t i = 0; i < 511; ++i)
+                for (uint32_t i = 0; i < 512; ++i)
                 {
                     entries[i] = pml4_entry();
                 }
-                
-                entries[511] = this;
             }
             
             void map(uint64_t, uint64_t, uint64_t);

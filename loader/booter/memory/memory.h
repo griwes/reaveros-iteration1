@@ -25,9 +25,6 @@
 
 #pragma once
 
-#include <cstdint>
-#include <cstddef>
-
 #include <memory/memmap.h>
 #include <processor/processor.h>
 
@@ -38,7 +35,13 @@ namespace memory
         class allocator;
     }
     
+    namespace x64
+    {
+        struct pml4;
+    }
+    
     extern manager::allocator * default_allocator;
+    extern x64::pml4 * vas;
     
     void initialize(uint32_t, map &);
     void prepare_long_mode();
