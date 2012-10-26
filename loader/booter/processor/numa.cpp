@@ -23,52 +23,10 @@
  * 
  **/
 
-#pragma once
+#include <processor/numa.h>
+#include <acpi/tables.h>
 
-namespace acpi
+/*processor::numa_env::numa_env(acpi::srat * srat)
 {
-    struct srat;
-}
-
-namespace processor
-{
-    struct core
-    {
-        uint64_t lapic_id;
-        uint64_t numa_domain;
-        bool x2apic_entry;
-    };
     
-    struct cores
-    {
-        uint64_t size;
-        core * cores;
-    };
-    
-    struct memory_range
-    {
-        uint64_t base;
-        uint64_t end;
-    };
-    
-    struct memory_ranges
-    {
-        uint64_t size;
-        memory_range * ranges;
-    };
-    
-    struct numa_domain
-    {
-        uint64_t id;
-        memory_ranges memory;
-        processor::cores cores;
-    };
-    
-    struct numa_env
-    {
-        numa_env(acpi::srat *);
-        
-        uint64_t size;
-        numa_domain * domains;
-    };
-}
+}*/

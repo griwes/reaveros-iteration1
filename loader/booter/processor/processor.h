@@ -74,6 +74,11 @@ namespace processor
         }
     }
     
+    inline void invlpg(uint64_t address)
+    {
+        asm volatile ("invlpg (%0)" :: "r"(address) : "memory");
+    }
+    
     extern "C" void enter_long_mode();
     void setup_gdt();
 }

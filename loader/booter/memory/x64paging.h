@@ -225,6 +225,7 @@ namespace memory
             }
             
             void map(uint64_t, uint64_t, uint64_t);
+            void unmap(uint64_t, uint64_t);
             
             pml4_entry & operator[](uint64_t i)
             {

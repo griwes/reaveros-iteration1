@@ -24,10 +24,11 @@
  **/
 
 #include <memory/x64paging.h>
+#include <processor/processor.h>
 
 void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start)
 {
-    virtual_start &= ~(uint64_t)4096;
+    virtual_start &= ~(uint64_t)4095;
     virtual_end += 4095;
     virtual_end &= ~(uint64_t)4095;
     
@@ -73,8 +74,16 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)
                 {
+                    if ((*pt)[startpte].present)
+                    {
+                        PANIC("tried to map something at already mapped page");
+                    }
+                    
                     (*pt)[startpte++] = physical_start;
+                    processor::invlpg(virtual_start);
+                    
                     physical_start += 4096;
+                    virtual_start += 4096;
                 }
                 
                 if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
@@ -113,3 +122,100 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
         }
     }
 }
+
+void memory::x64::pml4::unmap(uint64_t virtual_start, uint64_t virtual_end)
+{
+    virtual_start &= ~(uint64_t)4095;
+    virtual_end += 4095;
+    virtual_end &= ~(uint64_t)4095;
+    
+    uint64_t startpml4e = (virtual_start >> 39) & 511;
+    uint64_t startpdpte = (virtual_start >> 30) & 511;
+    uint64_t startpde = (virtual_start >> 21) & 511;
+    uint64_t startpte = (virtual_start >> 12) & 511;
+    
+    uint64_t endpml4e = (virtual_end >> 39) & 511;
+    uint64_t endpdpte = (virtual_end >> 30) & 511;
+    uint64_t endpde = (virtual_end >> 21) & 511;
+    uint64_t endpte = (virtual_end >> 12) & 511;
+    
+    while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+    {
+        if (!entries[startpml4e].present)
+        {
+            PANIC("tried to unmap not mapped page");
+        }
+        
+        pdpt * table = (pdpt *)(entries[startpml4e].address << 12);
+        
+        while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+            && startpdpte < 512)
+        {
+            if (!(*table)[startpdpte].present)
+            {
+                PANIC("tried to unmap not mapped page");
+            }
+            
+            page_directory * pd = (page_directory *)((*table)[startpdpte].address << 12);
+            
+            while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                && startpde < 512)
+            {
+                if (!(*pd)[startpde].present)
+                {
+                    PANIC("tried to unmap not mapped page");
+                }
+                
+                page_table * pt = (page_table *)((*pd)[startpde].address << 12);
+                
+                while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                    && startpte < 512)
+                {
+                    if (!(*pt)[startpte].present)
+                    {
+                        PANIC("tried to unmap not mapped page");
+                    }
+                    
+                    (*pt)[startpte].present = 0;
+                    processor::invlpg(virtual_start);
+                    
+                    virtual_start += 4096;
+                }
+                
+                if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+                {
+                    startpde++;
+                    startpte = 0;
+                }
+                
+                else
+                {
+                    return;
+                }
+            }
+            
+            if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+            {
+                startpde = 0;
+                startpdpte++;
+            }
+            
+            else
+            {
+                return;
+            }
+        }
+        
+        if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+        {
+            startpdpte = 0;
+            startpml4e++;
+        }
+        
+        else
+        {
+            return;
+        }
+    }
+}
+

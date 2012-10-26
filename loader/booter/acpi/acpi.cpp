@@ -38,11 +38,11 @@ namespace
 {
     void install_rsdt(acpi::rsdp * ptr)
     {
-        memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->rsdt_ptr);
+        memory::vas->map(0xFFFFC000, 0xFFFFFFFF, ptr->rsdt_ptr);
         
-        if (((acpi::rsdt *)(0xFFFFA000 + ptr->rsdt_ptr % 4096))->validate("RSDT"))
+        if (((acpi::rsdt *)(0xFFFFC000 + ptr->rsdt_ptr % 4096))->validate("RSDT"))
         {
-            acpi::root = (acpi::rsdt *)(0xFFFFA000 + ptr->rsdt_ptr % 4096);
+            acpi::root = (acpi::rsdt *)(0xFFFFC000 + ptr->rsdt_ptr % 4096);
             
             return;
         }
@@ -55,18 +55,18 @@ namespace
     
     void install_xsdt(acpi::rsdp * ptr)
     {
-        memory::vas->map(0xFFFFA000, 0xFFFFFFFF, ptr->xsdt_ptr);
+        memory::vas->map(0xFFFFC000, 0xFFFFFFFF, ptr->xsdt_ptr);
         
-        if (((acpi::xsdt *)0xFFFFA000 + ptr->xsdt_ptr % 4096)->validate("XSDT"))
+        if (((acpi::xsdt *)0xFFFFC000 + ptr->xsdt_ptr % 4096)->validate("XSDT"))
         {
-            acpi::new_root = (acpi::xsdt *)(0xFFFFA000 + ptr->xsdt_ptr % 4096);
+            acpi::new_root = (acpi::xsdt *)(0xFFFFC000 + ptr->xsdt_ptr % 4096);
             
             return;
         }
         
         else
         {
-            memory::vas->unmap(0xFFFFA000, 0xFFFFFFFF);
+            memory::vas->unmap(0xFFFFC000, 0xFFFFFFFF);
             
             screen::print(" (XSDT invalid, falling back to RSDT) ");
             install_rsdt(ptr);
@@ -139,15 +139,39 @@ acpi::rsdp * acpi::find_rsdp()
 
 processor::numa_env * acpi::find_numa_domains()
 {
-    srat * resources = nullptr;
+    srat * resources = (srat *)0xFFFF8000;
     
     if (new_root)
     {
-        
+        for (uint64_t i = 0; i < (new_root->length - 36) / 4; ++i)
+        {
+            memory::vas->map(0xFFFF8000, 0xFFFFC000, new_root->entries[i]);
+            
+            if (resources->validate("SRAT"))
+            {
+                return new processor::numa_env(resources);
+            }
+            
+            memory::vas->unmap(0xFFFF8000, 0xFFFFC000);
+        }
     }
     
     else
     {
-        
+        for (uint64_t i = 0; i < (root->length - 36) / 4; ++i)
+        {
+            memory::vas->map(0xFFFF8000, 0xFFFFC000, root->entries[i]);
+            
+            if (resources->validate("SRAT"))
+            {
+                return new processor::numa_env(resources);
+            }
+            
+            memory::vas->unmap(0xFFFF8000, 0xFFFFC000);
+        }
     }
+    
+    PANIC("SRAT not found");
+    
+    return nullptr;
 }
