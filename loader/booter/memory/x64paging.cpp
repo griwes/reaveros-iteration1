@@ -176,7 +176,7 @@ void memory::x64::pml4::unmap(uint64_t virtual_start, uint64_t virtual_end)
                         PANIC("tried to unmap not mapped page");
                     }
                     
-                    (*pt)[startpte].present = 0;
+                    (*pt)[startpte++].present = 0;
                     processor::invlpg(virtual_start);
                     
                     virtual_start += 4096;
