@@ -39,16 +39,20 @@ namespace acpi
         
         bool validate()
         {
-            uint8_t checksum = 0;
-            
-            for (uint8_t i = 0; i < length; ++i)
+            if (signature[0] == 'R' && signature[1] == 'S' && signature[2] == 'D' && signature[3] == ' '
+                && signature[4] == 'P' && signature[5] == 'T' && signature[6] == 'R' && signature[7] == ' ')
             {
-                checksum += *((uint8_t *)this + i);
+                uint8_t checksum = 0;
+            
+                for (uint8_t i = 0; i < sizeof(rsdp); ++i)
+                {
+                    checksum += *((uint8_t *)this + i);
+                }
+            
+                return !checksum;
             }
             
-            return signature[0] == 'R' && signature[1] == 'S' && signature[2] == 'D' && signature[3] == ' '
-            && signature[4] == 'P' && signature[5] == 'T' && signature[6] == 'R' && signature[7] == ' '
-            && !checksum;
+            return false;
         }
     } __attribute__((packed));
     
@@ -66,15 +70,19 @@ namespace acpi
         
         bool validate(const char sign[])
         {
-            uint8_t checksum = 0;
-            
-            for (uint32_t i = 0; i < length; ++i)
+            if (signature[0] == sign[0] && signature[1] == sign[1] && signature[2] == sign[2] && signature[3] == sign[3])
             {
-                checksum += *((uint8_t *)this + i);
+                uint8_t checksum = 0;
+            
+                for (uint32_t i = 0; i < length; ++i)
+                {
+                    checksum += *((uint8_t *)this + i);
+                }
+            
+                return !checksum;
             }
             
-            return signature[0] == sign[0] && signature[1] == sign[1] && signature[2] == sign[2] && signature[3] == sign[3]
-            && !checksum;
+            return false;
         }
     } __attribute__((packed));
     

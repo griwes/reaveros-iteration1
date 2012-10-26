@@ -101,9 +101,9 @@ acpi::rsdp * acpi::find_rsdp()
     rsdp * ptr = (rsdp *)ebda;
     
     while (ptr < (rsdp *)(ebda + 1024))
-    {
+    {        
         if (ptr->validate())
-        {
+        {            
             install_root(ptr);
             
             return ptr;
@@ -114,7 +114,7 @@ acpi::rsdp * acpi::find_rsdp()
             ptr = (rsdp *)((uint32_t)ptr + 16);
         }
     }
-    
+
     ptr = (rsdp *)0xe0000;
     
     while (ptr < (rsdp *)0x100000)
