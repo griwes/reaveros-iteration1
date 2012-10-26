@@ -26,7 +26,46 @@
 #include <processor/numa.h>
 #include <acpi/tables.h>
 
-/*processor::numa_env::numa_env(acpi::srat * srat)
+processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
 {
+    acpi::srat_entry * entry = srat->entries;
     
-}*/
+    while ((uint64_t)entry - (uint64_t)srat < srat->length)
+    {
+        switch (entry->type)
+        {
+            case 0:
+            {
+                auto lapic = (acpi::srat_lapic_entry *)((uint64_t)entry + sizeof(*entry));
+                
+                //...
+                
+                entry = (acpi::srat_entry *)((uint64_t)lapic + sizeof(*lapic)); 
+                
+                break;
+            }
+            case 1:
+            {
+                auto memory = (acpi::srat_memory_entry *)((uint64_t)entry + sizeof(*entry));
+                
+                //...
+                
+                entry = (acpi::srat_entry *)((uint64_t)memory + sizeof(*memory));
+                
+                break;
+            }
+            case 2:
+            {
+                auto x2apic = (acpi::srat_x2apic_entry *)((uint64_t)entry + sizeof(*entry));
+                
+                //...
+                
+                entry = (acpi::srat_entry *)((uint64_t)x2apic + sizeof(*x2apic));
+                
+                break;
+            }
+            default:
+                PANIC("unknown entry in SRAT");
+        }
+    }
+}
