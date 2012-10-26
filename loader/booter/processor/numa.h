@@ -32,43 +32,67 @@ namespace acpi
 
 namespace processor
 {
-    struct core
+    struct numa_core
     {
+        numa_core() : lapic_id(0), x2apic_entry(false), next(nullptr) {}
+        
         uint64_t lapic_id;
-        uint64_t numa_domain;
         bool x2apic_entry;
+        
+        numa_core * next;
     };
     
-    struct cores
+    struct numa_cores
     {
+        numa_cores() : size(0), cores(nullptr) {}
+        
         uint64_t size;
-        core * cores;
+        numa_core * cores;
+        
+        void add_core(uint32_t, bool);
     };
     
     struct memory_range
     {
+        memory_range() : base(0), end(0), next(nullptr) {}
+        
         uint64_t base;
         uint64_t end;
+        
+        memory_range * next;
     };
     
     struct memory_ranges
     {
+        memory_ranges() : size(0), ranges(nullptr) {};
+        
         uint64_t size;
         memory_range * ranges;
+        
+        void add_range(uint64_t, uint64_t);
     };
     
     struct numa_domain
     {
+        numa_domain() : id(0), next(nullptr) {}
+        
         uint64_t id;
         memory_ranges memory;
-        processor::cores cores;
+        processor::numa_cores cores;
+        
+        numa_domain * next;
+        
+        void add_core(uint32_t, uint32_t, bool = false);
+        void add_memory_range(uint64_t, uint64_t, uint32_t);
     };
     
     struct numa_env
     {
         numa_env(acpi::srat *);
         
-        uint64_t size;
+        numa_domain * get_domain(uint32_t);
+        
+        uint32_t size;
         numa_domain * domains;
     };
 }
