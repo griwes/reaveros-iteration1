@@ -72,6 +72,15 @@ namespace screen
     
     void initialize(boot_mode *, void *);
     
+    template<unsigned N>
+    void print(const char (&s)[N])
+    {
+        for (uint32_t i = 0; i < N; ++i)
+        {
+            output->put_char(s[i]);
+        }
+    }
+    
     void print(const char *);
     void print(char);
     

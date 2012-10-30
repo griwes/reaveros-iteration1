@@ -139,12 +139,14 @@ acpi::rsdp * acpi::find_rsdp()
 
 processor::numa_env * acpi::find_numa_domains()
 {
-    srat * resources = (srat *)0xFFFF8000;
+    srat * resources;
     
     if (new_root)
     {
-        for (uint64_t i = 0; i < (new_root->length - 36) / 4; ++i)
+        for (uint64_t i = 0; i < (new_root->length - 36) / 8; ++i)
         {
+            resources = (srat *)(0xFFFF8000 + new_root->entries[i] % 4096);
+            
             memory::vas->map(0xFFFF8000, 0xFFFFC000, new_root->entries[i]);
             
             if (resources->validate("SRAT"))
@@ -160,6 +162,8 @@ processor::numa_env * acpi::find_numa_domains()
     {
         for (uint64_t i = 0; i < (root->length - 36) / 4; ++i)
         {
+            resources = (srat *)(0xFFFF8000 + root->entries[i] % 4096);
+            
             memory::vas->map(0xFFFF8000, 0xFFFFC000, root->entries[i]);
             
             if (resources->validate("SRAT"))

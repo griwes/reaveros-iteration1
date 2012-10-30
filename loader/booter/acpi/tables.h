@@ -23,6 +23,8 @@
  * 
  **/
 
+#include <screen/screen.h>
+
 namespace acpi
 {
     struct rsdp
@@ -68,7 +70,7 @@ namespace acpi
         uint32_t creator_id;
         uint32_t creator_revision;
         
-        bool validate(const char sign[])
+        bool validate(const char * sign)
         {
             if (signature[0] == sign[0] && signature[1] == sign[1] && signature[2] == sign[2] && signature[3] == sign[3])
             {
