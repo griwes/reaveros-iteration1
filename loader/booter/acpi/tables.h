@@ -80,7 +80,7 @@ namespace acpi
                 {
                     checksum += *((uint8_t *)this + i);
                 }
-            
+                
                 return !checksum;
             }
             

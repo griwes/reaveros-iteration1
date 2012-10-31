@@ -57,7 +57,7 @@ namespace
     {
         memory::vas->map(0xFFFFC000, 0xFFFFFFFF, ptr->xsdt_ptr);
         
-        if (((acpi::xsdt *)0xFFFFC000 + ptr->xsdt_ptr % 4096)->validate("XSDT"))
+        if (((acpi::xsdt *)(0xFFFFC000 + ptr->xsdt_ptr % 4096))->validate("XSDT"))
         {
             acpi::new_root = (acpi::xsdt *)(0xFFFFC000 + ptr->xsdt_ptr % 4096);
             
@@ -91,7 +91,9 @@ template<>
 void screen::print_impl(const acpi::rsdp & rsdp)
 {
     screen::printl("Revision: ", rsdp.revision);
-    screen::printl("OEMID: ", rsdp.oemid);
+    screen::print("OEMID: ");
+    screen::print<6>(rsdp.oemid);
+    screen::line();
 }
 
 acpi::rsdp * acpi::find_rsdp()
