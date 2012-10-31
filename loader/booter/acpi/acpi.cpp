@@ -177,7 +177,7 @@ processor::numa_env * acpi::find_numa_domains()
         }
     }
     
-    PANIC("SRAT not found");
+    screen::print(" (SRAT table not found, assuming single domain) ");
     
-    return nullptr;
+    return new processor::numa_env(nullptr);
 }

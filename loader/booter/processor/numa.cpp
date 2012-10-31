@@ -28,20 +28,36 @@
 #include <screen/screen.h>
 
 template<>
+void screen::print_impl(const processor::numa_domain &)
+{
+    // TODO
+}
+
+template<>
 void screen::print_impl(const processor::numa_env & env)
 {
-    screen::printl("Numer of NUMA domains: ", env.size);
+    if (!env.size)
+    {
+        screen::printl("No NUMA domains present.");
+    }
+    
+    screen::printl("Number of NUMA domains: ", env.size);
     
     auto domain = env.domains;
     for (uint32_t i = 0; i < env.size; ++i)
     {
-//        screen::printl(domain);
+        screen::printl(*domain);
         domain = domain->next;
     }
 }
 
 processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
 {
+    if (!srat)
+    {        
+        return;
+    }
+    
     acpi::srat_entry * entry = srat->entries;
     
     while ((uint64_t)entry - (uint64_t)srat < srat->length)
@@ -90,6 +106,15 @@ processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
 processor::numa_domain * processor::numa_env::get_domain(uint32_t domain)
 {
     auto current = domains;
+    
+    if (!current)
+    {
+        ++size;
+        
+        domains = new numa_domain;
+        domains->id = domain;
+        return domains;
+    }
     
     for (uint32_t i = 0; i < size; ++i)
     {
