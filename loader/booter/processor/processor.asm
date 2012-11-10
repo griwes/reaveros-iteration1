@@ -26,6 +26,8 @@ bits    32
 
 global  _check_long_mode
 global  enter_long_mode
+global  setup_gdt
+global  _setup_idt
 
 _check_long_mode:
     mov     eax, 0x80000000
@@ -63,3 +65,156 @@ enter_long_mode:
     
     ret
         
+setup_gdt:
+    pusha
+    lgdt    [gdt]
+    popa
+
+    jmp     0x10:.ret
+
+    .ret:
+    mov     ax, 0x20
+    mov     ds, ax
+    mov     es, ax
+    mov     fs, ax
+    mov     gs, ax
+    mov     ss, ax
+
+    ret
+    
+extern  idtr
+    
+_setup_idt:
+    ; disable PIC
+    push    eax
+    
+    mov al, 0xff
+    out 0xa1, al
+    out 0x21, al
+
+    pusha
+    lidt    [idtr]
+    popa
+    
+    sti
+
+    ret
+
+gdt_start:
+    ; null:
+    dq 0
+
+    ; code 64 bit: 
+    dw 0
+    dw 0
+    db 0
+    db 10011000b
+    db 00100000b
+    db 0
+
+    ; code 32 bit:
+    dw 0xffff
+    dw 0
+    db 0
+    db 10011010b
+    db 11001111b
+    db 0
+
+    ; data:
+    dw 0
+    dw 0
+    db 0
+    db 10010000b
+    db 0
+    db 0
+
+    ; data 32bit:
+    dw 0xffff
+    dw 0
+    db 0
+    db 10010010b
+    db 11001111b
+    db 0
+
+gdt_end:
+
+gdt:
+    dw gdt_end - gdt_start - 1
+    dd gdt_start
+
+%macro isr 1
+global  isr%1
+isr%1:
+    cli
+    push    dword 0
+    push    dword  %1
+    jmp     isrh
+%endmacro
+
+%macro isr_err 1
+global  isr%1
+isr%1:
+    cli
+    push    dword %1
+    jmp     isrh
+%endmacro
+
+bits    64
+
+isr 0
+isr 1
+isr 2
+isr 3
+isr 4
+isr 5
+isr 6
+isr 7
+isr_err 8
+isr 9
+isr_err 10
+isr_err 11
+isr_err 12
+isr_err 13
+isr_err 14
+isr 15
+isr 16
+isr 17
+isr 18
+isr 19
+isr 20
+isr 21
+isr 22
+isr 23
+isr 24
+isr 25
+isr 26
+isr 27
+isr 28
+isr 29
+isr 30
+isr 31
+
+extern  isr_handler
+
+isrh:
+    push    rax
+    push    rbx
+    push    rcx
+    push    rdx
+    push    rsi
+    push    rdi
+    
+    cli
+    call    isr_handler
+    sti
+    
+    pop     rdi
+    pop     rsi
+    pop     rdx
+    pop     rcx
+    pop     rbx
+    pop     rax
+    
+    add     esp, 8
+    
+    iretq

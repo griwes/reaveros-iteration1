@@ -79,16 +79,14 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::printl("[ACPI ] Printing RSDP info...");
     screen::printl(*rsdp);
-    
+
     screen::print("[ACPI ] Looking for NUMA domains... ");
     processor::numa_env * env = acpi::find_numa_domains();
     screen::printl("done.");
     
     screen::printl("[ACPI ] Printing NUMA domain info...");
     screen::printl(*env);
-    
-    for (;;);
-    
+        
 /*    screen::print("[MEM  ] Applying NUMA domains info to memory map... ");
     sane_map->apply_numa(env);
     screen::printl("done.");
@@ -98,7 +96,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
     memory::prepare_address_spaces();
-    screen::printl("done.");
+    screen::printl("done."); */
     
     screen::print("[CPU  ] Installing long mode GDT... ");
     processor::setup_gdt();
@@ -108,7 +106,9 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     processor::setup_idt();
     screen::printl("done.");
 
-    screen::print("[APIC ] Detecting I/O APICs... ");
+    for (;;);
+    
+/*    screen::print("[APIC ] Detecting I/O APICs... ");
     processor::ioapic_env * ioapics = acpi::find_ioapics();
     screen::printl("done.");
     

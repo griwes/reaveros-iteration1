@@ -28,9 +28,54 @@
 #include <screen/screen.h>
 
 template<>
-void screen::print_impl(const processor::numa_domain &)
+void screen::print_impl(const processor::numa_cores & cores)
 {
-    // TODO
+    if (cores.cores)
+    {
+        auto core = cores.cores;
+        
+        for (uint32_t i = 0; i < cores.size; ++i)
+        {
+            screen::printf("Core LAPIC ID: 0x%016x", core->lapic_id);
+            screen::printl(", x2APIC: ", (core->x2apic_entry ? "yes" : "no"));
+            core = core->next;
+        }
+    }
+    
+    else
+    {
+        screen::printl("<no cores>");
+    }
+}
+
+template<>
+void screen::print_impl(const processor::memory_ranges & ranges)
+{
+    if (ranges.ranges)
+    {
+        auto range = ranges.ranges;
+        
+        for (uint32_t i = 0; i < ranges.size; ++i)
+        {
+            screen::printfl(" - 0x%016x - 0x%016x", range->base, range->end);
+            range = range->next;
+        }
+    }
+    
+    else
+    {
+        screen::printl("<no memory>");
+    }
+}
+
+template<>
+void screen::print_impl(const processor::numa_domain & domain)
+{
+    screen::printfl("Domain ID: 0x%016x", domain.id);
+    screen::printl("Cores:");
+    screen::printl(domain.cores);
+    screen::printl("Memory ranges:");
+    screen::printl(domain.memory);
 }
 
 template<>

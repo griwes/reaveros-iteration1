@@ -29,11 +29,22 @@
 
 namespace processor
 {
-    namespace
+    extern "C" struct idt_entry
     {
-        extern "C" uint32_t _check_long_mode();
-    }
+        uint16_t offset_low;
+        uint16_t selector;
+        uint8_t zero;
+        uint8_t flags;
+        uint16_t offset_middle;
+        uint32_t offset_high;
+        uint32_t zero1;
+    } __attribute__((packed)) idt[256];
     
+    struct isr_stack_frame
+    {
+        
+    } __attribute__((packed));
+        
     inline void set_cr3(uint32_t pd)
     {
         asm volatile ("movl %%eax, %%cr3" :: "a"(pd) : "memory");
@@ -61,6 +72,8 @@ namespace processor
         asm volatile ("movl %%eax, %%cr0" :: "a"(cr0) : "memory");
     }
     
+    extern "C" uint32_t _check_long_mode();
+    
     inline void check_long_mode()
     {
         if (!_check_long_mode())
@@ -80,5 +93,6 @@ namespace processor
     }
     
     extern "C" void enter_long_mode();
-    void setup_gdt();
+    extern "C" void setup_gdt();
+    void setup_idt();
 }

@@ -38,6 +38,8 @@ namespace
 {
     void install_rsdt(acpi::rsdp * ptr)
     {
+        acpi::new_root = nullptr;
+        
         memory::vas->map(0xFFFFC000, 0xFFFFFFFF, ptr->rsdt_ptr);
         
         if (((acpi::rsdt *)(0xFFFFC000 + ptr->rsdt_ptr % 4096))->validate("RSDT"))
@@ -60,7 +62,7 @@ namespace
         if (((acpi::xsdt *)(0xFFFFC000 + ptr->xsdt_ptr % 4096))->validate("XSDT"))
         {
             acpi::new_root = (acpi::xsdt *)(0xFFFFC000 + ptr->xsdt_ptr % 4096);
-            
+                        
             return;
         }
         
@@ -69,6 +71,7 @@ namespace
             memory::vas->unmap(0xFFFFC000, 0xFFFFFFFF);
             
             screen::print(" (XSDT invalid, falling back to RSDT) ");
+
             install_rsdt(ptr);
         }
     }
