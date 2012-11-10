@@ -42,7 +42,9 @@ namespace processor
     
     struct isr_stack_frame
     {
-        
+        uint64_t rdi, rsi, rdx, rcx, rbx, rax;
+        uint64_t number, code;
+        uint64_t rip, cs, rflags, rsp, ss;
     } __attribute__((packed));
         
     inline void set_cr3(uint32_t pd)

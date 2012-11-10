@@ -180,7 +180,7 @@ namespace screen
     }
     
     template<typename First, typename... T>
-    void printf(const char * str, const First & first, const T &... rest)
+    void printf(const char *& str, const First & first, const T &... rest)
     {
         printf(str, first);
         
@@ -197,6 +197,12 @@ namespace screen
         }
         
         printf(str);
+    }
+    
+    template<typename... T>
+    void printf(const char * str, const T &... rest)
+    {
+        printf(str, rest...);
     }
     
     template<typename... T>

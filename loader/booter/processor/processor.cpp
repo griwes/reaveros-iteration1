@@ -126,13 +126,59 @@ void processor::setup_idt()
     _setup_idte(30, (uint64_t)isr30, 0x08, 0x8e);
     _setup_idte(31, (uint64_t)isr31, 0x08, 0x8e);
     
-    ::idtr.limit = 32;
+    ::idtr.limit = 32 * 16 - 1;
     ::idtr.base = (uint64_t)idt;
     
     _setup_idt();
 }
 
-extern "C" void isr_handler(processor::isr_stack_frame)
+const char * exception_messages[] = 
 {
-    screen::printl("ISR handler called");
+    "#DE: Divide error",
+    "#DB: Reserved",
+    "###: Non Maskable Interrupt",
+    "#BP: Breakpoint",
+    "#OF: Overflow",
+    "#BR: BOUND Range Exceeded",
+    "#UD: Invalid Opcode",
+    "#NM: No Math Coprocessor",
+    "#DF: Double Fault",
+    "###: Coprocessor Segment Overrun (reserved)",
+    "#TS: Invalid TSS",
+    "#NP: Segment Not Present",
+    "#SS: Stack Segment Fault",
+    "#GP: General Protection Fault",
+    "#PF: Page Fault",
+    "###: Reserved",
+    "#MF: x87 FPU Error",
+    "#AC: Alignment Check",
+    "#MC: Machine Check",
+    "#XM: SIMD Floating-Point Exception"
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved",
+    "###: Reserved"
+};
+
+extern "C" void isr_handler(processor::isr_stack_frame stack_frame)
+{
+    screen::line();
+    screen::printl("ISR#", (uint8_t)stack_frame.number, ": ", exception_messages[stack_frame.number]);
+    screen::printfl("RAX = 0x%016x RBX = 0x%016x\nRCX = 0x%016x RDX = 0x%016x", stack_frame.rax, stack_frame.rbx,
+                   stack_frame.rcx, stack_frame.rdx);
+    screen::printfl("RSI = 0x%016x RDI = 0x%016x\nCS  = 0x%016x RIP = 0x%016x", stack_frame.rsi, stack_frame.rdi,
+                   stack_frame.cs, stack_frame.rip);
+    screen::printfl("SS  = 0x%016x RSP = 0x%016x", stack_frame.ss, stack_frame.rsp);
+    
+    // TODO: error code handling, cr2 handling for page faults
+    
+    asm volatile ("cli; hlt");
 }

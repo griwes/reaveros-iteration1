@@ -105,7 +105,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::print("[CPU  ] Installing long mode IDT... ");
     processor::setup_idt();
     screen::printl("done.");
-    
+
     for (;;);
     
 /*    screen::print("[APIC ] Detecting I/O APICs... ");

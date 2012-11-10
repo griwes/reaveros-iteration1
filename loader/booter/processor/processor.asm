@@ -90,8 +90,6 @@ _setup_idt:
     popa
     
     sti
-
-;    int     0x10
     
     ret
 
@@ -137,12 +135,14 @@ gdt:
     dw gdt_end - gdt_start - 1
     dd gdt_start
 
+bits    64
+
 %macro isr 1
 global  isr%1
 isr%1:
     cli
-    push    dword 0
-    push    dword  %1
+    push    0
+    push    %1
     jmp     isrh
 %endmacro
 
@@ -150,11 +150,9 @@ isr%1:
 global  isr%1
 isr%1:
     cli
-    push    dword %1
+    push    %1
     jmp     isrh
 %endmacro
-
-bits    64
 
 isr 0
 isr 1
@@ -212,7 +210,7 @@ isrh:
     pop     rbx
     pop     rax
     
-    add     esp, 8
+    add     esp, 16
     
     iretq
 
