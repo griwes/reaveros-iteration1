@@ -142,45 +142,80 @@ acpi::rsdp * acpi::find_rsdp()
     return nullptr;
 }
 
+namespace 
+{
+    acpi::description_table_header * _find_table(const char * sign, uint64_t addr)
+    {
+        acpi::description_table_header * table;
+        
+        if (acpi::new_root)
+        {
+            for (uint64_t i = 0; i < (acpi::new_root->length - 36) / 8; ++i)
+            {
+                table = (acpi::description_table_header *)(addr + acpi::new_root->entries[i] % 4096);
+                
+                memory::vas->map(addr, addr + 16 * 1024, acpi::new_root->entries[i]);
+                
+                if (table->validate(sign))
+                {
+                    return table;
+                }
+                
+                memory::vas->unmap(0xFFFF8000, 0xFFFFC000);
+            }
+        }
+        
+        else
+        {
+            for (uint64_t i = 0; i < (acpi::root->length - 36) / 4; ++i)
+            {
+                table = (acpi::description_table_header *)(addr + acpi::root->entries[i] % 4096);
+                
+                memory::vas->map(addr, addr + 16 * 1024, acpi::root->entries[i]);
+                
+                if (table->validate(sign))
+                {
+                    return table;
+                }
+                
+                memory::vas->unmap(addr, addr + 16 * 1024);
+            }
+        }
+        
+        return nullptr;
+    }
+}
+
 processor::numa_env * acpi::find_numa_domains()
 {
-    srat * resources;
+    srat * resources = (srat *)_find_table("SRAT", 0xFFFF8000);
     
-    if (new_root)
+    if (!resources)
     {
-        for (uint64_t i = 0; i < (new_root->length - 36) / 8; ++i)
-        {
-            resources = (srat *)(0xFFFF8000 + new_root->entries[i] % 4096);
-            
-            memory::vas->map(0xFFFF8000, 0xFFFFC000, new_root->entries[i]);
-            
-            if (resources->validate("SRAT"))
-            {
-                return new processor::numa_env(resources);
-            }
-            
-            memory::vas->unmap(0xFFFF8000, 0xFFFFC000);
-        }
+        screen::print(" (SRAT table not found, assuming single domain) ");
     }
     
-    else
+    return new processor::numa_env(resources);
+}
+
+processor::apic_env * acpi::find_apics()
+{
+    madt * apics = (madt *)_find_table("APIC", 0xFFFF4000);
+    
+    if (!apics)
     {
-        for (uint64_t i = 0; i < (root->length - 36) / 4; ++i)
-        {
-            resources = (srat *)(0xFFFF8000 + root->entries[i] % 4096);
-            
-            memory::vas->map(0xFFFF8000, 0xFFFFC000, root->entries[i]);
-            
-            if (resources->validate("SRAT"))
-            {
-                return new processor::numa_env(resources);
-            }
-            
-            memory::vas->unmap(0xFFFF8000, 0xFFFFC000);
-        }
+        screen::printl("failed.");
+        screen::line();
+        screen::printl("This software cannot be executed on your PC, because it does not ACPI MADT table.");
+        screen::printl("To run this software, upgrade your CPU to one that has ACPI compatible APIC setting.");
+        screen::printl("Note: this message is here just in case; if you are actually seeing it during boot,");
+        screen::printl("please send a report about this with your machine specification to one of ReaverOS sites");
+        screen::printl("(preferably Github repository). This message is intended to be extremely rare, as all");
+        screen::printl("machines that passed initial test - having 64 bit processor - should also have the ACPI");
+        screen::printl("table mentioned above.");
+        
+        asm volatile ("cli; hlt");
     }
     
-    screen::print(" (SRAT table not found, assuming single domain) ");
-    
-    return new processor::numa_env(nullptr);
+    return new processor::apic_env(apics);
 }

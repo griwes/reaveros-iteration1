@@ -23,18 +23,9 @@
  * 
  **/
 
-#pragma once
-
-#include <processor/numa.h>
 #include <processor/apic.h>
-#include <screen/screen.h>
 
-namespace acpi
-{   
-    struct rsdp;
-    
-    rsdp * find_rsdp();
-    
-    processor::numa_env * find_numa_domains();
-    processor::apic_env * find_apics();
+processor::apic_env::apic_env(acpi::madt * )
+{
+
 }

@@ -23,6 +23,8 @@
  * 
  **/
 
+#pragma once
+
 #include <screen/screen.h>
 
 namespace acpi
@@ -140,6 +142,15 @@ namespace acpi
     {
         srat_entry entries[1];
     } __attribute__((packed));
+    
+    struct madt_entry
+    {
+    };
+    
+    struct madt : public description_table_header
+    {
+        madt_entry entries[1];
+    };
     
     extern rsdt * root;
     extern xsdt * new_root;

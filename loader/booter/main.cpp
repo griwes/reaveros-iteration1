@@ -29,7 +29,6 @@
 #include <memory/memory.h>
 #include <memory/memmap.h>
 #include <memory/x64paging.h>
-#include <processor/numa.h>
 
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, screen::boot_mode * video_mode, void * font)
@@ -106,25 +105,22 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     processor::setup_idt();
     screen::printl("done.");
 
-    for (;;);
-    
-/*    screen::print("[APIC ] Detecting I/O APICs... ");
-    processor::ioapic_env * ioapics = acpi::find_ioapics();
+    screen::print("[APIC ] Detecting I/O APICs... ");
+    processor::apic_env * apics = acpi::find_apics();
     screen::printl("done.");
     
     screen::printl("[APIC ] Printing I/O APIC info...");
-    screen::print(*ioapics);
+    screen::print(*apics);
     
-    screen::print("[APIC ] Initializing I/O APICs... ");
-    processor::setup_io_apic();
+    for (;;);
+    
+/*    screen::print("[APIC ] Initializing I/O APICs... ");
+    processor::setup_io_apic(apicenv);
     screen::printl("done.");
     
     screen::print("[APIC ] Initializing LAPIC... ");
-    processor::setup_lapic();
+    processor::setup_lapic(apicenv);
     screen::printl("done.");
-    
-    screen::printl("[APIC ] Printing APIC status...");
-    processor::print_apic_status();
     
     for (auto & domain : env)
     {

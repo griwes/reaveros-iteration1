@@ -25,16 +25,13 @@
 
 #pragma once
 
-#include <processor/numa.h>
-#include <processor/apic.h>
-#include <screen/screen.h>
+#include <acpi/tables.h>
 
-namespace acpi
-{   
-    struct rsdp;
-    
-    rsdp * find_rsdp();
-    
-    processor::numa_env * find_numa_domains();
-    processor::apic_env * find_apics();
+namespace processor
+{
+    class apic_env
+    {
+    public:
+        apic_env(acpi::madt *);
+    };
 }
