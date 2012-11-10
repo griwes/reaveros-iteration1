@@ -91,6 +91,8 @@ _setup_idt:
     
     sti
 
+;    int     0x10
+    
     ret
 
 gdt_start:
@@ -197,10 +199,12 @@ isrh:
     push    rsi
     push    rdi
     
-    cli
-    call    isr_handler
-    sti
+    push    0x10
+    push    plm
     
+    retf
+    
+.sti:    
     pop     rdi
     pop     rsi
     pop     rdx
@@ -211,3 +215,14 @@ isrh:
     add     esp, 8
     
     iretq
+
+bits    32
+
+plm:
+    call    isr_handler
+    
+    push    dword 0x8
+    push    isrh.sti
+    
+    retf
+    
