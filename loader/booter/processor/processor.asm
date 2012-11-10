@@ -85,13 +85,6 @@ setup_gdt:
 extern  idtr
     
 _setup_idt:
-    ; disable PIC
-    push    eax
-    
-    mov al, 0xff
-    out 0xa1, al
-    out 0x21, al
-
     pusha
     lidt    [idtr]
     popa

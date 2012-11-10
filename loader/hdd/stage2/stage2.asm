@@ -132,6 +132,18 @@ stage2:
     or      dl, 1
     mov     cr0, edx
 
+    cli
+    mov al, 0xff                ; mask PIC
+    out 0xa1, al
+    out 0x21, al
+    sti
+    
+    nop
+    nop
+    nop
+    nop
+    nop
+
     cli                         ; long time until we see again, interrupts...
 
     jmp     0x08:stage3

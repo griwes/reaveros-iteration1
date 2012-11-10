@@ -126,12 +126,7 @@ void processor::setup_idt()
     _setup_idte(30, (uint64_t)isr30, 0x08, 0x8e);
     _setup_idte(31, (uint64_t)isr31, 0x08, 0x8e);
     
-    for (uint32_t i = 32; i < 256; ++i)
-    {
-        _setup_idte(i, (uint64_t)isr31, 0x10, 0x8e);
-    }
-    
-    ::idtr.limit = 256;
+    ::idtr.limit = 32;
     ::idtr.base = (uint64_t)idt;
     
     _setup_idt();
