@@ -79,31 +79,6 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[ACPI ] Printing RSDP info...");
     screen::printl(*rsdp);
 
-    screen::print("[ACPI ] Looking for NUMA domains... ");
-    processor::numa_env * env = acpi::find_numa_domains();
-    screen::printl("done.");
-    
-    screen::printl("[ACPI ] Printing NUMA domain info...");
-    screen::printl(*env);
-
-/*    screen::print("[CLUST] Preparing clusters... ");
-    processor::cluster_env * clusters = new processor::cluster_env(env);
-    screen::printl("done.");
-    
-    screen::printl("[CLUST] Printing cluster info...");
-    screen::printl(*clusters);
-    
-    screen::print("[MEM  ] Applying clusters to memory map... ");
-    sane_map->apply_numa(env);
-    screen::printl("done.");
-    
-    screen::printl("[MEM  ] Printing cluster-affected memory map... ");
-    screen::printl(*sane_map);
-    
-    screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
-    memory::prepare_address_spaces();
-    screen::printl("done."); */
-    
     screen::print("[CPU  ] Installing long mode GDT... ");
     processor::setup_gdt();
     screen::printl("done.");
@@ -127,6 +102,31 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::print("[APIC ] Initializing LAPIC... ");
     processor::setup_lapic(apicenv);
+    screen::printl("done.");
+    
+    screen::print("[ACPI ] Looking for NUMA domains... ");
+    processor::numa_env * env = acpi::find_numa_domains(apics);
+    screen::printl("done.");
+    
+    screen::printl("[ACPI ] Printing NUMA domain info...");
+    screen::printl(*env);
+    
+    screen::print("[CLUST] Preparing clusters... ");
+    processor::cluster_env * clusters = new processor::cluster_env(env);
+    screen::printl("done.");
+       
+    screen::printl("[CLUST] Printing cluster info...");
+    screen::printl(*clusters);
+        
+    screen::print("[MEM  ] Applying clusters to memory map... ");
+    sane_map->apply_clusters(env);
+    screen::printl("done.");
+        
+    screen::printl("[MEM  ] Printing cluster-affected memory map... ");
+    screen::printl(*sane_map);
+        
+    screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
+    memory::prepare_address_spaces();
     screen::printl("done.");
     
     for (auto & domain : env)

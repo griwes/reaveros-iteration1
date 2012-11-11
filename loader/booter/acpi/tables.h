@@ -143,12 +143,75 @@ namespace acpi
         srat_entry entries[1];
     } __attribute__((packed));
     
+    struct madt_lapic_entry
+    {
+        uint8_t acpi_id;
+        uint8_t apic_id;
+        uint32_t flags;
+    } __attribute__((packed));
+    
+    struct madt_ioapic_entry
+    {
+        uint8_t apic_id;
+        uint8_t reserved;
+        uint32_t base_address;
+        uint32_t int_base;
+    } __attribute__((packed));
+    
+    struct madt_int_override_entry
+    {
+        uint8_t bus;
+        uint8_t source;
+        uint32_t int_number;
+        uint16_t flags;
+    } __attribute__((packed));
+    
+    struct madt_nmi_source_entry
+    {
+        uint16_t flags;
+        uint32_t int_number;
+    } __attribute__((packed));
+    
+    struct madt_lapic_nmi_entry
+    {
+        uint8_t acpi_id;
+        uint16_t flags;
+        uint8_t int_number;
+    } __attribute__((packed));
+    
+    struct madt_lapic_address_override_entry
+    {
+        uint16_t reserved;
+        uint64_t base_address;
+    } __attribute__((packed));
+    
+    struct madt_x2apic_entry
+    {
+        uint16_t reserved;
+        uint32_t x2apic_id;
+        uint32_t flags;
+        uint32_t acpi_uuid;
+    } __attribute__((packed));
+    
+    struct madt_x2apic_nmi_entry
+    {
+        uint16_t flags;
+        uint32_t acpi_uuid;
+        uint8_t int_number;
+        uint8_t reserved;
+        uint16_t reserved2;
+    } __attribute__((packed));
+    
     struct madt_entry
     {
-    };
+        uint8_t type;
+        uint8_t length;
+    } __attribute__((packed));
     
     struct madt : public description_table_header
     {
+        uint32_t lic_address;
+        uint32_t flags;
         madt_entry entries[1];
     };
     
