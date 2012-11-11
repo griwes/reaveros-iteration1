@@ -85,12 +85,19 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::printl("[ACPI ] Printing NUMA domain info...");
     screen::printl(*env);
-        
-/*    screen::print("[MEM  ] Applying NUMA domains info to memory map... ");
+
+/*    screen::print("[CLUST] Preparing clusters... ");
+    processor::cluster_env * clusters = new processor::cluster_env(env);
+    screen::printl("done.");
+    
+    screen::printl("[CLUST] Printing cluster info...");
+    screen::printl(*clusters);
+    
+    screen::print("[MEM  ] Applying clusters to memory map... ");
     sane_map->apply_numa(env);
     screen::printl("done.");
     
-    screen::printl("[MEM  ] Printing NUMA-affected memory map... ");
+    screen::printl("[MEM  ] Printing cluster-affected memory map... ");
     screen::printl(*sane_map);
     
     screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
@@ -124,7 +131,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     for (auto & domain : env)
     {
-        screen::printfl("[NUMA ] Booting NUMA domain #%2d... ", domain.id, domain.id);
+        screen::printfl("[CLUST] Booting cluster #%2d... ", domain.id, domain.id);
         processor::boot_core(domain.cores[0].id, domain.id, sane_map);
         screen::printl("done.");
     }
