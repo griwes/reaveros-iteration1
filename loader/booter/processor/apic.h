@@ -29,9 +29,52 @@
 
 namespace processor
 {
+    struct ioapic
+    {
+        ioapic() : id(0), base_address(0), base_int(0), next(nullptr) {}
+        
+        uint8_t id;
+        uint32_t base_address;
+        uint32_t base_int;
+        
+        ioapic * next;
+    };
+    
+    struct lapic
+    {
+        lapic() : acpi_id(0), apic_id(0), nmi_int(0), next(nullptr) {}
+        
+        uint8_t acpi_id;
+        uint8_t apic_id;
+        uint8_t nmi_int;
+        
+        lapic * next;
+    };
+    
+    struct x2apic
+    {
+        x2apic() : apic_id(0), acpi_uuid(0), nmi_int(0), next(nullptr) {}
+        
+        uint32_t apic_id;
+        uint32_t acpi_uuid;
+        uint8_t nmi_int;
+        
+        x2apic * next;
+    };
+    
     class apic_env
     {
     public:
         apic_env(acpi::madt *);
+        
+        void add_ioapic(ioapic *);
+        void add_lapic(lapic *);
+        void add_x2apic(x2apic *);
+        
+        uint32_t base;
+        uint32_t nmi_number;
+        ioapic * ioapics;
+        lapic * lapics;
+        x2apic * x2apics;
     };
 }

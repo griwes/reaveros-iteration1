@@ -116,8 +116,6 @@ processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
                 numa_domain * domain = get_domain(lapic->domain | lapic->domain2 << 8 | lapic->domain3 << 16);
                 domain->add_core(lapic->apic_id, lapic->flags);
                 
-                entry = (acpi::srat_entry *)((uint64_t)lapic + sizeof(*lapic)); 
-                
                 break;
             }
             case 1:
@@ -126,8 +124,6 @@ processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
                 
                 numa_domain * domain = get_domain(memory->domain);
                 domain->add_memory_range(memory->base, memory->length, memory->flags);
-                
-                entry = (acpi::srat_entry *)((uint64_t)memory + sizeof(*memory));
                 
                 break;
             }
@@ -138,13 +134,13 @@ processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
                 numa_domain * domain = get_domain(x2apic->domain);
                 domain->add_core(x2apic->x2apic_id, x2apic->flags, true);
                 
-                entry = (acpi::srat_entry *)((uint64_t)x2apic + sizeof(*x2apic));
-                
                 break;
             }
             default:
                 PANIC("unknown entry in SRAT");
         }
+        
+        entry = (acpi::srat_entry *)((uint64_t)entry + entry->length); 
     }
 }
 
