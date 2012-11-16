@@ -118,6 +118,7 @@ processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
                 
                 break;
             }
+            
             case 1:
             {
                 auto memory = (acpi::srat_memory_entry *)((uint64_t)entry + sizeof(*entry));
@@ -127,6 +128,7 @@ processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
                 
                 break;
             }
+            
             case 2:
             {
                 auto x2apic = (acpi::srat_x2apic_entry *)((uint64_t)entry + sizeof(*entry));
@@ -136,8 +138,6 @@ processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
                 
                 break;
             }
-            default:
-                PANIC("unknown entry in SRAT");
         }
         
         entry = (acpi::srat_entry *)((uint64_t)entry + entry->length); 

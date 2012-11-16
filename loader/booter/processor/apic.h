@@ -62,9 +62,8 @@ namespace processor
         x2apic * next;
     };
     
-    class apic_env
+    struct apic_env
     {
-    public:
         apic_env(acpi::madt *);
         
         void add_ioapic(ioapic *);

@@ -155,7 +155,7 @@ namespace acpi
         uint8_t apic_id;
         uint8_t reserved;
         uint32_t base_address;
-        uint32_t int_base;
+        uint32_t base_int;
     } __attribute__((packed));
     
     struct madt_int_override_entry
