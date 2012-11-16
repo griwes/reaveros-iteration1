@@ -161,7 +161,7 @@ namespace
                     return table;
                 }
                 
-                memory::vas->unmap(0xFFFF8000, 0xFFFFC000);
+                memory::vas->unmap(addr, addr + 16 * 1024);
             }
         }
         
