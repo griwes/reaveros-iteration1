@@ -60,7 +60,8 @@ void screen::print_impl(const processor::ioapic & ioapics)
     
     if (ioapics.next)
     {
-        screen::printl(*ioapics.next);
+        screen::line();
+        screen::print(*ioapics.next);
     }
 }
 
@@ -73,7 +74,8 @@ void screen::print_impl(const processor::lapic & lapics)
     
     if (lapics.next)
     {
-        screen::printl(*lapics.next);
+        screen::line();
+        screen::print(*lapics.next);
     }
 }
 
@@ -86,7 +88,8 @@ void screen::print_impl(const processor::x2apic & x2apics)
     
     if (x2apics.next)
     {
-        screen::printl(*x2apics.next);
+        screen::line();
+        screen::print(*x2apics.next);
     }
 }
 
