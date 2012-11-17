@@ -31,13 +31,26 @@ namespace processor
 {
     struct ioapic
     {
-        ioapic() : id(0), base_address(0), base_int(0), next(nullptr) {}
+        ioapic() : id(0), base_address(0), base_int(0), size(0), next(nullptr) {}
         
         uint8_t id;
         uint32_t base_address;
         uint32_t base_int;
+        uint8_t size;
         
         ioapic * next;
+        
+        void write_register(uint8_t reg, uint32_t val)
+        {
+            *(uint32_t *)(base_address) = reg;
+            *(uint32_t *)(base_address + 0x10) = val;
+        }
+        
+        uint32_t read_register(uint8_t reg)
+        {
+            *(uint32_t *)(base_address) = reg;
+            return *(uint32_t *)(base_address + 0x10);
+        }
     };
     
     struct lapic
@@ -84,10 +97,12 @@ namespace processor
         lapic * get_lapic(uint8_t);
         x2apic * get_x2apic(uint32_t);
         
-        uint32_t base;
+        uint64_t base;
         ioapic * ioapics = nullptr;
         lapic * lapics = nullptr;
         x2apic * x2apics = nullptr;
         nmi * global_nmis = nullptr;
     };
+    
+    void setup_io_apics(processor::apic_env *);
 }

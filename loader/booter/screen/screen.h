@@ -163,6 +163,11 @@ namespace screen
                                         switch (*++str)
                                         {
                                             case 'x':
+                                                for (int32_t i = sizeof(64) - sizeof(T); i >= 0; i--)
+                                                {
+                                                    print('0');
+                                                }
+                                                
                                                 for (int32_t i = sizeof(T) * 8 - 4; i >= 0; i -= 4)
                                                 {
                                                     print("0123456789ABCDEF"[(param >> i) & 0xf]);

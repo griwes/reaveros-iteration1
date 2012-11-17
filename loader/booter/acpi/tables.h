@@ -213,7 +213,7 @@ namespace acpi
         uint32_t lic_address;
         uint32_t flags;
         madt_entry entries[1];
-    };
+    } __attribute__((packed));
     
     extern rsdt * root;
     extern xsdt * new_root;

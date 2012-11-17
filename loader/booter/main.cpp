@@ -94,14 +94,15 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[APIC ] Printing APIC info...");
     screen::print(*apics);
     
-    for (;;);
     
-/*    screen::print("[APIC ] Initializing I/O APICs... ");
-    processor::setup_io_apic(apicenv);
+    screen::print("[APIC ] Initializing I/O APICs... ");
+    processor::setup_io_apics(apics);
     screen::printl("done.");
     
-    screen::print("[APIC ] Initializing Local APIC... ");
-    processor::setup_lapic(apicenv);
+    for (;;);
+    
+/*    screen::print("[APIC ] Initializing Local APIC... ");
+    processor::setup_lapic(apics);
     screen::printl("done.");
     
     screen::print("[ACPI ] Looking for NUMA domains... ");

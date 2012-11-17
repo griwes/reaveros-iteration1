@@ -25,12 +25,14 @@
 
 #include <processor/apic.h>
 #include <screen/screen.h>
+#include <memory/memory.h>
+#include <memory/x64paging.h>
 
 template<>
 void screen::print_impl(const processor::apic_env & env)
 {
-    screen::line();
     screen::printfl("Local APIC memory address: 0x%016x", env.base);
+    screen::line();
     
     if (env.ioapics)
     {
@@ -57,6 +59,7 @@ void screen::print_impl(const processor::ioapic & ioapics)
     screen::printl("I/O APIC ID: ", ioapics.id);
     screen::printfl("I/O APIC base address: 0x%016x", ioapics.base_address);
     screen::printl("I/O APIC base interrupt number: ", ioapics.base_int);
+    screen::printl("I/O APIC number of interrupt vectors: ", ioapics.size);
     
     if (ioapics.next)
     {
@@ -128,10 +131,16 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(madt->lic_address)
                 
                 processor::ioapic * io = new processor::ioapic;
             
-                io->base_address = ioapic->base_address;
                 io->base_int = ioapic->base_int;
                 io->id = ioapic->apic_id;
-            
+                
+                memory::vas->map(0xffff0000, 0xffff1000, ioapic->base_address);
+                io->base_address = 0xffff0000;
+                io->size = (io->read_register(1) >> 16) & 8;
+                memory::vas->unmap(0xffff0000, 0xffff1000);
+                    
+                io->base_address = ioapic->base_address;
+                
                 add_ioapic(io);
                 
                 break;
@@ -148,9 +157,9 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(madt->lic_address)
             
             case 5:
             {
-                auto override = (acpi::madt_lapic_address_override_entry *)((uint64_t)entry + sizeof(*entry));
+                //auto override = (acpi::madt_lapic_address_override_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                base = override->base_address;
+                //base = override->base_address;
                 
                 break;
             }
@@ -370,4 +379,20 @@ void processor::apic_env::add_global_nmi(uint32_t id)
     }
     
     entry->next = new nmi{id, nullptr};
+}
+
+namespace
+{
+    void _setup_io_apic(processor::ioapic * )//io)
+    {
+        
+    }
+}
+
+void processor::setup_io_apics(processor::apic_env * apics)
+{
+    for (auto entry = apics->ioapics; entry; entry = entry->next)
+    {
+        _setup_io_apic(entry);
+    }
 }
