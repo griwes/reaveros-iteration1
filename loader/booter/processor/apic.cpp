@@ -70,7 +70,7 @@ void screen::print_impl(const processor::lapic & lapics)
 {
     screen::printl("Local APIC ID: ", lapics.apic_id);
     screen::printl("Local APIC ACPI ID: ", lapics.acpi_id);
-    screen::printl("Local APIC NMI vector: ", lapics.nmi_int);
+    if (lapics.nmi_specified) screen::printl("Local APIC NMI vector: ", lapics.nmi_int);
     
     if (lapics.next)
     {
@@ -84,7 +84,7 @@ void screen::print_impl(const processor::x2apic & x2apics)
 {
     screen::printl("x2 Local APIC ID: ", x2apics.apic_id);
     screen::printl("x2 Local APIC ACPI UUID: ", x2apics.acpi_uuid);
-    screen::printl("x2 Local APIC NMI vector: ", x2apics.nmi_int);
+    if (x2apics.nmi_specified) screen::printl("x2 Local APIC NMI vector: ", x2apics.nmi_int);
     
     if (x2apics.next)
     {
@@ -93,8 +93,7 @@ void screen::print_impl(const processor::x2apic & x2apics)
     }
 }
 
-processor::apic_env::apic_env(acpi::madt * madt) : base(0xfee00000), nmi_number(0), ioapics(nullptr), lapics(nullptr), 
-    x2apics(nullptr)
+processor::apic_env::apic_env(acpi::madt * madt) : base(madt->lic_address)
 {
     if (!madt)
     {        
@@ -111,11 +110,14 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(0xfee00000), nmi_number(
             {
                 auto lapic = (acpi::madt_lapic_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                processor::lapic * l = new processor::lapic;
-                l->acpi_id = lapic->acpi_id;
-                l->apic_id = lapic->apic_id;
+                if (lapic->flags & 1)
+                {
+                    processor::lapic * l = new processor::lapic;
+                    l->acpi_id = lapic->acpi_id;
+                    l->apic_id = lapic->apic_id;
                 
-                add_lapic(l);
+                    add_lapic(l);
+                }
                 
                 break;
             }
@@ -125,48 +127,30 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(0xfee00000), nmi_number(
                 auto ioapic = (acpi::madt_ioapic_entry *)((uint64_t)entry + sizeof(*entry));
                 
                 processor::ioapic * io = new processor::ioapic;
-                
+            
                 io->base_address = ioapic->base_address;
                 io->base_int = ioapic->base_int;
                 io->id = ioapic->apic_id;
-                
-                add_ioapic(io);
-                
-                break;
-            }
             
-            case 2:
-            {
-                // auto override = (acpi::madt_int_override_entry *)((uint64_t)entry + sizeof(*entry));
-                
-                // TODO
+                add_ioapic(io);
                 
                 break;
             }
             
             case 3:
             {
-                // auto nmi = (acpi::madt_nmi_source_entry *)((uint64_t)entry + sizeof(*entry));
+                auto nmi = (acpi::madt_nmi_source_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                // TODO
-                
-                break;
-            }
-            
-            case 4:
-            {
-                // auto lapic_nmi = (acpi::madt_lapic_nmi_entry *)((uint64_t)entry + sizeof(*entry));
-                
-                // TODO
+                add_global_nmi(nmi->int_number);
                 
                 break;
             }
             
             case 5:
             {
-                // auto override = (acpi::madt_lapic_address_override_entry *)((uint64_t)entry + sizeof(*entry));
+                auto override = (acpi::madt_lapic_address_override_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                // TODO
+                base = override->base_address;
                 
                 break;
             }
@@ -175,21 +159,100 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(0xfee00000), nmi_number(
             {
                 auto x2apic = (acpi::madt_x2apic_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                processor::x2apic * x2 = new processor::x2apic;
+                if (x2apic->flags & 1)
+                {
+                    processor::x2apic * x2 = new processor::x2apic;
                 
-                x2->acpi_uuid = x2apic->acpi_uuid;
-                x2->apic_id = x2apic->x2apic_id;
+                    x2->acpi_uuid = x2apic->acpi_uuid;
+                    x2->apic_id = x2apic->x2apic_id;
                 
-                add_x2apic(x2);
+                    add_x2apic(x2);
+                }
                 
                 break;
             }
+        }
+        
+        entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
+    }
+    
+    entry = madt->entries;
+    
+    while ((uint64_t)entry - (uint64_t)madt < madt->length)
+    {
+        switch (entry->type)
+        {
+            case 4:
+            {
+                auto lapic_nmi = (acpi::madt_lapic_nmi_entry *)((uint64_t)entry + sizeof(*entry));
 
+                if (lapic_nmi->acpi_id == 0xff)
+                {
+                    auto entry = lapics;
+                    
+                    while (entry)
+                    {
+                        entry->nmi_int = lapic_nmi->int_number;
+                        entry->nmi_specified = true;
+                        entry->nmi_flags = lapic_nmi->flags;
+                        
+                        entry = entry->next;
+                    }
+                    
+                    break;
+                }
+                
+                auto lapic = get_lapic(lapic_nmi->acpi_id);
+                
+                if (!lapic)
+                {
+                    screen::print(" (ignoring LAPIC NMI entry for unknown LAPIC ACPI ID...) ");
+                }
+                
+                else
+                {
+                    lapic->nmi_int = lapic_nmi->int_number;
+                }
+                
+                break;
+            }
+            
+            
             case 10:
             {
-                // auto x2apic_nmi = (acpi::madt_x2apic_nmi_entry *)((uint64_t)entry + sizeof(*entry));
+                auto x2apic_nmi = (acpi::madt_x2apic_nmi_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                // TODO
+                if (x2apic_nmi->acpi_uuid == 0xffffffff)
+                {
+                    for (auto entry = lapics; entry; entry = entry->next)
+                    {
+                        entry->nmi_int = x2apic_nmi->int_number;
+                        entry->nmi_specified = true;
+                        entry->nmi_flags = x2apic_nmi->flags;
+                    }
+                    
+                    
+                    for (auto entry = x2apics; entry; entry = entry->next)
+                    {
+                        entry->nmi_int = x2apic_nmi->int_number;
+                        entry->nmi_specified = true;
+                        entry->nmi_flags = x2apic_nmi->flags;
+                    }
+                    
+                    break;
+                }
+                
+                auto x2apic = get_x2apic(x2apic_nmi->acpi_uuid);
+                
+                if (!x2apic)
+                {
+                    screen::printl(" (ignoring x2APIC NMI entry for unknown x2APIC ACPI UUID...) ");
+                }
+                
+                else
+                {                    
+                    x2apic->nmi_int = x2apic_nmi->int_number;
+                }
                 
                 break;
             }
@@ -254,4 +317,57 @@ void processor::apic_env::add_x2apic(processor::x2apic * x2)
     }
     
     last->next = x2;
+}
+
+processor::lapic * processor::apic_env::get_lapic(uint8_t id)
+{
+    auto entry = lapics;
+    
+    while (entry)
+    {
+        if (entry->acpi_id == id)
+        {
+            return entry;
+        }
+        
+        entry = entry->next;
+    }
+    
+    return nullptr;
+}
+
+processor::x2apic * processor::apic_env::get_x2apic(uint32_t id)
+{
+    auto entry = x2apics;
+    
+    while (entry)
+    {
+        if (entry->acpi_uuid == id)
+        {
+            return entry;
+        }
+        
+        entry = entry->next;
+    }
+    
+    return nullptr;
+}
+
+void processor::apic_env::add_global_nmi(uint32_t id)
+{
+    if (!global_nmis)
+    {
+        global_nmis = new nmi{id, nullptr};
+        
+        return;
+    }
+    
+    auto entry = global_nmis;
+    
+    while (entry->next)
+    {
+        entry = entry->next;
+    }
+    
+    entry->next = new nmi{id, nullptr};
 }

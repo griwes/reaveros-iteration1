@@ -87,11 +87,11 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     processor::setup_idt();
     screen::printl("done.");
 
-    screen::print("[APIC ] Detecting I/O APICs... ");
+    screen::print("[APIC ] Detecting APICs... ");
     processor::apic_env * apics = acpi::find_apics();
     screen::printl("done.");
     
-    screen::printl("[APIC ] Printing I/O APIC info...");
+    screen::printl("[APIC ] Printing APIC info...");
     screen::print(*apics);
     
     for (;;);
@@ -100,7 +100,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     processor::setup_io_apic(apicenv);
     screen::printl("done.");
     
-    screen::print("[APIC ] Initializing LAPIC... ");
+    screen::print("[APIC ] Initializing Local APIC... ");
     processor::setup_lapic(apicenv);
     screen::printl("done.");
     

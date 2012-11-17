@@ -42,24 +42,34 @@ namespace processor
     
     struct lapic
     {
-        lapic() : acpi_id(0), apic_id(0), nmi_int(0), next(nullptr) {}
+        lapic() : acpi_id(0), apic_id(0), nmi_int(0), nmi_specified(false), next(nullptr) {}
         
         uint8_t acpi_id;
         uint8_t apic_id;
         uint8_t nmi_int;
+        uint16_t nmi_flags;
+        bool nmi_specified;
         
         lapic * next;
     };
     
     struct x2apic
     {
-        x2apic() : apic_id(0), acpi_uuid(0), nmi_int(0), next(nullptr) {}
+        x2apic() : apic_id(0), acpi_uuid(0), nmi_int(0), nmi_specified(false), next(nullptr) {}
         
         uint32_t apic_id;
         uint32_t acpi_uuid;
         uint8_t nmi_int;
+        uint16_t nmi_flags;
+        bool nmi_specified;
         
         x2apic * next;
+    };
+    
+    struct nmi
+    {
+        uint32_t id;
+        nmi * next;
     };
     
     struct apic_env
@@ -69,11 +79,15 @@ namespace processor
         void add_ioapic(ioapic *);
         void add_lapic(lapic *);
         void add_x2apic(x2apic *);
+        void add_global_nmi(uint32_t);
+        
+        lapic * get_lapic(uint8_t);
+        x2apic * get_x2apic(uint32_t);
         
         uint32_t base;
-        uint32_t nmi_number;
-        ioapic * ioapics;
-        lapic * lapics;
-        x2apic * x2apics;
+        ioapic * ioapics = nullptr;
+        lapic * lapics = nullptr;
+        x2apic * x2apics = nullptr;
+        nmi * global_nmis = nullptr;
     };
 }
