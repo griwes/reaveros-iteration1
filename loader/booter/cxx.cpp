@@ -55,7 +55,7 @@ void _panic(const char * X, const char * FILE, uint64_t /*LINE*/, const char * F
     if (screen::output)
     {
         screen::line();
-        screen::printl("PANIC: ", X, "");
+        screen::printl("PANIC: ", X);
         screen::printl("File: ", FILE); //, ", line ", LINE);
         screen::printl("Function: ", FUNC);
     }

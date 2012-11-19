@@ -81,6 +81,7 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
                 {
                     if ((*pt)[startpte].present)
                     {
+                        screen::printf("\nAt address 0x%016x:", physical_start);
                         PANIC("tried to map something at already mapped page");
                     }
                     

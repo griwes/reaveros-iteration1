@@ -94,7 +94,6 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[APIC ] Printing APIC info...");
     screen::print(*apics);
     
-    
     screen::print("[APIC ] Initializing I/O APICs... ");
     processor::setup_io_apics(apics);
     screen::printl("done.");

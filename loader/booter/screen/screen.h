@@ -174,11 +174,14 @@ namespace screen
                                                 }
                                                 
                                                 ++str;
-                                                
-                                                return;
                                         }
                                 }
                         }
+                }
+                
+                while (*str != 0 && *str != '%')
+                {
+                    output->put_char(*str++);
                 }
             }
         }
@@ -201,7 +204,7 @@ namespace screen
             return; 
         }
         
-        printf(str);
+        print(str);
     }
     
     template<typename... T>
