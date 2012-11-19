@@ -132,41 +132,44 @@ void processor::setup_idt()
     _setup_idt();
 }
 
-const char * exception_messages[] = 
+namespace
 {
-    "#DE: Divide error",
-    "#DB: Reserved",
-    "###: Non Maskable Interrupt",
-    "#BP: Breakpoint",
-    "#OF: Overflow",
-    "#BR: BOUND Range Exceeded",
-    "#UD: Invalid Opcode",
-    "#NM: No Math Coprocessor",
-    "#DF: Double Fault",
-    "###: Coprocessor Segment Overrun (reserved)",
-    "#TS: Invalid TSS",
-    "#NP: Segment Not Present",
-    "#SS: Stack Segment Fault",
-    "#GP: General Protection Fault",
-    "#PF: Page Fault",
-    "###: Reserved",
-    "#MF: x87 FPU Error",
-    "#AC: Alignment Check",
-    "#MC: Machine Check",
-    "#XM: SIMD Floating-Point Exception"
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved",
-    "###: Reserved"
-};
+    const char * exception_messages[] = 
+    {
+        "#DE: Divide error",
+        "#DB: Reserved",
+        "###: Non Maskable Interrupt",
+        "#BP: Breakpoint",
+        "#OF: Overflow",
+        "#BR: BOUND Range Exceeded",
+        "#UD: Invalid Opcode",
+        "#NM: No Math Coprocessor",
+        "#DF: Double Fault",
+        "###: Coprocessor Segment Overrun (reserved)",
+        "#TS: Invalid TSS",
+        "#NP: Segment Not Present",
+        "#SS: Stack Segment Fault",
+        "#GP: General Protection Fault",
+        "#PF: Page Fault",
+        "###: Reserved",
+        "#MF: x87 FPU Error",
+        "#AC: Alignment Check",
+        "#MC: Machine Check",
+        "#XM: SIMD Floating-Point Exception"
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved",
+        "###: Reserved"
+    };
+}
 
 extern "C" void isr_handler(processor::isr_stack_frame stack_frame)
 {

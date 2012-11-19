@@ -40,13 +40,13 @@ namespace processor
         
         ioapic * next;
         
-        void write_register(uint8_t reg, uint32_t val)
+        void write_register(uint32_t reg, uint32_t val)
         {
             *(uint32_t *)(base_address) = reg;
             *(uint32_t *)(base_address + 0x10) = val;
         }
         
-        uint32_t read_register(uint8_t reg)
+        uint32_t read_register(uint32_t reg)
         {
             *(uint32_t *)(base_address) = reg;
             return *(uint32_t *)(base_address + 0x10);

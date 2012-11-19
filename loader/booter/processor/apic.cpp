@@ -31,7 +31,7 @@
 template<>
 void screen::print_impl(const processor::apic_env & env)
 {
-    screen::printfl("Local APIC memory address: 0x%016x", env.base);
+    screen::printfl("Local APIC base address: 0x%016x", env.base);
     screen::line();
     
     if (env.ioapics)
@@ -134,12 +134,9 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(madt->lic_address)
                 io->base_int = ioapic->base_int;
                 io->id = ioapic->apic_id;
                 
-                memory::vas->map(0x80000000, 0x80001000, ioapic->base_address);
-                io->base_address = 0x80000000;
-                io->size = (io->read_register(1) >> 16) & 8;
-                memory::vas->unmap(0x80000000, 0x80001000);
-                    
+                memory::vas->map(ioapic->base_address, ioapic->base_address + 4096, ioapic->base_address);
                 io->base_address = ioapic->base_address;
+                io->size = (io->read_register(1) >> 16) & 8;
                 
                 add_ioapic(io);
                 
