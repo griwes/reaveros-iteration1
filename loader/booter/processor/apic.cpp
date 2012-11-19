@@ -134,8 +134,8 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(madt->lic_address)
                 io->base_int = ioapic->base_int;
                 io->id = ioapic->apic_id;
                 
-                memory::vas->map(0x8000000, 0x80001000, ioapic->base_address);
-                io->base_address = 0x8000000;
+                memory::vas->map(0x80000000, 0x80001000, ioapic->base_address);
+                io->base_address = 0x80000000;
                 io->size = (io->read_register(1) >> 16) & 8;
                 memory::vas->unmap(0x80000000, 0x80001000);
                     

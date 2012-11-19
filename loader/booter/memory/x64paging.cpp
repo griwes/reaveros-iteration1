@@ -34,6 +34,11 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
     virtual_end += 4095;
     virtual_end &= ~(uint64_t)4095;
     
+    if (virtual_end <= virtual_start)
+    {
+        return;
+    }
+    
     uint64_t startpml4e = (virtual_start >> 39) & 511;
     uint64_t startpdpte = (virtual_start >> 30) & 511;
     uint64_t startpde = (virtual_start >> 21) & 511;
