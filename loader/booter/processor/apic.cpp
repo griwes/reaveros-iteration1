@@ -57,7 +57,7 @@ template<>
 void screen::print_impl(const processor::ioapic & ioapics)
 {
     screen::printl("I/O APIC ID: ", ioapics.id);
-    screen::printfl("I/O APIC base address: 0x%016x", ioapics.base_address);
+    screen::printfl("I/O APIC base address: 0x%016x", (uint64_t)ioapics.base_address);
     screen::printl("I/O APIC base interrupt number: ", ioapics.base_int);
     screen::printl("I/O APIC number of interrupt vectors: ", ioapics.size);
     
@@ -136,7 +136,7 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(madt->lic_address)
                 
                 memory::vas->map(ioapic->base_address, ioapic->base_address + 4096, ioapic->base_address);
                 io->base_address = ioapic->base_address;
-                io->size = (io->read_register(1) >> 16) & 8;
+                io->size = ((io->read_register(1) >> 16) & ~(1 << 8)) + 1;
                 
                 add_ioapic(io);
                 
