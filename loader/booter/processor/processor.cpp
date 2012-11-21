@@ -174,7 +174,7 @@ namespace
 extern "C" void isr_handler(processor::isr_stack_frame stack_frame)
 {
     screen::line();
-    screen::printl("ISR#", (uint8_t)stack_frame.number, ": ", exception_messages[stack_frame.number]);
+    screen::printl("ISR#", (uint8_t)stack_frame.number, ": ", (const char *)exception_messages[stack_frame.number]);
     screen::printfl("RAX = 0x%016x RBX = 0x%016x\nRCX = 0x%016x RDX = 0x%016x", stack_frame.rax, stack_frame.rbx,
                    stack_frame.rcx, stack_frame.rdx);
     screen::printfl("RSI = 0x%016x RDI = 0x%016x\nCS  = 0x%016x RIP = 0x%016x", stack_frame.rsi, stack_frame.rdi,
