@@ -380,9 +380,12 @@ void processor::apic_env::add_global_nmi(uint32_t id)
 
 namespace
 {
-    void _setup_io_apic(processor::ioapic * )//io)
+    void _setup_io_apic(processor::ioapic * io)
     {
-        
+        for (uint32_t i = 0; i < io->size; ++i)
+        {
+            io->write_register(0x10 + 2 * i, io->read_register(0x10 + 2 * i) | (1 << 16));
+        }
     }
 }
 
