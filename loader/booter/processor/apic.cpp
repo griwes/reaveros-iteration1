@@ -103,6 +103,8 @@ processor::apic_env::apic_env(acpi::madt * madt) : base(madt->lic_address)
         return;
     }
     
+    memory::vas->map(base, base + 4096, base);
+    
     acpi::madt_entry * entry = madt->entries;
     
     while ((uint64_t)entry - (uint64_t)madt < madt->length)
@@ -395,4 +397,11 @@ void processor::setup_io_apics(processor::apic_env * apics)
     {
         _setup_io_apic(entry);
     }
+}
+
+void processor::setup_lapic()
+{
+    uint32_t a, b;
+    rdmsr(0x1B, a, b);
+    wrmsr(0x1B, a | (1 << 11), b);
 }

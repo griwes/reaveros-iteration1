@@ -24,6 +24,7 @@
  **/
 
 #include <processor/numa.h>
+#include <processor/apic.h>
 #include <acpi/tables.h>
 #include <screen/screen.h>
 
@@ -33,8 +34,8 @@ void screen::print_impl(const processor::numa_cores & cores)
     if (cores.cores)
     {
         auto core = cores.cores;
-        
-        for (uint32_t i = 0; i < cores.size; ++i)
+
+        while (core)
         {
             screen::printf("Core LAPIC ID: 0x%016x", core->lapic_id);
             screen::printl(", x2APIC: ", (core->x2apic_entry ? "yes" : "no"));
@@ -55,9 +56,9 @@ void screen::print_impl(const processor::memory_ranges & ranges)
     {
         auto range = ranges.ranges;
         
-        for (uint32_t i = 0; i < ranges.size; ++i)
+        while (range)
         {
-            screen::printfl(" - 0x%016x - 0x%016x", range->base, range->end);
+            screen::printf(" - 0x%016x", range->base); screen::printfl("- 0x%016x", range->end);
             range = range->next;
         }
     }
@@ -75,7 +76,7 @@ void screen::print_impl(const processor::numa_domain & domain)
     screen::printl("Cores:");
     screen::printl(domain.cores);
     screen::printl("Memory ranges:");
-    screen::printl(domain.memory);
+    screen::print(domain.memory);
 }
 
 template<>
@@ -84,6 +85,8 @@ void screen::print_impl(const processor::numa_env & env)
     if (!env.size)
     {
         screen::printl("No NUMA domains present.");
+        
+        return;
     }
     
     screen::printl("Number of NUMA domains: ", env.size);
@@ -96,55 +99,104 @@ void screen::print_impl(const processor::numa_env & env)
     }
 }
 
-processor::numa_env::numa_env(acpi::srat * srat) : size(0), domains(nullptr)
+namespace 
 {
-    if (!srat)
-    {        
-        return;
-    }
-    
-    acpi::srat_entry * entry = srat->entries;
-    
-    while ((uint64_t)entry - (uint64_t)srat < srat->length)
+    processor::lapic * _find(processor::lapic * start, uint8_t needle)
     {
-        switch (entry->type)
+        while (start && start->apic_id != needle)
         {
-            case 0:
-            {
-                auto lapic = (acpi::srat_lapic_entry *)((uint64_t)entry + sizeof(*entry));
-                
-                numa_domain * domain = get_domain(lapic->domain | lapic->domain2 << 8 | lapic->domain3 << 16);
-                domain->add_core(lapic->apic_id, lapic->flags);
-                
-                break;
-            }
-            
-            case 1:
-            {
-                auto memory = (acpi::srat_memory_entry *)((uint64_t)entry + sizeof(*entry));
-                
-                numa_domain * domain = get_domain(memory->domain);
-                domain->add_memory_range(memory->base, memory->length, memory->flags);
-                
-                break;
-            }
-            
-            case 2:
-            {
-                auto x2apic = (acpi::srat_x2apic_entry *)((uint64_t)entry + sizeof(*entry));
-                
-                numa_domain * domain = get_domain(x2apic->domain);
-                domain->add_core(x2apic->x2apic_id, x2apic->flags, true);
-                
-                break;
-            }
+            start = start->next;
         }
         
-        entry = (acpi::srat_entry *)((uint64_t)entry + entry->length); 
+        return start;
+    }
+    
+    processor::x2apic * _find(processor::x2apic * start, uint32_t needle)
+    {
+        while (start && start->apic_id != needle)
+        {
+            start = start->next;
+        }
+        
+        return start;
     }
 }
 
-processor::numa_domain * processor::numa_env::get_domain(uint32_t domain)
+processor::numa_env::numa_env(acpi::srat * srat, processor::apic_env * apics) : size(0), domains(nullptr)
+{
+    get_domain(~0ull)->add_memory_range(0, ~0ull, 3);
+    
+    if (srat)
+    {
+        acpi::srat_entry * entry = srat->entries;
+    
+        while ((uint64_t)entry - (uint64_t)srat < srat->length)
+        {
+            switch (entry->type)
+            {
+                case 0:
+                {
+                    auto lapic = (acpi::srat_lapic_entry *)((uint64_t)entry + sizeof(*entry));
+                    
+                    numa_domain * domain = get_domain(lapic->domain | lapic->domain2 << 8 | lapic->domain3 << 16);
+                    domain->add_core(lapic->apic_id, lapic->flags);
+                    
+                    if (auto l = _find(apics->lapics, lapic->apic_id))
+                    {
+                        l->domain_specified = true;
+                    }
+                    
+                    break;
+                }
+                
+                case 1:
+                {
+                    auto memory = (acpi::srat_memory_entry *)((uint64_t)entry + sizeof(*entry));
+                    
+                    numa_domain * domain = get_domain(memory->domain);
+                    domain->add_memory_range(memory->base, memory->length, memory->flags);
+                    
+                    break;
+                }
+                
+                case 2:
+                {
+                    auto x2apic = (acpi::srat_x2apic_entry *)((uint64_t)entry + sizeof(*entry));
+                    
+                    numa_domain * domain = get_domain(x2apic->domain);
+                    domain->add_core(x2apic->x2apic_id, x2apic->flags, true);
+                    
+                    if (auto x2 = _find(apics->x2apics, x2apic->x2apic_id))
+                    {
+                        x2->domain_specified = true;
+                    }
+                    
+                    break;
+                }
+            }
+            
+            entry = (acpi::srat_entry *)((uint64_t)entry + entry->length); 
+        }
+    }
+    
+    for (auto lapic = apics->lapics; lapic; lapic = lapic->next)
+    {
+        if (!lapic->domain_specified)
+        {                               
+            get_domain(~0ull)->add_core(lapic->apic_id, 1);
+        }        
+    }
+    
+    for (auto x2apic = apics->x2apics; x2apic; x2apic = x2apic->next)
+    {
+        if (!x2apic->domain_specified)
+        {
+            get_domain(~0ull)->add_core(x2apic->apic_id, 1, true);
+        }
+    }
+}
+
+processor::numa_domain * processor::numa_env::get_domain(uint64_t domain)
 {
     auto current = domains;
     
@@ -176,7 +228,7 @@ processor::numa_domain * processor::numa_env::get_domain(uint32_t domain)
 
 void processor::numa_domain::add_core(uint32_t lapic_id, uint32_t flags, bool x2apic)
 {
-    if (flags != 0)
+    if (flags & 1)
     {
         cores.add_core(lapic_id, x2apic);
     }
@@ -196,15 +248,20 @@ void processor::numa_cores::add_core(uint32_t lapic_id, bool x2apic)
     c->lapic_id = lapic_id;
     c->x2apic_entry = x2apic;
     
+    if (!cores)
+    {
+        cores = c;
+        return;
+    }
+    
     auto last = cores;
     
-    for (uint32_t i = 0; i < size; ++i)
+    while (last->next)
     {
         last = last->next;
     }
     
     last->next = c;
-    ++size;
 }
 
 void processor::memory_ranges::add_range(uint64_t base, uint64_t end)
@@ -212,14 +269,19 @@ void processor::memory_ranges::add_range(uint64_t base, uint64_t end)
     memory_range * range = new memory_range;
     range->base = base;
     range->end = end;
+
+    if (!ranges)
+    {
+        ranges = range;
+        return;
+    }
     
     auto last = ranges;
     
-    for (uint32_t i = 0; i < size; ++i)
+    while (last->next)
     {
         last = last->next;
     }
     
     last->next = range;
-    ++size;
 }

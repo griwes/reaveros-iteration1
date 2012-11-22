@@ -39,9 +39,9 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::initialize(video_mode, font);
         
     screen::output->init_backbuffer(mem_map);
-            
+    
     screen::printl("Booter, Reaver Project Bootloader v0.3");
-    screen::printl("Copyrights (C) 2012 Reaver Project Team");
+    screen::printl("Copyright (C) 2012 Reaver Project Team");
     screen::line();
     
     screen::print("[CPU  ] Checking CPU's long mode support... ");
@@ -87,21 +87,19 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     processor::setup_idt();
     screen::printl("done.");
 
-    screen::print("[APIC ] Detecting APICs... ");
+    screen::print("[ACPI ] Detecting APICs... ");
     processor::apic_env * apics = acpi::find_apics();
     screen::printl("done.");
     
-    screen::printl("[APIC ] Printing APIC info...");
+    screen::printl("[ACPI ] Printing APIC info...");
     screen::print(*apics);
     
     screen::print("[APIC ] Initializing I/O APICs... ");
     processor::setup_io_apics(apics);
     screen::printl("done.");
-    
-    for (;;);
-    
-/*    screen::print("[APIC ] Initializing Local APIC... ");
-    processor::setup_lapic(apics);
+        
+    screen::print("[APIC ] Initializing Local APIC... ");
+    processor::setup_lapic();
     screen::printl("done.");
     
     screen::print("[ACPI ] Looking for NUMA domains... ");
@@ -109,9 +107,11 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("done.");
     
     screen::printl("[ACPI ] Printing NUMA domain info...");
-    screen::printl(*env);
+    screen::print(*env);
     
-    screen::print("[CLUST] Preparing clusters... ");
+    for (;;) ;
+    
+/*    screen::print("[CLUST] Preparing clusters... ");
     processor::cluster_env * clusters = new processor::cluster_env(env);
     screen::printl("done.");
        

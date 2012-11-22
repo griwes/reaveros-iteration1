@@ -217,6 +217,6 @@ void screen::console::print_mode_info()
 {
     screen::printl("Resolution: ", _mode.resolution_x, "x", _mode.resolution_y);
     screen::printl("Bits per pixel: ", _mode.bpp);
-    screen::printfl("Video memory: 0x%016x - 0x%016x", video_start(), video_end());
+    screen::printf("Video memory: 0x%016x", video_start()); screen::printfl(" - 0x%016x", video_end());
     screen::line();
 }

@@ -55,26 +55,28 @@ namespace processor
     
     struct lapic
     {
-        lapic() : acpi_id(0), apic_id(0), nmi_int(0), nmi_specified(false), next(nullptr) {}
+        lapic() : acpi_id(0), apic_id(0), nmi_int(0), nmi_specified(false), domain_specified(false), next(nullptr) {}
         
         uint8_t acpi_id;
         uint8_t apic_id;
         uint8_t nmi_int;
         uint16_t nmi_flags;
         bool nmi_specified;
+        bool domain_specified;
         
         lapic * next;
     };
     
     struct x2apic
     {
-        x2apic() : apic_id(0), acpi_uuid(0), nmi_int(0), nmi_specified(false), next(nullptr) {}
+        x2apic() : apic_id(0), acpi_uuid(0), nmi_int(0), nmi_specified(false), domain_specified(false), next(nullptr) {}
         
         uint32_t apic_id;
         uint32_t acpi_uuid;
         uint8_t nmi_int;
         uint16_t nmi_flags;
         bool nmi_specified;
+        bool domain_specified;
         
         x2apic * next;
     };
@@ -105,4 +107,5 @@ namespace processor
     };
     
     void setup_io_apics(processor::apic_env *);
+    void setup_lapic();
 }

@@ -32,6 +32,8 @@ namespace acpi
 
 namespace processor
 {
+    struct apic_env;
+    
     struct numa_core
     {
         numa_core() : lapic_id(0), x2apic_entry(false), next(nullptr) {}
@@ -44,9 +46,8 @@ namespace processor
     
     struct numa_cores
     {
-        numa_cores() : size(0), cores(nullptr) {}
+        numa_cores() : cores(nullptr) {}
         
-        uint64_t size;
         numa_core * cores;
         
         void add_core(uint32_t, bool);
@@ -64,9 +65,8 @@ namespace processor
     
     struct memory_ranges
     {
-        memory_ranges() : size(0), ranges(nullptr) {};
+        memory_ranges() : ranges(nullptr) {};
         
-        uint64_t size;
         memory_range * ranges;
         
         void add_range(uint64_t, uint64_t);
@@ -88,9 +88,9 @@ namespace processor
     
     struct numa_env
     {
-        numa_env(acpi::srat *);
+        numa_env(acpi::srat *, processor::apic_env *);
         
-        numa_domain * get_domain(uint32_t);
+        numa_domain * get_domain(uint64_t);
         
         uint32_t size;
         numa_domain * domains;

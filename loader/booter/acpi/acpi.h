@@ -35,6 +35,6 @@ namespace acpi
     
     rsdp * find_rsdp();
     
-    processor::numa_env * find_numa_domains();
+    processor::numa_env * find_numa_domains(processor::apic_env *);
     processor::apic_env * find_apics();
 }

@@ -186,7 +186,7 @@ namespace
     }
 }
 
-processor::numa_env * acpi::find_numa_domains()
+processor::numa_env * acpi::find_numa_domains(processor::apic_env * apics)
 {
     srat * resources = (srat *)_find_table("SRAT", 0xFFFF8000);
     
@@ -195,7 +195,7 @@ processor::numa_env * acpi::find_numa_domains()
         screen::print(" (SRAT table not found, assuming single domain) ");
     }
     
-    return new processor::numa_env(resources);
+    return new processor::numa_env(resources, apics);
 }
 
 processor::apic_env * acpi::find_apics()
