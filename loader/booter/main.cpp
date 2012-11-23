@@ -24,6 +24,7 @@
  **/
 
 #include <processor/processor.h>
+#include <processor/cluster.h>
 #include <screen/screen.h>
 #include <acpi/acpi.h>
 #include <memory/memory.h>
@@ -109,23 +110,16 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[ACPI ] Printing NUMA domain info...");
     screen::print(*env);
     
-    for (;;) ;
-    
-/*    screen::print("[CLUST] Preparing clusters... ");
-    processor::cluster_env * clusters = new processor::cluster_env(env);
+    screen::print("[CLUST] Preparing clusters... ");
+    processor::cluster_env * clusters = new processor::cluster_env(env, sane_map);
     screen::printl("done.");
-       
+
     screen::printl("[CLUST] Printing cluster info...");
     screen::printl(*clusters);
-        
-    screen::print("[MEM  ] Applying clusters to memory map... ");
-    sane_map->apply_clusters(env);
-    screen::printl("done.");
-        
-    screen::printl("[MEM  ] Printing cluster-affected memory map... ");
-    screen::printl(*sane_map);
-        
-    screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
+    
+    for (;;) ;
+    
+    /*    screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
     memory::prepare_address_spaces();
     screen::printl("done.");
     
