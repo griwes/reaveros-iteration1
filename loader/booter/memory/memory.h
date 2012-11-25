@@ -28,6 +28,11 @@
 #include <memory/memmap.h>
 #include <processor/processor.h>
 
+namespace processor
+{
+    struct cluster_env;
+}
+
 namespace memory
 {    
     namespace manager
@@ -45,6 +50,8 @@ namespace memory
     
     void initialize(uint32_t, map &);
     void prepare_long_mode();
+    
+    void prepare_address_spaces(processor::cluster_env *);
     
     template<typename T>
     void zero(T * ptr, uint32_t size = 1)

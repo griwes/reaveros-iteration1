@@ -24,6 +24,7 @@
  **/
 
 #include <memory/memmap.h>
+#include <memory/x64paging.h>
 
 namespace processor
 {
@@ -53,6 +54,8 @@ namespace processor
         uint32_t size;
         
         cluster * next;
+        
+        ::memory::x64::pml4 * vas;
     };
     
     struct cluster_env
@@ -65,7 +68,7 @@ namespace processor
 
             if (!clusters)
             {
-                clusters = new cluster{cores, map, _detail::_count(cores), nullptr};
+                clusters = new cluster{cores, map, _detail::_count(cores), nullptr, nullptr};
                 return;
             }
             
@@ -76,7 +79,7 @@ namespace processor
                 c = c->next;
             }
             
-            c->next = new cluster{cores, map, _detail::_count(cores), nullptr};
+            c->next = new cluster{cores, map, _detail::_count(cores), nullptr, nullptr};
         }
         
         cluster * clusters;

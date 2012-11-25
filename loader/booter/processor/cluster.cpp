@@ -115,3 +115,27 @@ processor::cluster_env::cluster_env(processor::numa_env * numa, memory::map * me
     
     // splitting logic, TODO
 }
+
+processor::cluster_env::cluster_env(processor::numa_env * numa, memory::map * memmap)
+{
+    if (_check(numa))
+    {
+        // split memory map, TODO
+        
+        for (auto domain = numa->domains; domain; domain = domain->next)
+        {
+            processor::core * cores = nullptr;
+            
+            for (auto c = domain->cores.cores; c; c = c->next)
+            {
+                _add_core(cores, new core{c->lapic_id, c->x2apic_entry, nullptr});
+            }
+            
+            add_cluster(cores, *memmap);
+        }
+        
+        return;
+    }
+    
+    // splitting logic, TODO
+}

@@ -117,30 +117,31 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[CLUST] Printing cluster info...");
     screen::printl(*clusters);
     
-    for (;;) ;
-    
-    /*    screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
-    memory::prepare_address_spaces();
+    screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
+    memory::prepare_address_spaces(clusters);
     screen::printl("done.");
     
-    for (auto & domain : env)
+    for (;;) ;
+    
+/*    uint32_t i = 0;
+    for (auto cluster = clusters->clusters; cluster; cluster = cluster->next, ++i)
     {
-        screen::printfl("[CLUST] Booting cluster #%2d... ", domain.id, domain.id);
-        processor::boot_core(domain.cores[0].id, domain.id, sane_map);
+        screen::printfl("[CLUST] Booting cluster ", i, "... ");
+        processor::boot_core(cluster.cores[0].id, i, cluster->vas, cluster->memory);
         screen::printl("done.");
     }
     
     screen::print("[MEM  ] Installing kernel instances... ");
-    uint64_t kernel_start = memory::install_kernel_instances(kernel, kernel_size);
+    uint64_t kernel_start = memory::install_kernel_instances(clusters, kernel, kernel_size);
     screen::printl("done.");
     
     screen::print("[MEM  ] Installing InitRD for BSP... ");
-    uint64_t initrd_start = memory::install_initrd(kernel + kernel_size, initrd_size);
+    uint64_t initrd_start = memory::install_initrd(clusters, kernel + kernel_size, initrd_size);
     screen::printl("done.");
     
     screen::print("[CPU  ] Calling kernel...");
-    processor::call_kernel(0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(),
-        screen::get_vga_font, sane_map, env);
+    processor::call_kernel(clusters, 0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(),
+        screen::get_vga_font(), sane_map, env);
     
     // we will never get here
     for (;;) ;

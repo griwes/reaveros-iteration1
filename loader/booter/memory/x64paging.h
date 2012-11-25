@@ -23,6 +23,8 @@
  * 
  **/
 
+#pragma once
+
 namespace memory
 {
     namespace x64
