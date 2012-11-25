@@ -58,7 +58,60 @@ void screen::print_impl(const processor::cluster & cluster)
     screen::print(cluster.memory);
 }
 
-processor::cluster_env::cluster_env(processor::numa_env *, memory::map *)
+namespace 
 {
+    bool _check(processor::numa_env * numa)
+    {
+        for (auto domain = numa->domains; domain; domain = domain->next)
+        {
+            if (processor::_detail::_count(domain->cores.cores) > 16)
+            {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    void _add_core(processor::core *& base, processor::core * n)
+    {
+        if (!base)
+        {
+            base = n;
+            return;
+        }
+        
+        processor::core * b = base;
+        
+        while (b->next)
+        {
+            b = b->next;
+        }
+        
+        b->next = n;
+    }
+}
 
+processor::cluster_env::cluster_env(processor::numa_env * numa, memory::map * memmap)
+{
+    if (_check(numa))
+    {
+        // split memory map, TODO
+        
+        for (auto domain = numa->domains; domain; domain = domain->next)
+        {
+            processor::core * cores = nullptr;
+            
+            for (auto c = domain->cores.cores; c; c = c->next)
+            {
+                _add_core(cores, new core{c->lapic_id, c->x2apic_entry, nullptr});
+            }
+            
+            add_cluster(cores, *memmap);
+        }
+        
+        return;
+    }
+    
+    // splitting logic, TODO
 }

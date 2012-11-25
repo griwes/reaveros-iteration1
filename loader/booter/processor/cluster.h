@@ -27,9 +27,20 @@
 
 namespace processor
 {
+    namespace _detail
+    {
+        template<typename T>
+        uint32_t _count(T * t)
+        {
+            uint32_t i = 0;
+            for (; t; ++i, t = t->next);
+            return i;
+        }
+    }
+    
     struct core
     {
-        uint32_t apic_id;
+        uint64_t apic_id;
         bool x2apic;
         
         core * next;
@@ -47,6 +58,26 @@ namespace processor
     struct cluster_env
     {
         cluster_env(processor::numa_env *, memory::map *);
+        
+        void add_cluster(core * cores, const memory::map & map)
+        {
+            ++size;
+
+            if (!clusters)
+            {
+                clusters = new cluster{cores, map, _detail::_count(cores), nullptr};
+                return;
+            }
+            
+            auto c = clusters;
+            
+            while (c)
+            {
+                c = c->next;
+            }
+            
+            c->next = new cluster{cores, map, _detail::_count(cores), nullptr};
+        }
         
         cluster * clusters;
         uint32_t size;
