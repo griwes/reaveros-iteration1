@@ -24,9 +24,7 @@
  **/
 
 #include <processor/processor.h>
-#include <processor/cluster.h>
 #include <screen/screen.h>
-#include <acpi/acpi.h>
 #include <memory/memory.h>
 #include <memory/memmap.h>
 #include <memory/x64paging.h>
@@ -73,13 +71,6 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     memory::vas->map(screen::output->backbuffer_start(), screen::output->backbuffer_end(), screen::output->backbuffer_start());
     screen::printl("done.");
     
-    screen::print("[ACPI ] Looking for RSDP... ");
-    acpi::rsdp * rsdp = acpi::find_rsdp();
-    screen::printl("done.");
-    
-    screen::printl("[ACPI ] Printing RSDP info...");
-    screen::printl(*rsdp);
-
     screen::print("[CPU  ] Installing long mode GDT... ");
     processor::setup_gdt();
     screen::printl("done.");
@@ -88,55 +79,18 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     processor::setup_idt();
     screen::printl("done.");
 
-    screen::print("[ACPI ] Detecting APICs... ");
-    processor::apic_env * apics = acpi::find_apics();
+    for (;;);
+    
+/*    screen::print("[MEM  ] Preparing address space for kernel... ");
+    memory::prepare_address_space();
     screen::printl("done.");
-    
-    screen::printl("[ACPI ] Printing APIC info...");
-    screen::print(*apics);
-    
-    screen::print("[APIC ] Initializing I/O APICs... ");
-    processor::setup_io_apics(apics);
-    screen::printl("done.");
-        
-    screen::print("[APIC ] Initializing Local APIC... ");
-    processor::setup_lapic();
-    screen::printl("done.");
-    
-    screen::print("[ACPI ] Looking for NUMA domains... ");
-    processor::numa_env * env = acpi::find_numa_domains(apics);
-    screen::printl("done.");
-    
-    screen::printl("[ACPI ] Printing NUMA domain info...");
-    screen::print(*env);
-    
-    screen::print("[CLUST] Preparing clusters... ");
-    processor::cluster_env * clusters = new processor::cluster_env(env, sane_map);
-    screen::printl("done.");
-
-    screen::printl("[CLUST] Printing cluster info...");
-    screen::printl(*clusters);
-    
-    screen::print("[MEM  ] Preparing address spaces for kernel instances... ");
-    memory::prepare_address_spaces(clusters);
-    screen::printl("done.");
-    
-    for (;;) ;
-    
-/*    uint32_t i = 0;
-    for (auto cluster = clusters->clusters; cluster; cluster = cluster->next, ++i)
-    {
-        screen::printfl("[CLUST] Booting cluster ", i, "... ");
-        processor::boot_core(cluster.cores[0].id, i, cluster->vas, cluster->memory);
-        screen::printl("done.");
-    }
     
     screen::print("[MEM  ] Installing kernel instances... ");
-    uint64_t kernel_start = memory::install_kernel_instances(clusters, kernel, kernel_size);
+    uint64_t kernel_start = memory::install_kernel(kernel, kernel_size);
     screen::printl("done.");
     
     screen::print("[MEM  ] Installing InitRD for BSP... ");
-    uint64_t initrd_start = memory::install_initrd(clusters, kernel + kernel_size, initrd_size);
+    uint64_t initrd_start = memory::install_initrd(kernel_start + kernel_size, kernel + kernel_size, initrd_size);
     screen::printl("done.");
     
     screen::print("[CPU  ] Calling kernel...");

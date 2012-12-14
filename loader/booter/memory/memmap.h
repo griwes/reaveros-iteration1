@@ -28,7 +28,6 @@
 #include <cstdint>
 #include <cstddef>
 
-#include <processor/numa.h>
 #include <screen/screen.h>
 
 namespace memory
@@ -54,15 +53,13 @@ namespace memory
     class chained_map_entry : public map_entry
     {
     public:
-        chained_map_entry() : map_entry(), proximity_domain(-1), prev(nullptr), next(nullptr)
+        chained_map_entry() : map_entry(), prev(nullptr), next(nullptr)
         {
         }
         
-        chained_map_entry(map_entry * old) : map_entry(old), proximity_domain(-1), prev(nullptr), next(nullptr)
+        chained_map_entry(map_entry * old) : map_entry(old), prev(nullptr), next(nullptr)
         {
         }
-        
-        uint32_t proximity_domain;
         
         chained_map_entry * prev;
         chained_map_entry * next;
@@ -80,14 +77,11 @@ namespace memory
         
         map * sanitize();
         void add_entry(chained_map_entry *);
-        void apply_numa(processor::numa_env *);
         
-        bool usable(uint64_t, uint32_t = -1);
-        uint64_t next_usable(uint64_t, uint32_t = -1);
+        bool usable(uint64_t);
+        uint64_t next_usable(uint64_t);
         
         uint32_t find_last_usable(uint32_t);
-        
-        map * split_numa_memmaps();
         
         void _combine_entries(chained_map_entry *, chained_map_entry *);
         void _merge_siblings(chained_map_entry *);

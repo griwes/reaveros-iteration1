@@ -47,7 +47,7 @@ memory::map::~map()
 
 }
 
-bool memory::map::usable(uint64_t addr, uint32_t domain)
+bool memory::map::usable(uint64_t addr)
 {
     if (_entries)
     {
@@ -59,16 +59,6 @@ bool memory::map::usable(uint64_t addr, uint32_t domain)
             {
                 if (entry->type == 1)
                 {
-                    if (domain != ~(uint32_t)0)
-                    {
-                        if (entry->proximity_domain == domain)
-                        {
-                            return true;
-                        }
-                    
-                        return false;
-                    }
-                
                     return true;
                 }
                 
@@ -104,7 +94,7 @@ bool memory::map::usable(uint64_t addr, uint32_t domain)
     }
 }
 
-uint64_t memory::map::next_usable(uint64_t addr, uint32_t domain)
+uint64_t memory::map::next_usable(uint64_t addr)
 {
     if (_entries)
     {
@@ -116,16 +106,6 @@ uint64_t memory::map::next_usable(uint64_t addr, uint32_t domain)
             {
                 if (entry->type == 1)
                 {
-                    if (domain != ~(uint32_t)0)
-                    {
-                        if (entry->proximity_domain == domain)
-                        {
-                            return entry->base;
-                        }
-                        
-                        continue;
-                    }
-                    
                     return entry->base;
                 }
             }

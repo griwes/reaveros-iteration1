@@ -27,7 +27,6 @@
 #include <memory/manager.h>
 #include <processor/processor.h>
 #include <memory/x64paging.h>
-#include <processor/cluster.h>
 
 namespace memory
 {
@@ -66,14 +65,3 @@ void memory::prepare_long_mode()
     processor::set_cr3((uint32_t)vas);
 }
 
-void memory::prepare_address_spaces(processor::cluster_env * clusters)
-{
-    auto def_alloc = default_allocator;
-    
-    for (auto cluster = clusters->clusters; cluster; cluster = cluster->next)
-    {
-        default_allocator = manager::make_placement_allocator((uint32_t)new int, cluster->memory);
-    }
-    
-    default_allocator = def_alloc;
-}
