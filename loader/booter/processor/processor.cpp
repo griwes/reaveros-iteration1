@@ -155,7 +155,7 @@ namespace
         "#MF: x87 FPU Error",
         "#AC: Alignment Check",
         "#MC: Machine Check",
-        "#XM: SIMD Floating-Point Exception"
+        "#XM: SIMD Floating-Point Exception",
         "###: Reserved",
         "###: Reserved",
         "###: Reserved",

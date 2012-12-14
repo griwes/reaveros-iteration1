@@ -45,6 +45,11 @@ void * operator new(uint32_t, void * addr)
     return addr;
 }
 
+void * operator new[](uint32_t size)
+{
+    return memory::default_allocator->allocate(size);
+}
+
 extern "C" void __cxa_pure_virtual()
 {
     asm ("hlt");

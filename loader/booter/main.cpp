@@ -79,23 +79,21 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     processor::setup_idt();
     screen::printl("done.");
 
+    screen::print("[MEM  ] Installing kernel instances... ");
+    uint64_t kernel_end = memory::install_kernel(kernel, kernel_size);
+    screen::printl("done.");
+    
+    screen::print("[MEM  ] Installing InitRD... ");
+    uint64_t initrd_end = memory::install_initrd(kernel_end, kernel + kernel_size, initrd_size);
+    screen::printl("done.");
+    
+    initrd_end = 0;
+    
     for (;;);
     
-/*    screen::print("[MEM  ] Preparing address space for kernel... ");
-    memory::prepare_address_space();
-    screen::printl("done.");
-    
-    screen::print("[MEM  ] Installing kernel instances... ");
-    uint64_t kernel_start = memory::install_kernel(kernel, kernel_size);
-    screen::printl("done.");
-    
-    screen::print("[MEM  ] Installing InitRD for BSP... ");
-    uint64_t initrd_start = memory::install_initrd(kernel_start + kernel_size, kernel + kernel_size, initrd_size);
-    screen::printl("done.");
-    
-    screen::print("[CPU  ] Calling kernel...");
-    processor::call_kernel(clusters, 0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(),
-        screen::get_vga_font(), sane_map, env);
+/*    screen::print("[CPU  ] Calling kernel...");
+    processor::call_kernel(0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(),
+        screen::get_vga_font(), sane_map);
     
     // we will never get here
     for (;;) ;
