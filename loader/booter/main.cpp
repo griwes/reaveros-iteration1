@@ -83,7 +83,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("done.");
     
     memory::default_allocator->save();
-
+    
     screen::print("[MEM  ] Installing kernel instances... ");
     uint64_t kernel_end = memory::install_kernel(kernel, kernel_size);
     screen::printl("done.");

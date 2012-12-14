@@ -39,7 +39,7 @@ namespace memory
         {
         }
         
-        map_entry(map_entry * old) : base(old->base), length(old->length), type(_fix(old->type)), 
+        map_entry(map_entry * old) : base(old->base), length(old->length), type(old->type), 
             extended_attribs(old->extended_attribs)
         {
         }
@@ -48,17 +48,6 @@ namespace memory
         uint64_t length;
         uint32_t type;
         uint32_t extended_attribs;
-        
-    private:
-        uint32_t _fix(uint32_t old)
-        {
-            if (old > 1)
-            {
-                old += 4;
-            }
-            
-            return old;
-        }
     } __attribute__((packed));
     
     class chained_map_entry : public map_entry

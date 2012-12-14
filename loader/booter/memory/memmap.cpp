@@ -144,7 +144,8 @@ uint64_t memory::map::next_usable(uint64_t addr)
 
 void print(memory::map_entry * entry)
 {
-    screen::printf("| 0x%016x | 0x%016x | ", entry->base, entry->length);
+    screen::printf("| 0x%016x ", entry->base);
+    screen::printf("| 0x%016x | ", entry->length);
     
     switch (entry->type)
     {

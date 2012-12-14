@@ -47,10 +47,14 @@ memory::manager::placement_allocator::~placement_allocator()
 {
 }
 
+namespace
+{
+    memory::chained_map_entry entries[3] = {};
+    memory::chained_map_entry * entry = entries;
+}
+
 void memory::manager::placement_allocator::save()
 {
-    static chained_map_entry * entry = new chained_map_entry[3];
-    
     entry->base = base & ~(uint64_t)4095;
     entry->length = (placement_address - base + 4095) & ~(uint64_t)4095;
     entry->type = type;
@@ -76,10 +80,16 @@ void memory::manager::placement_allocator::save()
 
 void * memory::manager::placement_allocator::allocate(uint32_t size)
 {
-    if (top_mapped - placement_address <= 3 * 4096)
+    static bool vas_context = false;
+
+    if (top_mapped - placement_address <= 3 * 4096 && !vas_context)
     {
+        vas_context = true;
+        
         vas->map(top_mapped + 1, top_mapped + 1 + 64 * 1024 * 1024, top_mapped + 1);
         top_mapped += 64 * 1024 * 1024;
+        
+        vas_context = false;
     }
     
     size += 15;
