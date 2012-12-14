@@ -63,6 +63,11 @@ namespace screen
         
         void print_mode_info();
         
+        mode get_video_mode()
+        {
+            return _mode;
+        }
+        
         uint32_t video_start()
         {
             return _mode.addr;

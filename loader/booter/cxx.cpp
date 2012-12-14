@@ -55,6 +55,14 @@ extern "C" void __cxa_pure_virtual()
     asm ("hlt");
 }
 
+extern "C" void __cxa_guard_acquire()
+{
+}
+
+extern "C" void __cxa_guard_release()
+{
+}
+
 void _panic(const char * X, const char * FILE, uint64_t /*LINE*/, const char * FUNC)
 {
     if (screen::output)

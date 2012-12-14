@@ -28,6 +28,7 @@
 #include <memory/memory.h>
 #include <memory/memmap.h>
 #include <memory/x64paging.h>
+#include <memory/manager.h>
 
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, screen::boot_mode * video_mode, void * font)
@@ -58,6 +59,8 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::output->save_backbuffer_info(sane_map);
     screen::printl("done.");
     
+    ((memory::manager::placement_allocator *)memory::default_allocator)->memory_map = sane_map;
+    
     screen::printl("[MEM  ] Printing sanitized memory map...");
     screen::printl(*sane_map);
         
@@ -78,25 +81,31 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::print("[CPU  ] Installing long mode IDT... ");
     processor::setup_idt();
     screen::printl("done.");
+    
+    memory::default_allocator->save();
 
     screen::print("[MEM  ] Installing kernel instances... ");
     uint64_t kernel_end = memory::install_kernel(kernel, kernel_size);
     screen::printl("done.");
     
+    memory::default_allocator->save();
+    
     screen::print("[MEM  ] Installing InitRD... ");
-    uint64_t initrd_end = memory::install_initrd(kernel_end, kernel + kernel_size, initrd_size);
+    memory::install_initrd(kernel_end, kernel + kernel_size, initrd_size);
     screen::printl("done.");
     
-    initrd_end = 0;
+    memory::default_allocator->save();
+
+//    uint64_t kernel_start = 0xFFFFFFFF80000000;
+//    uint64_t initrd_start = kernel_end;
     
-    for (;;);
+    screen::printl(*sane_map);
     
-/*    screen::print("[CPU  ] Calling kernel...");
-    processor::call_kernel(0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(),
-        screen::get_vga_font(), sane_map);
+//    screen::print("[CPU  ] Calling kernel...");
+//    processor::call_kernel(0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(), sane_map);
     
     // we will never get here
     for (;;) ;
     
-    return;*/
+    return;
 }

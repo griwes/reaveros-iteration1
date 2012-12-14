@@ -25,6 +25,7 @@
 
 #include <memory/manager.h>
 #include <memory/memory.h>
+#include "x64paging.h"
 
 void * operator new(uint32_t, void *);
 
@@ -38,7 +39,7 @@ memory::manager::allocator * memory::manager::make_placement_allocator(uint32_t 
 }
 
 memory::manager::placement_allocator::placement_allocator(uint32_t placement, memory::map & memory_map)
-    : memory_map(memory_map), placement_address(placement)
+    : memory_map(&memory_map), placement_address(placement), base(placement), type(5), top_mapped(64 * 1024 * 1024 - 1)
 {
 }
 
@@ -46,14 +47,47 @@ memory::manager::placement_allocator::~placement_allocator()
 {
 }
 
+void memory::manager::placement_allocator::save()
+{
+    static chained_map_entry * entry = new chained_map_entry[3];
+    
+    entry->base = base & ~(uint64_t)4095;
+    entry->length = (placement_address - base + 4095) & ~(uint64_t)4095;
+    entry->type = type;
+    
+    switch (type)
+    {
+        case 5:
+            type = 2;
+            break;
+        case 2:
+            type = 3;
+            break;
+        case 3:
+            type = ~0;
+    }
+    
+    base = placement_address;
+    
+    memory_map->add_entry(entry);
+    
+    ++entry;
+}
+
 void * memory::manager::placement_allocator::allocate(uint32_t size)
 {
+    if (top_mapped - placement_address <= 3 * 4096)
+    {
+        vas->map(top_mapped + 1, top_mapped + 1 + 64 * 1024 * 1024, top_mapped + 1);
+        top_mapped += 64 * 1024 * 1024;
+    }
+    
     size += 15;
     size &= ~(uint32_t)15;
     
-    while (!memory_map.usable(placement_address) || !memory_map.usable(placement_address + size -1 ))
+    while (!memory_map->usable(placement_address) || !memory_map->usable(placement_address + size -1 ))
     {
-        placement_address = memory_map.next_usable(placement_address);
+        placement_address = memory_map->next_usable(placement_address);
         
         if (placement_address == 0)
         {

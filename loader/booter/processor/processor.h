@@ -28,7 +28,7 @@
 #include <screen/screen.h>
 
 namespace processor
-{
+{    
     extern "C" struct idt_entry
     {
         uint16_t offset_low;
@@ -75,6 +75,7 @@ namespace processor
     }
     
     extern "C" uint32_t _check_long_mode();
+    void call_kernel(uint8_t, uint64_t, uint64_t, uint64_t, screen::mode, memory::map *);
     
     inline void check_long_mode()
     {

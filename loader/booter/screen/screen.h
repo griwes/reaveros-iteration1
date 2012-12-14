@@ -70,6 +70,11 @@ namespace screen
     
     extern console * output;
     
+    inline mode get_video_mode()
+    {
+        return output->get_video_mode();
+    }
+    
     void initialize(boot_mode *, void *);
     
     template<unsigned N>

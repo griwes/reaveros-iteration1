@@ -44,6 +44,8 @@ namespace memory
             virtual void deallocate(void *) = 0;
             
             virtual void align(uint32_t) = 0;
+            
+            virtual void save() {}
         };
         
         // this is standard placement allocator; no comment is required, I think
@@ -58,9 +60,17 @@ namespace memory
             
             virtual void align(uint32_t);
             
+            virtual void save();
+            
+            map * memory_map;
+        
         private:
-            map & memory_map;
             uint32_t placement_address;
+            
+            uint32_t base;
+            uint32_t type;
+            
+            uint32_t top_mapped;
         };
         
         // this is more tricky one: it allocates "backwardly", so from the top

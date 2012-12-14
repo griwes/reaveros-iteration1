@@ -79,7 +79,7 @@ uint64_t memory::install_kernel(uint32_t kernel_base, uint32_t kernel_length)
     return 0xFFFFFFFF80000000 + ((kernel_length + 4095) & ~(uint64_t)4095);
 }
 
-uint64_t memory::install_initrd(uint32_t kernel_end, uint32_t initrd_base, uint32_t initrd_length)
+void memory::install_initrd(uint32_t kernel_end, uint32_t initrd_base, uint32_t initrd_length)
 {
     initrd_length *= 512;
     
@@ -89,6 +89,4 @@ uint64_t memory::install_initrd(uint32_t kernel_end, uint32_t initrd_base, uint3
     copy((uint8_t *)initrd_base, initrd, initrd_length);
     
     vas->map(kernel_end, kernel_end + initrd_length, (uint64_t)initrd);
-    
-    return kernel_end + ((initrd_length + 4095) & ~(uint64_t)4095);
 }
