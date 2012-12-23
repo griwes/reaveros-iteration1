@@ -43,7 +43,7 @@ namespace memory
     extern manager::allocator * default_allocator;
     extern x64::pml4 * vas;
     
-    void initialize(uint32_t, map &);
+    void initialize(uint32_t, map_entry *, uint32_t);
     void prepare_long_mode();
 
     uint64_t install_kernel(uint32_t, uint32_t);

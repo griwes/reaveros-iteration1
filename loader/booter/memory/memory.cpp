@@ -34,9 +34,14 @@ namespace memory
     x64::pml4 * vas;
 }
 
-void memory::initialize(uint32_t placement, map & memory_map)
+void memory::initialize(uint32_t placement, map_entry * memory_map, uint32_t memory_map_length)
 {
-    default_allocator = manager::make_placement_allocator(placement, memory_map);
+    for (uint32_t i = 0; i < memory_map_length; ++i)
+    {
+        memory::map::add_entry(memory_map[i]);
+    }
+    
+    default_allocator = manager::make_placement_allocator(placement);
 }
 
 void memory::prepare_long_mode()

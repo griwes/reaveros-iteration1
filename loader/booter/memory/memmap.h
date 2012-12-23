@@ -50,45 +50,26 @@ namespace memory
         uint32_t extended_attribs;
     } __attribute__((packed));
     
-    class chained_map_entry : public map_entry
-    {
-    public:
-        chained_map_entry() : map_entry(), prev(nullptr), next(nullptr)
-        {
-        }
-        
-        chained_map_entry(map_entry * old) : map_entry(old), prev(nullptr), next(nullptr)
-        {
-        }
-        
-        chained_map_entry * prev;
-        chained_map_entry * next;
-    } __attribute__((packed));
+    void print_map();
     
     class map
     {
     public:
-        template<typename T>
-        friend void screen::print_impl(const T &);
+        friend void memory::print_map();
         
-        map();
-        map(map_entry *, uint32_t);
-        ~map();
+        static void add_entry(map_entry *);
         
-        map * sanitize();
-        void add_entry(chained_map_entry *);
+        static bool usable(uint64_t);
+        static uint64_t next_usable(uint64_t);
         
-        bool usable(uint64_t);
-        uint64_t next_usable(uint64_t);
-        
-        uint32_t find_last_usable(uint32_t);
-        
-        void _combine_entries(chained_map_entry *, chained_map_entry *);
-        void _merge_siblings(chained_map_entry *);
+        static uint32_t find_last_usable(uint32_t);
         
     private:
-        map_entry * _sequence_entries;
-        chained_map_entry * _entries;
-        uint32_t _num_entries;
-    };    
+        static map_entry _entries[512]; // more = insanity
+        
+        static uint32_t _num_entries;
+        
+        static void _combine_entries(uint64_t, uint64_t);
+        static void _merge_siblings(uint64_t);
+    };
 }

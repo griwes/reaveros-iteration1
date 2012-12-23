@@ -33,12 +33,10 @@
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, screen::boot_mode * video_mode, void * font)
 {
-    memory::map mem_map(memory_map, memory_map_size);
-    
-    memory::initialize(kernel + kernel_size * 512 + initrd_size * 512, mem_map);
+    memory::initialize(kernel + kernel_size * 512 + initrd_size * 512, memory_map, memory_map_size);
     screen::initialize(video_mode, font);
         
-    screen::output->init_backbuffer(mem_map);
+    screen::output->init_backbuffer();
     
     screen::printl("Booter, Reaver Project Bootloader 0.0.4");
     screen::printl("Copyright (C) 2012 Reaver Project Team");
@@ -52,18 +50,8 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::output->print_mode_info();
     
     screen::printl("[MEM  ] Reading memory map...");
-    screen::printl(mem_map);
+    memory::print_map();
     
-    screen::print("[MEM  ] Sanitizing memory map... ");
-    memory::map * sane_map = mem_map.sanitize();
-    screen::output->save_backbuffer_info(sane_map);
-    screen::printl("done.");
-    
-    ((memory::manager::placement_allocator *)memory::default_allocator)->memory_map = sane_map;
-    
-    screen::printl("[MEM  ] Printing sanitized memory map...");
-    screen::printl(*sane_map);
-        
     screen::print("[MEM  ] Preparing long mode paging... ");
     memory::prepare_long_mode();
     screen::printl("done.");
@@ -96,10 +84,8 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     memory::default_allocator->save();
 
-//    uint64_t kernel_start = 0xFFFFFFFF80000000;
-//    uint64_t initrd_start = kernel_end;
-    
-    screen::printl(*sane_map);
+    uint64_t kernel_start = 0xFFFFFFFF80000000;
+    uint64_t initrd_start = kernel_end;
     
 //    screen::print("[CPU  ] Calling kernel...");
 //    processor::call_kernel(0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(), sane_map);

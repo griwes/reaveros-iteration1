@@ -26,120 +26,45 @@
 #include <memory/memmap.h>
 #include <memory/memory.h>
 
-memory::map::map() : _sequence_entries(nullptr), _entries(nullptr), _num_entries(0)
-{
-}
-
-memory::map::map(memory::map_entry * base_map, uint32_t map_size)
-    : _sequence_entries(base_map), _entries(nullptr), _num_entries(map_size)
-{
-    for (uint32_t i = 0; i < _num_entries; ++i)
-    {
-        if (_sequence_entries[i].type != 1)
-        {
-            _sequence_entries[i].type += 4;
-        }
-    }
-}
-
-memory::map::~map()
-{
-
-}
+memory::map_entry memory::map::_entries[512];
 
 bool memory::map::usable(uint64_t addr)
 {
-    if (_entries)
+    for (uint32_t i = 0; i < _num_entries; ++i)
     {
-        auto entry = _entries;
-        
-        for (uint32_t i = 0; i < _num_entries; ++i)
+        if (addr >= _entries[i].base && addr < _entries[i].base + _entries[i].length)
         {
-            if (addr >= entry->base && addr < entry->base + entry->length)
+            if (_entries[i].type == 1)
             {
-                if (entry->type == 1)
-                {
-                    return true;
-                }
-                
-                return false;
+                return true;
             }
             
-            entry = entry->next;
+            return false;
         }
-        
-        return false;
     }
     
-    else
-    {
-        auto entry = _sequence_entries;
-        
-        for (uint32_t i = 0; i < _num_entries; ++i)
-        {
-            if (addr >= entry->base && addr < entry->base + entry->length)
-            {
-                if (entry->type == 1)
-                {
-                    return true;
-                }
-                
-                return false;
-            }
-            
-            ++entry;
-        }
-        
-        return false;
-    }
+    return false;
 }
 
 uint64_t memory::map::next_usable(uint64_t addr)
 {
-    if (_entries)
+    uint64_t lowest = 0;
+    
+    for (uint32_t i = 0; i < _num_entries; ++i)
     {
-        auto entry = _entries;
-        
-        for (uint32_t i = 0; i < _num_entries; ++i)
+        if (_entries[i].base > addr)
         {
-            if (entry->base > addr)
+            if (_entries[i].type == 1)
             {
-                if (entry->type == 1)
+                if (!lowest || lowest > _entries[i].base)
                 {
-                    return entry->base;
+                    lowest = _entries[i].base;
                 }
             }
-            
-            entry = entry->next;
         }
-        
-        return 0;
     }
     
-    else
-    {
-        auto entry = _sequence_entries;
-        
-        uint64_t lowest = 0;
-        
-        for (uint32_t i = 0; i < _num_entries; ++i)
-        {
-            if (entry->base > addr)
-            {
-                if (entry->type == 1)
-                {
-                    if (!lowest || lowest > entry->base)
-                    {
-                        lowest = entry->base;
-                    }
-                }
-            }
-            
-            ++entry;
-        }
-        
-        return lowest;
-    }
+    return lowest;
 }
 
 void print(memory::map_entry * entry)
@@ -181,88 +106,55 @@ void print(memory::map_entry * entry)
     screen::printl(" |");
 }
 
-template<>
-void screen::print_impl(const memory::map & map)
+void memory::print_map()
 {
-    printl("|--------------------|--------------------|-----------------------------|");
-    printl("| Base address       | Length             | Type                        |");
-    printl("|--------------------|--------------------|-----------------------------|");
+    screen::printl("|--------------------|--------------------|-----------------------------|");
+    screen::printl("| Base address       | Length             | Type                        |");
+    screen::printl("|--------------------|--------------------|-----------------------------|");
     
-    if (map._entries)
+    if (memory::map::_entries)
     {
-        auto entry = map._entries;
-        
-        for (uint32_t i = 0; i < map._num_entries; ++i)
+        for (uint32_t i = 0; i < memory::map::_num_entries; ++i)
         {
-            ::print(entry);
-            entry = entry->next;
+            ::print(memory::map::_entries + i);
         }
     }
     
-    else
-    {
-        auto entry = map._sequence_entries;
-        
-        for (uint32_t i = 0; i < map._num_entries; ++i)
-        {
-            ::print(entry);
-            ++entry;
-        }
-    }
-
-    printl("|--------------------|--------------------|-----------------------------|");
+    screen::printl("|--------------------|--------------------|-----------------------------|");
 }
 
-memory::map * memory::map::sanitize() // and sort, don't forget sorting!
-{
-    // linked-list map is not sanitizeable, because only initial memory map can be insane (let's hope so)
-    if (_entries)
-    {
-        return nullptr;
-    }
-    
-    map * sane_map = new memory::map;
-
-    for (uint32_t i = 0; i < _num_entries; ++i)
-    {
-        sane_map->add_entry(new chained_map_entry(&_sequence_entries[i]));
-    }
-    
-    return sane_map;
-}
-
-void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::chained_map_entry * sequence)
+void memory::map::_combine_entries(uint64_t i, uint64_t j)
 {
     // 1) entry is below first in sequence, swap them and insert
-    if (entry->base + entry->length <= sequence->base)
+    if (_entries[i].base + _entries[i].length <= _entries[j].base)
     {        
-        entry->base ^= sequence->base ^= entry->base ^= sequence->base;
-        entry->length ^= sequence->length ^= entry->length ^= sequence->length;
-        entry->type ^= sequence->type ^= entry->type ^= sequence->type;
+        _entries[i].base ^= _entries[j].base ^= _entries[i].base ^= _entries[j].base;
+        _entries[i].length ^= _entries[j].length ^= _entries[i].length ^= _entries[j].length;
+        _entries[i].type ^= _entries[j].type ^= _entries[i].type ^= _entries[j].type;
         
-        if (sequence->next)
+        if (_entries[j].next)
         {
-            sequence->next->prev = entry;
+            _entries[j].next->prev = entry;
         }
         
-        entry->next = sequence->next;
-        sequence->next = entry;
-        entry->prev = sequence;
+        _entries[i].next = _entries[j].next;
+        _entries[j].next = entry;
+        _entries[i].prev = sequence;
         
         ++_num_entries;
         
         return;
     }
     
-    while (sequence->next)
+    while (_entries[j].next)
     {
         // 2) entry is between two entries in sequence, insert
-        if (sequence->base + sequence->length <= entry->base && entry->base + entry->length <= sequence->next->base)
+        if (_entries[j].base + _entries[j].length <= _entries[i].base && _entries[i].base + _entries[i].length <= _entries[j].next->base)
         {
-            entry->next = sequence->next;
-            entry->prev = sequence;
-            sequence->next->prev = entry;
-            sequence->next = entry;
+            _entries[i].next = _entries[j].next;
+            _entries[i].prev = sequence;
+            _entries[j].next->prev = entry;
+            _entries[j].next = entry;
             
             ++_num_entries;
             
@@ -270,31 +162,31 @@ void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::ch
         }
 
         // 3) element in sequence kills entry - swap values and proceed with 4)
-        if (entry->base >= sequence->base && entry->base + entry->length <= sequence->base + sequence->length)
+        if (_entries[i].base >= _entries[j].base && _entries[i].base + _entries[i].length <= _entries[j].base + _entries[j].length)
         {
-            entry->base ^= sequence->base ^= entry->base ^= sequence->base;
-            entry->length ^= sequence->length ^= entry->length ^= sequence->length;
-            entry->type ^= sequence->type ^= entry->type ^= sequence->type;
+            _entries[i].base ^= _entries[j].base ^= _entries[i].base ^= _entries[j].base;
+            _entries[i].length ^= _entries[j].length ^= _entries[i].length ^= _entries[j].length;
+            _entries[i].type ^= _entries[j].type ^= _entries[i].type ^= _entries[j].type;
         }
         
         // 4) entry "kills" element of sequence 
-        if (entry->base <= sequence->base && entry->base + entry->length >= sequence->base + sequence->length)
+        if (_entries[i].base <= _entries[j].base && _entries[i].base + _entries[i].length >= _entries[j].base + _entries[j].length)
         {
-            if (entry->type >= sequence->type)
+            if (_entries[i].type >= _entries[j].type)
             {
-                if (sequence->prev)
+                if (_entries[j].prev)
                 {
-                    sequence->prev->next = sequence->next;
+                    _entries[j].prev->next = _entries[j].next;
                 }
                 
                 else
                 {
-                    _entries = sequence->next;
+                    _entries = _entries[j].next;
                 }
                 
-                if (sequence->next)
+                if (_entries[j].next)
                 {
-                    sequence->next->prev = sequence->prev;
+                    _entries[j].next->prev = _entries[j].prev;
                 }
                 
                 --_num_entries;
@@ -306,10 +198,10 @@ void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::ch
             else
             {
                 chained_map_entry * second = new chained_map_entry;
-                second->type = entry->type;
-                second->base = sequence->base + sequence->length;
-                second->length = entry->base + entry->length - second->base;
-                entry->length -= second->length - sequence->length;
+                second->type = _entries[i].type;
+                second->base = _entries[j].base + _entries[j].length;
+                second->length = _entries[i].base + _entries[i].length - second->base;
+                _entries[i].length -= second->length - _entries[j].length;
                 
                 _combine_entries(entry, _entries);
                 _combine_entries(second, _entries);
@@ -319,19 +211,19 @@ void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::ch
         }
         
         // 5) only parts of entries overlap
-        if (entry->base + entry->length > sequence->base && entry->base < sequence->base)
+        if (_entries[i].base + _entries[i].length > _entries[j].base && _entries[i].base < _entries[j].base)
         {
-            entry->base ^= sequence->base ^= entry->base ^= sequence->base;
-            entry->length ^= sequence->length ^= entry->length ^= sequence->length;
-            entry->type ^= sequence->type ^= entry->type ^= sequence->type;
+            _entries[i].base ^= _entries[j].base ^= _entries[i].base ^= _entries[j].base;
+            _entries[i].length ^= _entries[j].length ^= _entries[i].length ^= _entries[j].length;
+            _entries[i].type ^= _entries[j].type ^= _entries[i].type ^= _entries[j].type;
         }
         
-        if (sequence->base + sequence->length > entry->base && entry->base > sequence->base)
+        if (_entries[j].base + _entries[j].length > _entries[i].base && _entries[i].base > _entries[j].base)
         {
-            if (sequence->type >= entry->type)
+            if (_entries[j].type >= _entries[i].type)
             {
-                entry->length -= sequence->base + sequence->length - entry->base;
-                entry->base = sequence->base + sequence->length;
+                _entries[i].length -= _entries[j].base + _entries[j].length - _entries[i].base;
+                _entries[i].base = _entries[j].base + _entries[j].length;
                 
                 _combine_entries(entry, _entries);
                 
@@ -340,7 +232,7 @@ void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::ch
             
             else
             {
-                sequence->length -= sequence->base + sequence->length - entry->base;
+                _entries[j].length -= _entries[j].base + _entries[j].length - _entries[i].base;
                 
                 _combine_entries(entry, _entries);
                 
@@ -348,19 +240,19 @@ void memory::map::_combine_entries(memory::chained_map_entry * entry, memory::ch
             }
         }
         
-        sequence = sequence->next;
+        sequence = _entries[j].next;
     }
     
     // 5) entry is above last in sequence
-    sequence->next = entry;
-    entry->prev = sequence;
+    _entries[j].next = entry;
+    _entries[i].prev = sequence;
     
     ++_num_entries;
 }
 
 void memory::map::_merge_siblings(memory::chained_map_entry * sequence)
 {
-    if (!sequence->next)
+    if (!_entries[j].next)
     {
         return;
     }
@@ -389,16 +281,11 @@ void memory::map::_merge_siblings(memory::chained_map_entry * sequence)
     }
 }
 
-void memory::map::add_entry(memory::chained_map_entry * entry)
+void memory::map::add_entry(memory::map_entry * entry)
 {
-    if (_sequence_entries)
-    {
-        PANIC("Trying to add chained entry to sequenced memory map!");
-    }
-        
     if (_num_entries == 0)
     {
-        _entries = entry;
+        _entries[0] = entry;
         
         _num_entries++;
         
@@ -422,28 +309,23 @@ uint32_t memory::map::find_last_usable(uint32_t size)
     
     size += 4096 - size % 4096;
     
-    auto entry = &_sequence_entries[_num_entries - 1];
-    
-    while (entry >= _sequence_entries)
+    for (uint32_t i = _num_entries; i >= 0; --i)
     {
-        if (entry->base > 0xFFFFFFFFu - size || entry->type != 1)
+        if (_entries[i].base > 0xFFFFFFFFu - size || _entries[i].type != 1)
         {
-            --entry;
             continue;
         }
         
-        if (entry->length == size)
+        if (_entries[i].length == size)
         {
-            return (uint32_t)entry->base;
+            return (uint32_t)_entries[i].base;
         }
             
-        if (entry->length > size)
+        if (_entries[i].length > size)
         {
-            entry->length -= size;
-            return (uint32_t)(entry->base + entry->length);
+            _entries[i].length -= size;
+            return (uint32_t)(_entries[i].base + _entries[i].length);
         }
-        
-        --entry;
     }
     
     PANIC("call to find_last_usable failed.");
