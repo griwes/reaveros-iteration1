@@ -40,7 +40,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
         
     screen::output->init_backbuffer(mem_map);
     
-    screen::printl("Booter, Reaver Project Bootloader v0.3");
+    screen::printl("Booter, Reaver Project Bootloader 0.0.4");
     screen::printl("Copyright (C) 2012 Reaver Project Team");
     screen::line();
     
