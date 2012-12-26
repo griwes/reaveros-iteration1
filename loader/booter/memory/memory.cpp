@@ -38,6 +38,11 @@ void memory::initialize(uint32_t placement, map_entry * memory_map, uint32_t mem
 {
     for (uint32_t i = 0; i < memory_map_length; ++i)
     {
+        if (memory_map[i].type > 1)
+        {
+            memory_map[i].type += 4;
+        }
+        
         memory::map::add_entry(memory_map[i]);
     }
     
