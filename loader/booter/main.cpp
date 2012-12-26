@@ -35,7 +35,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
 {
     memory::initialize(kernel + kernel_size * 512 + initrd_size * 512, memory_map, memory_map_size);
     screen::initialize(video_mode, font);
-        
+    
     screen::output->init_backbuffer();
     
     screen::printl("Booter, Reaver Project Bootloader 0.0.4");

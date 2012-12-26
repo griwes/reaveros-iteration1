@@ -90,7 +90,6 @@ void screen::console::put_char(char c)
             return;
     }
     
-    
     switch (_mode.bpp)
     {
         case 16:

@@ -164,7 +164,6 @@ void memory::map::_shrink(uint32_t i)
     --_num_entries;
 }
 
-// TODO TODO TODO TODO TODO
 void memory::map::add_entry(memory::map_entry & entry)
 {
     if (entry.length == 0)
@@ -245,7 +244,8 @@ void memory::map::add_entry(memory::map_entry & entry)
                 }
             }
             
-            if (_entries[i].base < entry.base && _entries[i].base + _entries[i].length < entry.base + entry.length)
+            if (_entries[i].base < entry.base && _entries[i].base + _entries[i].length > entry.base && _entries[i].base + 
+                _entries[i].length < entry.base + entry.length)
             {
                 map_entry tmp;
                 tmp = entry;
@@ -253,7 +253,8 @@ void memory::map::add_entry(memory::map_entry & entry)
                 _entries[i] = tmp;
             }
             
-            if (entry.base < _entries[i].base && entry.base + entry.length < _entries[i].base + _entries[i].length)
+            if (entry.base < _entries[i].base && entry.base + entry.length > _entries[i].base && entry.base + entry.length < 
+                _entries[i].base + _entries[i].length)
             {                
                 if (entry.type > _entries[i].type)
                 {
@@ -301,8 +302,8 @@ void memory::map::add_entry(memory::map_entry & entry)
             }
         }
     }
-    
-    PANIC("Something went wrong in add_entry - position for new entry not found.");
+
+    _entries[_num_entries++] = entry;
 }
 
 uint32_t memory::map::find_last_usable(uint32_t size)
