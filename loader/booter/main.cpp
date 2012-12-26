@@ -70,22 +70,16 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     processor::setup_idt();
     screen::printl("done.");
     
-    memory::default_allocator->save();
-    
     screen::print("[MEM  ] Installing kernel instances... ");
     uint64_t kernel_end = memory::install_kernel(kernel, kernel_size);
     screen::printl("done.");
-    
-    memory::default_allocator->save();
     
     screen::print("[MEM  ] Installing InitRD... ");
     memory::install_initrd(kernel_end, kernel + kernel_size, initrd_size);
     screen::printl("done.");
     
-    memory::default_allocator->save();
-
-    uint64_t kernel_start = 0xFFFFFFFF80000000;
-    uint64_t initrd_start = kernel_end;
+//    uint64_t kernel_start = 0xFFFFFFFF80000000;
+//    uint64_t initrd_start = kernel_end;
     
 //    screen::print("[CPU  ] Calling kernel...");
 //    processor::call_kernel(0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode(), sane_map);

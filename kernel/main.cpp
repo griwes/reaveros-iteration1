@@ -72,11 +72,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(memory::map * mem_map, screen
     memory::pmm::initialize(mem_map);
     screen::done();
     
-    screen::print(tag::memory, "Initializing virtual memory manager...");
-    memory::vmm::initialize();
-    screen::done();
-    
-    screen::print(tag(memory), "Reporting memory manager status...");
+    screen::print(tag::memory, "Reporting memory manager status...");
     memory::report();
     
     screen::print(tag::cpu, "Initializing processor...");
@@ -85,6 +81,10 @@ extern "C" void __attribute__((cdecl)) kernel_main(memory::map * mem_map, screen
     
     screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
+    
+    screen::print(tag::scheduler, "Initializing virtual memory manager server...");
+    scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);
+    screen::done();
     
     screen::print(tag::scheduler, "Starting video server...");
     scheduler::process vsrv = scheduler::create_process(initrd["video.srv"]);

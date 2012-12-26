@@ -29,53 +29,21 @@
 
 void * operator new(uint32_t, void *);
 
-memory::manager::allocator * memory::manager::make_placement_allocator(uint32_t placement, map & memory_map)
+memory::manager::allocator * memory::manager::make_placement_allocator(uint32_t placement)
 {
     placement += 15;
     placement &= ~(uint32_t)15;
     
-    return new((void *)placement) placement_allocator((placement + sizeof(placement_allocator) + 15) & ~(uint32_t)15,
-            memory_map);
+    return new((void *)placement) placement_allocator((placement + sizeof(placement_allocator) + 15) & ~(uint32_t)15);
 }
 
-memory::manager::placement_allocator::placement_allocator(uint32_t placement, memory::map & memory_map)
-    : memory_map(&memory_map), placement_address(placement), base(placement), type(5), top_mapped(64 * 1024 * 1024 - 1)
+memory::manager::placement_allocator::placement_allocator(uint32_t placement)
+    : placement_address(placement), /*base(placement), type(5),*/ top_mapped(64 * 1024 * 1024 - 1)
 {
 }
 
 memory::manager::placement_allocator::~placement_allocator()
 {
-}
-
-namespace
-{
-    memory::chained_map_entry entries[3] = {};
-    memory::chained_map_entry * entry = entries;
-}
-
-void memory::manager::placement_allocator::save()
-{
-    entry->base = base & ~(uint64_t)4095;
-    entry->length = (placement_address - base + 4095) & ~(uint64_t)4095;
-    entry->type = type;
-    
-    switch (type)
-    {
-        case 5:
-            type = 2;
-            break;
-        case 2:
-            type = 3;
-            break;
-        case 3:
-            type = ~0;
-    }
-    
-    base = placement_address;
-    
-    memory_map->add_entry(entry);
-    
-    ++entry;
 }
 
 void * memory::manager::placement_allocator::allocate(uint32_t size)
@@ -95,9 +63,9 @@ void * memory::manager::placement_allocator::allocate(uint32_t size)
     size += 15;
     size &= ~(uint32_t)15;
     
-    while (!memory_map->usable(placement_address) || !memory_map->usable(placement_address + size -1 ))
+    while (!memory::map::usable(placement_address) || !memory::map::usable(placement_address + size -1 ))
     {
-        placement_address = memory_map->next_usable(placement_address);
+        placement_address = memory::map::next_usable(placement_address);
         
         if (placement_address == 0)
         {
@@ -118,7 +86,7 @@ void memory::manager::placement_allocator::deallocate(void *)
     return;
 }
 
-memory::manager::backwards_allocator::backwards_allocator(memory::map & map) : memory_map(map)
+memory::manager::backwards_allocator::backwards_allocator()
 {
 }
 
@@ -128,7 +96,7 @@ memory::manager::backwards_allocator::~backwards_allocator()
 
 void * memory::manager::backwards_allocator::allocate(uint32_t size)
 {
-    uint32_t top_placement = memory_map.find_last_usable(size);
+    uint32_t top_placement = memory::map::find_last_usable(size);
     return (void *)top_placement;
 }
 

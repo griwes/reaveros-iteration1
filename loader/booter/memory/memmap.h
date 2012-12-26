@@ -39,10 +39,8 @@ namespace memory
         {
         }
         
-        map_entry(map_entry * old) : base(old->base), length(old->length), type(old->type), 
-            extended_attribs(old->extended_attribs)
-        {
-        }
+        map_entry(const map_entry &) = default;
+        map_entry & operator=(const map_entry &) = default;
         
         uint64_t base;
         uint64_t length;
@@ -57,7 +55,7 @@ namespace memory
     public:
         friend void memory::print_map();
         
-        static void add_entry(map_entry *);
+        static void add_entry(map_entry &);
         
         static bool usable(uint64_t);
         static uint64_t next_usable(uint64_t);
@@ -69,7 +67,7 @@ namespace memory
         
         static uint32_t _num_entries;
         
-        static void _combine_entries(uint64_t, uint64_t);
-        static void _merge_siblings(uint64_t);
+        static void _expand(uint32_t);
+        static void _shrink(uint32_t);
     };
 }

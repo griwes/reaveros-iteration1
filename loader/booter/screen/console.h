@@ -56,10 +56,10 @@ namespace screen
         console(boot_mode *, void *);
         ~console();
         
-        void init_backbuffer(memory::map &);
+        void init_backbuffer();
         
         void put_char(char);
-        void save_backbuffer_info(memory::map *);
+        void save_backbuffer_info();
         
         void print_mode_info();
         

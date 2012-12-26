@@ -26,7 +26,8 @@
 #include <memory/memmap.h>
 #include <memory/memory.h>
 
-memory::map_entry memory::map::_entries[512];
+memory::map_entry memory::map::_entries[512] = {};
+uint32_t memory::map::_num_entries = 0;
 
 bool memory::map::usable(uint64_t addr)
 {
@@ -67,12 +68,12 @@ uint64_t memory::map::next_usable(uint64_t addr)
     return lowest;
 }
 
-void print(memory::map_entry * entry)
+void print(memory::map_entry & entry)
 {
-    screen::printf("| 0x%016x ", entry->base);
-    screen::printf("| 0x%016x | ", entry->length);
+    screen::printf("| 0x%016x ", entry.base);
+    screen::printf("| 0x%016x | ", entry.length);
     
-    switch (entry->type)
+    switch (entry.type)
     {
         case 1:
             screen::print("Free memory                ");
@@ -116,200 +117,199 @@ void memory::print_map()
     {
         for (uint32_t i = 0; i < memory::map::_num_entries; ++i)
         {
-            ::print(memory::map::_entries + i);
+            ::print(memory::map::_entries[i]);
         }
     }
     
     screen::printl("|--------------------|--------------------|-----------------------------|");
 }
 
-void memory::map::_combine_entries(uint64_t i, uint64_t j)
+void memory::map::_expand(uint32_t i)
 {
-    // 1) entry is below first in sequence, swap them and insert
-    if (_entries[i].base + _entries[i].length <= _entries[j].base)
-    {        
-        _entries[i].base ^= _entries[j].base ^= _entries[i].base ^= _entries[j].base;
-        _entries[i].length ^= _entries[j].length ^= _entries[i].length ^= _entries[j].length;
-        _entries[i].type ^= _entries[j].type ^= _entries[i].type ^= _entries[j].type;
-        
-        if (_entries[j].next)
-        {
-            _entries[j].next->prev = entry;
-        }
-        
-        _entries[i].next = _entries[j].next;
-        _entries[j].next = entry;
-        _entries[i].prev = sequence;
-        
-        ++_num_entries;
-        
-        return;
-    }
-    
-    while (_entries[j].next)
+    if (i >= _num_entries)
     {
-        // 2) entry is between two entries in sequence, insert
-        if (_entries[j].base + _entries[j].length <= _entries[i].base && _entries[i].base + _entries[i].length <= _entries[j].next->base)
-        {
-            _entries[i].next = _entries[j].next;
-            _entries[i].prev = sequence;
-            _entries[j].next->prev = entry;
-            _entries[j].next = entry;
-            
-            ++_num_entries;
-            
-            return;
-        }
-
-        // 3) element in sequence kills entry - swap values and proceed with 4)
-        if (_entries[i].base >= _entries[j].base && _entries[i].base + _entries[i].length <= _entries[j].base + _entries[j].length)
-        {
-            _entries[i].base ^= _entries[j].base ^= _entries[i].base ^= _entries[j].base;
-            _entries[i].length ^= _entries[j].length ^= _entries[i].length ^= _entries[j].length;
-            _entries[i].type ^= _entries[j].type ^= _entries[i].type ^= _entries[j].type;
-        }
-        
-        // 4) entry "kills" element of sequence 
-        if (_entries[i].base <= _entries[j].base && _entries[i].base + _entries[i].length >= _entries[j].base + _entries[j].length)
-        {
-            if (_entries[i].type >= _entries[j].type)
-            {
-                if (_entries[j].prev)
-                {
-                    _entries[j].prev->next = _entries[j].next;
-                }
-                
-                else
-                {
-                    _entries = _entries[j].next;
-                }
-                
-                if (_entries[j].next)
-                {
-                    _entries[j].next->prev = _entries[j].prev;
-                }
-                
-                --_num_entries;
-                _combine_entries(entry, _entries);
-                
-                return;
-            }
-            
-            else
-            {
-                chained_map_entry * second = new chained_map_entry;
-                second->type = _entries[i].type;
-                second->base = _entries[j].base + _entries[j].length;
-                second->length = _entries[i].base + _entries[i].length - second->base;
-                _entries[i].length -= second->length - _entries[j].length;
-                
-                _combine_entries(entry, _entries);
-                _combine_entries(second, _entries);
-                
-                return;
-            }
-        }
-        
-        // 5) only parts of entries overlap
-        if (_entries[i].base + _entries[i].length > _entries[j].base && _entries[i].base < _entries[j].base)
-        {
-            _entries[i].base ^= _entries[j].base ^= _entries[i].base ^= _entries[j].base;
-            _entries[i].length ^= _entries[j].length ^= _entries[i].length ^= _entries[j].length;
-            _entries[i].type ^= _entries[j].type ^= _entries[i].type ^= _entries[j].type;
-        }
-        
-        if (_entries[j].base + _entries[j].length > _entries[i].base && _entries[i].base > _entries[j].base)
-        {
-            if (_entries[j].type >= _entries[i].type)
-            {
-                _entries[i].length -= _entries[j].base + _entries[j].length - _entries[i].base;
-                _entries[i].base = _entries[j].base + _entries[j].length;
-                
-                _combine_entries(entry, _entries);
-                
-                return;
-            }
-            
-            else
-            {
-                _entries[j].length -= _entries[j].base + _entries[j].length - _entries[i].base;
-                
-                _combine_entries(entry, _entries);
-                
-                return;
-            }
-        }
-        
-        sequence = _entries[j].next;
+        PANIC("Insane argument for _expand.");
     }
     
-    // 5) entry is above last in sequence
-    _entries[j].next = entry;
-    _entries[i].prev = sequence;
+    if (_num_entries + 1 >= 512)
+    {
+        PANIC("Too much entries in memory map!");
+    }
+    
+    for (uint32_t j = _num_entries; j > i; --j)
+    {
+        _entries[j] = _entries[j - 1];
+    }
     
     ++_num_entries;
 }
 
-void memory::map::_merge_siblings(memory::chained_map_entry * sequence)
+void memory::map::_shrink(uint32_t i)
 {
-    if (!_entries[j].next)
+    if (i >= _num_entries)
+    {
+        PANIC("Insane argument for _shrink.");
+    }
+    
+    if (_num_entries == 0)
+    {
+        PANIC("Tried to shrink empty memory map!");
+    }
+    
+    for (; i < _num_entries - 1; ++i)
+    {
+        _entries[i] = _entries[i + 1];
+    }
+    
+    --_num_entries;
+}
+
+// TODO TODO TODO TODO TODO
+void memory::map::add_entry(memory::map_entry & entry)
+{
+    if (entry.length == 0)
     {
         return;
     }
     
-    auto first = sequence;
-    auto second = first->next;
-    
-    while (second->next)
+    if (_num_entries == 0)
     {
-        if (first->type == second->type && first->base + first->length == second->base)
+        _entries[0] = entry;
+    
+        ++_num_entries;
+        
+        return;
+    }
+
+    for (uint32_t i = 0; i < _num_entries; ++i)
+    {
+        if (entry.type == _entries[i].type)
         {
-            first->length += second->length;
-            first->next = second->next;
-            second->next->prev = first;
+            if (entry.base >= _entries[i].base && entry.base + entry.length <= _entries[i].base + _entries[i].length)
+            {
+                return;
+            }
             
-            second = first->next;
+            if (_entries[i].base + _entries[i].length >= entry.base)
+            {
+                map_entry tmp = entry;
+                entry = _entries[i];
+                _entries[i] = tmp;
+            }
             
-            --_num_entries;
+            if (entry.base + entry.length >= _entries[i].base)
+            {
+                entry.length = _entries[i].base + _entries[i].length - entry.base;
+                
+                _shrink(i);
+                
+                add_entry(entry);
+                
+                return;
+            }
         }
         
         else
         {
-            first = second;
-            second = second->next;
+            if (entry.base < _entries[i].base && entry.base + entry.length > _entries[i].base + _entries[i].length)
+            {
+                map_entry tmp;
+                tmp = entry;
+                entry = _entries[i];
+                _entries[i] = tmp;
+            }
+            
+            if (entry.base >= _entries[i].base && entry.base + entry.length <= _entries[i].base + _entries[i].length)
+            {
+                if (_entries[i].type > entry.type)
+                {
+                    return;
+                }
+                
+                if (entry.base > _entries[i].base)
+                {
+                    map_entry other{}, another{};
+                    other.base = entry.base + entry.length;
+                    other.length = _entries[i].base + _entries[i].length - other.base;
+                    
+                    another.base = _entries[i].base;
+                    another.length = _entries[i].base + _entries[i].length - entry.base;
+                    
+                    _shrink(i);
+                    
+                    add_entry(other);
+                    add_entry(another);
+                    add_entry(entry);
+                    
+                    return;
+                }
+            }
+            
+            if (_entries[i].base < entry.base && _entries[i].base + _entries[i].length < entry.base + entry.length)
+            {
+                map_entry tmp;
+                tmp = entry;
+                entry = _entries[i];
+                _entries[i] = tmp;
+            }
+            
+            if (entry.base < _entries[i].base && entry.base + entry.length < _entries[i].base + _entries[i].length)
+            {                
+                if (entry.type > _entries[i].type)
+                {
+                    uint64_t old = _entries[i].base;
+                    _entries[i].base = entry.base + entry.length;
+                    _entries[i].length -= old - _entries[i].base;
+                    
+                    add_entry(entry);
+                    
+                    return;
+                }
+                
+                entry.length = _entries[i].base - entry.base;
+                
+                add_entry(entry);
+                
+                return;
+            }
         }
     }
-}
-
-void memory::map::add_entry(memory::map_entry * entry)
-{
-    if (_num_entries == 0)
+    
+    for (uint32_t i = 0; i < _num_entries; ++i)
     {
-        _entries[0] = entry;
+        if (i == 0)
+        {
+            if (entry.base < _entries[i].base)
+            {
+                _expand(0);
+                
+                _entries[i] = entry;
+                
+                return;
+            }
+        }
         
-        _num_entries++;
-        
-        return;
+        else
+        {
+            if (_entries[i - 1].base < entry.base && entry.base < _entries[i].base)
+            {
+                _expand(i);
+                
+                _entries[i] = entry;
+                
+                return;
+            }
+        }
     }
     
-    else
-    {
-        _combine_entries(entry, _entries);
-    }
-
-    _merge_siblings(_entries);
+    PANIC("Something went wrong in add_entry - position for new entry not found.");
 }
 
 uint32_t memory::map::find_last_usable(uint32_t size)
 {
-    if (_entries)
-    {
-        PANIC("find_last_usable is not supposed to be called after memory map sanitizing.");
-    }
-    
     size += 4096 - size % 4096;
     
-    for (uint32_t i = _num_entries; i >= 0; --i)
+    for (uint32_t i = _num_entries; i != (uint32_t)-1; --i)
     {
         if (_entries[i].base > 0xFFFFFFFFu - size || _entries[i].type != 1)
         {

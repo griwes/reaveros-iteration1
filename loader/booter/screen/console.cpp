@@ -38,20 +38,20 @@ screen::console::~console()
 {
 }
 
-void screen::console::init_backbuffer(memory::map & map)
+void screen::console::init_backbuffer()
 {
-    _backbuffer = (uint32_t)((memory::manager::backwards_allocator(map)).allocate(_mode.bytes_per_line * _mode.resolution_y));
+    _backbuffer = (uint32_t)((memory::manager::backwards_allocator()).allocate(_mode.bytes_per_line * _mode.resolution_y));
     memory::zero((uint8_t *)_backbuffer, _mode.resolution_y * _mode.bytes_per_line);
 }
 
-void screen::console::save_backbuffer_info(memory::map * map)
+void screen::console::save_backbuffer_info()
 {
-    memory::chained_map_entry * backbuffer = new memory::chained_map_entry;
-    backbuffer->base = _backbuffer;
-    backbuffer->length = _mode.resolution_y * _mode.bytes_per_line;
-    backbuffer->length += 4096 - backbuffer->length % 4096;
-    backbuffer->type = 4;
-    map->add_entry(backbuffer);
+    memory::map_entry backbuffer{};
+    backbuffer.base = _backbuffer;
+    backbuffer.length = _mode.resolution_y * _mode.bytes_per_line;
+    backbuffer.length += 4096 - backbuffer.length % 4096;
+    backbuffer.type = 4;
+    memory::map::add_entry(backbuffer);
 }
 
 void screen::console::put_char(char c)
@@ -204,13 +204,13 @@ void screen::console::_clear()
 
 void screen::console::_scroll()
 {
-    memory::copy((uint8_t *)_backbuffer + _mode.bytes_per_line * 5 * 16, (uint8_t *)_backbuffer, (_mode.resolution_y - 16 * 5
+    memory::copy((uint8_t *)_backbuffer + _mode.bytes_per_line * 16, (uint8_t *)_backbuffer, (_mode.resolution_y - 16
         - _mode.resolution_y % 16) * _mode.bytes_per_line);
-    memory::zero((uint8_t *)_backbuffer + _mode.bytes_per_line * (_mode.resolution_y - 5 *16 - _mode.resolution_y % 16), 
-        _mode.bytes_per_line * 5 * 16);
+    memory::zero((uint8_t *)_backbuffer + _mode.bytes_per_line * (_mode.resolution_y - 16 - _mode.resolution_y % 16), 
+        _mode.bytes_per_line * 16);
     memory::copy((uint8_t *)_backbuffer, (uint8_t *)_mode.addr, _mode.bytes_per_line * _mode.resolution_y);
     
-    _y -= 5;
+    --_y;
 }
 
 void screen::console::print_mode_info()
