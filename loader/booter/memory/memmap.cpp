@@ -189,90 +189,84 @@ void memory::map::add_entry(memory::map_entry & entry)
                 return;
             }
             
-            if (_entries[i].base + _entries[i].length >= entry.base)
+            if (_entries[i].base + _entries[i].length >= entry.base && _entries[i].base + _entries[i].length <= entry.base + entry.length)
             {
                 map_entry tmp = entry;
                 entry = _entries[i];
                 _entries[i] = tmp;
             }
             
-            if (entry.base + entry.length >= _entries[i].base)
+            if (entry.base + entry.length >= _entries[i].base && entry.base + entry.length <= _entries[i].base + _entries[i].length)
             {
-                entry.length = _entries[i].base + _entries[i].length - entry.base;
+                _entries[i].length = _entries[i].base + _entries[i].length - entry.base;
+                _entries[i].base = entry.base;
+                
+                return;
+            }
+        }
+        
+        if (entry.base < _entries[i].base && entry.base + entry.length > _entries[i].base + _entries[i].length)
+        {
+            map_entry tmp;
+            tmp = entry;
+            entry = _entries[i];
+            _entries[i] = tmp;
+        }
+        
+        if (entry.base >= _entries[i].base && entry.base + entry.length <= _entries[i].base + _entries[i].length)
+        {
+            if (_entries[i].type > entry.type)
+            {
+                return;
+            }
+            
+            if (entry.base > _entries[i].base)
+            {
+                map_entry other{}, another{};
+                other.base = entry.base + entry.length;
+                other.length = _entries[i].base + _entries[i].length - other.base;
+                
+                another.base = _entries[i].base;
+                another.length = _entries[i].base + _entries[i].length - entry.base;
                 
                 _shrink(i);
                 
+                add_entry(other);
+                add_entry(another);
                 add_entry(entry);
                 
                 return;
             }
         }
         
-        else
+        if (_entries[i].base < entry.base && _entries[i].base + _entries[i].length > entry.base && _entries[i].base + 
+            _entries[i].length < entry.base + entry.length)
         {
-            if (entry.base < _entries[i].base && entry.base + entry.length > _entries[i].base + _entries[i].length)
+            map_entry tmp;
+            tmp = entry;
+            entry = _entries[i];
+            _entries[i] = tmp;
+        }
+        
+        if (entry.base < _entries[i].base && entry.base + entry.length > _entries[i].base && entry.base + entry.length < 
+            _entries[i].base + _entries[i].length)
+        {                
+            if (entry.type > _entries[i].type)
             {
-                map_entry tmp;
-                tmp = entry;
-                entry = _entries[i];
-                _entries[i] = tmp;
-            }
-            
-            if (entry.base >= _entries[i].base && entry.base + entry.length <= _entries[i].base + _entries[i].length)
-            {
-                if (_entries[i].type > entry.type)
-                {
-                    return;
-                }
-                
-                if (entry.base > _entries[i].base)
-                {
-                    map_entry other{}, another{};
-                    other.base = entry.base + entry.length;
-                    other.length = _entries[i].base + _entries[i].length - other.base;
-                    
-                    another.base = _entries[i].base;
-                    another.length = _entries[i].base + _entries[i].length - entry.base;
-                    
-                    _shrink(i);
-                    
-                    add_entry(other);
-                    add_entry(another);
-                    add_entry(entry);
-                    
-                    return;
-                }
-            }
-            
-            if (_entries[i].base < entry.base && _entries[i].base + _entries[i].length > entry.base && _entries[i].base + 
-                _entries[i].length < entry.base + entry.length)
-            {
-                map_entry tmp;
-                tmp = entry;
-                entry = _entries[i];
-                _entries[i] = tmp;
-            }
-            
-            if (entry.base < _entries[i].base && entry.base + entry.length > _entries[i].base && entry.base + entry.length < 
-                _entries[i].base + _entries[i].length)
-            {                
-                if (entry.type > _entries[i].type)
-                {
-                    uint64_t old = _entries[i].base;
-                    _entries[i].base = entry.base + entry.length;
-                    _entries[i].length -= old - _entries[i].base;
-                    
-                    add_entry(entry);
-                    
-                    return;
-                }
-                
-                entry.length = _entries[i].base - entry.base;
+                uint64_t old = _entries[i].base;
+                _entries[i].base = entry.base + entry.length;
+                _entries[i].length -= old - _entries[i].base;
                 
                 add_entry(entry);
                 
                 return;
             }
+            
+            entry.length = _entries[i].base - entry.base;
+            
+            add_entry(entry);
+            
+            return;
         }
     }
     
