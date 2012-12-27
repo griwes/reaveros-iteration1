@@ -75,7 +75,7 @@ namespace processor
     }
     
     extern "C" uint32_t _check_long_mode();
-    void call_kernel(uint8_t, uint64_t, uint64_t, uint64_t, screen::mode, memory::map *);
+    extern "C" void call_kernel(uint64_t, uint64_t, uint64_t, screen::mode);
     
     inline void check_long_mode()
     {

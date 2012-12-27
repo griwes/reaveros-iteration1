@@ -28,6 +28,7 @@ global  _check_long_mode
 global  enter_long_mode
 global  setup_gdt
 global  _setup_idt
+global  call_kernel
 
 _check_long_mode:
     mov     eax, 0x80000000
@@ -223,4 +224,34 @@ plm:
     push    isrh.sti
     
     retf
+
+bits    32
+
+call_kernel:
+    push    ebp
+    mov     ebp, esp
+    
+    pop     eax ; previous ebp
+    pop     eax ; call return address
+    
+    ; now on call stack are only arguments
+    
+    push    word 0x8
+    push    long_mode
+    
+    retf
+    
+bits    64
+    
+long_mode:
+    ; we have clean stack
+    
+    pop     rax ; kernel start
+    pop     rbx ; initrd start
+    pop     rcx ; initrd end
+    pop     rdx ; mode
+    pop     rsi ; mode pt 2
+    pop     rdi ; mode pt 3
+    
+    jmp     rax
     

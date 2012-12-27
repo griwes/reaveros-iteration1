@@ -185,3 +185,7 @@ extern "C" void isr_handler(processor::isr_stack_frame stack_frame)
     
     asm volatile ("cli; hlt");
 }
+
+// void processor::call_kernel(uint64_t kernel, uint64_t initrd, uint64_t initrd_end, screen::mode mode)
+// {
+// }
