@@ -32,7 +32,7 @@
 
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, screen::boot_mode * video_mode, void * font)
-{   
+{    
     memory::initialize(kernel + kernel_size * 512 + initrd_size * 512, memory_map, memory_map_size);
     screen::initialize(video_mode, font);
     
@@ -49,7 +49,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::printl("[MEM  ] Reading memory map...");
     memory::print_map();
-    
+
     screen::print("[MEM  ] Preparing long mode paging... ");
     memory::prepare_long_mode();
     screen::printl("done.");

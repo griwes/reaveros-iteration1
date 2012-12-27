@@ -74,3 +74,20 @@ extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
 {
     return 0;
 }
+
+extern "C" void * memset(void * dest, int ch, uint32_t count)
+{
+    unsigned char * d = (unsigned char *)dest;
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        *d++ = (unsigned char)ch;
+    }
+    
+    return dest;
+}
+
+extern "C" void * memcpy(void * dest, const void * src, size_t count)
+{
+    memory::copy((uint8_t *)src, (uint8_t *)dest, count);
+    return dest;
+}

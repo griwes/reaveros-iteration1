@@ -31,6 +31,8 @@ global  _setup_idt
 global  call_kernel
 
 _check_long_mode:
+    pusha
+
     mov     eax, 0x80000000
     cpuid
     cmp     eax, 0x80000001
@@ -41,13 +43,17 @@ _check_long_mode:
     test    edx, 1 << 29
     jz      .no
 
-    mov     eax, 1
+    popa
 
+    mov     eax, 1
+    
     ret
 
     .no:
-        xor     eax, eax
+        popa
 
+        xor     eax, eax
+        
         ret
 
 enter_long_mode:
@@ -256,8 +262,6 @@ long_mode:
     
     mov     rsp, rbp
     mov     rbp, qword 0 ; oh, this seems so backwards... :D
-    
-    xchg    bx, bx  
     
     jmp     rax
     
