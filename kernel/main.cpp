@@ -1,13 +1,13 @@
-#include <screen/screen.h>
-#include <screen/mode.h>
-#include <memory/memory.h>
-#include <memory/memmap.h>
-#include <processor/processor.h>
-#include <scheduler/scheduler.h>
-#include <scheduler/process.h>
-#include <drivers/initrd.h>
+//#include <screen/screen.h>
+//#include <screen/mode.h>
+//#include <memory/memory.h>
+//#include <memory/memmap.h>
+//#include <processor/processor.h>
+//#include <scheduler/scheduler.h>
+//#include <scheduler/process.h>
+//#include <drivers/initrd.h>
 
-namespace screen
+/*namespace screen
 {
     class mode;
     
@@ -58,11 +58,12 @@ namespace scheduler
     class process;
 }
 
-namespace tag = screen::tag;
+namespace tag = screen::tag;*/
 
-extern "C" void __attribute__((cdecl)) kernel_main(memory::map * mem_map, screen::mode * video, initrd::initrd * initrd)
+extern "C" void __attribute__((cdecl)) kernel_main()
 {
-    screen::initialize(video);
+    for (;;) ;
+/*    screen::initialize(video);
     
     screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
     screen::print("Version: 0.1, Codename \"Cotyledon\"\n");
@@ -108,5 +109,5 @@ extern "C" void __attribute__((cdecl)) kernel_main(memory::map * mem_map, screen
     
     screen::print(tag::scheduler, "Starting filesystem driver...");
     scheduler:: process filesystem = scheduler::create_process(initrd["filesystem.srv"]);
-    screen::done();
+    screen::done();*/
 }

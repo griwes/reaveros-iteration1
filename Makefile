@@ -26,9 +26,9 @@ hdd:
 	cd loader/booter; \
 	make; \
 	mv builds/booter.img ../../builds/
-#	cd kernel; \
-#	make; \
-#	mv builds/kernel.img ../builds/
+	cd kernel; \
+	make; \
+	mv builds/kernel.img ../builds/
 	cd builds; \
 	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img stage1.img; \
 	dd if=a.img of=hdd.img conv=notrunc

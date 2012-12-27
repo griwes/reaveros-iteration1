@@ -257,5 +257,7 @@ long_mode:
     mov     rsp, rbp
     mov     rbp, qword 0 ; oh, this seems so backwards... :D
     
+    xchg    bx, bx  
+    
     jmp     rax
     

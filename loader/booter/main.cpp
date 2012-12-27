@@ -32,14 +32,14 @@
 
 extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_map, uint32_t memory_map_size, 
                 uint32_t kernel, uint32_t kernel_size, uint32_t initrd_size, screen::boot_mode * video_mode, void * font)
-{
+{   
     memory::initialize(kernel + kernel_size * 512 + initrd_size * 512, memory_map, memory_map_size);
     screen::initialize(video_mode, font);
     
     screen::printl("Booter, Reaver Project Bootloader 0.0.4");
     screen::printl("Copyright (C) 2012 Reaver Project Team");
     screen::line();
-
+    
     screen::print("[CPU  ] Checking CPU's long mode support... ");
     processor::check_long_mode();
     screen::printl("done.");
@@ -63,7 +63,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::print("[CPU  ] Installing long mode GDT... ");
     processor::setup_gdt();
     screen::printl("done.");
-    
+
     screen::print("[CPU  ] Installing long mode IDT... ");
     processor::setup_idt();
     screen::printl("done.");
