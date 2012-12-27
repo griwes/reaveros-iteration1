@@ -49,23 +49,18 @@ bool memory::map::usable(uint64_t addr)
 
 uint64_t memory::map::next_usable(uint64_t addr)
 {
-    uint64_t lowest = 0;
-    
     for (uint32_t i = 0; i < _num_entries; ++i)
     {
         if (_entries[i].base > addr)
         {
             if (_entries[i].type == 1)
             {
-                if (!lowest || lowest > _entries[i].base)
-                {
-                    lowest = _entries[i].base;
-                }
+                return _entries[i].base;
             }
         }
     }
     
-    return lowest;
+    return 0;
 }
 
 void print(memory::map_entry & entry)
@@ -220,25 +215,22 @@ void memory::map::add_entry(memory::map_entry & entry)
                 return;
             }
             
-            if (entry.base > _entries[i].base)
-            {
-                map_entry other{}, another{};
-                other.base = entry.base + entry.length;
-                other.length = _entries[i].base + _entries[i].length - other.base;
-                other.type = _entries[i].type;
-                
-                another.base = _entries[i].base;
-                another.length = entry.base - another.base;
-                another.type = _entries[i].type;
-                
-                _shrink(i);
-                
-                add_entry(other);
-                add_entry(another);
-                add_entry(entry);
-                
-                return;
-            }
+            map_entry other{}, another{};
+            other.base = entry.base + entry.length;
+            other.length = _entries[i].base + _entries[i].length - other.base;
+            other.type = _entries[i].type;
+            
+            another.base = _entries[i].base;
+            another.length = entry.base - another.base;
+            another.type = _entries[i].type;
+            
+            _shrink(i);
+            
+            add_entry(other);
+            add_entry(another);
+            add_entry(entry);
+            
+            return;
         }
         
         if (_entries[i].base < entry.base && _entries[i].base + _entries[i].length > entry.base && _entries[i].base + 

@@ -28,15 +28,13 @@
 #include <memory/x64paging.h>
 
 memory::manager::placement_allocator::placement_allocator(uint32_t placement)
-    : placement_address(placement), base(placement), type(5), top_mapped(64 * 1024 * 1024 - 1)
+    : placement_address(placement), base(0x100000), type(5), top_mapped(64 * 1024 * 1024 - 1)
 {
 }
 
 memory::manager::placement_allocator::~placement_allocator()
 {
 }
-
-void print(memory::map_entry &);
 
 void memory::manager::placement_allocator::save()
 {
@@ -58,13 +56,18 @@ void memory::manager::placement_allocator::save()
             type = ~0;
     }
     
-    base = placement_address;
+    base = entry.base + entry.length;
     
     map::add_entry(entry);
 }
 
 void * memory::manager::placement_allocator::allocate(uint32_t size)
 {
+    if (!size)
+    {
+        return nullptr;
+    }
+    
     static bool vas_context = false;
 
     if (top_mapped - placement_address <= 3 * 4096 && !vas_context)
@@ -80,7 +83,7 @@ void * memory::manager::placement_allocator::allocate(uint32_t size)
     size += 15;
     size &= ~(uint32_t)15;
     
-    while (!memory::map::usable(placement_address) || !memory::map::usable(placement_address + size -1 ))
+    while (!memory::map::usable(placement_address) || !memory::map::usable(placement_address + size - 1))
     {
         placement_address = memory::map::next_usable(placement_address);
         

@@ -82,14 +82,14 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     memory::default_allocator.save();
     
-    screen::print("[MEM  ] Printing final memory map... ");
+    screen::printl("[MEM  ] Printing final memory map... ");
     memory::print_map();
     
 //    uint64_t kernel_start = 0xFFFFFFFF80000000;
 //    uint64_t initrd_start = kernel_end;
-    
+
 //    screen::print("[CPU  ] Calling kernel...");
-//    processor::call_kernel(0x8, kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode());
+//    processor::call_kernel(kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode());
     
     // we will never get here
     for (;;) ;
