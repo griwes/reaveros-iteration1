@@ -83,7 +83,7 @@ uint64_t memory::install_kernel(uint32_t kernel_base, uint32_t kernel_length)
     
     memory::default_allocator.align(4096);
     uint8_t * kernel = new uint8_t[kernel_length];
-
+    
     copy((uint8_t *)kernel_base, kernel, kernel_length);
 
     vas->map(0xFFFFFFFF80000000, 0xFFFFFFFF80000000 + kernel_length, (uint64_t)kernel);
@@ -91,7 +91,19 @@ uint64_t memory::install_kernel(uint32_t kernel_base, uint32_t kernel_length)
     return 0xFFFFFFFF80000000 + ((kernel_length + 4095) & ~(uint64_t)4095);
 }
 
-void memory::install_initrd(uint32_t kernel_end, uint32_t initrd_base, uint32_t initrd_length)
+void memory::install_kernel_stack(uint64_t & kernel_end)
+{
+    memory::default_allocator.align(4096);
+    uint8_t * kernel_stack = new uint8_t[4 * 4096];
+    
+    kernel_end += 4096;
+    
+    vas->map(kernel_end, kernel_end + 4 * 4096, (uint64_t)kernel_stack);
+    
+    kernel_end += 4 * 4096;
+}
+
+void memory::install_initrd(uint64_t kernel_end, uint32_t initrd_base, uint32_t initrd_length)
 {
     initrd_length *= 512;
     

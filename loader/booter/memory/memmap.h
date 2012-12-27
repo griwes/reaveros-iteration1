@@ -62,6 +62,16 @@ namespace memory
         
         static uint32_t find_last_usable(uint32_t);
         
+        static map_entry * get_entries()
+        {
+            return _entries;
+        }
+        
+        static uint64_t size()
+        {
+            return _num_entries;
+        }
+        
     private:
         static map_entry _entries[512]; // more = insanity
         

@@ -236,7 +236,7 @@ call_kernel:
     
     ; now on call stack are only arguments
     
-    push    word 0x8
+    push    dword 0x8
     push    long_mode
     
     retf
@@ -244,14 +244,18 @@ call_kernel:
 bits    64
     
 long_mode:
-    ; we have clean stack
+    ; we have clean parameter stack now
     
     pop     rax ; kernel start
     pop     rbx ; initrd start
     pop     rcx ; initrd end
+    pop     rbp ; kernel stack end
     pop     rdx ; mode
-    pop     rsi ; mode pt 2
-    pop     rdi ; mode pt 3
+    pop     rsi ; memory map
+    pop     rdi ; memory map size
+    
+    mov     rsp, rbp
+    mov     rbp, qword 0 ; oh, this seems so backwards... :D
     
     jmp     rax
     

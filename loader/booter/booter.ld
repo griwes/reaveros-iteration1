@@ -20,20 +20,15 @@ SECTIONS
     {
         *(.data)
         *(.gnu.linkonce.d*)
-    }
-
-    .bss :
-    {
-        sbss = .;
+        
         *(COMMON)
         *(.bss)
         *(.gnu.linkonce.b*)
-        ebss = .;
     }
 
     /DISCARD/ :
     {
         *(.comment)
-        *(.eh_frame) /* discard this, unless you are implementing runtime support for C++ exceptions. */
+        *(.eh_frame)
     }
 }

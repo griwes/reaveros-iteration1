@@ -39,7 +39,8 @@ namespace memory
     void prepare_long_mode();
 
     uint64_t install_kernel(uint32_t, uint32_t);
-    void install_initrd(uint32_t, uint32_t, uint32_t);
+    void install_kernel_stack(uint64_t &);
+    void install_initrd(uint64_t, uint32_t, uint32_t);
     
     template<typename T>
     void zero(T * ptr, uint32_t size = 1)

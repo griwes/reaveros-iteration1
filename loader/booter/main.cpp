@@ -39,7 +39,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("Booter, Reaver Project Bootloader 0.0.4");
     screen::printl("Copyright (C) 2012 Reaver Project Team");
     screen::line();
-    
+
     screen::print("[CPU  ] Checking CPU's long mode support... ");
     processor::check_long_mode();
     screen::printl("done.");
@@ -72,12 +72,13 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::print("[MEM  ] Installing kernel... ");
     uint64_t kernel_end = memory::install_kernel(kernel, kernel_size);
+    memory::install_kernel_stack(kernel_end);
     screen::printl("done.");
     
     memory::default_allocator.save();
     
     screen::print("[MEM  ] Installing InitRD... ");
-    memory::install_initrd(kernel_end, kernel + kernel_size, initrd_size);
+    memory::install_initrd(kernel_end, kernel + kernel_size + 5 * 4096, initrd_size);
     screen::printl("done.");
     
     memory::default_allocator.save();
@@ -85,11 +86,13 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("[MEM  ] Printing final memory map... ");
     memory::print_map();
     
-//    uint64_t kernel_start = 0xFFFFFFFF80000000;
-//    uint64_t initrd_start = kernel_end;
-
-//    screen::print("[CPU  ] Calling kernel...");
-//    processor::call_kernel(kernel_start, initrd_start, initrd_start + initrd_size, screen::get_video_mode());
+    uint64_t kernel_start = 0xFFFFFFFF80000000;
+    uint64_t initrd_start = kernel_end;
+    uint64_t kernel_stack_end = kernel_end;
+    
+    screen::print("[CPU  ] Calling kernel...");
+    processor::call_kernel(kernel_start, initrd_start, initrd_start + initrd_size, kernel_stack_end, 
+        (uint64_t)screen::get_video_mode(), (uint64_t)memory::map::get_entries(), memory::map::size());
     
     // we will never get here
     for (;;) ;

@@ -27,9 +27,14 @@
 
 #include <screen/screen.h>
 
+namespace memory
+{
+    class map_entry;
+}
+
 namespace processor
 {    
-    extern "C" struct idt_entry
+    struct idt_entry
     {
         uint16_t offset_low;
         uint16_t selector;
@@ -38,7 +43,7 @@ namespace processor
         uint16_t offset_middle;
         uint32_t offset_high;
         uint32_t zero1;
-    } __attribute__((packed)) idt[256];
+    } __attribute__((packed));
     
     struct isr_stack_frame
     {
@@ -75,7 +80,7 @@ namespace processor
     }
     
     extern "C" uint32_t _check_long_mode();
-    extern "C" void call_kernel(uint64_t, uint64_t, uint64_t, screen::mode);
+    extern "C" void call_kernel(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
     
     inline void check_long_mode()
     {

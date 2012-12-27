@@ -70,7 +70,7 @@ namespace screen
     
     extern console output;
     
-    inline mode get_video_mode()
+    inline mode * get_video_mode()
     {
         return output.get_video_mode();
     }

@@ -91,8 +91,10 @@ namespace
     }
 }
 
+extern "C" uint8_t sbss[];
+
 void processor::setup_idt()
-{    
+{   
     _setup_idte(0, (uint64_t)isr0, 0x08, 0x8e);
     _setup_idte(1, (uint64_t)isr1, 0x08, 0x8e);
     _setup_idte(2, (uint64_t)isr2, 0x08, 0x8e);
@@ -185,7 +187,3 @@ extern "C" void isr_handler(processor::isr_stack_frame stack_frame)
     
     asm volatile ("cli; hlt");
 }
-
-// void processor::call_kernel(uint64_t kernel, uint64_t initrd, uint64_t initrd_end, screen::mode mode)
-// {
-// }
