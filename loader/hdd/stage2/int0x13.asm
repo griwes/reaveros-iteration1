@@ -135,7 +135,7 @@ bits    16
         pop     es
         pop     ds
 
-        add     dword [packet.exstart], 768
+        add     dword [packet.exstart], 63
 
         mov     ax, word [num]
 

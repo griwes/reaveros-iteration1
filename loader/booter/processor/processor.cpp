@@ -94,7 +94,7 @@ namespace
 extern "C" uint8_t sbss[];
 
 void processor::setup_idt()
-{   
+{       
     _setup_idte(0, (uint64_t)isr0, 0x08, 0x8e);
     _setup_idte(1, (uint64_t)isr1, 0x08, 0x8e);
     _setup_idte(2, (uint64_t)isr2, 0x08, 0x8e);

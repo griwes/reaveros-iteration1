@@ -37,7 +37,7 @@ namespace memory
 }
 
 void memory::initialize(uint32_t placement, map_entry * memory_map, uint32_t memory_map_length)
-{
+{    
     for (uint32_t i = 0; i < memory_map_length; ++i)
     {
         if (memory_map[i].type > 1)
