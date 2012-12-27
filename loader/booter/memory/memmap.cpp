@@ -225,9 +225,11 @@ void memory::map::add_entry(memory::map_entry & entry)
                 map_entry other{}, another{};
                 other.base = entry.base + entry.length;
                 other.length = _entries[i].base + _entries[i].length - other.base;
+                other.type = _entries[i].type;
                 
                 another.base = _entries[i].base;
-                another.length = _entries[i].base + _entries[i].length - entry.base;
+                another.length = entry.base - another.base;
+                another.type = _entries[i].type;
                 
                 _shrink(i);
                 
