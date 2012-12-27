@@ -33,7 +33,7 @@
 namespace memory
 {    
     extern manager::placement_allocator default_allocator;
-    extern x64::pml4 vas;
+    extern x64::pml4 * vas;
     
     void initialize(uint32_t, map_entry *, uint32_t);
     void prepare_long_mode();

@@ -69,7 +69,7 @@ void * memory::manager::placement_allocator::allocate(uint32_t size)
     {
         vas_context = true;
         
-        vas.map(top_mapped + 1, top_mapped + 1 + 64 * 1024 * 1024, top_mapped + 1);
+        vas->map(top_mapped + 1, top_mapped + 1 + 64 * 1024 * 1024, top_mapped + 1);
         top_mapped += 64 * 1024 * 1024;
         
         vas_context = false;

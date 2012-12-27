@@ -56,8 +56,8 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     
     screen::print("[CPU  ] Entering long mode... ");
     processor::enter_long_mode();
-    memory::vas.map(screen::output.video_start(), screen::output.video_end(), screen::output.video_start());
-    memory::vas.map(screen::output.backbuffer_start(), screen::output.backbuffer_end(), screen::output.backbuffer_start());
+    memory::vas->map(screen::output.video_start(), screen::output.video_end(), screen::output.video_start());
+    memory::vas->map(screen::output.backbuffer_start(), screen::output.backbuffer_end(), screen::output.backbuffer_start());
     screen::printl("done.");
     
     screen::print("[CPU  ] Installing long mode GDT... ");
