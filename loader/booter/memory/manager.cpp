@@ -27,23 +27,38 @@
 #include <memory/memory.h>
 #include "x64paging.h"
 
-void * operator new(uint32_t, void *);
-
-memory::manager::allocator * memory::manager::make_placement_allocator(uint32_t placement)
-{
-    placement += 15;
-    placement &= ~(uint32_t)15;
-    
-    return new((void *)placement) placement_allocator((placement + sizeof(placement_allocator) + 15) & ~(uint32_t)15);
-}
-
 memory::manager::placement_allocator::placement_allocator(uint32_t placement)
-    : placement_address(placement), /*base(placement), type(5),*/ top_mapped(64 * 1024 * 1024 - 1)
+    : placement_address(placement), base(placement), type(5), top_mapped(64 * 1024 * 1024 - 1)
 {
 }
 
 memory::manager::placement_allocator::~placement_allocator()
 {
+}
+
+void memory::manager::placement_allocator::save()
+{
+    map_entry entry;
+    
+    entry.base = base & ~(uint64_t)4095;
+    entry.length = (placement_address - base + 4095) & ~(uint64_t)4095;
+    entry.type = type;
+    
+    switch (type)
+    {
+        case 5:
+            type = 2;
+            break;
+        case 2:
+            type = 3;
+            break;
+        case 3:
+            type = ~0;
+    }
+    
+    base = placement_address;
+    
+    map::add_entry(entry);
 }
 
 void * memory::manager::placement_allocator::allocate(uint32_t size)
@@ -54,7 +69,7 @@ void * memory::manager::placement_allocator::allocate(uint32_t size)
     {
         vas_context = true;
         
-        vas->map(top_mapped + 1, top_mapped + 1 + 64 * 1024 * 1024, top_mapped + 1);
+        vas.map(top_mapped + 1, top_mapped + 1 + 64 * 1024 * 1024, top_mapped + 1);
         top_mapped += 64 * 1024 * 1024;
         
         vas_context = false;

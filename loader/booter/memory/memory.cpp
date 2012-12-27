@@ -28,10 +28,12 @@
 #include <processor/processor.h>
 #include <memory/x64paging.h>
 
+void * operator new(size_t, void *);
+
 namespace memory
 {
-    manager::allocator * default_allocator;
-    x64::pml4 * vas;
+    manager::placement_allocator default_allocator(0);
+    x64::pml4 vas;
 }
 
 void memory::initialize(uint32_t placement, map_entry * memory_map, uint32_t memory_map_length)
@@ -46,17 +48,16 @@ void memory::initialize(uint32_t placement, map_entry * memory_map, uint32_t mem
         memory::map::add_entry(memory_map[i]);
     }
     
-    default_allocator = manager::make_placement_allocator(placement);
+    new ((void *)&default_allocator) manager::placement_allocator(placement);
 }
 
 void memory::prepare_long_mode()
 {
-    default_allocator->align(4096);
-    vas = new x64::pml4;
+    default_allocator.align(4096);
     
     // identity map first 64 MiB
     x64::pdpt * table = new x64::pdpt;
-    (*vas)[0] = table;
+    vas[0] = table;
     
     x64::page_directory * pd = new x64::page_directory;
     (*table)[0] = pd;
@@ -72,19 +73,19 @@ void memory::prepare_long_mode()
         }
     }
     
-    processor::set_cr3((uint32_t)vas);
+    processor::set_cr3((uint32_t)&vas);
 }
 
 uint64_t memory::install_kernel(uint32_t kernel_base, uint32_t kernel_length)
 {
     kernel_length *= 512;
     
-    memory::default_allocator->align(4096);
+    memory::default_allocator.align(4096);
     uint8_t * kernel = new uint8_t[kernel_length];
-    
+
     copy((uint8_t *)kernel_base, kernel, kernel_length);
 
-    vas->map(0xFFFFFFFF80000000, 0xFFFFFFFF80000000 + kernel_length, (uint64_t)kernel);
+    vas.map(0xFFFFFFFF80000000, 0xFFFFFFFF80000000 + kernel_length, (uint64_t)kernel);
     
     return 0xFFFFFFFF80000000 + ((kernel_length + 4095) & ~(uint64_t)4095);
 }
@@ -93,10 +94,10 @@ void memory::install_initrd(uint32_t kernel_end, uint32_t initrd_base, uint32_t 
 {
     initrd_length *= 512;
     
-    memory::default_allocator->align(4096);
+    memory::default_allocator.align(4096);
     uint8_t * initrd = new uint8_t[initrd_length];
     
     copy((uint8_t *)initrd_base, initrd, initrd_length);
     
-    vas->map(kernel_end, kernel_end + initrd_length, (uint64_t)initrd);
+    vas.map(kernel_end, kernel_end + initrd_length, (uint64_t)initrd);
 }

@@ -42,6 +42,7 @@ void screen::console::init_backbuffer()
 {
     _backbuffer = (uint32_t)((memory::manager::backwards_allocator()).allocate(_mode.bytes_per_line * _mode.resolution_y));
     memory::zero((uint8_t *)_backbuffer, _mode.resolution_y * _mode.bytes_per_line);
+    save_backbuffer_info();
 }
 
 void screen::console::save_backbuffer_info()

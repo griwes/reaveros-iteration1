@@ -53,7 +53,7 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
     {
         if (!entries[startpml4e].present)
         {
-            memory::default_allocator->align(4096);
+            memory::default_allocator.align(4096);
             entries[startpml4e] = new pdpt;
         }
         
@@ -64,7 +64,7 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
         {
             if (!(*table)[startpdpte].present)
             {
-                memory::default_allocator->align(4096);
+                memory::default_allocator.align(4096);
                 (*table)[startpdpte] = new page_directory;
             }
             
@@ -75,7 +75,7 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
             {
                 if (!(*pd)[startpde].present)
                 {
-                    memory::default_allocator->align(4096);
+                    memory::default_allocator.align(4096);
                     (*pd)[startpde] = new page_table;
                 }
                 

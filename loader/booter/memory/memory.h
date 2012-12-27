@@ -27,21 +27,13 @@
 
 #include <memory/memmap.h>
 #include <processor/processor.h>
+#include <memory/manager.h>
+#include <memory/x64paging.h>
 
 namespace memory
 {    
-    namespace manager
-    {
-        class allocator;
-    }
-    
-    namespace x64
-    {
-        struct pml4;
-    }
-    
-    extern manager::allocator * default_allocator;
-    extern x64::pml4 * vas;
+    extern manager::placement_allocator default_allocator;
+    extern x64::pml4 vas;
     
     void initialize(uint32_t, map_entry *, uint32_t);
     void prepare_long_mode();

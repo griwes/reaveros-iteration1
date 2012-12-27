@@ -34,6 +34,8 @@
 
 void _panic(const char *, const char *, uint64_t, const char *);
 
+void * operator new(uint32_t, void *);
+
 inline void inb(uint16_t, uint8_t);
 inline void inw(uint16_t, uint16_t);
 

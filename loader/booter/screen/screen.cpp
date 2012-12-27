@@ -29,28 +29,29 @@
 
 namespace screen
 {
-    console * output = nullptr;
+    console output;
 }
 
 void screen::initialize(screen::boot_mode * mode, void * font)
 {
-    output = new console(mode, font);
+    new ((void *)&output) console(mode, font);
+    screen::output.init_backbuffer();
 }
 
 void screen::line()
 {
-    output->put_char('\n');
+    output.put_char('\n');
 }
 
 void screen::print(const char * str)
 {
     while (*str != 0)
     {
-        output->put_char(*str++);
+        output.put_char(*str++);
     }
 }
 
 void screen::print(char c)
 {
-    output->put_char(c);
+    output.put_char(c);
 }

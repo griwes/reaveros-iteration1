@@ -55,6 +55,8 @@ namespace screen
     class mode
     {
     public:
+        mode() {}
+        
         mode(::screen::boot_mode * boot_mode) : addr(boot_mode->addr), resolution_x(boot_mode->resolution_x),
             resolution_y(boot_mode->resolution_y), bytes_per_line(boot_mode->linear_bytes_per_line ?
             boot_mode->linear_bytes_per_line : boot_mode->bytes_per_line), bpp(boot_mode->bpp), 

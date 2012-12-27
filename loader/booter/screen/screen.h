@@ -68,11 +68,11 @@ namespace screen
 {
     class boot_mode;
     
-    extern console * output;
+    extern console output;
     
     inline mode get_video_mode()
     {
-        return output->get_video_mode();
+        return output.get_video_mode();
     }
     
     void initialize(boot_mode *, void *);
@@ -82,7 +82,7 @@ namespace screen
     {
         for (uint32_t i = 0; i < N; ++i)
         {
-            output->put_char(s[i]);
+            output.put_char(s[i]);
         }
     }
     
@@ -105,13 +105,13 @@ namespace screen
     {        
         if (a == 0)
         {
-            output->put_char('0');
+            output.put_char('0');
             return;
         }
         
         else if (!(a > 0 || a == 0))
         {
-            output->put_char('-');
+            output.put_char('-');
         }
         
         T div = a / 10;
@@ -122,7 +122,7 @@ namespace screen
             print(div);
         }
         
-        output->put_char('0' + mod);
+        output.put_char('0' + mod);
     }
     
     template<typename First, typename... T>
@@ -151,7 +151,7 @@ namespace screen
         {
             if (*str != '%')
             {
-                output->put_char(*str++);
+                output.put_char(*str++);
             }
             
             else
@@ -186,7 +186,7 @@ namespace screen
                 
                 while (*str != 0 && *str != '%')
                 {
-                    output->put_char(*str++);
+                    output.put_char(*str++);
                 }
             }
         }

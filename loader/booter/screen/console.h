@@ -53,6 +53,7 @@ namespace screen
     class console
     {
     public:
+        console() {}
         console(boot_mode *, void *);
         ~console();
         

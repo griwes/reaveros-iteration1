@@ -32,12 +32,12 @@
 
 void * operator new(uint32_t size)
 {
-    return memory::default_allocator->allocate(size);
+    return memory::default_allocator.allocate(size);
 }
 
 void operator delete(void * ptr)
 {
-    return memory::default_allocator->deallocate(ptr);
+    return memory::default_allocator.deallocate(ptr);
 }
 
 void * operator new(uint32_t, void * addr)
@@ -47,7 +47,7 @@ void * operator new(uint32_t, void * addr)
 
 void * operator new[](uint32_t size)
 {
-    return memory::default_allocator->allocate(size);
+    return memory::default_allocator.allocate(size);
 }
 
 extern "C" void __cxa_pure_virtual()
@@ -57,7 +57,7 @@ extern "C" void __cxa_pure_virtual()
 
 void _panic(const char * X, const char * FILE, uint64_t /*LINE*/, const char * FUNC)
 {
-    if (screen::output)
+    if (screen::output.backbuffer_start())
     {
         screen::line();
         screen::printl("PANIC: ", X);
@@ -66,4 +66,11 @@ void _panic(const char * X, const char * FILE, uint64_t /*LINE*/, const char * F
     }
     
     asm ("cli; hlt");
+}
+
+void * __dso_handle = 0;
+
+extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
+{
+    return 0;
 }

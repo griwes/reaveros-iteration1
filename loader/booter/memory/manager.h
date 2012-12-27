@@ -34,35 +34,25 @@ namespace memory
 {
     namespace manager
     {
-        class allocator
-        {
-        public:
-            allocator() {}
-            virtual ~allocator() {}
-            
-            virtual void * allocate(uint32_t) = 0;
-            virtual void deallocate(void *) = 0;
-            
-            virtual void align(uint32_t) = 0;
-        };
-        
         // this is standard placement allocator; no comment is required, I think
-        class placement_allocator : public allocator
+        class placement_allocator
         {
         public:
             placement_allocator(uint32_t);
-            virtual ~placement_allocator();
+            ~placement_allocator();
             
-            virtual void * allocate(uint32_t);
-            virtual void deallocate(void *);
+            void * allocate(uint32_t);
+            void deallocate(void *);
             
-            virtual void align(uint32_t);
+            void align(uint32_t);
+            
+            void save();
             
         private:
             uint32_t placement_address;
             
-//            uint32_t base;
-//            uint32_t type;
+            uint32_t base;
+            uint32_t type;
             
             uint32_t top_mapped;
         };
@@ -73,18 +63,16 @@ namespace memory
         // because video backbuffer has its own memory entry type.
         
         // note: it's 32bit, so it allocates from 4 GiB down
-        class backwards_allocator : public allocator
+        class backwards_allocator
         {
         public:
             backwards_allocator();
-            virtual ~backwards_allocator();
+            ~backwards_allocator();
             
-            virtual void * allocate(uint32_t);
-            virtual void deallocate(void *);
+            void * allocate(uint32_t);
+            void deallocate(void *);
             
-            virtual void align(uint32_t) {}
+            void align(uint32_t) {}
         };
-        
-        allocator * make_placement_allocator(uint32_t);
     }
 }
