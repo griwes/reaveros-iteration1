@@ -253,12 +253,12 @@ long_mode:
     ; we have clean parameter stack now
     
     pop     rax ; kernel start
-    pop     rbx ; initrd start
-    pop     rcx ; initrd end
+    pop     rdi ; initrd start
+    pop     rsi ; initrd end
     pop     rbp ; kernel stack end
     pop     rdx ; mode
-    pop     rsi ; memory map
-    pop     rdi ; memory map size
+    pop     rcx ; memory map
+    pop     r8  ; memory map size
     
     mov     rsp, rbp
     mov     rbp, qword 0 ; oh, this seems so backwards... :D

@@ -8,3 +8,4 @@ entry:
     xchg    bx, bx
 
     call    kernel_main
+    
