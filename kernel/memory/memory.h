@@ -26,3 +26,25 @@
 #pragma once
 
 #include <memory/map.h>
+
+namespace memory
+{
+    template<typename T>
+    void zero(T * ptr, uint64_t count = 1)
+    {
+        for (uint64_t i = 0; i < count; ++i)
+        {
+            *ptr++ = {};
+        }
+    }
+    
+    inline void zero(uint8_t * ptr, uint64_t count = 1)
+    {
+        memory::zero((uint64_t *)ptr, count / 8);
+        
+        for (uint64_t i = 0; i < count % 8; ++i)
+        {
+            *(ptr + count - count % 8 + i) = {};
+        }
+    }    
+}

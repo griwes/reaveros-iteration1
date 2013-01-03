@@ -24,7 +24,7 @@
  **/
 
 #include <screen/bootterm.h>
-#include <memory/map.h>
+#include <memory/memory.h>
 
 namespace screen
 {
@@ -47,10 +47,19 @@ uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
 screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * map, uint64_t map_size)
     : _mode(mode), _backbuffer(_find_backbuffer(map, map_size))
 {
-    *(volatile uint64_t *)0 = _backbuffer;
-//    _clear();
+    clear();
 }
 
 screen::boot_terminal::~boot_terminal()
 {
+}
+
+void screen::boot_terminal::clear()
+{
+    if (_backbuffer)
+    {
+        memory::zero((uint8_t *)_backbuffer, _mode->resolution_y * _mode->bytes_per_line);
+    }
+    
+    memory::zero((uint8_t *)(uint64_t)_mode->addr, _mode->resolution_y * _mode->bytes_per_line);
 }

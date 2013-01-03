@@ -41,6 +41,8 @@ namespace screen
         boot_terminal(mode *, memory::map_entry *, uint64_t);
         ~boot_terminal();
         
+        void clear();
+        
     private:
         screen::mode * _mode;
         uint64_t _backbuffer;
