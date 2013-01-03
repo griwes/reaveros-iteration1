@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  * 
- * Copyright (C) 2011-2012 Reaver Project Team:
+ * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  * 
  * This software is provided 'as-is', without any express or implied
@@ -62,25 +62,30 @@ namespace memory
     
     inline void zero(uint8_t * ptr, uint32_t size)
     {
+        uint8_t * lastbytes = ptr + size - size % 4;
+        
         zero((uint32_t *)ptr, size / 4);
         
         size %= 4;
         
         while (size-- > 0)
         {
-            *ptr++ = {};
+            *lastbytes++ = {};
         }
     }
     
     inline void copy(uint8_t * src, uint8_t * dest, uint32_t size)
     {
+        uint8_t * lastbytessrc = src + size - size % 4;
+        uint8_t * lastbytesdest = dest + size - size % 4;
+        
         copy((uint32_t *)src, (uint32_t *)dest, size / 4);
         
         size %= 4;
         
         while (size-- > 0)
         {
-            *dest++ = *src++;
+            *lastbytesdest++ = *lastbytessrc++;
         }
     }
 }
