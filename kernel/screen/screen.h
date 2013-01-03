@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  * 
- * Copyright (C) 2011-2012 Reaver Project Team:
+ * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  * 
  * This software is provided 'as-is', without any express or implied
@@ -25,13 +25,18 @@
 
 #pragma once
 
+namespace memory
+{
+    struct map_entry;
+}
+
 namespace screen
 {
     struct mode;
     
-    void initialize(mode *);
+    void initialize(mode *, memory::map_entry *, uint64_t);
     
-    void print()
+    inline void print()
     {
     }
     
@@ -46,9 +51,9 @@ namespace screen
     void print(const T *);
     
     template<typename First, typename... Rest>
-    void print(const First & first, const Rest & rest)
+    void print(const First & first, const Rest &... rest)
     {
         print(first);
-        print(rest);
+        print(rest...);
     }
 }

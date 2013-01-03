@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  * 
- * Copyright (C) 2011-2012 Reaver Project Team:
+ * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  * 
  * This software is provided 'as-is', without any express or implied
@@ -27,13 +27,13 @@
 #include <memory/memory.h>
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
-    memory::map_entry * /*memory_map*/, uint64_t memory_map_size)
+    memory::map_entry * memory_map, uint64_t memory_map_size)
 {
-    screen::initialize(video);
+    screen::initialize(video, memory_map, memory_map_size); // memory map required to get preallocated backbuffer info from bootloader
     
-    screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
-    screen::print("Version: 0.1, Codename \"Cotyledon\"\n");
-    screen::print("Copyright (C) 2012 Reaver Project Team\n\n");
+//    screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
+//    screen::print("Version: 0.1, Codename \"Cotyledon\"\n");
+//    screen::print("Copyright (C) 2012 Reaver Project Team\n\n");
     
     for (;;) ;
     

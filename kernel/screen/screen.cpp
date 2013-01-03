@@ -27,7 +27,7 @@
 #include <screen/mode.h>
 #include <screen/bootterm.h>
 
-void screen::initialize(screen::mode * video_mode)
+void screen::initialize(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
 {
-    new ((void *)&terminal) boot_terminal(video_mode);
+    new ((void *)&terminal) boot_terminal(video_mode, map, map_size);
 }

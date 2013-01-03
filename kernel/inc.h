@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  * 
- * Copyright (C) 2011-2012 Reaver Project Team:
+ * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  * 
  * This software is provided 'as-is', without any express or implied
@@ -28,7 +28,7 @@
 #include <cstdint>
 #include <cstddef>
 
-void * operator new (void * addr, uint64_t)
+inline void * operator new (uint64_t, void * addr)
 {
     return addr;
 }

@@ -23,15 +23,9 @@
  * 
  **/
 
-#pragma once
+void * __dso_handle = 0;
 
-namespace memory
+extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
 {
-    struct map_entry
-    {
-        uint64_t base;
-        uint64_t length;
-        uint32_t type;
-        uint32_t extended_attribs;
-    } __attribute__((packed));
+    return 0;
 }

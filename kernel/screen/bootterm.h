@@ -27,12 +27,22 @@
 
 #include <screen/mode.h>
 
+namespace memory
+{
+    struct map_entry;
+}
+
 namespace screen
 {
     extern class boot_terminal
     {
-        boot_terminal(mode *);
+    public:
+        boot_terminal() {}
+        boot_terminal(mode *, memory::map_entry *, uint64_t);
+        ~boot_terminal();
         
-        put_char();
+    private:
+        screen::mode * _mode;
+        uint64_t _backbuffer;
     } terminal;
 }

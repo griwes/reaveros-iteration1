@@ -23,15 +23,34 @@
  * 
  **/
 
-#pragma once
+#include <screen/bootterm.h>
+#include <memory/map.h>
 
-namespace memory
+namespace screen
 {
-    struct map_entry
+    boot_terminal terminal;
+}
+
+uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
+{
+    for (uint64_t i = 0; i < map_size; ++i)
     {
-        uint64_t base;
-        uint64_t length;
-        uint32_t type;
-        uint32_t extended_attribs;
-    } __attribute__((packed));
+        if (map[i].type == 4)
+        {
+            return map[i].base;
+        }
+    }
+    
+    return 0;
+}
+
+screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * map, uint64_t map_size)
+    : _mode(mode), _backbuffer(_find_backbuffer(map, map_size))
+{
+    *(volatile uint64_t *)0 = _backbuffer;
+//    _clear();
+}
+
+screen::boot_terminal::~boot_terminal()
+{
 }
