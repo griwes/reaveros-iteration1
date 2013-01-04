@@ -31,9 +31,9 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
 {
     screen::initialize(video, memory_map, memory_map_size); // memory map required to get preallocated backbuffer info from bootloader
     
-//    screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
-//    screen::print("Version: 0.1, Codename \"Cotyledon\"\n");
-//    screen::print("Copyright (C) 2012 Reaver Project Team\n\n");
+    screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
+    screen::print("Version: 0.1, Codename \"Cotyledon\"\n");
+    screen::print("Copyright (C) 2012 Reaver Project Team\n\n");
     
     for (;;) ;
     

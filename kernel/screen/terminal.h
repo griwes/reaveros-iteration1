@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  * 
- * Copyright (C) 2011-2012 Reaver Project Team:
+ * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  * 
  * This software is provided 'as-is', without any express or implied
@@ -25,27 +25,17 @@
 
 #pragma once
 
-#include <screen/mode.h>
-#include <screen/console.h>
-
-namespace memory
-{
-    struct map_entry;
-}
-
 namespace screen
 {
-    extern class boot_terminal : public terminal
+    class terminal
     {
     public:
-        boot_terminal() {}
-        boot_terminal(mode *, memory::map_entry *, uint64_t);
-        ~boot_terminal();
+        terminal();
+        virtual ~terminal() {}
         
-        void clear();
-        
-    private:
-        screen::mode * _mode;
-        uint64_t _backbuffer;
-    } terminal;
+        virtual void put_char(char) = 0;
+        virtual void clear() = 0;
+        virtual void scroll_up() {}
+        virtual void scroll_down() {}
+    };
 }

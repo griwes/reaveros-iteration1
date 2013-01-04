@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <screen/console.h>
+
 namespace memory
 {
     struct map_entry;
@@ -40,15 +42,24 @@ namespace screen
     {
     }
     
-    void print(char);
-    void print(char *);
-    void print(const char *);
+    inline void print(char c)
+    {
+        console.print(c);
+    }
+    
+    inline void print(const char * str)
+    {
+        console.print(str);
+    }
     
     template<typename T>
     void print(const T &);
     
     template<typename T>
-    void print(const T *);
+    void print(const T * ptr)
+    {
+        console.print((void *)ptr);
+    }
     
     template<typename First, typename... Rest>
     void print(const First & first, const Rest &... rest)

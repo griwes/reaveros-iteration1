@@ -25,12 +25,39 @@
 
 #pragma once
 
+namespace memory
+{
+    struct map_entry;
+}
+
 namespace screen
 {
+    struct mode;
+    
     extern class kernel_console
     {
+    public:
+        kernel_console();
+        kernel_console(screen::mode *, memory::map_entry *, uint64_t);
         
+        void print(char);
+        void print(const char *);
+
+        void print(int8_t);
+        void print(int16_t);
+        void print(int32_t);
+        void print(int64_t);
+        void print(uint8_t);
+        void print(uint16_t);
+        void print(uint32_t);
+        void print(uint64_t);
+        
+        template<typename T>
+        void print(const T *);
+        
+        void clear();
+        
+        void scroll_up();
+        void scroll_down();
     } console;
-    
-    // extern screen::video_driver driver;
 }
