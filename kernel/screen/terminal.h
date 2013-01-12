@@ -25,17 +25,21 @@
 
 #pragma once
 
+#include <screen/screen.h>
+
 namespace screen
 {
     class terminal
     {
     public:
-        terminal();
+        terminal() {}
         virtual ~terminal() {}
         
         virtual void put_char(char) = 0;
         virtual void clear() = 0;
         virtual void scroll_up() {}
         virtual void scroll_down() {}
+        
+        virtual void set_color(color::colors) {}
     };
 }

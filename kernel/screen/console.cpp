@@ -23,15 +23,48 @@
  * 
  **/
 
-#pragma once
+#include <screen/console.h>
+#include <screen/terminal.h>
 
-namespace memory
+namespace screen
 {
-    struct map_entry
+    kernel_console console;
+}
+
+screen::kernel_console::kernel_console(terminal * term) : _terminal(term)
+{
+}
+
+void screen::kernel_console::clear()
+{
+    _terminal->clear();
+}
+
+void screen::kernel_console::print(char c)
+{
+    _terminal->put_char(c);
+    
+    if (c != '\0')
     {
-        uint64_t base;
-        uint64_t length;
-        uint32_t type;
-        uint32_t extended_attribs;
-    } __attribute__((packed));
+        outb(0x378, (unsigned char)c);
+        outb(0x37a, 0x0c);
+        outb(0x37a, 0x0d);
+    }
+}
+
+void screen::kernel_console::print(const char * str)
+{
+    while (*str)
+    {
+        outb(0x378, (unsigned char)*str);
+        outb(0x37a, 0x0c);
+        outb(0x37a, 0x0d);
+        
+        _terminal->put_char(*str++);
+    }
+}
+
+void screen::kernel_console::set_color(color::colors c)
+{
+    _terminal->set_color(c);
 }

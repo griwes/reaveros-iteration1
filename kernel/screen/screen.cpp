@@ -26,8 +26,23 @@
 #include <screen/screen.h>
 #include <screen/mode.h>
 #include <screen/console.h>
+#include <screen/bootterm.h>
 
 void screen::initialize(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
 {
-    new ((void *)&console) kernel_console(video_mode, map, map_size);
+    new ((void *)&term) boot_terminal(video_mode, map, map_size);
+    new ((void *)&console) kernel_console(&term);
+}
+
+void screen::print(tag::tags t)
+{
+    screen::print(color::white);
+    
+    switch (t)
+    {
+        case tag::memory:
+            screen::print("[Memory] ");
+    }
+    
+    screen::print(color::gray);
 }

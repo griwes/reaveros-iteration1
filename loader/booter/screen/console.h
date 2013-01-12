@@ -66,6 +66,7 @@ namespace screen
         
         mode * get_video_mode()
         {
+            _mode.font = (uint64_t)_font;
             return &_mode;
         }
         

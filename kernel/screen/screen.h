@@ -32,6 +32,14 @@ namespace memory
     struct map_entry;
 }
 
+namespace tag
+{
+    enum tags
+    {
+        memory
+    };
+}
+
 namespace screen
 {
     struct mode;
@@ -51,6 +59,13 @@ namespace screen
     {
         console.print(str);
     }
+
+    void print(tag::tags);
+    
+    inline void print(color::colors c)
+    {
+        console.set_color(c);
+    }
     
     template<typename T>
     void print(const T &);
@@ -66,5 +81,10 @@ namespace screen
     {
         print(first);
         print(rest...);
+    }
+    
+    inline void done()
+    {
+        screen::print(color::green, " done", color::gray, '.');
     }
 }

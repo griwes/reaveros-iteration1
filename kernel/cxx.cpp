@@ -25,6 +25,10 @@
 
 void * __dso_handle = 0;
 
+void operator delete(void *)
+{
+}
+
 extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
 {
     return 0;

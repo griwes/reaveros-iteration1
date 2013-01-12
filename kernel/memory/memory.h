@@ -46,5 +46,24 @@ namespace memory
         {
             *(ptr + count - count % 8 + i) = {};
         }
-    }    
+    }
+    
+    template<typename T>
+    void copy(T * src, T * dest, uint64_t count = 1)
+    {
+        for (uint64_t i = 0; i < count; ++i)
+        {
+            *dest++ = *src++;
+        }
+    }
+    
+    inline void copy(uint8_t * src, uint8_t * dest, uint64_t count = 1)
+    {
+        memory::copy((uint64_t *)src, (uint64_t *)dest, count / 8);
+        
+        for (uint64_t i = 0; i < count % 8; ++i)
+        {
+            *(dest + count - count % 8 + i) = *(src + count - count % 8 + i);
+        }
+    }
 }

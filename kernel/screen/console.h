@@ -30,15 +30,40 @@ namespace memory
     struct map_entry;
 }
 
+namespace color
+{
+    // 0xXXRRGGBB
+    enum colors
+    {
+        black = 0,
+        blue = 0xBB,
+        green = 0xBB00,
+        cyan = 0xBBBB,
+        red = 0xBB0000,
+        magenta = 0xBB00BB,
+        brown = 0xBBBB00,
+        gray = 0xBBBBBB,
+        charcoal = 0x555555,
+        bblue = 0x5555BB,
+        bgreen = 0x55BB55,
+        bcyan = 0x55BBBB,
+        orange = 0xFF5555,
+        pink = 0xFF55FF,
+        yellow = 0xFFFF55,
+        white = 0xFFFFFF
+    };
+}
+
 namespace screen
 {
     struct mode;
+    class terminal;
     
     extern class kernel_console
     {
     public:
-        kernel_console();
-        kernel_console(screen::mode *, memory::map_entry *, uint64_t);
+        kernel_console() {}
+        kernel_console(terminal *);
         
         void print(char);
         void print(const char *);
@@ -59,5 +84,10 @@ namespace screen
         
         void scroll_up();
         void scroll_down();
+        
+        void set_color(color::colors);
+        
+    private:
+        terminal * _terminal;
     } console;
 }

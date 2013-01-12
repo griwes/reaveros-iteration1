@@ -39,5 +39,7 @@ namespace screen
         uint8_t green_size, green_pos;
         uint8_t blue_size, blue_pos;
         uint8_t rsvd_size, rsvd_pos;
+        
+        uint8_t * font;
     } __attribute__((packed));
 }

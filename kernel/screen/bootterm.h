@@ -25,8 +25,10 @@
 
 #pragma once
 
+#include <screen/screen.h>
 #include <screen/mode.h>
 #include <screen/console.h>
+#include <screen/terminal.h>
 
 namespace memory
 {
@@ -40,12 +42,25 @@ namespace screen
     public:
         boot_terminal() {}
         boot_terminal(mode *, memory::map_entry *, uint64_t);
-        ~boot_terminal();
+        virtual ~boot_terminal();
         
-        void clear();
+        virtual void clear();
+        
+        virtual void put_char(char);
+        
+        virtual void set_color(color::colors);
         
     private:
+        void _put_16(char);
+        void _put_32(char);
+        void _scroll();
+        
         screen::mode * _mode;
         uint64_t _backbuffer;
-    } terminal;
+        
+        uint32_t _maxx, _maxy;
+        uint32_t _x, _y;
+        
+        uint8_t _red, _green, _blue;
+    } term;
 }
