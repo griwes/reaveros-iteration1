@@ -94,6 +94,11 @@ namespace memory
                 return *this;
             }
             
+            page_table_entry & operator[](uint64_t i)
+            {
+                return (*(page_table *)(address << 12))[i];
+            }
+            
             uint64_t present:1;
             uint64_t read_write:1;
             uint64_t user:1;
@@ -145,6 +150,11 @@ namespace memory
                 address = (uint64_t)pd >> 12;
                 
                 return *this;
+            }
+            
+            page_directory_entry & operator[](uint64_t i)
+            {
+                return (*(page_directory *)(address << 12))[i];
             }
             
             uint64_t present:1;
@@ -202,6 +212,11 @@ namespace memory
                 return *this;
             }
             
+            pdpt_entry & operator[](uint64_t i)
+            {
+                return (*(pdpt *)(address << 12))[i];
+            }
+            
             uint64_t present:1;
             uint64_t read_write:1;
             uint64_t user:1;
@@ -228,6 +243,27 @@ namespace memory
             
             void map(uint64_t, uint64_t, uint64_t);
             void unmap(uint64_t, uint64_t);
+            
+            uint64_t get_physical_address(uint64_t addr)
+            {
+                if (entries[(addr >> 39) & 511].present)
+                {
+                    if (entries[(addr >> 39) & 511][(addr >> 30) & 511].present)
+                    {
+                        if (entries[(addr >> 39) & 511][(addr >> 30) & 511][(addr >> 21) & 511].present)
+                        {
+                            if (entries[(addr >> 39) & 511][(addr >> 30) & 511][(addr >> 21) & 511][(addr >> 12) & 511].present)
+                            {
+                                return entries[(addr >> 39) & 511][(addr >> 30) & 511][(addr >> 21) & 511][(addr >> 12) & 511].address << 12;
+                            }
+                        }
+                    }
+                }
+                
+                PANIC("Tried to get physical address of not mapped page");
+                
+                return 0;
+            }
             
             pml4_entry & operator[](uint64_t i)
             {

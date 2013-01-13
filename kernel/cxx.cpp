@@ -38,5 +38,9 @@ extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
 
 void _panic(const char * message, const char * file, uint64_t /* line */, const char * func)
 {
-    screen::print(color::red, "Panic called: ", message, ", in ", func, " in file ", file);
+    screen::print(color::red, "\n\nPanic called: ", color::gray, message);
+    screen::print("\nFunction: ", func);
+    screen::print("\nFile: ", file);
+    
+    asm volatile ("cli; hlt");
 }

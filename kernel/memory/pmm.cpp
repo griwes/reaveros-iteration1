@@ -24,6 +24,7 @@
  **/
 
 #include <memory/pmm.h>
+#include <memory/vm.h>
 #include <memory/map.h>
 #include <memory/x64paging.h>
 #include <processor/processor.h>
@@ -72,9 +73,8 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
 
 void memory::pmm::frame_stack::_expand()
 {
-    if (_stack == nullptr)
-    {
-    }
+    vm::map(vm::boot_page_stack + _capacity * 8);
+    _capacity += 512;
 }
 
 void memory::pmm::frame_stack::_shrink()
@@ -87,12 +87,12 @@ uint64_t memory::pmm::frame_stack::pop()
     {
         if (_capacity == 0)
         {
-            // if (boot_helpers_available)
-            // {
-            //     --boot_helpers_available;
-            //     return vm::get_physical_address(boot_helper_frames + boot_helpers_available * 4096);
-            // }
-            //
+            if (boot_helpers_available)
+            {
+                --boot_helpers_available;
+                return vm::get_physical_address((uint64_t)boot_helper_frames + boot_helpers_available * 4096);
+            }
+            
             // if (scheduler::ready())
             // {
             //     scheduler::request_caches();
@@ -102,7 +102,7 @@ uint64_t memory::pmm::frame_stack::pop()
 
             if (_size == 0)
             {
-                PANIC("System has runned out of memory");
+                PANIC("System has ran out of memory");
             }
         }
         

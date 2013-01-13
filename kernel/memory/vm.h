@@ -25,14 +25,31 @@
 
 #pragma once
 
-#include <memory/x64paging.h>
+#include <processor/processor.h>
+#include <memory/pmm.h>
 
-namespace processor
+namespace memory
 {
-    extern "C" memory::x64::pml4 * get_cr3();
-    
-    inline void invlpg(uint64_t addr)
+    namespace vm
     {
-        asm volatile ("invlpg (%0)" :: "r"(addr) : "memory");
+        enum addresses
+        {
+            boot_page_stack = 0xFFFFFFFF40000000
+        };
+        
+        void map(uint64_t virtual_address)
+        {
+            processor::get_cr3()->map(virtual_address, virtual_address + 4096, memory::pmm::pop());
+        }
+        
+        void map(uint64_t, uint64_t);
+        
+        void map_multiple(uint64_t, uint64_t);
+        void map_multiple(uint64_t, uint64_t, uint64_t);
+        
+        uint64_t get_physical_address(uint64_t virtual_address)
+        {
+            return processor::get_cr3()->get_physical_address(virtual_address);
+        }
     }
 }
