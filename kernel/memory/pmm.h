@@ -23,22 +23,37 @@
  * 
  **/
 
-#define dbg asm volatile ("xchg %bx, %bx")
+#pragma once
 
-#include <cstdint>
-#include <cstddef>
-
-#define PANIC(X) _panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-
-void _panic(const char *, const char *, uint64_t, const char *);
-
-inline void * operator new (uint64_t, void * addr)
+namespace memory
 {
-    return addr;
+    struct map_entry;
+    
+    namespace pmm
+    {
+        void initialize(map_entry *, uint64_t);
+        
+        uint64_t pop();
+        void push(uint64_t);
+        
+        class frame_stack
+        {
+        public:
+            frame_stack();
+            frame_stack(map_entry *, uint64_t);
+            
+            void split(/* const processor::env & */);
+            
+            uint64_t pop();
+            void push(uint64_t);
+            
+        private:
+            void _expand();
+            void _shrink();
+            
+            uint64_t * _stack;
+            uint64_t _size;
+            uint64_t _capacity;
+        };
+    }
 }
-
-inline void outb(uint16_t port, uint8_t value)
-{
-    asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
-}
-

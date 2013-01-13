@@ -24,10 +24,10 @@ hdd:
 	cd loader/hdd/stage2; \
 	yasm stage2.asm -o ../../../builds/stage2.img
 	cd loader/booter; \
-	make; \
+	make -j12; \
 	mv builds/booter.img ../../builds/
 	cd kernel; \
-	make; \
+	make -j12; \
 	mv builds/kernel.img ../builds/
 	cd builds; \
 	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img stage1.img; \

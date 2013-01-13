@@ -25,6 +25,7 @@
 
 #include <screen/screen.h>
 #include <memory/memory.h>
+#include <memory/pmm.h>
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
@@ -36,12 +37,12 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print("Copyright (C) 2012-2013 Reaver Project Team\n\n");
     
     screen::print(tag::memory, "Initializing physical memory manager...");
-//    memory::pmm::initialize(mem_map);
+    memory::pmm::initialize(memory_map, memory_map_size);
     screen::done();
     
     for (;;) ;
     
-    /*    screen::print(tag::memory, "Reporting memory manager status...");
+/*    screen::print(tag::memory, "Reporting memory manager status...");
     memory::report();
     
     screen::print(tag::cpu, "Initializing processor...");
@@ -61,6 +62,10 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     
     screen::print(tag::screen, "Switching to video server output...");
     screen::initialize_server(vsrv);
+    screen::done();
+    
+    screen::print(tag::memory, "Freeing bootloader areas...");
+    memory::free_bootloader(memory_map, memory_map_size);
     screen::done();
     
     screen::print(tag::scheduler, "Starting device manager server...");

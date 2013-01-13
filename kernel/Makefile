@@ -13,7 +13,8 @@ all: $(SOURCES) $(EXECUTABLE)
 	
 $(EXECUTABLE): $(OBJECTS) 
 	yasm -f elf64 -o entry.o entry.asm
-	$(LD) $(LDFLAGS) entry.o $(OBJECTS) -o $@
+	yasm -f elf64 -o processor/asm.o processor/processor.asm
+	$(LD) $(LDFLAGS) entry.o processor/asm.o $(OBJECTS) -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@ -I. -include inc.h

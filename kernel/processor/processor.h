@@ -23,22 +23,10 @@
  * 
  **/
 
-#define dbg asm volatile ("xchg %bx, %bx")
+#pragma once
+#include <memory/x64paging.h>
 
-#include <cstdint>
-#include <cstddef>
-
-#define PANIC(X) _panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-
-void _panic(const char *, const char *, uint64_t, const char *);
-
-inline void * operator new (uint64_t, void * addr)
+namespace processor
 {
-    return addr;
+    extern "C" memory::x64::pml4 * get_cr3();
 }
-
-inline void outb(uint16_t port, uint8_t value)
-{
-    asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
-}
-

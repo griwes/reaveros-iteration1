@@ -23,6 +23,8 @@
  * 
  **/
 
+#include <screen/screen.h>
+
 void * __dso_handle = 0;
 
 void operator delete(void *)
@@ -32,4 +34,9 @@ void operator delete(void *)
 extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
 {
     return 0;
+}
+
+void _panic(const char * message, const char * file, uint64_t /* line */, const char * func)
+{
+    screen::print(color::red, "Panic called: ", message, ", in ", func, " in file ", file);
 }
