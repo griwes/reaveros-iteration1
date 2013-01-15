@@ -31,6 +31,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     memory::map_entry * memory_map, uint64_t memory_map_size)
 {
     memory::copy_bootloader_data(video, memory_map, memory_map_size);
+    memory::initialize_paging();
     
     screen::initialize(video, memory_map, memory_map_size); // memory map required to get preallocated backbuffer info from bootloader
     

@@ -37,7 +37,7 @@ namespace memory
             boot_page_stack = 0xFFFFFFFF40000000
         };
         
-        void map(uint64_t virtual_address)
+        inline void map(uint64_t virtual_address)
         {
             ((x64::pml4 *)0)->map(virtual_address, virtual_address + 4096, memory::pmm::pop());
         }
@@ -45,9 +45,13 @@ namespace memory
         void map(uint64_t, uint64_t);
         
         void map_multiple(uint64_t, uint64_t);
-        void map_multiple(uint64_t, uint64_t, uint64_t);
         
-        uint64_t get_physical_address(uint64_t virtual_address)
+        inline void map_multiple(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start)
+        {
+            ((x64::pml4 *)0)->map(virtual_start, virtual_end, physical_start);
+        }
+        
+        inline uint64_t get_physical_address(uint64_t virtual_address)
         {
             return ((x64::pml4 *)0)->get_physical_address(virtual_address);
         }

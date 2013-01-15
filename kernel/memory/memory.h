@@ -74,4 +74,5 @@ namespace memory
     }
     
     void copy_bootloader_data(screen::mode *&, map_entry *&, uint64_t);
+    void initialize_paging();
 }

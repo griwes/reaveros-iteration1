@@ -25,7 +25,7 @@
 
 #include <screen/bootterm.h>
 #include <memory/memory.h>
-#include <memory/x64paging.h>
+#include <memory/vm.h>
 
 namespace screen
 {
@@ -38,7 +38,7 @@ uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
     {
         if (map[i].type == 4)
         {
-            ((memory::x64::pml4 *)0)->map(0xFFFFFFFF40000000, 0xFFFFFFFF40000000 + map[i].length, map[i].base);
+            memory::vm::map_multiple(0xFFFFFFFF40000000, 0xFFFFFFFF40000000 + map[i].length, map[i].base);
             
             return 0xFFFFFFFF40000000;
         }
@@ -51,8 +51,11 @@ screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * ma
     : _mode(mode), _backbuffer(_find_backbuffer(map, map_size)), _maxx(mode->resolution_x / 8), _maxy(mode->resolution_y / 16),
       _x(0), _y(0)
 {
-    clear();
+    memory::vm::map_multiple(0xFFFFFFFF00000000, 0xFFFFFFFF00000000 + mode->resolution_y * mode->bytes_per_line, mode->short_addr);
+    _mode->addr = 0xFFFFFFFF00000000;
     
+    clear();
+
     set_color(color::gray);
 }
 

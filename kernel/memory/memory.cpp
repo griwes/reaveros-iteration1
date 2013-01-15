@@ -1,4 +1,6 @@
 #include <memory/memory.h>
+#include <memory/x64paging.h>
+#include <processor/processor.h>
 
 namespace
 {
@@ -17,3 +19,11 @@ void memory::copy_bootloader_data(screen::mode *& video, memory::map_entry *& en
     return;
 }
 
+void memory::initialize_paging()
+{
+    x64::pml4 * boot_vas = processor::get_cr3();
+    
+    (*boot_vas)[0] = (uint64_t)boot_vas;
+    
+    processor::reload_cr3();
+}

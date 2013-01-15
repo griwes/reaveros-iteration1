@@ -29,7 +29,7 @@ namespace screen
 {
     struct mode
     {
-        uint32_t addr;
+        uint32_t short_addr;
         uint16_t resolution_x;
         uint16_t resolution_y;
         uint16_t bytes_per_line;
@@ -41,5 +41,7 @@ namespace screen
         uint8_t rsvd_size, rsvd_pos;
         
         uint8_t * font;
+        
+        uint64_t addr;
     } __attribute__((packed));
 }

@@ -23,7 +23,16 @@
 ; 
 
 global  get_cr3
+global  reload_cr3
 
 get_cr3:
     mov     rax, cr3
+    ret
+
+reload_cr3:
+    push    rax
+    mov     rax, cr3
+    mov     cr3, rax
+    pop     rax
+    
     ret

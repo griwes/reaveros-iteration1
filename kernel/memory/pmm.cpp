@@ -32,7 +32,6 @@
 namespace
 {
     memory::pmm::frame_stack boot_stack;
-    memory::x64::pml4 * boot_vas;
     
     uint8_t boot_helper_frames[3 * 4096] __attribute__((aligned(4096)));
     uint8_t boot_helpers_available = 3;
@@ -40,10 +39,6 @@ namespace
 
 void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 {
-    boot_vas = processor::get_cr3();
-    
-    (*boot_vas)[0] = (uint64_t)boot_vas;
-    
     new ((void *)&boot_stack) frame_stack(map, map_size);
 }
 
