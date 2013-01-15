@@ -25,6 +25,7 @@
 
 #include <screen/bootterm.h>
 #include <memory/memory.h>
+#include <memory/x64paging.h>
 
 namespace screen
 {
@@ -37,7 +38,9 @@ uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
     {
         if (map[i].type == 4)
         {
-            return map[i].base;
+            ((memory::x64::pml4 *)0)->map(0xFFFFFFFF40000000, 0xFFFFFFFF40000000 + map[i].length, map[i].base);
+            
+            return 0xFFFFFFFF40000000;
         }
     }
     

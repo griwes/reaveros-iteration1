@@ -38,7 +38,12 @@ namespace memory
     
     inline void zero(uint8_t * ptr, uint64_t count = 1)
     {
-        memory::zero((uint64_t *)ptr, count / 8);
+        uint64_t * ptrl = (uint64_t *)ptr;
+        
+        for (uint64_t i = 0; i < count / 8; ++i)
+        {
+            *ptrl++ = {};
+        }
         
         for (uint64_t i = 0; i < count % 8; ++i)
         {
@@ -54,7 +59,13 @@ namespace memory
     
     inline void copy(uint8_t * src, uint8_t * dest, uint64_t count = 1)
     {
-        memory::copy((uint64_t *)src, (uint64_t *)dest, count / 8);
+        uint64_t * srcl = (uint64_t *)src;
+        uint64_t * destl = (uint64_t *)dest;
+        
+        for (uint64_t i = 0; i < count / 8; ++i)
+        {
+            *destl++ = *srcl++;
+        }
         
         for (uint64_t i = 0; i < count % 8; ++i)
         {
