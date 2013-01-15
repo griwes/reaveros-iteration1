@@ -30,6 +30,11 @@
 
 void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start)
 {
+    if (virtual_start < 512 * 1024 * 1024 * 1024)
+    {
+        PANIC("Trying to map something in paging structs area");
+    }
+    
     virtual_start &= ~(uint64_t)4095;
     virtual_end += 4095;
     virtual_end &= ~(uint64_t)4095;
@@ -53,30 +58,33 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
     {
         if (!entries[startpml4e].present)
         {
-            entries[startpml4e] = new ((void *)memory::pmm::pop()) pdpt;
+            entries[startpml4e] = memory::pmm::pop();
         }
         
-        pdpt * table = (pdpt *)(entries[startpml4e].address << 12);
+        pdpt * table = (pdpt *)(0x1000 + startpml4e * 4096);
+//        pdpt * table = (pdpt *)(entries[startpml4e].address << 12);
         
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
             if (!(*table)[startpdpte].present)
             {
-                (*table)[startpdpte] = new ((void *)memory::pmm::pop()) page_directory;
+                (*table)[startpdpte] = memory::pmm::pop();
             }
             
-            page_directory * pd = (page_directory *)((*table)[startpdpte].address << 12);
+            page_directory * pd = (page_directory *)(0x200000 + startpdpte * 4096);
+//            page_directory * pd = (page_directory *)((*table)[startpdpte].address << 12);
             
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
             {
                 if (!(*pd)[startpde].present)
                 {
-                    (*pd)[startpde] = new ((void *)memory::pmm::pop()) page_table;
+                    (*pd)[startpde] = memory::pmm::pop();
                 }
                 
-                page_table * pt = (page_table *)((*pd)[startpde].address << 12);
+                page_table * pt = (page_table *)(0x40000000 + startpde * 4096);
+//                page_table * pt = (page_table *)((*pd)[startpde].address << 12);
                 
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)

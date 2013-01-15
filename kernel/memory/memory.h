@@ -26,16 +26,14 @@
 #pragma once
 
 #include <memory/map.h>
+#include <screen/mode.h>
 
 namespace memory
 {
     template<typename T>
     void zero(T * ptr, uint64_t count = 1)
     {
-        for (uint64_t i = 0; i < count; ++i)
-        {
-            *ptr++ = {};
-        }
+        zero((uint8_t *)ptr, sizeof(T) * count);
     }
     
     inline void zero(uint8_t * ptr, uint64_t count = 1)
@@ -51,10 +49,7 @@ namespace memory
     template<typename T>
     void copy(T * src, T * dest, uint64_t count = 1)
     {
-        for (uint64_t i = 0; i < count; ++i)
-        {
-            *dest++ = *src++;
-        }
+        copy((uint8_t *)src, (uint8_t *)dest, sizeof(T) * count);
     }
     
     inline void copy(uint8_t * src, uint8_t * dest, uint64_t count = 1)
@@ -66,4 +61,6 @@ namespace memory
             *(dest + count - count % 8 + i) = *(src + count - count % 8 + i);
         }
     }
+    
+    void copy_bootloader_data(screen::mode *&, map_entry *&, uint64_t);
 }

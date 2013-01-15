@@ -85,11 +85,11 @@ namespace memory
         
         struct page_directory_entry
         {
-            page_directory_entry & operator=(page_table * pt)
+            page_directory_entry & operator=(uint64_t pt)
             {
                 present = 1;
                 read_write = 1;
-                address = (uint64_t)pt >> 12;
+                address = pt >> 12;
                 
                 return *this;
             }
@@ -143,11 +143,11 @@ namespace memory
         
         struct pdpt_entry
         {
-            pdpt_entry & operator=(page_directory * pd)
+            pdpt_entry & operator=(uint64_t pd)
             {
                 present = 1;
                 read_write = 1;
-                address = (uint64_t)pd >> 12;
+                address = pd >> 12;
                 
                 return *this;
             }
@@ -203,11 +203,11 @@ namespace memory
         
         struct pml4_entry
         {
-            pml4_entry & operator=(pdpt * table)
+            pml4_entry & operator=(uint64_t table)
             {
                 present = 1;
                 read_write = 1;
-                address = (uint64_t)table >> 12;
+                address = table >> 12;
                 
                 return *this;
             }

@@ -30,6 +30,8 @@
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
 {
+    memory::copy_bootloader_data(video, memory_map, memory_map_size);
+    
     screen::initialize(video, memory_map, memory_map_size); // memory map required to get preallocated backbuffer info from bootloader
     
     screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
@@ -62,10 +64,6 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     
     screen::print(tag::screen, "Switching to video server output...");
     screen::initialize_server(vsrv);
-    screen::done();
-    
-    screen::print(tag::memory, "Freeing bootloader areas...");
-    memory::free_bootloader(memory_map, memory_map_size);
     screen::done();
     
     screen::print(tag::scheduler, "Starting device manager server...");

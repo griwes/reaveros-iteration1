@@ -42,6 +42,8 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 {
     boot_vas = processor::get_cr3();
     
+    (*boot_vas)[0] = (uint64_t)boot_vas;
+    
     new ((void *)&boot_stack) frame_stack(map, map_size);
 }
 

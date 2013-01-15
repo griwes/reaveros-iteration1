@@ -39,7 +39,7 @@ namespace memory
         
         void map(uint64_t virtual_address)
         {
-            processor::get_cr3()->map(virtual_address, virtual_address + 4096, memory::pmm::pop());
+            ((x64::pml4 *)0)->map(virtual_address, virtual_address + 4096, memory::pmm::pop());
         }
         
         void map(uint64_t, uint64_t);
@@ -49,7 +49,7 @@ namespace memory
         
         uint64_t get_physical_address(uint64_t virtual_address)
         {
-            return processor::get_cr3()->get_physical_address(virtual_address);
+            return ((x64::pml4 *)0)->get_physical_address(virtual_address);
         }
     }
 }
