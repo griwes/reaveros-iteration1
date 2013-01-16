@@ -28,6 +28,7 @@
 #include <memory/map.h>
 #include <memory/x64paging.h>
 #include <processor/processor.h>
+#include <screen/screen.h>
 
 namespace
 {
@@ -35,11 +36,17 @@ namespace
     
     uint8_t boot_helper_frames[3 * 4096] __attribute__((aligned(4096)));
     uint8_t boot_helpers_available = 3;
+    
+    memory::map_entry * memory_map;
+    uint64_t map_size;
 }
 
 void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 {
     new ((void *)&boot_stack) frame_stack(map, map_size);
+    
+    memory_map = map;
+    ::map_size = map_size;
 }
 
 memory::pmm::frame_stack::frame_stack() : _stack(nullptr), _size(0), _capacity(0)
@@ -155,4 +162,24 @@ void memory::pmm::push(uint64_t frame)
     // }
     
     return boot_stack.push(frame);
+}
+
+void memory::pmm::boot_report()
+{
+    screen::print("Free memory: ", boot_stack.size() / (1024 * 1024 * 1024), " GiB ", (boot_stack.size() % (1024 * 1024 * 1024)) / (1024 * 1024), 
+        " MiB ", (boot_stack.size() % (1024 * 1024)) / 1024, " KiB", '\n');
+    screen::print("Total usable memory detected at boot: ");
+    
+    uint64_t total = 0;
+    
+    for (uint64_t i = 0; i < map_size; ++i)
+    {
+        if (memory_map[i].type != 6 && memory_map[i].type != 8 && memory_map[i].type != 9)
+        {
+            total += memory_map[i].length;
+        }
+    }
+    
+    screen::print(total / (1024 * 1024 * 1024), " GiB ", (total % 1024 * 1024 * 1024) / (1024 * 1024), " MiB ", (total % 1024 * 1024) / 1024,
+        " KiB", '\n', '\n');
 }

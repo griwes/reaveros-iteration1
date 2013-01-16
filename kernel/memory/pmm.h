@@ -47,6 +47,11 @@ namespace memory
             uint64_t pop();
             void push(uint64_t);
             
+            uint64_t size()
+            {
+                return _size;
+            }
+            
         private:
             void _expand();
             void _shrink();
@@ -55,5 +60,7 @@ namespace memory
             uint64_t _size;
             uint64_t _capacity;
         };
+        
+        void boot_report();
     }
 }
