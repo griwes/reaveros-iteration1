@@ -24,6 +24,7 @@
  **/
 
 #include <screen/screen.h>
+#include <memory/memory.h>
 
 void * __dso_handle = 0;
 
@@ -43,4 +44,11 @@ void _panic(const char * message, const char * file, uint64_t /* line */, const 
     screen::print("\nFile: ", file);
     
     asm volatile ("cli; hlt");
+}
+
+extern "C" void * memcpy(void * dest, void * src, uint64_t count)
+{
+    memory::copy((uint8_t *)src, (uint8_t *)dest, count);
+    
+    return dest;
 }

@@ -39,7 +39,7 @@ uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
         if (map[i].type == 4)
         {
             memory::vm::map_multiple(0xFFFFFFFF40000000, 0xFFFFFFFF40000000 + map[i].length, map[i].base);
-            
+
             return 0xFFFFFFFF40000000;
         }
     }
@@ -55,7 +55,7 @@ screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * ma
     _mode->addr = 0xFFFFFFFF00000000;
     
     clear();
-
+    
     set_color(color::gray);
 }
 
@@ -155,7 +155,7 @@ void screen::boot_terminal::_put_16(char c)
 }
 
 void screen::boot_terminal::_put_32(char c)
-{
+{    
     uint8_t * character = &(_mode->font[c * 16]);
     uint32_t * dest = (uint32_t *)((uint64_t)_mode->addr + _y * _mode->bytes_per_line * 16 + _x * 32);
     

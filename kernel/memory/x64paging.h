@@ -241,30 +241,6 @@ namespace memory
                 }
             }
             
-            void map(uint64_t, uint64_t, uint64_t);
-            void unmap(uint64_t, uint64_t);
-            
-            uint64_t get_physical_address(uint64_t addr)
-            {
-                if (entries[(addr >> 39) & 511].present)
-                {
-                    if (entries[(addr >> 39) & 511][(addr >> 30) & 511].present)
-                    {
-                        if (entries[(addr >> 39) & 511][(addr >> 30) & 511][(addr >> 21) & 511].present)
-                        {
-                            if (entries[(addr >> 39) & 511][(addr >> 30) & 511][(addr >> 21) & 511][(addr >> 12) & 511].present)
-                            {
-                                return entries[(addr >> 39) & 511][(addr >> 30) & 511][(addr >> 21) & 511][(addr >> 12) & 511].address << 12;
-                            }
-                        }
-                    }
-                }
-                
-                PANIC("Tried to get physical address of not mapped page");
-                
-                return 0;
-            }
-            
             pml4_entry & operator[](uint64_t i)
             {
                 if (i < 512)
@@ -282,5 +258,10 @@ namespace memory
             
             pml4_entry entries[512];
         };
+
+        uint64_t get_physical_address(uint64_t, bool = false);
+        
+        void map(uint64_t, uint64_t, uint64_t, bool = false);
+        void unmap(uint64_t, uint64_t, bool = false);
     }
 }

@@ -28,8 +28,48 @@
 #include <memory/pmm.h>
 #include <processor/processor.h>
 
-void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start)
+namespace
 {
+    class address_generator
+    {
+    public:
+        address_generator(uint64_t id) : _id(id)
+        {
+            if (_id < 256)
+            {
+                 PANIC("Tried to create address generator for lower half PML4 recursive entry");
+            }
+        }
+        
+        memory::x64::pml4 * pml4()
+        {
+            return (memory::x64::pml4 *)pt(_id, _id, _id);
+        }
+        
+        memory::x64::pdpt * pdpt(uint64_t pml4e)
+        {
+            return (memory::x64::pdpt *)pt(_id, _id, pml4e);
+        }
+        
+        memory::x64::page_directory * pd(uint64_t pml4e, uint64_t pdpte)
+        {
+            return (memory::x64::page_directory *)pt(_id, pml4e, pdpte);
+        }
+        
+        memory::x64::page_table * pt(uint64_t pml4e, uint64_t pdpte, uint64_t pde)
+        {
+            return (memory::x64::page_table *)(0xFFFF000000000000 + (_id << 39) + (pml4e << 30) + (pdpte << 21) + (pde << 12));
+        }
+        
+    private:
+        uint64_t _id;
+    };
+}
+
+void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start, bool foreign)
+{
+    address_generator gen(foreign ? 257 : 256);
+    
     if (virtual_start < 512 * 1024 * 1024 * 1024)
     {
         PANIC("Trying to map something in paging structs area");
@@ -56,13 +96,12 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
     
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
-        if (!entries[startpml4e].present)
+        if (!gen.pml4()->entries[startpml4e].present)
         {
-            entries[startpml4e] = memory::pmm::pop();
+            gen.pml4()->entries[startpml4e] = memory::pmm::pop();
         }
         
-        pdpt * table = (pdpt *)(0x1000 + startpml4e * 4096);
-//        pdpt * table = (pdpt *)(entries[startpml4e].address << 12);
+        pdpt * table = gen.pdpt(startpml4e);
         
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
@@ -72,8 +111,7 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
                 (*table)[startpdpte] = memory::pmm::pop();
             }
             
-            page_directory * pd = (page_directory *)(0x200000 + startpdpte * 4096);
-//            page_directory * pd = (page_directory *)((*table)[startpdpte].address << 12);
+            page_directory * pd = gen.pd(startpml4e, startpdpte);
             
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
@@ -83,8 +121,7 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
                     (*pd)[startpde] = memory::pmm::pop();
                 }
                 
-                page_table * pt = (page_table *)(0x40000000 + startpde * 4096);
-//                page_table * pt = (page_table *)((*pd)[startpde].address << 12);
+                page_table * pt = gen.pt(startpml4e, startpdpte, startpde);
                 
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)
@@ -136,4 +173,27 @@ void memory::x64::pml4::map(uint64_t virtual_start, uint64_t virtual_end, uint64
             return;
         }
     }
+}
+
+uint64_t memory::x64::get_physical_address(uint64_t addr, bool foreign)
+{
+    address_generator gen(foreign ? 257 : 256);
+    
+    if (gen.pml4()->entries[(addr >> 39) & 511].present)
+    {
+        if (gen.pdpt((addr >> 39) & 511)->entries[(addr >> 30) & 511].present)
+        {
+            if (gen.pd((addr >> 39) & 511, (addr >> 30) & 511)->entries[(addr >> 21) & 511].present)
+            {
+                if (gen.pt((addr >> 39) & 511, (addr >> 30) & 511, (addr >> 21) & 511)->entries[(addr >> 12) & 511].present)
+                {
+                    return gen.pt((addr >> 39) & 511, (addr >> 30) & 511, (addr >> 21) & 511)->entries[(addr >> 12) & 511].address << 12;
+                }
+            }
+        }
+    }
+    
+    PANIC("Tried to get physical address of not mapped page");
+    
+    return 0;
 }
