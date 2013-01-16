@@ -166,8 +166,8 @@ void memory::pmm::push(uint64_t frame)
 
 void memory::pmm::boot_report()
 {
-    screen::print("Free memory: ", boot_stack.size() / (1024 * 1024 * 1024), " GiB ", (boot_stack.size() % (1024 * 1024 * 1024)) / (1024 * 1024), 
-        " MiB ", (boot_stack.size() % (1024 * 1024)) / 1024, " KiB", '\n');
+    screen::print("Free memory: ", (boot_stack.size() * 4096) / (1024 * 1024 * 1024), " GiB ", ((boot_stack.size() * 4096 ) % 
+        (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", ((boot_stack.size() * 4096 ) % (1024 * 1024)) / 1024, " KiB", '\n');
     screen::print("Total usable memory detected at boot: ");
     
     uint64_t total = 0;
