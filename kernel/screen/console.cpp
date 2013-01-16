@@ -68,3 +68,72 @@ void screen::kernel_console::set_color(color::colors c)
 {
     _terminal->set_color(c);
 }
+
+namespace
+{
+    template<typename T>
+    void _print_int(T t)
+    {
+        if (t == 0)
+        {
+            screen::console.print('0');
+            
+            return;
+        }
+        
+        if (!(t > 0 || t == 0)) // supress [T = unsigned] unsigned comparison t < 0 warning
+        {
+            screen::console.print('-');
+            t = -t;
+        }
+        
+        T mod = t % 10;
+        
+        if (t >= 10)
+        {
+            _print_int(t / 10);
+        }
+        
+        screen::console.print('0' + mod);
+    }
+}
+
+void screen::kernel_console::print(int8_t i)
+{
+    _print_int(i);
+}
+
+void screen::kernel_console::print(int16_t i)
+{
+    _print_int(i);
+}
+
+void screen::kernel_console::print(int32_t i)
+{
+    _print_int(i);
+}
+
+void screen::kernel_console::print(int64_t i)
+{
+    _print_int(i);
+}
+
+void screen::kernel_console::print(uint8_t i)
+{
+    _print_int(i);
+}
+
+void screen::kernel_console::print(uint16_t i)
+{
+    _print_int(i);
+}
+
+void screen::kernel_console::print(uint32_t i)
+{
+    _print_int(i);
+}
+
+void screen::kernel_console::print(uint64_t i)
+{
+    _print_int(i);
+}

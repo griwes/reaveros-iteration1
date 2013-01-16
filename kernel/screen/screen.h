@@ -68,7 +68,10 @@ namespace screen
     }
     
     template<typename T>
-    void print(const T &);
+    void print(const T & t)
+    {
+        console.print(t);
+    }
     
     template<typename T>
     void print(const T * ptr)
@@ -85,6 +88,6 @@ namespace screen
     
     inline void done()
     {
-        screen::print(color::green, " done", color::gray, '.');
+        screen::print(color::green, " done", color::gray, ".\n");
     }
 }

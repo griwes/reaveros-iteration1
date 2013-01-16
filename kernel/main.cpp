@@ -43,7 +43,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     memory::pmm::initialize(memory_map, memory_map_size);
     screen::done();
     
-    screen::print(tag::memory, "Reporting memory manager status...");
+    screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();
     
     for (;;) ;
