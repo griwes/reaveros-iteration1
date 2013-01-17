@@ -70,6 +70,7 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
         for (uint64_t frame = map[i].base < 1024 * 1024 ? 1024 * 1024 : (map[i].base + 4095) & 4095; frame < map[i].base
             + map[i].length; frame += 4096)
         {
+            dbg;
             push(frame);
         }
     }

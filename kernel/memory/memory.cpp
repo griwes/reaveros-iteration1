@@ -41,11 +41,6 @@ void memory::copy_bootloader_data(screen::mode *& video, memory::map_entry *& en
     memory::copy(_mode.font, _font, 4096);
     _mode.font = _font;
     
-    for (uint64_t i = 0; i < size; ++i)
-    {
-        _map[i] = entries[i];
-    }
-    
     video = &_mode;
     entries = _map;
     

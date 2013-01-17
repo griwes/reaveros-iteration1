@@ -54,7 +54,11 @@ namespace memory
     template<typename T>
     void copy(T * src, T * dest, uint64_t count = 1)
     {
-        copy((uint8_t *)src, (uint8_t *)dest, sizeof(T) * count);
+        for (uint64_t i = 0; i < count; ++i)
+        {
+            *dest++ = *src++;
+        }
+//        copy((uint8_t *)src, (uint8_t *)dest, sizeof(T) * count);
     }
     
     inline void copy(uint8_t * src, uint8_t * dest, uint64_t count = 1)

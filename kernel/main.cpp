@@ -32,7 +32,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
 {
     memory::copy_bootloader_data(video, memory_map, memory_map_size);
     memory::initialize_paging();
-    
+        
     memory::pmm::initialize(memory_map, memory_map_size);
     
     screen::initialize(video, memory_map, memory_map_size); // memory map required to get preallocated backbuffer info from bootloader
@@ -40,9 +40,6 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
     screen::print("Version: 0.0.1, Codename \"Cotyledon\"\n");
     screen::print("Copyright (C) 2012-2013 Reaver Project Team\n\n");
-    
-    screen::print(tag::memory, "Initializing physical memory manager...");
-    screen::done();
     
     screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();

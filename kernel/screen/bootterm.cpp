@@ -38,9 +38,9 @@ uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
     {
         if (map[i].type == 4)
         {
-            memory::vm::map_multiple(0xFFFFFFFF40000000, 0xFFFFFFFF40000000 + map[i].length, map[i].base);
+            memory::vm::map_multiple(memory::vm::boot_backbuffer, memory::vm::boot_backbuffer + map[i].length, map[i].base);
 
-            return 0xFFFFFFFF40000000;
+            return memory::vm::boot_backbuffer;
         }
     }
     
@@ -51,10 +51,8 @@ screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * ma
     : _mode(mode), _backbuffer(_find_backbuffer(map, map_size)), _maxx(mode->resolution_x / 8), _maxy(mode->resolution_y / 16),
       _x(0), _y(0)
 {
-    memory::vm::map_multiple(0xFFFFFFFF00000000, 0xFFFFFFFF00000000 + mode->resolution_y * mode->bytes_per_line, mode->short_addr);
-    _mode->addr = 0xFFFFFFFF00000000;
-
-    dbg;
+    memory::vm::map_multiple(memory::vm::boot_video_memory, memory::vm::boot_video_memory + mode->resolution_y * mode->bytes_per_line, mode->short_addr);
+    _mode->addr = memory::vm::boot_video_memory;
     
     clear();
     

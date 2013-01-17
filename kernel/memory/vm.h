@@ -34,7 +34,9 @@ namespace memory
     {
         enum addresses
         {
-            boot_page_stack = 0xFFFFFFFF40000000
+            boot_page_stack = 0xFFFFFFFF40000000,
+            boot_video_memory = 0xFFFFFFFE80000000,
+            boot_backbuffer = 0xFFFFFFFF00000000
         };
         
         inline void map(uint64_t virtual_address)
