@@ -53,6 +53,8 @@ screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * ma
 {
     memory::vm::map_multiple(0xFFFFFFFF00000000, 0xFFFFFFFF00000000 + mode->resolution_y * mode->bytes_per_line, mode->short_addr);
     _mode->addr = 0xFFFFFFFF00000000;
+
+    dbg;
     
     clear();
     

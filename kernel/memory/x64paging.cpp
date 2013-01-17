@@ -102,6 +102,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
         }
         
         pdpt * table = gen.pdpt(startpml4e);
+        processor::invlpg((uint64_t)table);
         
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
@@ -112,6 +113,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
             }
             
             page_directory * pd = gen.pd(startpml4e, startpdpte);
+            processor::invlpg((uint64_t)pd);
             
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
@@ -122,6 +124,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 }
                 
                 page_table * pt = gen.pt(startpml4e, startpdpte, startpde);
+                processor::invlpg((uint64_t)pt);
                 
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)

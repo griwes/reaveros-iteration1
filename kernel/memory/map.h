@@ -29,6 +29,16 @@ namespace memory
 {
     struct map_entry
     {
+        map_entry & operator=(const map_entry & rhs)
+        {
+            base = rhs.base;
+            length = rhs.length;
+            type = rhs.type;
+            extended_attribs = rhs.extended_attribs;
+            
+            return *this;
+        }
+        
         uint64_t base;
         uint64_t length;
         uint32_t type;
