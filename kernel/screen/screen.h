@@ -36,7 +36,8 @@ namespace tag
 {
     enum tags
     {
-        memory
+        memory,
+        cpu
     };
 }
 

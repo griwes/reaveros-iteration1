@@ -32,6 +32,8 @@ namespace processor
     extern "C" memory::x64::pml4 * get_cr3();
     extern "C" void reload_cr3();
     
+    void initialize();
+    
     inline void invlpg(uint64_t addr)
     {
         asm volatile ("invlpg (%0)" :: "r"(addr) : "memory");

@@ -26,6 +26,7 @@
 #include <screen/screen.h>
 #include <memory/memory.h>
 #include <memory/pmm.h>
+#include <processor/processor.h>
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
@@ -44,13 +45,11 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();
     
-    for (;;) ;
-    
-/*    screen::print(tag::cpu, "Initializing processor...");
+    screen::print(tag::cpu, "Initializing processor...");
     processor::initialize();
     screen::done();
     
-    screen::print(tag::scheduler, "Initializing scheduler...");
+/*    screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     
     screen::print(tag::scheduler, "Initializing virtual memory manager server...");

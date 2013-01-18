@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  * 
- * Copyright (C) 2011-2012 Reaver Project Team:
+ * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  * 
  * This software is provided 'as-is', without any express or implied
@@ -23,30 +23,26 @@
  * 
  **/
 
-#include <screen/screen.h>
-#include <screen/mode.h>
-#include <screen/console.h>
-#include <screen/bootterm.h>
+#include <processor/processor.h>
 
-void screen::initialize(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
+namespace
 {
-    new ((void *)&term) boot_terminal(video_mode, map, map_size);
-    new ((void *)&console) kernel_console(&term);
+    processor::core cores[512];
+    processor::ioapic ioapics[16];
+    
+    uint64_t num_cores = 0;
+    uint64_t num_ioapics = 0;
 }
 
-void screen::print(tag::tags t)
+void processor::initialize()
 {
-    screen::print(color::white);
+    gdt::initialize();
+    idt::initialize();
     
-    switch (t)
-    {
-        case tag::memory:
-            screen::print("[Memory] ");
-            break;
-        case tag::cpu:
-            screen::print("[CPU   ] ");
-            break;
-    }
+    acpi::initialize(cores, num_cores, ioapics, num_ioapics);
     
-    screen::print(color::gray);
+    apic::initialize(cores[0]);
+    apic::initialize(ioapics, num_ioapics);
+    
+    apic::boot(cores + 1, num_cores - 1);
 }
