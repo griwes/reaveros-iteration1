@@ -70,7 +70,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
 {
     address_generator gen(foreign ? 257 : 256);
     
-    if (virtual_start < 512 * 1024 * 1024 * 1024)
+    if (virtual_start >= 0xFFFF800000000000 && virtual_start < 0xFFFF800000000000 + 2 * 512 * 1024 * 1024 * 1024)
     {
         PANIC("Trying to map something in paging structs area");
     }

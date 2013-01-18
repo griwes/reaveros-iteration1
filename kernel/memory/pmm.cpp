@@ -53,7 +53,8 @@ memory::pmm::frame_stack::frame_stack() : _stack(nullptr), _size(0), _capacity(0
 {
 }
 
-memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack(nullptr), _size(0), _capacity(0)
+memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::boot_page_stack), 
+    _size(0), _capacity(0)
 {
     for (uint64_t i = 0; i < map_size; ++i)
     {
@@ -67,10 +68,9 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
             continue;
         }
         
-        for (uint64_t frame = map[i].base < 1024 * 1024 ? 1024 * 1024 : (map[i].base + 4095) & 4095; frame < map[i].base
+        for (uint64_t frame = (map[i].base < 1024 * 1024) ? (1024 * 1024) : ((map[i].base + 4095) & ~(uint64_t)4095); frame < map[i].base
             + map[i].length; frame += 4096)
-        {
-            dbg;
+        {            
             push(frame);
         }
     }
@@ -79,6 +79,7 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
 void memory::pmm::frame_stack::_expand()
 {
     vm::map(vm::boot_page_stack + _capacity * 8);
+    
     _capacity += 512;
 }
 
