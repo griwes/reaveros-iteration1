@@ -49,6 +49,8 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     processor::initialize();
     screen::done();
     
+    for (;;) ;
+    
 /*    screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     

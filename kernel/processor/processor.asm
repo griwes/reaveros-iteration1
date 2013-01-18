@@ -22,8 +22,11 @@
 ; Michał "Griwes" Dominiak
 ; 
 
+bits    64
+
 global  get_cr3
 global  reload_cr3
+global  initialize
 
 get_cr3:
     mov     rax, cr3
@@ -36,3 +39,47 @@ reload_cr3:
     pop     rax
     
     ret
+
+initialize:
+    push    rax
+    mov     rax, qword gdt
+    lgdt    [rax]
+
+    mov     rax, qword .ret
+    jmp     0x8:rax
+
+    .ret:
+    mov     ax, 0x10
+    mov     fs, ax
+    mov     gs, ax
+    
+    pop     rax
+    
+    ret
+
+
+gdt_start:
+    ; 0x0 null:
+    dq 0
+
+    ; 0x8 code 64 bit: 
+    dw 0
+    dw 0
+    db 0
+    db 10011000b
+    db 00100000b
+    db 0
+
+    ; 0x10 data:
+    dw 0
+    dw 0
+    db 0
+    db 10010000b
+    db 0
+    db 0
+
+gdt_end:
+
+gdt:
+    dw gdt_end - gdt_start - 1
+    dq gdt_start

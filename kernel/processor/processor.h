@@ -32,6 +32,11 @@ namespace processor
     extern "C" memory::x64::pml4 * get_cr3();
     extern "C" void reload_cr3();
     
+    namespace gdt
+    {
+        extern "C" void initialize();
+    }
+    
     void initialize();
     
     inline void invlpg(uint64_t addr)

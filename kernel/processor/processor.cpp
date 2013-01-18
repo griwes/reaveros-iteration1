@@ -27,17 +27,17 @@
 
 namespace
 {
-    processor::core cores[512];
+/*    processor::core cores[512];
     processor::ioapic ioapics[16];
     
     uint64_t num_cores = 0;
     uint64_t num_ioapics = 0;
-}
+*/}
 
 void processor::initialize()
 {
     gdt::initialize();
-    idt::initialize();
+/*    idt::initialize();
     
     acpi::initialize(cores, num_cores, ioapics, num_ioapics);
     
@@ -45,4 +45,4 @@ void processor::initialize()
     apic::initialize(ioapics, num_ioapics);
     
     apic::boot(cores + 1, num_cores - 1);
-}
+*/}
