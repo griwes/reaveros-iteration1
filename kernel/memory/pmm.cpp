@@ -171,7 +171,7 @@ void memory::pmm::boot_report()
     screen::print("Free memory: ", (boot_stack.size() * 4096) / (1024 * 1024 * 1024), " GiB ", ((boot_stack.size() * 4096 ) % 
         (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", ((boot_stack.size() * 4096 ) % (1024 * 1024)) / 1024, " KiB", '\n');
     screen::print("Total usable memory detected at boot: ");
-    
+
     uint64_t total = 0;
     
     for (uint64_t i = 0; i < map_size; ++i)
@@ -181,7 +181,7 @@ void memory::pmm::boot_report()
             total += memory_map[i].length;
         }
     }
-    
+        
     screen::print(total / (1024 * 1024 * 1024), " GiB ", (total % 1024 * 1024 * 1024) / (1024 * 1024), " MiB ", (total % 1024 * 1024) / 1024,
         " KiB", '\n', '\n');
 }

@@ -87,14 +87,15 @@ namespace
             t = -t;
         }
         
+        T div = t / 10;
         T mod = t % 10;
         
-        if (t >= 10)
+        if (div != 0)
         {
-            _print_int(t / 10);
+            _print_int(div);
         }
         
-        screen::console.print('0' + mod);
+        screen::console.print((char)('0' + mod));
     }
 }
 
