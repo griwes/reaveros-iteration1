@@ -20,11 +20,12 @@ to file-oriented environment of UNIX family.
    
 ##What is being worked on? - short roadmap for current development
 
- 2. Kernel:
+ 1. Kernel:
    * Basic SMP support - booting APs and IPIs
    * Basic ACPI table support (no AML here)
    * SMP aware physical memory manager
    * SMP aware scheduler
+ 2. Services:
    * SMP aware virtual memory manager
    
 ##What are the features that are planned in distant future?
