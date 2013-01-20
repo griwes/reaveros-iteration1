@@ -79,17 +79,18 @@ namespace
         *(uint32_t *)&gdt_start[id + 1] = ((uint64_t)&_tss >> 32) & 0xFFFFFFFF;
         
         gdt_start[id].limit_low = (sizeof(processor::gdt::tss) & 0xFFFF) - 1;
-        gdt_start[id].limit_high = (sizeof(processor::gdt::tss) >> 16) & ~(1 << 4);
+        gdt_start[id].limit_high = sizeof(processor::gdt::tss) >> 16;
         
-        gdt_start[id].granularity = 0;
-        gdt_start[id].available = 1;
+        gdt_start[id].accessed = 1;
+        gdt_start[id].code = 1;
         gdt_start[id].present = 1;
+        gdt_start[id].dpl = 3;
     }
 }
 
 void processor::gdt::initialize()
 {
-    memory::zero(gdt_start, 6);
+    memory::zero(gdt_start, 7);
     
     setup_gdte(1, true, false);
     setup_gdte(2, false, false);
