@@ -234,6 +234,8 @@ plm:
 bits    32
 
 call_kernel:
+    cli
+
     push    ebp
     mov     ebp, esp
     

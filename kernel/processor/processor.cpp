@@ -24,6 +24,7 @@
  **/
 
 #include <processor/processor.h>
+#include <processor/interrupts.h>
 
 namespace
 {
@@ -37,9 +38,9 @@ namespace
 void processor::initialize()
 {
     gdt::initialize();
-/*    idt::initialize();
+    idt::initialize();
     
-    acpi::initialize(cores, num_cores, ioapics, num_ioapics);
+/*    acpi::initialize(cores, num_cores, ioapics, num_ioapics);
     
     apic::initialize(cores[0]);
     apic::initialize(ioapics, num_ioapics);

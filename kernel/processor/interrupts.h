@@ -23,24 +23,33 @@
  * 
  **/
 
-#define dbg asm volatile ("xchg %bx, %bx")
-#define cli asm volatile ("cli")
-#define sti asm volatile ("sti")
+#pragma once
 
-#include <cstdint>
-#include <cstddef>
-
-#define PANIC(X) _panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-
-void _panic(const char *, const char *, uint64_t, const char *);
-
-inline void * operator new (uint64_t, void * addr)
+namespace processor
 {
-    return addr;
+    namespace idt
+    {
+        struct irq_context
+        {
+            uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
+            uint64_t rdi, rsi, rdx, rcx, rbx, rax;
+            uint64_t rip, cs, rflags, rsp, ss;
+        } __attribute__((packed));
+        
+        struct irq_context_error
+        {
+            uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
+            uint64_t rdi, rsi, rdx, rcx, rbx, rax;
+            uint64_t code;
+            uint64_t rip, cs, rflags, rsp, ss;
+        } __attribute__((packed));
+        
+        void initialize();
+    }
+    
+    namespace irq
+    {
+        void initialize();
+        void add_handler(uint64_t, void (*)(uint64_t));
+    }
 }
-
-inline void outb(uint16_t port, uint8_t value)
-{
-    asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
-}
-
