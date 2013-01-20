@@ -34,7 +34,7 @@ namespace processor
         extern "C" char res[];
         extern "C" char de[];
         extern "C" char nmi[];
-        extern "C" char bp[];
+        extern "C" char rp[];
         extern "C" char of[];
         extern "C" char br[];
         extern "C" char ud[];
@@ -42,7 +42,7 @@ namespace processor
         extern "C" char df[];
         extern "C" char ts[];
         extern "C" char np[];
-        extern "C" char ss[];
+        extern "C" char sf[];
         extern "C" char gp[];
         extern "C" char pf[];
         extern "C" char mf[];

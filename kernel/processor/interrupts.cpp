@@ -93,10 +93,10 @@ void processor::idt::initialize()
     
     memory::zero(_idt, 256);
     
-/*    setup_idte(0, (uint64_t)processor::handlers::de, 0x08, true, 0, 0xE);
+    setup_idte(0, (uint64_t)processor::handlers::de, 0x08, true, 0, 0xE);
     setup_idte(1, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE);
     setup_idte(2, (uint64_t)processor::handlers::nmi, 0x08, true, 0, 0xE); // TODO: add IST
-    setup_idte(3, (uint64_t)processor::handlers::bp, 0x08, true, 0, 0xE);
+    setup_idte(3, (uint64_t)processor::handlers::rp, 0x08, true, 0, 0xE); // breakpoint
     setup_idte(4, (uint64_t)processor::handlers::of, 0x08, true, 0, 0xE);
     setup_idte(5, (uint64_t)processor::handlers::br, 0x08, true, 0, 0xE);
     setup_idte(6, (uint64_t)processor::handlers::ud, 0x08, true, 0, 0xE);
@@ -105,7 +105,7 @@ void processor::idt::initialize()
     setup_idte(9, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE);
     setup_idte(10, (uint64_t)processor::handlers::ts, 0x08, true, 0, 0xE);
     setup_idte(11, (uint64_t)processor::handlers::np, 0x08, true, 0, 0xE);
-    setup_idte(12, (uint64_t)processor::handlers::ss, 0x08, true, 0, 0xE);
+    setup_idte(12, (uint64_t)processor::handlers::sf, 0x08, true, 0, 0xE);
     setup_idte(13, (uint64_t)processor::handlers::gp, 0x08, true, 0, 0xE);
     setup_idte(14, (uint64_t)processor::handlers::pf, 0x08, true, 0, 0xE);
     setup_idte(15, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE);
@@ -117,7 +117,7 @@ void processor::idt::initialize()
     for (uint8_t i = 20; i < 32; ++i)
     {
         setup_idte(i, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE);
-    }*/
+    }
     
     _load_idt();
 }
