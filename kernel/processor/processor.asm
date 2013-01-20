@@ -26,8 +26,9 @@ bits    64
 
 global  get_cr3
 global  reload_cr3
-global  initialize
+global  _load_gdt
 global  _load_idt
+global  gdt_start
 
 extern  idtr
 
@@ -43,7 +44,7 @@ reload_cr3:
     
     ret
 
-initialize:
+_load_gdt:
     push    rax
     mov     rax, qword gdt
     lgdt    [rax]
@@ -55,6 +56,9 @@ initialize:
     mov     ax, 0x10
     mov     fs, ax
     mov     gs, ax
+  
+    mov     ax, 0x28
+    ltr     ax
     
     pop     rax
     
@@ -67,32 +71,13 @@ _load_idt:
     ret
 
 gdt_start:
-    ; 0x0 null:
-    dq 0
-
-    ; 0x8 code 64 bit: 
-    dw 0
-    dw 0
-    db 0
-    db 10011000b
-    db 00100000b
-    db 0
-
-    ; 0x10 data:
-    dw 0
-    dw 0
-    db 0
-    db 10010000b
-    db 0
-    db 0
-    
-gdt_start:
     dq 0 ; null
-    dq 0 ; code segment 64bit kernel
-    dq 0 ; data segment 64bit kernel
-    dq 0 ; code segment 64bit user 
-    dq 0 ; code segment 64bit user
-    dq 0 ; TSS
+    dq 0 ; code segment 64bit kernel - 0x8
+    dq 0 ; data segment 64bit kernel - 0x10
+    dq 0 ; code segment 64bit user - 0x18
+    dq 0 ; code segment 64bit user - 0x20
+    dq 0 ; TSS - 0x28
+    dq 0
 
 gdt_end:
 

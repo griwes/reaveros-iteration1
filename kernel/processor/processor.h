@@ -34,7 +34,46 @@ namespace processor
     
     namespace gdt
     {
-        extern "C" void initialize();
+        struct gdt_entry
+        {
+            uint64_t limit_low:16;
+            uint64_t base_low:24;
+            uint64_t accessed:1;
+            uint64_t read_write:1;
+            uint64_t conforming:1;
+            uint64_t code:1;
+            uint64_t normal:1;
+            uint64_t dpl:2;
+            uint64_t present:1;
+            uint64_t limit_high:4;
+            uint64_t available:1;
+            uint64_t long_mode:1;
+            uint64_t big:1;
+            uint64_t granularity:1;
+            uint64_t base_high:8;
+        } __attribute__((packed));
+        
+        struct tss
+        {
+            uint32_t reserved;
+            uint64_t rsp0;
+            uint64_t rsp1;
+            uint64_t rsp2;
+            uint64_t rsp3;
+            uint64_t reserved2;
+            uint64_t ist1;
+            uint64_t ist2;
+            uint64_t ist3;
+            uint64_t ist4;
+            uint64_t ist5;
+            uint64_t ist6;
+            uint64_t ist7;
+            uint64_t reserved3;
+            uint16_t reserved4;
+            uint16_t iomap;
+        } __attribute__((packed));
+        
+        void initialize();
     }
     
     void initialize();

@@ -25,6 +25,7 @@
 
 #include <processor/processor.h>
 #include <processor/interrupts.h>
+#include <memory/memory.h>
 
 namespace
 {
@@ -34,6 +35,8 @@ namespace
     uint64_t num_cores = 0;
     uint64_t num_ioapics = 0;
 */}
+
+extern "C" processor::gdt::gdt_entry gdt_start[];
 
 void processor::initialize()
 {
@@ -47,3 +50,52 @@ void processor::initialize()
     
     apic::boot(cores + 1, num_cores - 1);
 */}
+
+extern "C" void _load_gdt();
+
+namespace
+{
+    processor::gdt::tss _tss;
+    
+    void setup_gdte(uint64_t id, bool code, bool user)
+    {
+        gdt_start[id].normal = 1;
+        
+        gdt_start[id].code = code;
+        gdt_start[id].dpl = user * 3;
+        gdt_start[id].long_mode = 1;
+        gdt_start[id].present = 1;
+        gdt_start[id].big = 1;
+    }
+    
+    void setup_tss(uint64_t id)
+    {
+        memory::zero(&_tss);
+        
+        _tss.iomap = sizeof(processor::gdt::tss);
+        
+        gdt_start[id].base_low = (uint64_t)&_tss & 0xFFFFFF;
+        gdt_start[id].base_high = ((uint64_t)&_tss >> 24) & 0xFF;
+        *(uint32_t *)&gdt_start[id + 1] = ((uint64_t)&_tss >> 32) & 0xFFFFFFFF;
+        
+        gdt_start[id].limit_low = (sizeof(processor::gdt::tss) & 0xFFFF) - 1;
+        gdt_start[id].limit_high = (sizeof(processor::gdt::tss) >> 16) & ~(1 << 4);
+        
+        gdt_start[id].granularity = 0;
+        gdt_start[id].available = 1;
+        gdt_start[id].present = 1;
+    }
+}
+
+void processor::gdt::initialize()
+{
+    memory::zero(gdt_start, 6);
+    
+    setup_gdte(1, true, false);
+    setup_gdte(2, false, false);
+    setup_gdte(3, true, true);
+    setup_gdte(4, false, true);
+    setup_tss(5);
+    
+    _load_gdt();
+}
