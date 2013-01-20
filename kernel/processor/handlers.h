@@ -63,7 +63,7 @@ namespace processor
         extern "C" void no_coprocessor(idt::irq_context);
         extern "C" void double_fault(idt::irq_context_error);
         extern "C" void invalid_tss(idt::irq_context_error);
-        extern "C" void segment_non_present(idt::irq_context_error);
+        extern "C" void segment_not_present(idt::irq_context_error);
         extern "C" void stack_fault(idt::irq_context_error);
         extern "C" void protection_fault(idt::irq_context_error);
         extern "C" void page_fault(idt::irq_context_error);

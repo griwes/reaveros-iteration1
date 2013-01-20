@@ -120,4 +120,7 @@ void processor::idt::initialize()
     }
     
     _load_idt();
+    
+    dbg;
+    asm volatile ("int $1");
 }
