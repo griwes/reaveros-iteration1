@@ -29,6 +29,9 @@
 
 namespace processor
 {
+    constexpr uint64_t max_cores = 512;
+    constexpr uint64_t max_ioapics = 16;
+    
     extern "C" memory::x64::pml4 * get_cr3();
     extern "C" void reload_cr3();
     

@@ -26,15 +26,16 @@
 #include <processor/processor.h>
 #include <processor/interrupts.h>
 #include <memory/memory.h>
+#include <acpi/acpi.h>
 
 namespace
 {
-/*    processor::core cores[512];
-    processor::ioapic ioapics[16];
+    processor::core cores[processor::max_cores];
+    processor::ioapic ioapics[processor::max_ioapics];
     
     uint64_t num_cores = 0;
     uint64_t num_ioapics = 0;
-*/}
+}
 
 extern "C" processor::gdt::gdt_entry gdt_start[];
 
@@ -43,9 +44,9 @@ void processor::initialize()
     gdt::initialize();
     idt::initialize();
     
-/*    acpi::initialize(cores, num_cores, ioapics, num_ioapics);
+    acpi::initialize(cores, num_cores, ioapics, num_ioapics);
     
-    apic::initialize(cores[0]);
+/*    apic::initialize(cores[0]);
     apic::initialize(ioapics, num_ioapics);
     
     apic::boot(cores + 1, num_cores - 1);
