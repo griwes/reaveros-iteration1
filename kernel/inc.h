@@ -31,8 +31,13 @@
 #include <cstddef>
 
 #define PANIC(X) _panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define DEATH(X) _death(__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define DUMP(X) _dump_registers(X);
 
 void _panic(const char *, const char *, uint64_t, const char *);
+void _death(const char *, uint64_t, const char *);
+template<typename T>
+void _dump_registers(const T &);
 
 inline void * operator new (uint64_t, void * addr)
 {
