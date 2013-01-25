@@ -29,6 +29,8 @@ namespace processor
 {
     class core
     {
-        
+    public:
+        core();
+        core(uint32_t, uint32_t, bool = false);
     };
 }

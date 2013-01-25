@@ -72,7 +72,7 @@ namespace
         {
             memory::vm::unmap(memory::vm::acpi_temporal_rsdt_mapping_start, memory::vm::acpi_temporal_rsdt_mapping_end, false);
             
-            screen::print(tag::acpi, "XSDT invalid, falling back to RSDT");
+            screen::print(tag::acpi, "XSDT invalid, falling back to RSDT\n");
             
             _install_rsdt(ptr);
         }
@@ -186,16 +186,16 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
     
     madt * table = (madt *)_find_table("MADT");
     
-    if (!madt)
+    if (!table)
     {        
         return;
     }
     
     memory::vm::map(memory::vm::local_apic_address, table->lic_address);
     
-    acpi::madt_entry * entry = madt->entries;
+    madt_entry * entry = table->entries;
     
-    while ((uint64_t)entry - (uint64_t)madt < madt->length)
+    while ((uint64_t)entry - (uint64_t)table < table->length)
     {
         switch (entry->type)
         {
@@ -205,10 +205,7 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
                 
                 if (lapic->flags & 1)
                 {
-                    l->acpi_id = lapic->acpi_id;
-                    l->apic_id = lapic->apic_id;
-                    
-                    add_lapic(l);
+                    new ((void *)(cores + core_num++)) processor::core(lapic->apic_id, lapic->acpi_id);
                 }
                 
                 break;
@@ -218,25 +215,18 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
             {
                 auto ioapic = (acpi::madt_ioapic_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                processor::ioapic * io = new processor::ioapic;
+                new ((void *)(ioapics + ioapic_num++)) processor::ioapic(ioapic->apic_id, ioapic->base_int, ioapic->base_address);
                 
-                io->base_int = ioapic->base_int;
-                io->id = ioapic->apic_id;
-                
-                memory::vas->map(ioapic->base_address, ioapic->base_address + 4096, ioapic->base_address);
-                io->base_address = ioapic->base_address;
-                io->size = ((io->read_register(1) >> 16) & ~(1 << 8)) + 1;
-                
-                add_ioapic(io);
+                // io->size = ((io->read_register(1) >> 16) & ~(1 << 8)) + 1;
                 
                 break;
             }
             
             case 3:
             {
-                auto nmi = (acpi::madt_nmi_source_entry *)((uint64_t)entry + sizeof(*entry));
+//                auto nmi = (acpi::madt_nmi_source_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                add_global_nmi(nmi->int_number);
+//                add_global_nmi(nmi->int_number);
                 
                 break;
             }
@@ -256,12 +246,7 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
                 
                 if (x2apic->flags & 1)
                 {
-                    processor::x2apic * x2 = new processor::x2apic;
-                    
-                    x2->acpi_uuid = x2apic->acpi_uuid;
-                    x2->apic_id = x2apic->x2apic_id;
-                    
-                    add_x2apic(x2);
+                    new ((void *)(cores + core_num++)) processor::core(x2apic->x2apic_id, x2apic->acpi_uuid, true);
                 }
                 
                 break;
@@ -271,9 +256,9 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
         entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
     }
     
-    entry = madt->entries;
+    entry = table->entries;
     
-    while ((uint64_t)entry - (uint64_t)madt < madt->length)
+    while ((uint64_t)entry - (uint64_t)table < table->length)
     {
         switch (entry->type)
         {
@@ -282,31 +267,31 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
                 auto lapic_nmi = (acpi::madt_lapic_nmi_entry *)((uint64_t)entry + sizeof(*entry));
                 
                 if (lapic_nmi->acpi_id == 0xff)
-                {
-                    auto entry = lapics;
-                    
-                    while (entry)
+                {                    
+                    for (uint64_t i = 0; i < core_num; ++i)
                     {
-                        entry->nmi_int = lapic_nmi->int_number;
-                        entry->nmi_specified = true;
-                        entry->nmi_flags = lapic_nmi->flags;
-                        
-                        entry = entry->next;
+                        if (cores[i].lapic())
+                        {
+                            cores[i].set_nmi(lapic_nmi->int_number, lapic_nmi->flags);
+                        }
                     }
                     
                     break;
                 }
                 
-                auto lapic = get_lapic(lapic_nmi->acpi_id);
-                
-                if (!lapic)
+                for (uint64_t idx = 0; idx < core_num; ++idx)
                 {
-                    screen::print(" (ignoring LAPIC NMI entry for unknown LAPIC ACPI ID...) ");
-                }
-                
-                else
-                {
-                    lapic->nmi_int = lapic_nmi->int_number;
+                    if (cores[idx].acpi_id() == lapic_nmi->acpi_id)
+                    {
+                        cores[idx].set_nmi(lapic_nmi->int_number, lapic_nmi->flags);
+                        
+                        break;
+                    }
+                    
+                    if (idx == core_num - 1)
+                    {
+                        screen::print(tag::acpi, "Ignoring NMI vector entry for unknown ACPI ID ", lapic_nmi->acpi_id, "\n");
+                    }
                 }
                 
                 break;
@@ -319,34 +304,27 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
                 
                 if (x2apic_nmi->acpi_uuid == 0xffffffff)
                 {
-                    for (auto entry = lapics; entry; entry = entry->next)
+                    for (uint64_t i = 0; i < core_num; ++i)
                     {
-                        entry->nmi_int = x2apic_nmi->int_number;
-                        entry->nmi_specified = true;
-                        entry->nmi_flags = x2apic_nmi->flags;
-                    }
-                    
-                    
-                    for (auto entry = x2apics; entry; entry = entry->next)
-                    {
-                        entry->nmi_int = x2apic_nmi->int_number;
-                        entry->nmi_specified = true;
-                        entry->nmi_flags = x2apic_nmi->flags;
+                        cores[i].set_nmi(x2apic_nmi->int_number, x2apic_nmi->flags);
                     }
                     
                     break;
                 }
-                
-                auto x2apic = get_x2apic(x2apic_nmi->acpi_uuid);
-                
-                if (!x2apic)
+
+                for (uint64_t idx = 0; idx < core_num; ++idx)
                 {
-                    screen::printl(" (ignoring x2APIC NMI entry for unknown x2APIC ACPI UUID...) ");
-                }
-                
-                else
-                {                    
-                    x2apic->nmi_int = x2apic_nmi->int_number;
+                    if (cores[idx].acpi_id() == x2apic_nmi->acpi_uuid)
+                    {
+                        cores[idx].set_nmi(x2apic_nmi->int_number, x2apic_nmi->flags);
+                        
+                        break;
+                    }
+                    
+                    if (idx == core_num - 1)
+                    {
+                        screen::print(tag::acpi, "Ignoring x2APIC NMI entry for unknown ACPI UUID ", x2apic_nmi->acpi_uuid, "\n");
+                    }
                 }
                 
                 break;

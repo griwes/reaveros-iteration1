@@ -29,6 +29,8 @@ namespace processor
 {
     class ioapic
     {
-        
+    public:
+        ioapic();
+        ioapic(uint32_t, uint32_t, uint64_t);
     };
 }
