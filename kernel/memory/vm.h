@@ -36,7 +36,9 @@ namespace memory
         {
             boot_page_stack = 0xFFFFFFFF40000000,
             boot_video_memory = 0xFFFFFFFE80000000,
-            boot_backbuffer = 0xFFFFFFFF00000000
+            boot_backbuffer = 0xFFFFFFFF00000000,
+            acpi_temporal_mapping_start = 0xFFFFFFFFFFFF8000,
+            acpi_temporal_mapping_end = 0xFFFFFFFFFFFFFFFF
         };
         
         inline void map(uint64_t virtual_address)
@@ -57,5 +59,8 @@ namespace memory
         {
             return x64::get_physical_address(virtual_address);
         }
+        
+        void unmap(uint64_t, bool);
+        void unmap(uint64_t, uint64_t, bool);
     }
 }

@@ -25,6 +25,12 @@
 
 #pragma once
 
+namespace processor
+{
+    class core;
+    class ioapic;
+}
+
 namespace acpi
 {
     void initialize(processor::core *, uint64_t &, processor::ioapic *, uint64_t &);
