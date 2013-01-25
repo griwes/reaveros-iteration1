@@ -31,6 +31,52 @@ namespace screen
     kernel_console console;
 }
 
+namespace
+{
+    struct message
+    {
+        enum
+        {
+            color,
+            string,
+            uint,
+            sint,
+            address
+        } tag;
+        
+        union
+        {
+            ::color::colors c;
+            const char * s;
+            uint64_t ui;
+            int64_t si;
+            void * a;
+        };
+    };
+
+    enum
+    {
+        no = 0,
+        yes = 1,
+        committing = 2
+    } _status;
+    
+    message _messages[256] = {};
+    uint64_t _queue_size;
+    
+    void _inc_size()
+    {
+        ++_queue_size;
+        
+        if (_queue_size >= 256)
+        {
+            screen::commit();
+            screen::print("\nTransaction was too long; committed.\n");
+            screen::transaction();
+        }
+    }
+}
+
 screen::kernel_console::kernel_console(terminal * term) : _terminal(term)
 {
 }
@@ -54,19 +100,46 @@ void screen::kernel_console::print(char c)
 
 void screen::kernel_console::print(const char * str)
 {
-    while (*str)
+    if (_status == yes)
     {
-        outb(0x378, (unsigned char)*str);
-        outb(0x37a, 0x0c);
-        outb(0x37a, 0x0d);
+        _messages[_queue_size].tag = message::string;
+        _messages[_queue_size].s = str;
         
-        _terminal->put_char(*str++);
+        _inc_size();
+    }
+    
+    else
+    {
+        while (*str)
+        {
+            outb(0x378, (unsigned char)*str);
+            outb(0x37a, 0x0c);
+            outb(0x37a, 0x0d);
+            
+            if (_status == committing && *str == '\n')
+            {
+                print(" - ");
+            }
+            
+            _terminal->put_char(*str++);
+        }
     }
 }
 
 void screen::kernel_console::set_color(color::colors c)
 {
-    _terminal->set_color(c);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::color;
+        _messages[_queue_size].c = c;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _terminal->set_color(c);
+    }
 }
 
 namespace
@@ -101,40 +174,203 @@ namespace
 
 void screen::kernel_console::print(int8_t i)
 {
-    _print_int(i);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::sint;
+        _messages[_queue_size].si = i;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _print_int(i);
+    }
 }
 
 void screen::kernel_console::print(int16_t i)
 {
-    _print_int(i);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::sint;
+        _messages[_queue_size].si = i;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _print_int(i);
+    }
 }
 
 void screen::kernel_console::print(int32_t i)
 {
-    _print_int(i);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::sint;
+        _messages[_queue_size].si = i;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _print_int(i);
+    }
 }
 
 void screen::kernel_console::print(int64_t i)
 {
-    _print_int(i);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::sint;
+        _messages[_queue_size].si = i;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _print_int(i);
+    }
 }
 
 void screen::kernel_console::print(uint8_t i)
 {
-    _print_int(i);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::uint;
+        _messages[_queue_size].ui = i;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _print_int(i);
+    }
 }
 
 void screen::kernel_console::print(uint16_t i)
 {
-    _print_int(i);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::uint;
+        _messages[_queue_size].ui = i;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _print_int(i);
+    }
 }
 
 void screen::kernel_console::print(uint32_t i)
 {
-    _print_int(i);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::uint;
+        _messages[_queue_size].ui = i;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _print_int(i);
+    }
 }
 
 void screen::kernel_console::print(uint64_t i)
 {
-    _print_int(i);
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::uint;
+        _messages[_queue_size].ui = i;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        _print_int(i);
+    }
+}
+
+void screen::kernel_console::print(void * ptr)
+{
+    if (_status == yes)
+    {
+        _messages[_queue_size].tag = message::address;
+        _messages[_queue_size].a = ptr;
+        
+        _inc_size();
+    }
+    
+    else
+    {
+        print("0x");
+    
+        for (uint64_t i = 64; i > 0; i -= 4)
+        {
+            print("0123456789ABCDEF"[(((uint64_t)ptr) >> (i - 4)) & 0xF]);
+        }
+    }
+}
+
+void screen::kernel_console::transaction()
+{
+    if (_status == yes)
+    {
+        commit();
+    }
+    
+    _status = yes;
+}
+
+void screen::kernel_console::commit()
+{
+    if (_status == yes)
+    {
+        _status = committing;
+        
+        for (uint64_t i = 0; i < _queue_size; ++i)
+        {
+            switch (_messages[i].tag)
+            {
+                case message::color:
+                    set_color(_messages[i].c);
+                    break;
+                case message::string:
+                    print(_messages[i].s);
+                    break;
+                case message::uint:
+                    print(_messages[i].ui);
+                    break;
+                case message::sint:
+                    print(_messages[i].si);
+                    break;
+                case message::address:
+                    print(_messages[i].a);
+            }
+        }
+        
+        _status = no;
+        _queue_size = 0;
+    }
+}
+
+void screen::kernel_console::done()
+{
+    auto s = _status;
+    _status = no;
+    
+    screen::print(color::green, " done", color::gray, ".\n");
+    
+    _status = s;
+    
+    screen::commit();
 }

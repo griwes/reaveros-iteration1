@@ -37,7 +37,8 @@ namespace tag
     enum tags
     {
         memory,
-        cpu
+        cpu,
+        acpi
     };
 }
 
@@ -46,6 +47,9 @@ namespace screen
     struct mode;
     
     void initialize(mode *, memory::map_entry *, uint64_t);
+    
+    void transaction();
+    void commit();
     
     inline void print()
     {
@@ -89,6 +93,6 @@ namespace screen
     
     inline void done()
     {
-        screen::print(color::green, " done", color::gray, ".\n");
+        console.done();
     }
 }

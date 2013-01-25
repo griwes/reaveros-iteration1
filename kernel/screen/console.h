@@ -65,6 +65,10 @@ namespace screen
         kernel_console() {}
         kernel_console(terminal *);
         
+        void transaction();
+        void commit();
+        void done();
+        
         void print(char);
         void print(const char *);
 
@@ -77,8 +81,13 @@ namespace screen
         void print(uint32_t);
         void print(uint64_t);
         
+        void print(void *);
+        
         template<typename T>
-        void print(const T *);
+        void print(const T * ptr)
+        {
+            print((void *)ptr);
+        }
         
         void clear();
         

@@ -46,7 +46,19 @@ void screen::print(tag::tags t)
         case tag::cpu:
             screen::print("[CPU   ] ");
             break;
+        case tag::acpi:
+            screen::print("[ACPI  ] ");
     }
     
     screen::print(color::gray);
+}
+
+void screen::transaction()
+{
+    screen::console.transaction();
+}
+
+void screen::commit()
+{
+    screen::console.commit();
 }
