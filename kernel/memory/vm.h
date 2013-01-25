@@ -37,8 +37,11 @@ namespace memory
             boot_page_stack = 0xFFFFFFFF40000000,
             boot_video_memory = 0xFFFFFFFE80000000,
             boot_backbuffer = 0xFFFFFFFF00000000,
-            acpi_temporal_mapping_start = 0xFFFFFFFFFFFF8000,
-            acpi_temporal_mapping_end = 0xFFFFFFFFFFFFFFFF
+            acpi_temporal_table_mapping_start = 0xFFFFFFFFFFFF0000,
+            acpi_temporal_table_mapping_end = 0xFFFFFFFFFFFF7FFF,
+            acpi_temporal_rsdt_mapping_start = 0xFFFFFFFFFFFF8000,
+            acpi_temporal_rsdt_mapping_end = 0xFFFFFFFFFFFFFFFF,
+            local_apic_address = 0xFFFFFFFFFFFE8000
         };
         
         inline void map(uint64_t virtual_address)

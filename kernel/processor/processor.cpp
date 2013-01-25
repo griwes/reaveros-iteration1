@@ -27,6 +27,8 @@
 #include <processor/interrupts.h>
 #include <memory/memory.h>
 #include <acpi/acpi.h>
+#include <processor/core.h>
+#include <processor/ioapic.h>
 
 namespace
 {
