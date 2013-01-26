@@ -51,11 +51,15 @@ void processor::initialize()
     
     acpi::initialize(cores, num_cores, ioapics, num_ioapics);
     
-/*    apic::initialize(cores[0]);
-    apic::initialize(ioapics, num_ioapics);
+    cores[0].initialize();
     
-    apic::boot(cores + 1, num_cores - 1);
-*/}
+    for (uint64_t i = 0; i < num_ioapics; ++i)
+    {
+        ioapics[0].initialize();
+    }
+    
+//    smp::boot(cores + 1, num_cores - 1);
+}
 
 extern "C" void _load_gdt();
 

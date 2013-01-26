@@ -58,6 +58,14 @@ namespace processor
             return _is_nmi_valid;
         }
         
+        void initialize()
+        {
+            for (uint32_t i = 0; i < _size; ++i)
+            {
+                _write_register(0x10 + 2 * i, _read_register(0x10 + 2 * i) | (1 << 16));
+            }
+        }
+        
     private:
         uint32_t _apic_id;
         uint32_t _base_vector_number;

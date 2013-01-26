@@ -49,3 +49,12 @@ inline void outb(uint16_t port, uint8_t value)
     asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
 }
 
+inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
+{
+    asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));
+}
+
+inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
+{
+    asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+}

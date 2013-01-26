@@ -55,6 +55,13 @@ namespace processor
             _is_nmi_valid = true;
         }
         
+        void initialize()
+        {
+            uint32_t a, b;
+            rdmsr(0x1B, a, b);
+            wrmsr(0x1B, a | (1 << 11), b);
+        }
+        
     private:
         uint32_t _acpi_id;
         uint32_t _apic_id;
