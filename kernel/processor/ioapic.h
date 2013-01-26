@@ -25,14 +25,45 @@
 
 #pragma once
 
+#include <memory/vm.h>
+
 namespace processor
 {
     class ioapic
     {
     public:
-        ioapic();
-        ioapic(uint32_t, uint32_t, uint64_t);
+        ioapic() : _is_valid(false) {}
+        
+        ioapic(uint32_t apic_id, uint32_t base_vector, uint64_t base_address) : _apic_id(apic_id), _base_vector_number(base_vector),
+            _base_address(base_address), _is_valid(true)
+        {
+            memory::vm::map_multiple(memory::vm::ioapic_area + apic_id * 4096, memory::vm::ioapic_area + (apic_id + 1) * 4096,
+                _base_address);
+            
+            _size = ((_read_register(1) >> 16) & ~(1 << 8)) + 1;
+        }
         
         bool set_global_nmi(uint32_t, uint32_t);
+        
+    private:
+        uint32_t _apic_id;
+        uint32_t _base_vector_number;
+        uint32_t _size;
+        
+        uint64_t _base_address;
+        
+        bool _is_valid;
+        
+        uint32_t _read_register(uint8_t id)
+        {
+            *(uint32_t *)(_base_address) = id;
+            return *(uint32_t *)(_base_address + 0x10);
+        }
+        
+        void _write_register(uint8_t id, uint32_t val)
+        {
+            *(uint32_t *)(_base_address) = id;
+            *(uint32_t *)(_base_address + 0x10) = val;
+        }
     };
 }

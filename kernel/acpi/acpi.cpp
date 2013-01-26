@@ -216,9 +216,7 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
                 auto ioapic = (acpi::madt_ioapic_entry *)((uint64_t)entry + sizeof(*entry));
                 
                 new ((void *)(ioapics + ioapic_num++)) processor::ioapic(ioapic->apic_id, ioapic->base_int, ioapic->base_address);
-                
-                // io->size = ((io->read_register(1) >> 16) & ~(1 << 8)) + 1;
-                
+                                
                 break;
             }
             
@@ -252,7 +250,7 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
                 
                 if (x2apic->flags & 1)
                 {
-                    new ((void *)(cores + core_num++)) processor::core(x2apic->x2apic_id, x2apic->acpi_uuid, true);
+                    new ((void *)(cores + core_num++)) processor::core(x2apic->x2apic_id, x2apic->acpi_uuid, false);
                 }
                 
                 break;

@@ -41,7 +41,8 @@ namespace memory
             acpi_temporal_table_mapping_end = 0xFFFFFFFFFFFF7FFF,
             acpi_temporal_rsdt_mapping_start = 0xFFFFFFFFFFFF8000,
             acpi_temporal_rsdt_mapping_end = 0xFFFFFFFFFFFFFFFF,
-            local_apic_address = 0xFFFFFFFFFFFE8000
+            local_apic_address = 0xFFFFFFFFFFFE8000,
+            ioapic_area = 0xFFFFFFFE40000000
         };
         
         inline void map(uint64_t virtual_address)

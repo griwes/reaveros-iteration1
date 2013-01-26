@@ -30,12 +30,40 @@ namespace processor
     class core
     {
     public:
-        core();
-        core(uint32_t, uint32_t, bool = false);
+        core() : _is_valid(false), _is_nmi_valid(false) {}
         
-        uint32_t acpi_id();
-        bool lapic();
+        core(uint32_t acpi_id, uint32_t apic_id, bool is_lapic = true) : _acpi_id(acpi_id), _apic_id(apic_id), _is_local_apic(is_lapic),
+            _is_valid(true), _is_nmi_valid(false)
+        {
+        }
         
-        void set_nmi(uint32_t, uint32_t);
+        uint32_t acpi_id()
+        {
+            return _acpi_id;
+        }
+        
+        bool lapic()
+        {
+            return _is_local_apic;
+        }
+        
+        void set_nmi(uint32_t vector, uint32_t flags)
+        {
+            _nmi_vector = vector;
+            _nmi_flags = flags;
+            
+            _is_nmi_valid = true;
+        }
+        
+    private:
+        uint32_t _acpi_id;
+        uint32_t _apic_id;
+        bool _is_local_apic;
+        
+        uint32_t _nmi_vector;
+        uint32_t _nmi_flags;
+        
+        bool _is_valid;
+        bool _is_nmi_valid;
     };
 }
