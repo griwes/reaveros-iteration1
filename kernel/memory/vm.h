@@ -34,15 +34,15 @@ namespace memory
     {
         enum addresses
         {
-            boot_page_stack = 0xFFFFFFFF40000000,
-            boot_video_memory = 0xFFFFFFFE80000000,
-            boot_backbuffer = 0xFFFFFFFF00000000,
-            acpi_temporal_table_mapping_start = 0xFFFFFFFFFFFF0000,
-            acpi_temporal_table_mapping_end = 0xFFFFFFFFFFFF7FFF,
-            acpi_temporal_rsdt_mapping_start = 0xFFFFFFFFFFFF8000,
-            acpi_temporal_rsdt_mapping_end = 0xFFFFFFFFFFFFFFFF,
-            local_apic_address = 0xFFFFFFFFFFFE8000,
-            ioapic_area = 0xFFFFFFFE40000000
+            boot_page_stack =                   0xFFFFFFFF40000000,
+            boot_video_memory =                 0xFFFFFFFE80000000,
+            boot_backbuffer =                   0xFFFFFFFF00000000,
+            acpi_temporal_table_mapping_start = 0xFFFFFFFFFFFE8000,
+            acpi_temporal_table_mapping_end =   0xFFFFFFFFFFFEFFFF,
+            acpi_temporal_rsdt_mapping_start =  0xFFFFFFFFFFFF0000,
+            acpi_temporal_rsdt_mapping_end =    0xFFFFFFFFFFFF7FFF,
+            local_apic_address =                0xFFFFFFFFFFFE0000,
+            ioapic_area =                       0xFFFFFFFE40000000
         };
         
         inline void map(uint64_t virtual_address)
@@ -50,7 +50,10 @@ namespace memory
             x64::map(virtual_address, virtual_address + 4096, memory::pmm::pop());
         }
         
-        void map(uint64_t, uint64_t);
+        inline void map(uint64_t virtual_address, uint64_t physical_address)
+        {
+            x64::map(virtual_address, virtual_address + 4096, physical_address);
+        }
         
         void map_multiple(uint64_t, uint64_t);
         
@@ -64,7 +67,14 @@ namespace memory
             return x64::get_physical_address(virtual_address);
         }
         
-        void unmap(uint64_t, bool);
-        void unmap(uint64_t, uint64_t, bool);
+        inline void unmap(uint64_t address, bool push = true)
+        {
+            x64::unmap(address, (address + 4095) & ~(uint64_t)4096, push);
+        }
+        
+        inline void unmap(uint64_t start, uint64_t end, bool push = true)
+        {
+            x64::unmap(start, end, push);
+        }
     }
 }
