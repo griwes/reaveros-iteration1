@@ -200,3 +200,108 @@ uint64_t memory::x64::get_physical_address(uint64_t addr, bool foreign)
     
     return 0;
 }
+
+void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push, bool foreign)
+{
+    address_generator gen(foreign ? 257 : 256);
+    
+    virtual_start &= ~(uint64_t)4095;
+    virtual_end += 4095;
+    virtual_end &= ~(uint64_t)4095;
+    
+    uint64_t startpml4e = (virtual_start >> 39) & 511;
+    uint64_t startpdpte = (virtual_start >> 30) & 511;
+    uint64_t startpde = (virtual_start >> 21) & 511;
+    uint64_t startpte = (virtual_start >> 12) & 511;
+    
+    uint64_t endpml4e = (virtual_end >> 39) & 511;
+    uint64_t endpdpte = (virtual_end >> 30) & 511;
+    uint64_t endpde = (virtual_end >> 21) & 511;
+    uint64_t endpte = (virtual_end >> 12) & 511;
+    
+    while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+    {
+        if (!gen.pml4()->entries[startpml4e].present)
+        {
+            PANIC("Tried to unmap something not mapped");
+        }
+        
+        pdpt * table = gen.pdpt(startpml4e);
+        
+        while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+            && startpdpte < 512)
+        {
+            if (!(*table)[startpdpte].present)
+            {
+                PANIC("Tried to unmap something not mapped");
+            }
+            
+            page_directory * pd = gen.pd(startpml4e, startpdpte);
+            
+            while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                && startpde < 512)
+            {
+                if (!(*pd)[startpde].present)
+                {
+                    PANIC("Tried to unmap something not mapped");
+                }
+                
+                page_table * pt = gen.pt(startpml4e, startpdpte, startpde);
+                
+                while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
+                    && startpte < 512)
+                {
+                    if (!(*pt)[startpte].present)
+                    {
+                        PANIC("tried to unmap not mapped page");
+                    }
+                    
+                    (*pt)[startpte].present = 0;
+                    processor::invlpg(virtual_start);
+                    
+                    if (push)
+                    {
+                        memory::pmm::push((*pt)[startpte].address << 12);
+                    }
+                    
+                    ++startpte;
+                    
+                    virtual_start += 4096;
+                }
+                
+                if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+                {
+                    startpde++;
+                    startpte = 0;
+                }
+                
+                else
+                {
+                    return;
+                }
+            }
+            
+            if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+            {
+                startpde = 0;
+                startpdpte++;
+            }
+            
+            else
+            {
+                return;
+            }
+        }
+        
+        if (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
+        {
+            startpdpte = 0;
+            startpml4e++;
+        }
+        
+        else
+        {
+            return;
+        }
+    }
+}

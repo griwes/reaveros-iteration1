@@ -32,10 +32,10 @@ namespace processor
     class ioapic
     {
     public:
-        ioapic() : _is_valid(false) {}
+        ioapic() : _is_valid(false), _is_nmi_valid(false) {}
         
         ioapic(uint32_t apic_id, uint32_t base_vector, uint64_t base_address) : _apic_id(apic_id), _base_vector_number(base_vector),
-            _base_address(base_address), _is_valid(true)
+            _base_address(base_address), _is_valid(true), _is_nmi_valid(false)
         {
             memory::vm::map_multiple(memory::vm::ioapic_area + apic_id * 4096, memory::vm::ioapic_area + (apic_id + 1) * 4096,
                 _base_address);
@@ -43,7 +43,18 @@ namespace processor
             _size = ((_read_register(1) >> 16) & ~(1 << 8)) + 1;
         }
         
-        bool set_global_nmi(uint32_t, uint32_t);
+        bool set_global_nmi(uint32_t vector, uint32_t flags)
+        {
+            if (vector >= _base_vector_number && vector < _base_vector_number + _size)
+            {
+                _global_nmi_vector = vector;
+                _global_nmi_flags = flags;
+            
+                _is_nmi_valid = true;
+            }
+            
+            return _is_nmi_valid;
+        }
         
     private:
         uint32_t _apic_id;
@@ -52,7 +63,11 @@ namespace processor
         
         uint64_t _base_address;
         
+        uint32_t _global_nmi_vector;
+        uint32_t _global_nmi_flags;
+        
         bool _is_valid;
+        bool _is_nmi_valid;
         
         uint32_t _read_register(uint8_t id)
         {

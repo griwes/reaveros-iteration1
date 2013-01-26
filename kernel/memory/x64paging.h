@@ -262,6 +262,6 @@ namespace memory
         uint64_t get_physical_address(uint64_t, bool = false);
         
         void map(uint64_t, uint64_t, uint64_t, bool = false);
-        void unmap(uint64_t, uint64_t, bool = false);
+        void unmap(uint64_t, uint64_t, bool = false, bool = false);
     }
 }
