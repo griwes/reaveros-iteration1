@@ -59,10 +59,10 @@ namespace
         no = 0,
         yes = 1,
         committing = 2
-    } _status;
+    } _status = no;
     
     message _messages[256] = {};
-    uint64_t _queue_size;
+    uint64_t _queue_size = 0;
     
     void _inc_size()
     {
@@ -373,4 +373,6 @@ void screen::kernel_console::done()
     _status = s;
     
     screen::commit();
+    
+    screen::print(color::gray);
 }

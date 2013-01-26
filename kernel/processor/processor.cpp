@@ -29,6 +29,7 @@
 #include <acpi/acpi.h>
 #include <processor/core.h>
 #include <processor/ioapic.h>
+#include <screen/screen.h>
 
 namespace
 {
@@ -43,6 +44,8 @@ extern "C" processor::gdt::gdt_entry gdt_start[];
 
 void processor::initialize()
 {
+    screen::transaction();
+
     gdt::initialize();
     idt::initialize();
     
