@@ -40,6 +40,8 @@ namespace processor
             memory::vm::map_multiple(memory::vm::ioapic_area + apic_id * 4096, memory::vm::ioapic_area + (apic_id + 1) * 4096,
                 _base_address);
             
+            _base_address = memory::vm::ioapic_area + apic_id * 4096;
+            
             _size = ((_read_register(1) >> 16) & ~(1 << 8)) + 1;
         }
         
