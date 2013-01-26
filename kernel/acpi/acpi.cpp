@@ -184,10 +184,10 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
 {
     _find_rsdp();
     
-    madt * table = (madt *)_find_table("MADT");
+    madt * table = (madt *)_find_table("APIC");
     
     if (!table)
-    {        
+    {
         return;
     }
     
