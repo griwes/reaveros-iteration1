@@ -219,7 +219,7 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
                 
                 new ((void *)(ioapics + ioapic_num++)) processor::ioapic(ioapic->apic_id, ioapic->base_int, ioapic->base_address);
                 
-                screen::print("\nFound I/O APIC entry: ", ioapic->apic_id, ", ", ioapic->base_int);
+                screen::print("\nFound I/O APIC entry: ", ioapic->apic_id, ", handling vectors from ", ioapic->base_int);
                                 
                 break;
             }

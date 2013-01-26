@@ -116,12 +116,12 @@ void screen::kernel_console::print(const char * str)
             outb(0x37a, 0x0c);
             outb(0x37a, 0x0d);
             
-            if (_status == committing && *str == '\n')
+            _terminal->put_char(*str++);
+            
+            if (_status == committing && *(str - 1) == '\n')
             {
                 print(" - ");
             }
-            
-            _terminal->put_char(*str++);
         }
     }
 }
@@ -368,7 +368,7 @@ void screen::kernel_console::done()
     auto s = _status;
     _status = no;
     
-    screen::print(color::green, " done", color::gray, ".\n");
+    screen::print(color::green, " done", color::gray, ".");
     
     _status = s;
     
