@@ -32,5 +32,7 @@ namespace processor
     public:
         ioapic();
         ioapic(uint32_t, uint32_t, uint64_t);
+        
+        bool set_global_nmi(uint32_t, uint32_t);
     };
 }

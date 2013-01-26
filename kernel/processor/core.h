@@ -32,5 +32,10 @@ namespace processor
     public:
         core();
         core(uint32_t, uint32_t, bool = false);
+        
+        uint32_t acpi_id();
+        bool lapic();
+        
+        void set_nmi(uint32_t, uint32_t);
     };
 }

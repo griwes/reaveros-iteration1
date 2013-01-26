@@ -191,7 +191,7 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
         return;
     }
     
-    memory::vm::map(memory::vm::local_apic_address, table->lic_address);
+    uint64_t lic_address = table->lic_address;
     
     madt_entry * entry = table->entries;
     
@@ -224,18 +224,24 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
             
             case 3:
             {
-//                auto nmi = (acpi::madt_nmi_source_entry *)((uint64_t)entry + sizeof(*entry));
+                auto nmi = (acpi::madt_nmi_source_entry *)((uint64_t)entry + sizeof(*entry));
                 
-//                add_global_nmi(nmi->int_number);
+                for (uint64_t i = 0; i < ioapic_num; ++i)
+                {
+                    if (ioapics[i].set_global_nmi(nmi->int_number, nmi->flags))
+                    {
+                        break;
+                    }
+                }
                 
                 break;
             }
             
             case 5:
             {
-                //auto override = (acpi::madt_lapic_address_override_entry *)((uint64_t)entry + sizeof(*entry));
+                auto override = (acpi::madt_lapic_address_override_entry *)((uint64_t)entry + sizeof(*entry));
                 
-                //base = override->base_address;
+                lic_address = override->base_address;
                 
                 break;
             }
@@ -333,4 +339,6 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
         
         entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
     }
+
+    memory::vm::map(memory::vm::local_apic_address, lic_address);
 }
