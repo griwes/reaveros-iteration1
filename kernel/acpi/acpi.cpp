@@ -40,7 +40,7 @@ namespace
     {
         new_root = nullptr;
         
-        memory::vm::map_multiple(memory::vm::acpi_temporal_rsdt_mapping_start, memory::vm::acpi_temporal_rsdt_mapping_end + 1, 
+        memory::vm::map_multiple(memory::vm::acpi_temporal_rsdt_mapping_start, memory::vm::acpi_temporal_rsdt_mapping_end, 
             ptr->rsdt_ptr);
         
         if (((acpi::rsdt *)(memory::vm::acpi_temporal_rsdt_mapping_start + ptr->rsdt_ptr % 4096))->validate("RSDT"))

@@ -40,6 +40,8 @@ extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
 
 void _panic(const char * message, const char * file, uint64_t line, const char * func)
 {
+    screen::commit();
+    
     screen::print(color::red, "\n\nPanic called: ", color::gray, message);
     screen::print("\nFunction: ", func);
     screen::print("\nFile: ", file);
