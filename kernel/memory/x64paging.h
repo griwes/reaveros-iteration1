@@ -94,11 +94,6 @@ namespace memory
                 return *this;
             }
             
-            page_table_entry & operator[](uint64_t i)
-            {
-                return (*(page_table *)(address << 12))[i];
-            }
-            
             uint64_t present:1;
             uint64_t read_write:1;
             uint64_t user:1;
@@ -150,11 +145,6 @@ namespace memory
                 address = pd >> 12;
                 
                 return *this;
-            }
-            
-            page_directory_entry & operator[](uint64_t i)
-            {
-                return (*(page_directory *)(address << 12))[i];
             }
             
             uint64_t present:1;
@@ -210,11 +200,6 @@ namespace memory
                 address = table >> 12;
                 
                 return *this;
-            }
-            
-            pdpt_entry & operator[](uint64_t i)
-            {
-                return (*(pdpt *)(address << 12))[i];
             }
             
             uint64_t present:1;
