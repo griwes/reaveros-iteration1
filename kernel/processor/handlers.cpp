@@ -24,6 +24,8 @@
  **/
 
 #include <processor/handlers.h>
+#include <screen/console.h>
+#include <screen/screen.h>
 
 // TODO: proper handling of errors, better screen of death with printing faulting address, registers and stuff
 
@@ -142,6 +144,13 @@ void processor::exceptions::page_fault(processor::idt::irq_context_error ctx)
     }
     
     // TODO: #PF logic for sparse arrays
+    
+    void * addr = nullptr;
+    
+    asm volatile ("mov %%cr2, %0" : "=r"(addr));
+    
+    screen::transaction();
+    screen::print("\n#PF address: ", addr);
     
     PANIC("Page fault in kernel code");
 }

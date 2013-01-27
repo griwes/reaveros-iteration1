@@ -27,6 +27,8 @@
 
 #include <memory/vm.h>
 
+#include <screen/screen.h>
+
 namespace processor
 {
     class ioapic
@@ -37,10 +39,12 @@ namespace processor
         ioapic(uint32_t apic_id, uint32_t base_vector, uint64_t base_address) : _apic_id(apic_id), _base_vector_number(base_vector),
             _base_address(base_address), _is_valid(true), _is_nmi_valid(false)
         {
-            memory::vm::map_multiple(memory::vm::ioapic_area + apic_id * 4096, memory::vm::ioapic_area + (apic_id + 1) * 4096,
+            memory::vm::map_multiple(memory::vm::apic_area + apic_id * 16 * 1024, memory::vm::apic_area + (apic_id + 1) * 16 * 1024,
                 _base_address);
             
-            _base_address = memory::vm::ioapic_area + apic_id * 4096;
+            asm volatile ("int $0");
+            
+            _base_address = memory::vm::apic_area + apic_id * 4096;
             
             _size = ((_read_register(1) >> 16) & ~(1 << 8)) + 1;
         }

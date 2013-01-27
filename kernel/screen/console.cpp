@@ -363,16 +363,25 @@ void screen::kernel_console::commit()
     }
 }
 
-void screen::kernel_console::done()
+void screen::kernel_console::special(bool b)
 {
-    auto s = _status;
-    _status = no;
+    static decltype(_status) _old;
+    static bool _first = true;
     
-    screen::print(color::green, " done", color::gray, ".");
+    if (_first)
+    {
+        _old = _status;
+        _first = false;
+    }
     
-    _status = s;
+    if (b)
+    {
+        _old = _status;
+        _status = no;
+    }
     
-    screen::commit();
-    
-    screen::print(color::gray);
+    else
+    {
+        _status = _old;
+    }
 }

@@ -67,7 +67,8 @@ namespace screen
         
         void transaction();
         void commit();
-        void done();
+        
+        void special(bool = true);
         
         void print(char);
         void print(const char *);

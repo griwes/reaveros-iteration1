@@ -62,3 +62,8 @@ void screen::commit()
 {
     screen::console.commit();
 }
+
+void screen::clear()
+{
+    screen::console.clear();
+}

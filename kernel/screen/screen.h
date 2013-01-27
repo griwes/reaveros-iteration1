@@ -50,6 +50,7 @@ namespace screen
     
     void transaction();
     void commit();
+    void clear();
     
     inline void print()
     {
@@ -93,6 +94,10 @@ namespace screen
     
     inline void done()
     {
-        console.done();
+        console.special();
+        screen::print(color::green, " done.", color::gray);
+        console.special(false);
+        console.commit();
+        screen::print("\n");
     }
 }
