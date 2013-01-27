@@ -172,7 +172,7 @@ namespace
                     return table;
                 }
                 
-                memory::vm::unmap(memory::vm::acpi_temporal_table_mapping_start, memory::vm::acpi_temporal_table_mapping_end);
+                memory::vm::unmap(memory::vm::acpi_temporal_table_mapping_start, memory::vm::acpi_temporal_table_mapping_end, false);
             }
         }
         
