@@ -199,32 +199,13 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
     {
         switch (entry->type)
         {
-            case 5:
-            {
-                auto override = (acpi::madt_lapic_address_override_entry *)((uint64_t)entry + sizeof(*entry));
-                
-                lic_address = override->base_address;
-                
-                break;
-            }
-        }
-        
-        entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
-    }
-    
-    entry = table->entries;
-    
-    while ((uint64_t)entry - (uint64_t)table < table->length)
-    {
-        switch (entry->type)
-        {
             case 0:
             {
                 auto lapic = (acpi::madt_lapic_entry *)((uint64_t)entry + sizeof(*entry));
                 
                 if (lapic->flags & 1)
                 {
-                    new ((void *)(cores + core_num++)) processor::core(lapic->apic_id, lapic->acpi_id, lic_address);
+                    new ((void *)(cores + core_num++)) processor::core(lapic->apic_id, lapic->acpi_id);
                 
                     screen::print("\nFound LAPIC entry: ", lapic->apic_id);
                 }
@@ -362,4 +343,6 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
         
         entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
     }
+    
+    memory::vm::map_multiple(memory::vm::local_apic_address, memory::vm::local_apic_address, lic_address);
 }
