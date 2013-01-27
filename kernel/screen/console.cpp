@@ -323,11 +323,7 @@ void screen::kernel_console::print(void * ptr)
 
 void screen::kernel_console::transaction()
 {
-    if (_status == yes)
-    {
-        commit();
-    }
-    
+    commit();
     _status = yes;
 }
 

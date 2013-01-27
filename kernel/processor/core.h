@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <memory/vm.h>
+
 namespace processor
 {
     class core
@@ -32,9 +34,11 @@ namespace processor
     public:
         core() : _is_valid(false), _is_nmi_valid(false) {}
         
-        core(uint32_t acpi_id, uint32_t apic_id, bool is_lapic = true) : _acpi_id(acpi_id), _apic_id(apic_id), _is_local_apic(is_lapic),
-            _is_valid(true), _is_nmi_valid(false)
+        core(uint32_t acpi_id, uint32_t apic_id, uint32_t base, bool is_lapic = true) : _acpi_id(acpi_id), _apic_id(apic_id), 
+            _is_local_apic(is_lapic), _is_valid(true), _is_nmi_valid(false)
         {
+            memory::vm::map_multiple(memory::vm::apic_area + apic_id * 16 * 1024, memory::vm::apic_area + (apic_id + 1) * 16 * 1024,
+                base);
         }
         
         uint32_t acpi_id()

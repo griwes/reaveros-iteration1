@@ -27,8 +27,6 @@
 
 #include <memory/vm.h>
 
-#include <screen/screen.h>
-
 namespace processor
 {
     class ioapic
@@ -41,8 +39,6 @@ namespace processor
         {
             memory::vm::map_multiple(memory::vm::apic_area + apic_id * 16 * 1024, memory::vm::apic_area + (apic_id + 1) * 16 * 1024,
                 _base_address);
-            
-            asm volatile ("int $0");
             
             _base_address = memory::vm::apic_area + apic_id * 4096;
             
