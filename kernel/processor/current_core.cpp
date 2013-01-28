@@ -1,0 +1,87 @@
+/**
+ * Reaver Project OS, Rose License
+ * 
+ * Copyright (C) 2011-2013 Reaver Project Team:
+ * 1. Michał "Griwes" Dominiak
+ * 
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ * 
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ * 
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation is required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ * 
+ * Michał "Griwes" Dominiak
+ * 
+ **/
+
+#include <processor/current_core.h>
+
+namespace
+{
+    enum lapic_registers
+    {
+        apic_id = 0x20,
+        apic_version = 0x30,
+        task_priority = 0x80,
+        arbitrary_priority = 0x90,
+        processor_priority = 0xA0,
+        eoi = 0xB0,
+        remote_read = 0xC0,
+        logical_destination = 0xD0,
+        destination_format = 0xE0,
+        spurious_interrupt_vector = 0xF0,
+        in_service_0 = 0x100,
+        in_service_32 = 0x110,
+        in_service_64 = 0x120,
+        in_service_96 = 0x130,
+        in_service_128 = 0x140,
+        in_service_160 = 0x150,
+        in_service_192 = 0x160,
+        in_service_224 = 0x170,
+        trigger_mode_0 = 0x180,
+        trigger_mode_32 = 0x190,
+        trigger_mode_64 = 0x1A0,
+        trigger_mode_96 = 0x1B0,
+        trigger_mode_128 = 0x1C0,
+        trigger_mode_160 = 0x1D0,
+        trigger_mode_192 = 0x1E0,
+        trigger_mode_224 = 0x1F0,
+        interrupt_request_0 = 0x200,
+        interrupt_request_32 = 0x210,
+        interrupt_request_64 = 0x220,
+        interrupt_request_96 = 0x230,
+        interrupt_request_128 = 0x240,
+        interrupt_request_160 = 0x250,
+        interrupt_request_192 = 0x260,
+        interrupt_request_224 = 0x270,
+        error_status = 0x280,
+        lvt_cmci = 0x2F0,
+        interrupt_command_0 = 0x300,
+        interrupt_command_32 = 0x310,
+        lvt_timer = 0x320,
+        lvt_thermal_sensor = 0x330,
+        lvt_performance_monitor = 0x340,
+        lvt_lint0 = 0x350,
+        lvt_lint1 = 0x360,
+        lvt_error = 0x370,
+        initial_count = 0x380,
+        current_count = 0x390,
+        divide_configuration = 0x3E0
+    };
+}
+
+void processor::current_core::initialize()
+{
+    uint32_t a, b;
+    rdmsr(0x1B, a, b);
+    wrmsr(0x1B, a | (1 << 11), b);
+}

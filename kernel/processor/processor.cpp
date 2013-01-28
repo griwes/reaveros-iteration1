@@ -30,6 +30,7 @@
 #include <processor/core.h>
 #include <processor/ioapic.h>
 #include <screen/screen.h>
+#include <processor/current_core.h>
 
 namespace
 {
@@ -51,7 +52,7 @@ void processor::initialize()
     
     acpi::initialize(cores, num_cores, ioapics, num_ioapics);
     
-    cores[0].initialize();
+    current_core::initialize();
     
     for (uint64_t i = 0; i < num_ioapics; ++i)
     {
