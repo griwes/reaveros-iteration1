@@ -62,6 +62,8 @@ extern  alignment_check
 extern  machine_check
 extern  simd_exception
 
+extern  common_interrupt_handler
+
 %macro  setup   0
     cli
     
@@ -191,3 +193,25 @@ xm:
     setup
     call    simd_exception
     exit
+
+common_interrupt_stub:
+    setup
+    
+    call    common_interrupt_handler
+    
+    exit
+    
+%macro  irq_macro   1
+global      irq%1
+
+irq%1:
+    push    %1
+    
+    jmp     common_interrupt_stub
+%endmacro
+    
+%assign     i   32
+%rep        224
+    irq_macro   i
+%assign     i   i+1
+%endrep

@@ -63,7 +63,13 @@ void _dump_registers(const processor::idt::irq_context &)
 }
 
 template<>
-void _dump_registers(const processor::idt::irq_context_error &)
+void _dump_registers(const processor::idt::exc_context &)
+{
+    
+}
+
+template<>
+void _dump_registers(const processor::idt::exc_context_error &)
 {
     
 }

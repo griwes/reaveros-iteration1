@@ -29,20 +29,29 @@ namespace processor
 {
     namespace idt
     {
-        struct irq_context
+        struct exc_context
         {
             uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
             uint64_t rdi, rsi, rdx, rcx, rbx, rax;
             uint64_t rip, cs, rflags, rsp, ss;
         } __attribute__((packed));
         
-        struct irq_context_error
+        struct exc_context_error
         {
             uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
             uint64_t rdi, rsi, rdx, rcx, rbx, rax;
             uint64_t code;
             uint64_t rip, cs, rflags, rsp, ss;
         } __attribute__((packed));
+        
+        struct irq_context
+        {
+            uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
+            uint64_t rdi, rsi, rdx, rcx, rbx, rax;
+            uint64_t number;
+            uint64_t rip, cs, rflags, rsp, ss;
+        } __attribute__((packed)); // this is the same as previous, but is conceptually different, so let's make it distinct
+                                   // type
         
         void initialize();
     }

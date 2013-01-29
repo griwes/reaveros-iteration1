@@ -29,7 +29,7 @@
 
 // TODO: proper handling of errors, better screen of death with printing faulting address, registers and stuff
 
-void processor::exceptions::reserved(processor::idt::irq_context ctx)
+void processor::exceptions::reserved(processor::idt::exc_context ctx)
 {
     if (ctx.cs & 3)
     {
@@ -43,7 +43,7 @@ void processor::exceptions::reserved(processor::idt::irq_context ctx)
     return;
 }
 
-void processor::exceptions::divide_error(processor::idt::irq_context ctx)
+void processor::exceptions::divide_error(processor::idt::exc_context ctx)
 {
     if (ctx.cs & 3)
     {
@@ -57,7 +57,7 @@ void processor::exceptions::divide_error(processor::idt::irq_context ctx)
     return;
 }
 
-void processor::exceptions::bound_range(processor::idt::irq_context ctx)
+void processor::exceptions::bound_range(processor::idt::exc_context ctx)
 {
     if (ctx.cs & 3)
     {
@@ -71,7 +71,7 @@ void processor::exceptions::bound_range(processor::idt::irq_context ctx)
     return;
 }
 
-void processor::exceptions::invalid_opcode(processor::idt::irq_context ctx)
+void processor::exceptions::invalid_opcode(processor::idt::exc_context ctx)
 {
     if (ctx.cs & 3)
     {
@@ -85,28 +85,28 @@ void processor::exceptions::invalid_opcode(processor::idt::irq_context ctx)
     return;
 }
 
-void processor::exceptions::no_coprocessor(processor::idt::irq_context)
+void processor::exceptions::no_coprocessor(processor::idt::exc_context)
 {
     PANIC("FPU not found");
     
     return;
 }
 
-void processor::exceptions::invalid_tss(processor::idt::irq_context_error)
+void processor::exceptions::invalid_tss(processor::idt::exc_context_error)
 {
     PANIC("Invalid TSS exception");
     
     return;
 }
 
-void processor::exceptions::segment_not_present(processor::idt::irq_context_error)
+void processor::exceptions::segment_not_present(processor::idt::exc_context_error)
 {
     PANIC("Segment not present exception");
     
     return;
 }
 
-void processor::exceptions::stack_fault(processor::idt::irq_context_error ctx)
+void processor::exceptions::stack_fault(processor::idt::exc_context_error ctx)
 {
     if (ctx.cs & 3)
     {
@@ -120,7 +120,7 @@ void processor::exceptions::stack_fault(processor::idt::irq_context_error ctx)
     return;
 }
 
-void processor::exceptions::protection_fault(processor::idt::irq_context_error ctx)
+void processor::exceptions::protection_fault(processor::idt::exc_context_error ctx)
 {
     if (ctx.cs & 3)
     {
@@ -134,7 +134,7 @@ void processor::exceptions::protection_fault(processor::idt::irq_context_error c
     return;
 }
 
-void processor::exceptions::page_fault(processor::idt::irq_context_error ctx)
+void processor::exceptions::page_fault(processor::idt::exc_context_error ctx)
 {
     if (ctx.cs & 3)
     {
@@ -155,7 +155,7 @@ void processor::exceptions::page_fault(processor::idt::irq_context_error ctx)
     PANIC("Page fault in kernel code");
 }
 
-void processor::exceptions::fpu_error(processor::idt::irq_context ctx)
+void processor::exceptions::fpu_error(processor::idt::exc_context ctx)
 {
     if (ctx.cs & 3)
     {
@@ -169,14 +169,14 @@ void processor::exceptions::fpu_error(processor::idt::irq_context ctx)
     return;
 }
 
-void processor::exceptions::alignment_check(processor::idt::irq_context)
+void processor::exceptions::alignment_check(processor::idt::exc_context)
 {
     PANIC("Unexpected alignment check exception");
     
     return;
 }
 
-void processor::exceptions::simd_exception(processor::idt::irq_context ctx)
+void processor::exceptions::simd_exception(processor::idt::exc_context ctx)
 {
     if (ctx.cs & 3)
     {
@@ -190,14 +190,14 @@ void processor::exceptions::simd_exception(processor::idt::irq_context ctx)
     return;
 }
 
-void processor::exceptions::breakpoint(processor::idt::irq_context)
+void processor::exceptions::breakpoint(processor::idt::exc_context)
 {
     PANIC("Unexpected breakpoint exception");
     
     return;
 }
 
-void processor::exceptions::overflow(processor::idt::irq_context ctx)
+void processor::exceptions::overflow(processor::idt::exc_context ctx)
 {
     if (ctx.cs & 3)
     {
@@ -211,21 +211,21 @@ void processor::exceptions::overflow(processor::idt::irq_context ctx)
     return;
 }
 
-void processor::exceptions::double_fault(processor::idt::irq_context_error)
+void processor::exceptions::double_fault(processor::idt::exc_context_error)
 {
     PANIC("Double fault");
     
     return;
 }
 
-void processor::exceptions::machine_check(processor::idt::irq_context)
+void processor::exceptions::machine_check(processor::idt::exc_context)
 {
     PANIC("Machine check exception");
     
     return;
 }
 
-void processor::exceptions::non_maskable(processor::idt::irq_context)
+void processor::exceptions::non_maskable(processor::idt::exc_context)
 {
     PANIC("Non maskable interrupt");
 }
