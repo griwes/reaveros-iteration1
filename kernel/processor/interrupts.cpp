@@ -26,6 +26,7 @@
 #include <processor/interrupts.h>
 #include <memory/memory.h>
 #include <processor/handlers.h>
+#include <processor/current_core.h>
 
 namespace processor
 {
@@ -83,6 +84,15 @@ namespace processor
     }
 }
 
+void processor::idt::enable(uint8_t vector)
+{
+    processor::current_core::mask(vector);
+}
+
+void processor::idt::disable(uint8_t vector)
+{
+    processor::current_core::mask(vector);
+}
 
 extern "C" void _load_idt();
 

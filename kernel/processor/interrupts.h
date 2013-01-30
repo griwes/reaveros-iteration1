@@ -54,11 +54,7 @@ namespace processor
                                    // type
         
         void initialize();
-    }
-    
-    namespace irq
-    {
-        void initialize();
-        void add_handler(uint64_t, void (*)(uint64_t));
+        void enable(uint8_t);
+        void disable(uint8_t);
     }
 }

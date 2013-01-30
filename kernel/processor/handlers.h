@@ -73,9 +73,13 @@ namespace processor
         extern "C" void simd_exception(idt::exc_context);
     }
     
-    namespace interrupt
+    namespace interrupts
     {
-        extern "C" void common_interrupt_handler(idt::exc_context);
+        using handler = void (*)(processor::idt::irq_context);
+        
+        extern "C" void common_interrupt_handler(idt::irq_context);
+        void set_handler(uint8_t, handler);
+        void remove_handler(uint8_t);
         
         extern "C" char irq32[];
         extern "C" char irq33[];

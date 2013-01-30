@@ -27,6 +27,12 @@
 #include <screen/console.h>
 #include <screen/screen.h>
 
+namespace
+{
+    
+    _handler _irq_handlers[224] = {};
+}
+
 // TODO: proper handling of errors, better screen of death with printing faulting address, registers and stuff
 
 void processor::exceptions::reserved(processor::idt::exc_context ctx)
@@ -228,4 +234,30 @@ void processor::exceptions::machine_check(processor::idt::exc_context)
 void processor::exceptions::non_maskable(processor::idt::exc_context)
 {
     PANIC("Non maskable interrupt");
+}
+
+void processor::interrupts::common_interrupt_handler(processor::idt::irq_context ctx)
+{
+    idt::disable(ctx.number);
+    
+    _irq_handlers[ctx.number - 32](ctx);
+}
+
+void processor::interrupts::set_handler(uint8_t vector, processor::interrupts::handler handler)
+{
+    if (_irq_handlers[vector - 32] != nullptr)
+    {
+        PANIC("Tried to overwrite already existing IRQ handler");
+    }
+    
+    _irq_handlers[vector - 32] = handler;
+    
+    idt::enable(vector);
+}
+
+void processor::interrupts::remove_interrupt(uint8_t vector)
+{
+    idt::disable(vector);
+    
+    _irq_handlers[vector - 32] = nullptr;
 }
