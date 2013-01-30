@@ -29,8 +29,7 @@
 
 namespace
 {
-    
-    _handler _irq_handlers[224] = {};
+    processor::interrupts::handler _irq_handlers[224] = {};
 }
 
 // TODO: proper handling of errors, better screen of death with printing faulting address, registers and stuff
@@ -255,7 +254,7 @@ void processor::interrupts::set_handler(uint8_t vector, processor::interrupts::h
     idt::enable(vector);
 }
 
-void processor::interrupts::remove_interrupt(uint8_t vector)
+void processor::interrupts::remove_handler(uint8_t vector)
 {
     idt::disable(vector);
     

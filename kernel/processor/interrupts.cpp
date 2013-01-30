@@ -86,7 +86,7 @@ namespace processor
 
 void processor::idt::enable(uint8_t vector)
 {
-    processor::current_core::mask(vector);
+    processor::current_core::unmask(vector);
 }
 
 void processor::idt::disable(uint8_t vector)
