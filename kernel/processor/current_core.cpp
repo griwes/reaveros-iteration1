@@ -24,6 +24,9 @@
  **/
 
 #include <processor/current_core.h>
+#include <processor/handlers.h>
+#include <memory/vm.h>
+#include <screen/screen.h>
 
 namespace
 {
@@ -77,11 +80,60 @@ namespace
         current_count = 0x390,
         divide_configuration = 0x3E0
     };
+    
+    inline void _write_register(uint32_t reg, uint32_t val)
+    {
+        *(volatile uint32_t *)(memory::vm::local_apic_address + reg) = val;
+    }
+    
+    inline uint32_t _read_register(uint32_t reg)
+    {
+        return *(volatile uint32_t *)(memory::vm::local_apic_address + reg);
+    }
+    
+    void _spurious(processor::idt::irq_context)
+    {
+    }
+    
+    void _local_timer(processor::idt::irq_context)
+    {
+        static uint64_t i = 0;
+        
+        screen::print("Tick from lapic! ", i);
+        ++i;
+    }
+}
+
+void processor::current_core::eoi()
+{
+    _write_register(eoi, 0);
 }
 
 void processor::current_core::initialize()
 {
+    _write_register(destination_format, 0xFFFFFFFF);
+    _write_register(logical_destination, 0xFF000000);
+    
+    // TODO: add CPUID checks and enable model-dependant LVT disable
+    _write_register(lvt_cmci, 0x10000);                     // disable LVTs
+    _write_register(lvt_error, 0x10000);
+    _write_register(lvt_lint0, 0x10000);
+    _write_register(lvt_lint1, 0x10000);
+//    _write_register(lvt_performance_monitor, 0x10000);
+//    _write_register(lvt_thermal_sensor, 0x10000);
+    _write_register(lvt_timer, 0x10000);
+    
+    _write_register(task_priority, 0);
+    
     uint32_t a, b;
     rdmsr(0x1B, a, b);
     wrmsr(0x1B, a | (1 << 11), b);
+    
+    interrupts::set_handler(32, _spurious);
+    _write_register(spurious_interrupt_vector, 32 | 0x100);
+
+    interrupts::set_handler(33, _local_timer);
+    _write_register(lvt_timer, 33 | (1 << 17));
+    _write_register(divide_configuration, 0);
+    _write_register(initial_count, 1000000);
 }

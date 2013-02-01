@@ -30,5 +30,6 @@ namespace processor
     namespace current_core
     {
         void initialize();
+        void eoi();
     };
 }

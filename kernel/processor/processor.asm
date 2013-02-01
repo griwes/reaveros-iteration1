@@ -69,6 +69,8 @@ _load_idt:
     mov     rax, qword idtr
     lidt    [rax]
     
+    sti
+    
     ret
 
 gdt_start:

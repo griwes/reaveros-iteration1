@@ -244,6 +244,8 @@ void processor::interrupts::common_interrupt_handler(processor::idt::irq_context
 
 void processor::interrupts::set_handler(uint8_t vector, processor::interrupts::handler handler)
 {
+    processor::current_core::eoi();
+    
     if (_irq_handlers[vector - 32] != nullptr)
     {
         PANIC("Tried to overwrite already existing IRQ handler");
