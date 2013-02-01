@@ -26,6 +26,7 @@
 #include <processor/handlers.h>
 #include <screen/console.h>
 #include <screen/screen.h>
+#include <processor/current_core.h>
 
 namespace
 {
@@ -238,14 +239,13 @@ void processor::exceptions::non_maskable(processor::idt::exc_context)
 void processor::interrupts::common_interrupt_handler(processor::idt::irq_context ctx)
 {
     idt::disable(ctx.number);
+    processor::current_core::eoi();
     
     _irq_handlers[ctx.number - 32](ctx);
 }
 
 void processor::interrupts::set_handler(uint8_t vector, processor::interrupts::handler handler)
 {
-    processor::current_core::eoi();
-    
     if (_irq_handlers[vector - 32] != nullptr)
     {
         PANIC("Tried to overwrite already existing IRQ handler");

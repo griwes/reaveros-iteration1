@@ -106,7 +106,7 @@ namespace
 
 void processor::current_core::eoi()
 {
-    _write_register(eoi, 0);
+    _write_register(::eoi, 0);
 }
 
 void processor::current_core::initialize()
