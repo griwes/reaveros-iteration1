@@ -204,13 +204,13 @@ void screen::console::_clear()
 
 void screen::console::_scroll()
 {
-    memory::copy((uint8_t *)_backbuffer + _mode.bytes_per_line * 16, (uint8_t *)_backbuffer, (_mode.resolution_y - 16
+    memory::copy((uint8_t *)_backbuffer + _mode.bytes_per_line * 5 * 16, (uint8_t *)_backbuffer, (_mode.resolution_y - 5 * 16
         - _mode.resolution_y % 16) * _mode.bytes_per_line);
-    memory::zero((uint8_t *)_backbuffer + _mode.bytes_per_line * (_mode.resolution_y - 16 - _mode.resolution_y % 16), 
-        _mode.bytes_per_line * 16);
+    memory::zero((uint8_t *)_backbuffer + _mode.bytes_per_line * (_mode.resolution_y - 5 * 16 - _mode.resolution_y % 16), 
+        _mode.bytes_per_line * 5 * 16);
     memory::copy((uint8_t *)_backbuffer, (uint8_t *)_mode.addr, _mode.bytes_per_line * _mode.resolution_y);
     
-    --_y;
+    _y -= 5;
 }
 
 void screen::console::print_mode_info()
