@@ -30,4 +30,3 @@ global  entry
 
 entry:
     call    kernel_main
-    

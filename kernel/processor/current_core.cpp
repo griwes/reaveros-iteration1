@@ -124,7 +124,7 @@ void processor::current_core::initialize()
     _write_register(lvt_timer, 0x10000);
     
     _write_register(task_priority, 0);
-    
+
     uint32_t a, b;
     rdmsr(0x1B, a, b);
     wrmsr(0x1B, a | (1 << 11), b);

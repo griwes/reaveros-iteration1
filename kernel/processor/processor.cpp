@@ -49,14 +49,14 @@ void processor::initialize()
 
     gdt::initialize();
     idt::initialize();
-    
+
     acpi::initialize(cores, num_cores, ioapics, num_ioapics);
     
     current_core::initialize();
     
     for (uint64_t i = 0; i < num_ioapics; ++i)
     {
-        ioapics[0].initialize();
+        ioapics[i].initialize();
     }
     
 //    smp::boot(cores + 1, num_cores - 1);
