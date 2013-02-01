@@ -65,8 +65,6 @@ extern  simd_exception
 extern  common_interrupt_handler
 
 %macro  setup   0
-    cli
-    
     push    rax
     push    rbx
     push    rcx
@@ -99,7 +97,26 @@ extern  common_interrupt_handler
     pop     rbx
     pop     rax
     
-    add     rsp, 16
+    add     rsp, 8
+    
+    iretq
+%endmacro
+
+%macro  exitnoerror 0
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    pop     r11
+    pop     r10
+    pop     r9
+    pop     r8
+    pop     rdi
+    pop     rsi
+    pop     rdx
+    pop     rcx
+    pop     rbx
+    pop     rax
     
     iretq
 %endmacro
@@ -107,52 +124,52 @@ extern  common_interrupt_handler
 res:
     setup
     call    reserved
-    exit
+    exitnoerror
     
 de:
     setup
     call    divide_error
-    exit
+    exitnoerror
     
 nmi:
     setup
     call    non_maskable
-    exit    
+    exitnoerror
 
 rp:
     setup
     call    breakpoint
-    exit
+    exitnoerror
     
 of:
     setup
     call    overflow
-    exit
+    exitnoerror
     
 br:
     setup
     call    bound_range
-    exit
+    exitnoerror
     
 ud:
     setup
     call    invalid_opcode
-    exit
+    exitnoerror
     
 nm:
     setup
     call    no_coprocessor
-    exit
+    exitnoerror
     
 df:
     setup
     call    double_fault
-    exit
+    exitnoerror
     
 ts:
     setup
     call    invalid_tss
-    exit
+    exitnoerror
     
 np:
     setup
@@ -177,22 +194,22 @@ pf:
 mf:
     setup
     call    fpu_error
-    exit
+    exitnoerror
     
 ac:
     setup
     call    alignment_check
-    exit
+    exitnoerror
     
 mc:
     setup
     call    machine_check
-    exit
+    exitnoerror
     
 xm:
     setup
     call    simd_exception
-    exit
+    exitnoerror
 
 common_interrupt_stub:
     setup

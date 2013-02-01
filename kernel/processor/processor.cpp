@@ -76,6 +76,7 @@ namespace
         gdt_start[id].dpl = user * 3;
         gdt_start[id].long_mode = 1;
         gdt_start[id].present = 1;
+        gdt_start[id].read_write = 1;
     }
     
     void setup_tss(uint64_t id)

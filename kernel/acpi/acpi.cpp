@@ -344,5 +344,5 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
         entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
     }
     
-    memory::vm::map_multiple(memory::vm::local_apic_address, memory::vm::local_apic_address, lic_address);
+    memory::vm::map_multiple(memory::vm::local_apic_address, memory::vm::local_apic_address + 16 * 1024, lic_address);
 }
