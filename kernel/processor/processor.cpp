@@ -50,14 +50,15 @@ void processor::initialize()
     gdt::initialize();
     idt::initialize();
 
-    acpi::initialize(cores, num_cores, ioapics, num_ioapics);
-    
-    current_core::initialize();
+    acpi::initialize();
+    acpi::parse_madt(cores, num_cores, ioapics, num_ioapics);
     
     for (uint64_t i = 0; i < num_ioapics; ++i)
     {
         ioapics[i].initialize();
     }
+    
+    current_core::initialize();
     
 //    smp::boot(cores + 1, num_cores - 1);
 }

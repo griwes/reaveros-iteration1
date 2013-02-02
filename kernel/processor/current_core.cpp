@@ -95,12 +95,8 @@ namespace
     {
     }
     
-    void _local_timer(processor::idt::irq_context)
+    void _calibrate_local_timer(processor::idt::irq_context)
     {
-        static uint64_t i = 0;
-        
-        screen::print("Tick from lapic! ", i);
-        ++i;
     }
 }
 
@@ -129,11 +125,11 @@ void processor::current_core::initialize()
     rdmsr(0x1B, a, b);
     wrmsr(0x1B, a | (1 << 11), b);
     
-    interrupts::set_handler(32, _spurious);
-    _write_register(spurious_interrupt_vector, 32 | 0x100);
+//    interrupts::set_handler(32, _spurious);
+//    _write_register(spurious_interrupt_vector, 32 | 0x100);
 
-    interrupts::set_handler(33, _local_timer);
-    _write_register(lvt_timer, 33 | (1 << 17));
-    _write_register(divide_configuration, 0);
-    _write_register(initial_count, 1000000);
+//    interrupts::set_handler(33, _calibrate_local_timer);
+//    _write_register(lvt_timer, 33 | (1 << 17));
+//    _write_register(divide_configuration, 3);
+//    _write_register(initial_count, 0x1000);
 }

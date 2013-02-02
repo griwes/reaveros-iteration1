@@ -33,5 +33,6 @@ namespace processor
 
 namespace acpi
 {
-    void initialize(processor::core *, uint64_t &, processor::ioapic *, uint64_t &);
+    void initialize();
+    void parse_madt(processor::core *, uint64_t &, processor::ioapic *, uint64_t &);
 }

@@ -178,12 +178,20 @@ namespace
         
         return nullptr;
     }
+    
+    void _free_table()
+    {
+        memory::vm::unmap(memory::vm::acpi_temporal_table_mapping_start, memory::vm::acpi_temporal_table_mapping_end, false);
+    }
 }
 
-void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::ioapic * ioapics, uint64_t & ioapic_num)
+void acpi::initialize()
 {
     _find_rsdp();
-    
+}
+
+void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::ioapic * ioapics, uint64_t & ioapic_num)
+{
     madt * table = (madt *)_find_table("APIC");
     
     if (!table)
@@ -345,4 +353,6 @@ void acpi::initialize(processor::core * cores, uint64_t & core_num, processor::i
     }
     
     memory::vm::map_multiple(memory::vm::local_apic_address, memory::vm::local_apic_address + 16 * 1024, lic_address);
+    
+    _free_table();
 }
