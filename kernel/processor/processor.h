@@ -35,6 +35,8 @@ namespace processor
     extern "C" memory::x64::pml4 * get_cr3();
     extern "C" void reload_cr3();
     
+    class ioapic;
+    
     namespace gdt
     {
         struct gdt_entry
@@ -79,6 +81,8 @@ namespace processor
     }
     
     void initialize();
+    ioapic & get_ioapic(uint8_t);
+    uint8_t translate_isa(uint8_t);
     
     inline void invlpg(uint64_t addr)
     {

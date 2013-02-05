@@ -32,14 +32,17 @@
 #include <screen/screen.h>
 #include <processor/current_core.h>
 #include <processor/pit.h>
+#include <processor/interrupt_entry.h>
 
 namespace
 {
-    processor::core cores[processor::max_cores];
-    processor::ioapic ioapics[processor::max_ioapics];
+    processor::core _cores[processor::max_cores];
+    processor::ioapic _ioapics[processor::max_ioapics];
     
-    uint64_t num_cores = 0;
-    uint64_t num_ioapics = 0;
+    uint64_t _num_cores = 0;
+    uint64_t _num_ioapics = 0;
+    
+    processor::interrupt_entry _sources[128];
 }
 
 extern "C" processor::gdt::gdt_entry gdt_start[];
@@ -51,26 +54,51 @@ void processor::initialize()
     gdt::initialize();
     idt::initialize();
     
+    acpi::initialize();
+    acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
+    
     // TODO: HPET
     
 /*    hpet::initialize();
     
     if (!hpet::present())
     {*/
-        pit::initialize();
+//        pit::initialize();
     /*}*/
-
-    acpi::initialize();
-    acpi::parse_madt(cores, num_cores, ioapics, num_ioapics);
     
-    for (uint64_t i = 0; i < num_ioapics; ++i)
+    for (uint64_t i = 0; i < _num_ioapics; ++i)
     {
-        ioapics[i].initialize();
+        _ioapics[i].initialize();
     }
     
-    current_core::initialize();
+//    current_core::initialize();
     
-//    smp::boot(cores + 1, num_cores - 1);
+//    smp::boot(cores + 1, _num_cores - 1);
+}
+
+processor::ioapic & processor::get_ioapic(uint8_t irq)
+{
+    for (uint64_t i = 0; i < _num_ioapics; ++i)
+    {
+        if (irq >= _ioapics[i].begin() && irq < _ioapics[i].end())
+        {
+            return _ioapics[i];
+        }
+    }
+    
+    PANIC("Too high IRQ number requested");
+    
+    return *(ioapic *)nullptr;
+}
+
+uint8_t processor::translate_isa(uint8_t irq)
+{
+    if (_sources[irq])
+    {
+        return _sources[irq].vector();
+    }
+    
+    return irq;
 }
 
 extern "C" void _load_gdt();

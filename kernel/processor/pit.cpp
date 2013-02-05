@@ -45,7 +45,7 @@ void processor::pit::initialize()
 {
     _interrupt = interrupts::allocate(_pit_timer_interrupt);
     
-    interrupts::set_isa_irq_int_number(0, _interrupt);
+    interrupts::set_isa_irq_int_vector(0, _interrupt);
 }
 
 uint8_t processor::pit::register_callback(processor::interrupts::handler h)

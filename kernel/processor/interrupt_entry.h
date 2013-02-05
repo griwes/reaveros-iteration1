@@ -27,13 +27,37 @@
 
 namespace processor
 {
-    class core;
-    class ioapic;
-    class interrupt_entry;
-}
-
-namespace acpi
-{
-    void initialize();
-    void parse_madt(processor::core *, uint64_t &, processor::ioapic *, uint64_t &, processor::interrupt_entry *);
+    class interrupt_entry
+    {
+    public:
+        interrupt_entry() : _valid(false)
+        {
+        }
+        
+        void set(uint8_t source, uint32_t global, uint16_t flags)
+        {
+            _source = source;
+            _global_vector = global;
+            _flags = flags;
+            _valid = true;
+        }
+        
+        operator bool()
+        {
+            return _valid;
+        }
+        
+        uint32_t vector()
+        {
+            return _global_vector;
+        }
+        
+    private:
+        uint8_t _source;
+        uint32_t _global_vector;
+        
+        uint16_t _flags;
+        
+        bool _valid;
+    };
 }

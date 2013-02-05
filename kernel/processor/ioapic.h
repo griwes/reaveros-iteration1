@@ -42,7 +42,7 @@ namespace processor
             
             _base_address = memory::vm::ioapic_area + apic_id * 4 * 1024;
             
-            _size = ((_read_register(1) >> 16) & ~(1 << 8)) + 1;
+            _size = ((_read_register(1) >> 16) & (~(1 << 8) & 0xFF)) + 1;
         }
         
         bool set_global_nmi(uint32_t vector, uint32_t flags)
@@ -66,6 +66,21 @@ namespace processor
             }
         }
         
+        uint32_t begin()
+        {
+            return _base_vector_number;
+        }
+        
+        uint32_t end()
+        {
+            return _base_vector_number + _size;
+        }
+        
+        void route_interrupt(uint8_t, uint8_t)
+        {
+            
+        }
+        
     private:
         uint32_t _apic_id;
         uint32_t _base_vector_number;
@@ -81,14 +96,14 @@ namespace processor
         
         uint32_t _read_register(uint8_t id)
         {
-            *(uint32_t *)(_base_address) = id;
-            return *(uint32_t *)(_base_address + 0x10);
+            *(uint32_t volatile *)(_base_address) = id;
+            return *(uint32_t volatile *)(_base_address + 0x10);
         }
         
         void _write_register(uint8_t id, uint32_t val)
         {
-            *(uint32_t *)(_base_address) = id;
-            *(uint32_t *)(_base_address + 0x10) = val;
+            *(uint32_t volatile *)(_base_address) = id;
+            *(uint32_t volatile *)(_base_address + 0x10) = val;
         }
     };
 }

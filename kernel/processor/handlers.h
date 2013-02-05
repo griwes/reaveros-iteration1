@@ -84,6 +84,8 @@ namespace processor
         uint8_t allocate(handler);
         void free(uint8_t);
         
+        void set_isa_irq_int_vector(uint8_t, uint8_t);
+        
         extern "C" char irq32[];
         extern "C" char irq33[];
         extern "C" char irq34[];

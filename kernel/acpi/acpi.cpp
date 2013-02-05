@@ -30,6 +30,7 @@
 #include <screen/screen.h>
 #include <processor/core.h>
 #include <processor/ioapic.h>
+#include <processor/interrupt_entry.h>
 
 namespace
 {    
@@ -190,7 +191,7 @@ void acpi::initialize()
     _find_rsdp();
 }
 
-void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::ioapic * ioapics, uint64_t & ioapic_num)
+void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::ioapic * ioapics, uint64_t & ioapic_num, processor::interrupt_entry * ints)
 {
     madt * table = (madt *)_find_table("APIC");
     
@@ -209,7 +210,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
         {
             case 0:
             {
-                auto lapic = (acpi::madt_lapic_entry *)((uint64_t)entry + sizeof(*entry));
+                auto lapic = (acpi::madt_lapic_entry *)((entry + 1));
                 
                 if (lapic->flags & 1)
                 {
@@ -223,18 +224,59 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
             
             case 1:
             {
-                auto ioapic = (acpi::madt_ioapic_entry *)((uint64_t)entry + sizeof(*entry));
+                auto ioapic = (acpi::madt_ioapic_entry *)((entry + 1));
                 
                 new ((void *)(ioapics + ioapic_num++)) processor::ioapic(ioapic->apic_id, ioapic->base_int, ioapic->base_address);
                 
-                screen::print("\nFound I/O APIC entry: ", ioapic->apic_id, ", handling vectors from ", ioapic->base_int);
+                screen::print("\nFound I/O APIC entry: ", ioapic->apic_id, ", handling vectors from ", ioapic->base_int, " to ", ioapics[ioapic_num - 1].end());
                                 
                 break;
             }
             
+            case 2:
+            {
+                auto iso = (acpi::madt_int_override_entry *)(entry + 1);
+                
+                ints[iso->source].set(iso->source, iso->int_number, iso->flags);
+                
+                screen::print("\nFound redirection entry: ", iso->source, " -> ", iso->int_number, ", polarity: ");
+                
+                switch (iso->flags & 3)
+                {
+                    case 0:
+                        screen::print("standard");
+                        break;
+                    case 1:
+                        screen::print("active high");
+                        break;
+                    case 2:
+                        screen::print("RESERVED");
+                        PANIC("Reserved polarity in MADT");
+                    case 3:
+                        screen::print("active low");
+                }
+                
+                screen::print(", trigger mode: ");
+                
+                switch ((iso->flags >> 2) & 3)
+                {
+                    case 0:
+                        screen::print("standard");
+                        break;
+                    case 1:
+                        screen::print("edge");
+                        break;
+                    case 2:
+                        screen::print("RESERVED");
+                        PANIC("Reserved trigger mode in MADT");
+                    case 3:
+                        screen::print("level");
+                }
+            }
+            
             case 3:
             {
-                auto nmi = (acpi::madt_nmi_source_entry *)((uint64_t)entry + sizeof(*entry));
+                auto nmi = (acpi::madt_nmi_source_entry *)((entry + 1));
                 
                 for (uint64_t i = 0; i < ioapic_num; ++i)
                 {
@@ -249,7 +291,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
             
             case 5:
             {
-                auto override = (acpi::madt_lapic_address_override_entry *)((uint64_t)entry + sizeof(*entry));
+                auto override = (acpi::madt_lapic_address_override_entry *)((entry + 1));
                 
                 lic_address = override->base_address;
                 
@@ -258,7 +300,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
             
             case 9:
             {
-                auto x2apic = (acpi::madt_x2apic_entry *)((uint64_t)entry + sizeof(*entry));
+                auto x2apic = (acpi::madt_x2apic_entry *)((entry + 1));
                 
                 if (x2apic->flags & 1)
                 {
@@ -282,7 +324,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
         {
             case 4:
             {
-                auto lapic_nmi = (acpi::madt_lapic_nmi_entry *)((uint64_t)entry + sizeof(*entry));
+                auto lapic_nmi = (acpi::madt_lapic_nmi_entry *)((entry + 1));
                 
                 if (lapic_nmi->acpi_id == 0xff)
                 {                    
@@ -318,7 +360,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
             
             case 10:
             {
-                auto x2apic_nmi = (acpi::madt_x2apic_nmi_entry *)((uint64_t)entry + sizeof(*entry));
+                auto x2apic_nmi = (acpi::madt_x2apic_nmi_entry *)((entry + 1));
                 
                 if (x2apic_nmi->acpi_uuid == 0xffffffff)
                 {

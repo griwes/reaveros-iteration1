@@ -27,6 +27,8 @@
 #include <screen/console.h>
 #include <screen/screen.h>
 #include <processor/current_core.h>
+#include <processor/processor.h>
+#include <processor/ioapic.h>
 
 namespace
 {
@@ -300,4 +302,9 @@ void processor::interrupts::free(uint8_t idx)
     {
         PANIC("Tried to free not allocated interrupt handler");
     }
+}
+
+void processor::interrupts::set_isa_irq_int_vector(uint8_t isa, uint8_t handler)
+{
+    processor::get_ioapic(processor::translate_isa(isa)).route_interrupt(processor::translate_isa(isa), handler);
 }

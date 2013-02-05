@@ -28,6 +28,7 @@
 #include <memory/vm.h>
 #include <screen/screen.h>
 #include <processor/pit.h>
+#include <processor/processor.h>
 
 namespace
 {
