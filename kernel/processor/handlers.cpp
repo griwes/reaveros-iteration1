@@ -262,3 +262,42 @@ void processor::interrupts::remove_handler(uint8_t vector)
     
     _irq_handlers[vector - 32] = nullptr;
 }
+
+namespace
+{
+    bool _handlers[224] = { false };
+}
+
+uint8_t processor::interrupts::allocate(processor::interrupts::handler h)
+{
+    for (uint8_t i = 0; i < 224; ++i)
+    {
+        if (!_handlers[i])
+        {
+            _handlers[i] = true;
+            
+            interrupts::set_handler(i + 32, h);
+            
+            return i + 32;
+        }
+    }
+    
+    PANIC("All interrupt numbers exhausted");       // TODO: fix this
+    
+    return 0;
+}
+
+void processor::interrupts::free(uint8_t idx)
+{
+    if (_handlers[idx])
+    {
+        _handlers[idx] = false;
+        
+        interrupts::remove_handler(idx + 32);
+    }
+    
+    else 
+    {
+        PANIC("Tried to free not allocated interrupt handler");
+    }
+}
