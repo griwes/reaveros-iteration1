@@ -31,6 +31,7 @@
 #include <processor/ioapic.h>
 #include <screen/screen.h>
 #include <processor/current_core.h>
+#include <processor/pit.h>
 
 namespace
 {
@@ -49,6 +50,15 @@ void processor::initialize()
 
     gdt::initialize();
     idt::initialize();
+    
+    // TODO: HPET
+    
+/*    hpet::initialize();
+    
+    if (!hpet::present())
+    {*/
+        pit::initialize();
+    /*}*/
 
     acpi::initialize();
     acpi::parse_madt(cores, num_cores, ioapics, num_ioapics);

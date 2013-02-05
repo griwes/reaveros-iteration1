@@ -27,6 +27,7 @@
 #include <processor/handlers.h>
 #include <memory/vm.h>
 #include <screen/screen.h>
+#include <processor/pit.h>
 
 namespace
 {
@@ -95,8 +96,12 @@ namespace
     {
     }
     
+    bool _invoked = false;
+    uint64_t _ticks_per_second = 0;
+    
     void _calibrate_local_timer(processor::idt::irq_context)
     {
+        _invoked = true;
     }
 }
 
@@ -125,11 +130,39 @@ void processor::current_core::initialize()
     rdmsr(0x1B, a, b);
     wrmsr(0x1B, a | (1 << 11), b);
     
-//    interrupts::set_handler(32, _spurious);
-//    _write_register(spurious_interrupt_vector, 32 | 0x100);
+    uint8_t irq = interrupts::allocate(_spurious);
+    _write_register(spurious_interrupt_vector, irq | 0x100);
+    
+    irq = interrupts::allocate(_calibrate_local_timer);
+    
+    _write_register(lvt_timer, irq | (1 << 17));
+    _write_register(divide_configuration, 3);
+    
+    // TODO: HPET
+    
+/*    if (hpet::present())
+    {
+        hpet::register_interrupt(_calibrate_local_timer);
+        hpet::interrupt(100 * 1000);
+    }
+    
+    else
+    {*/
+        pit::register_callback(_calibrate_local_timer);
+        pit::interrupt(100 * 1000);
+    /*}*/
 
-//    interrupts::set_handler(33, _calibrate_local_timer);
-//    _write_register(lvt_timer, 33 | (1 << 17));
-//    _write_register(divide_configuration, 3);
-//    _write_register(initial_count, 0x1000);
+    _write_register(initial_count, 0xFFFFFFFF);
+    
+    asm volatile ("hlt");
+    
+    while (!_invoked)
+    {
+        asm volatile ("pause");
+    }
+    
+    _ticks_per_second = (0xFFFFFFFF - _read_register(current_count)) * 16 * 100;
+    _write_register(initial_count, 0);
+    
+//    interrupts::set_handler(irq, _lapic_timer);
 }
