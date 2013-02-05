@@ -53,13 +53,21 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     
 /*    screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
+    screen::done();
+    
+    screen::print(tag::scheduler, "Starting service supervisor...");
+    scheduler::process supervisor = scheduler::create_process(initrd["superv.srv"]);
+    supervisor.set_priority(10);
+    screen::done();
     
     screen::print(tag::scheduler, "Initializing virtual memory manager server...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);
+    supervisor.watch_process(vmm);
     screen::done();
     
     screen::print(tag::scheduler, "Starting video server...");
     scheduler::process vsrv = scheduler::create_process(initrd["video.srv"]);
+    supervisor.watch_process(vsrv);
     screen::done();
     
     screen::print(tag::screen, "Switching to video server output...");
@@ -68,17 +76,21 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     
     screen::print(tag::scheduler, "Starting device manager server...");
     scheduler::process device_mgr = scheduler::create_process(initrd["devicemgr.srv"]);
+    supervisor.watch_process(device_mgr);
     screen::done();
     
     screen::print(tag::scheduler, "Starting VIOLA server...");
     scheduler::process viola = scheduler::create_process(initrd["viola.srv"]);
+    supervisor.watch_process(viola);
     screen::done();
     
     screen::print(tag::scheduler, "Starting storage device driver...");
     scheduler::process storage = scheduler::create_process(initrd["storage.srv"]);
+    supervisor.watch_process(storage);
     screen::done();
     
     screen::print(tag::scheduler, "Starting filesystem driver...");
     scheduler:: process filesystem = scheduler::create_process(initrd["filesystem.srv"]);
+    supervisor.watch_process(filesystem);
     screen::done();*/
 }
