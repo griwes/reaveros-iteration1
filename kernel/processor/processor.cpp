@@ -57,19 +57,19 @@ void processor::initialize()
     acpi::initialize();
     acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
     
+    for (uint64_t i = 0; i < _num_ioapics; ++i)
+    {
+        _ioapics[i].initialize(_sources);
+    }
+    
     // TODO: HPET
     
 /*    hpet::initialize();
     
     if (!hpet::present())
     {*/
-//        pit::initialize();
+        pit::initialize();
     /*}*/
-    
-    for (uint64_t i = 0; i < _num_ioapics; ++i)
-    {
-        _ioapics[i].initialize();
-    }
     
 //    current_core::initialize();
     

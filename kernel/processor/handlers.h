@@ -81,7 +81,7 @@ namespace processor
         void set_handler(uint8_t, handler);
         void remove_handler(uint8_t);
         
-        uint8_t allocate(handler);
+        uint8_t allocate(handler, uint8_t = 0xF);
         void free(uint8_t);
         
         void set_isa_irq_int_vector(uint8_t, uint8_t);

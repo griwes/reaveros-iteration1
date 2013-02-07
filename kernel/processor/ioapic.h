@@ -26,6 +26,7 @@
 #pragma once
 
 #include <memory/vm.h>
+#include <processor/interrupt_entry.h>
 
 namespace processor
 {
@@ -58,8 +59,10 @@ namespace processor
             return _is_nmi_valid;
         }
         
-        void initialize()
+        void initialize(processor::interrupt_entry * sources)
         {
+            _sources = sources;
+            
             for (uint32_t i = 0; i < _size; ++i)
             {
                 _write_register(0x10 + 2 * i, _read_register(0x10 + 2 * i) | (1 << 16));
@@ -76,9 +79,33 @@ namespace processor
             return _base_vector_number + _size;
         }
         
-        void route_interrupt(uint8_t, uint8_t)
+        void route_interrupt(uint8_t input, uint8_t local_input)
         {
+            bool low = false;
+            bool level = false;
             
+            if (_sources[input])
+            {
+                if (!_sources[input].standard_polarity())
+                {
+                    low = _sources[input].low();
+                }
+                
+                if (!_sources[input].standard_trigger())
+                {
+                    level = _sources[input].level();
+                }
+            }
+            
+            uint64_t ioreg = local_input;
+            ioreg |= 1 << 11;
+            ioreg |= low << 13;
+            ioreg |= level << 15;
+            ioreg |= 0xFFull << 56;
+            ioreg |= 1 << 8;
+            
+            _write_register(0x10 + processor::translate_isa(input) * 2, ioreg & 0xFFFFFFFF);
+            _write_register(0x10 + processor::translate_isa(input) * 2 + 1, (ioreg >> 32) & 0xFFFFFFFF);
         }
         
     private:
@@ -93,6 +120,8 @@ namespace processor
         
         bool _is_valid;
         bool _is_nmi_valid;
+        
+        processor::interrupt_entry * _sources;
         
         uint32_t _read_register(uint8_t id)
         {

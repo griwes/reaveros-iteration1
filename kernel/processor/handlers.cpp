@@ -243,7 +243,15 @@ void processor::interrupts::common_interrupt_handler(processor::idt::irq_context
     idt::disable(ctx.number);
     processor::current_core::eoi();
     
-    _irq_handlers[ctx.number - 32](ctx);
+    if (_irq_handlers[ctx.number - 32])
+    {
+        _irq_handlers[ctx.number - 32](ctx);
+    }
+    
+    else
+    {
+        // scheduler::interrupt(ctx);
+    }
 }
 
 void processor::interrupts::set_handler(uint8_t vector, processor::interrupts::handler handler)
@@ -270,32 +278,47 @@ namespace
     bool _handlers[224] = { false };
 }
 
-uint8_t processor::interrupts::allocate(processor::interrupts::handler h)
+uint8_t processor::interrupts::allocate(processor::interrupts::handler h, uint8_t priority)
 {
-    for (uint8_t i = 0; i < 224; ++i)
+    _handlers[0xFF - 32] = true;
+    
+    if (priority < 2)
     {
-        if (!_handlers[i])
+        PANIC("Exception priority interrupt vector requested");
+    }
+    
+    for (uint8_t current_priority = priority; current_priority > 1; --current_priority)
+    {
+        for (uint8_t i = current_priority * 16; i < (current_priority + 1) * 16; ++i)
         {
-            _handlers[i] = true;
+            if (!_handlers[i - 32])
+            {
+                _handlers[i - 32] = true;
             
-            interrupts::set_handler(i + 32, h);
+                interrupts::set_handler(i, h);
             
-            return i + 32;
+                return i;
+            }
         }
     }
     
-    PANIC("All interrupt numbers exhausted");       // TODO: fix this
+    return allocate(h, priority + 1);
+
+    if (priority == 0xF)
+    {
+        PANIC("All interrupt numbers exhausted");
+    }
     
     return 0;
 }
 
 void processor::interrupts::free(uint8_t idx)
 {
-    if (_handlers[idx])
+    if (_handlers[idx - 32])
     {
-        _handlers[idx] = false;
+        _handlers[idx - 32] = false;
         
-        interrupts::remove_handler(idx + 32);
+        interrupts::remove_handler(idx);
     }
     
     else 
@@ -306,5 +329,5 @@ void processor::interrupts::free(uint8_t idx)
 
 void processor::interrupts::set_isa_irq_int_vector(uint8_t isa, uint8_t handler)
 {
-    processor::get_ioapic(processor::translate_isa(isa)).route_interrupt(processor::translate_isa(isa), handler);
+    processor::get_ioapic(processor::translate_isa(isa)).route_interrupt(isa, handler);
 }

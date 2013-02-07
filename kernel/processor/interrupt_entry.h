@@ -52,6 +52,26 @@ namespace processor
             return _global_vector;
         }
         
+        bool standard_polarity()
+        {
+            return !(_flags & 3);
+        }
+        
+        bool low()
+        {
+            return (_flags & 3) == 3;
+        }
+        
+        bool standard_trigger()
+        {
+            return !((_flags >> 2) & 3);
+        }
+        
+        bool level()
+        {
+            return ((_flags >> 2) & 3) == 3;
+        }
+        
     private:
         uint8_t _source;
         uint32_t _global_vector;

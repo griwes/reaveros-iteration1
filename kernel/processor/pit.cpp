@@ -43,7 +43,7 @@ namespace
 
 void processor::pit::initialize()
 {
-    _interrupt = interrupts::allocate(_pit_timer_interrupt);
+    _interrupt = interrupts::allocate(_pit_timer_interrupt, 2);
     
     interrupts::set_isa_irq_int_vector(0, _interrupt);
 }
