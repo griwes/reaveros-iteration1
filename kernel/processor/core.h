@@ -44,6 +44,11 @@ namespace processor
             return _acpi_id;
         }
         
+        uint32_t apic_id()
+        {
+            return _apic_id;
+        }
+        
         bool lapic()
         {
             return _is_local_apic;
@@ -56,6 +61,8 @@ namespace processor
             
             _is_nmi_valid = true;
         }
+        
+        uint8_t started = 0;
         
     private:
         uint32_t _acpi_id;

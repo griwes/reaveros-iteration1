@@ -33,6 +33,7 @@
 #include <processor/current_core.h>
 #include <processor/pit.h>
 #include <processor/interrupt_entry.h>
+#include <processor/smp.h>
 
 namespace
 {
@@ -73,7 +74,7 @@ void processor::initialize()
     
     current_core::initialize();
     
-//    smp::boot(cores + 1, _num_cores - 1);
+    smp::boot(_cores + 1, _num_cores - 1);
 }
 
 processor::ioapic & processor::get_ioapic(uint8_t irq)
