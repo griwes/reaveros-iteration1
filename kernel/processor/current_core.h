@@ -30,6 +30,8 @@ namespace processor
     namespace current_core
     {
         void initialize();
-        void eoi();
+        void eoi(uint8_t);
+        
+        void sleep(uint64_t); // subsecond
     };
 }

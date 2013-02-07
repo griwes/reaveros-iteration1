@@ -240,7 +240,7 @@ void processor::exceptions::non_maskable(processor::idt::exc_context)
 
 void processor::interrupts::common_interrupt_handler(processor::idt::irq_context ctx)
 {
-    processor::current_core::eoi();
+    processor::current_core::eoi(ctx.number);
     
     if (_irq_handlers[ctx.number - 32])
     {

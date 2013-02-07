@@ -104,10 +104,19 @@ namespace
     {
         _invoked = true;
     }
+    
+    void _lapic_timer(processor::idt::irq_context)
+    {
+    }
 }
 
-void processor::current_core::eoi()
+void processor::current_core::eoi(uint8_t vec_number)
 {
+    if (vec_number == (_read_register(spurious_interrupt_vector) & 0xFF))
+    {
+        return;
+    }
+    
     _write_register(::eoi, 0);
 }
 
@@ -134,7 +143,7 @@ void processor::current_core::initialize()
     uint8_t irq = interrupts::allocate(_spurious);
     _write_register(spurious_interrupt_vector, irq | 0x100);
     
-    irq = interrupts::allocate(_calibrate_local_timer);
+    irq = interrupts::allocate(_calibrate_local_timer, 2);
     
     _write_register(lvt_timer, irq | (1 << 17));
     _write_register(divide_configuration, 3);
@@ -160,8 +169,6 @@ void processor::current_core::initialize()
 
     _write_register(initial_count, 0xFFFFFFFF);
     
-    asm volatile ("hlt");
-    
     while (!_invoked)
     {
         asm volatile ("pause");
@@ -170,5 +177,16 @@ void processor::current_core::initialize()
     _ticks_per_second = (0xFFFFFFFF - _read_register(current_count)) * 16 * 100;
     _write_register(initial_count, 0);
     
-//    interrupts::set_handler(irq, _lapic_timer);
+    screen::print("\nLAPIC tics per second (estimated): ", _ticks_per_second);
+    
+    interrupts::remove_handler(irq);
+    interrupts::set_handler(irq, _lapic_timer);
+}
+
+void processor::current_core::sleep(uint64_t nanoseconds)
+{
+    _write_register(divide_configuration, 3);
+    _write_register(initial_count, (_ticks_per_second / 16) / (1000000000 / nanoseconds));
+    
+    asm volatile ("hlt");
 }
