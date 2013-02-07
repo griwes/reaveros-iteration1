@@ -31,7 +31,7 @@ namespace
     uint8_t _size = 0;
     
     uint8_t _interrupt = 0;
-    
+
     void _pit_timer_interrupt(processor::idt::irq_context ctx)
     {
         for (uint8_t i = 0; i < _size; ++i)
@@ -72,12 +72,16 @@ void processor::pit::unregister_callback(uint8_t idx)
     }
 }
 
-void processor::pit::interrupt(uint64_t microseconds)
+void processor::pit::interrupt(uint64_t hz)
 {
-    outb(0x43, 0x32);
+    uint16_t divisor = 1193180 / hz;
     
-    uint16_t divisor = 1193180 / (1000000 / microseconds);
+    outb(0x43, 0x30);
     
-    outb(0x40, divisor & 0xFF);
-    outb(0x40, (divisor >> 8) & 0xFF);
+    outb(0x40, (uint8_t)(divisor & 0xFF));
+    outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
+    
+    uint8_t tmp = inb(0x61) & 0xFE;
+    outb(0x61, tmp);
+    outb(0x61, tmp | 1);
 }

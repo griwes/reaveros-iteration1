@@ -71,7 +71,7 @@ void processor::initialize()
         pit::initialize();
     /*}*/
     
-//    current_core::initialize();
+    current_core::initialize();
     
 //    smp::boot(cores + 1, _num_cores - 1);
 }

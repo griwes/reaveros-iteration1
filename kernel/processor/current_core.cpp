@@ -113,7 +113,7 @@ void processor::current_core::eoi()
 
 void processor::current_core::initialize()
 {
-    _write_register(destination_format, 0xFFFFFFFF);
+    _write_register(destination_format, 0xF0000000);
     _write_register(logical_destination, 0xFF000000);
     
     // TODO: add CPUID checks and enable model-dependant LVT disable
@@ -139,18 +139,23 @@ void processor::current_core::initialize()
     _write_register(lvt_timer, irq | (1 << 17));
     _write_register(divide_configuration, 3);
     
+    if (_ticks_per_second)
+    {
+        return;
+    }
+    
     // TODO: HPET
     
 /*    if (hpet::present())
     {
         hpet::register_interrupt(_calibrate_local_timer);
-        hpet::interrupt(100 * 1000);
+        hpet::interrupt(1000);
     }
     
     else
     {*/
         pit::register_callback(_calibrate_local_timer);
-        pit::interrupt(100 * 1000);
+        pit::interrupt(100);
     /*}*/
 
     _write_register(initial_count, 0xFFFFFFFF);

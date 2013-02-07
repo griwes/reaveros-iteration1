@@ -44,9 +44,16 @@ inline void * operator new (uint64_t, void * addr)
 
 inline void outb(uint16_t port, uint8_t value)
 {
-    asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
+    asm volatile ("outb %1, %0" :: "dN" (port), "a" (value));
 }
 
+inline
+uint8_t inb(uint16_t port)
+{
+    uint8_t ret;
+    asm volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
+    return ret;
+}
 inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
 {
     asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));

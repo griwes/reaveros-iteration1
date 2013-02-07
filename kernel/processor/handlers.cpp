@@ -240,7 +240,6 @@ void processor::exceptions::non_maskable(processor::idt::exc_context)
 
 void processor::interrupts::common_interrupt_handler(processor::idt::irq_context ctx)
 {
-    idt::disable(ctx.number);
     processor::current_core::eoi();
     
     if (_irq_handlers[ctx.number - 32])
@@ -250,6 +249,7 @@ void processor::interrupts::common_interrupt_handler(processor::idt::irq_context
     
     else
     {
+        idt::disable(ctx.number);
         // scheduler::interrupt(ctx);
     }
 }
