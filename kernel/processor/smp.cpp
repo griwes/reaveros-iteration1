@@ -40,7 +40,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     
     for (uint64_t i = 0; i < num_cores; ++i)
     {
-        memory::copy(trampoline_start + trampoline_size * i, 0x7c00 + trampoline_size * (i + 1), trampoline_size);
+        memory::copy(trampoline_start + trampoline_size * i, 0x500 + trampoline_size * (i + 1), trampoline_size);
         *(uint64_t *)(trampoline_start + trampoline_size * i + 8) = &cores[i]->started;
     }
     
@@ -55,7 +55,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     // SIPI
     for (uint64_t i = 0; i < num_cores; ++i)
     {
-        current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, 0x7c00 + trampoline_size * i);
+        current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, 0x500 + trampoline_size * i);
     }
     
     current_core::sleep(200000);
@@ -65,7 +65,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     {
         if (!cores[i].started)
         {
-            current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, 0x7c00 + trampoline_size * i);
+            current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, 0x500 + trampoline_size * i);
         }
     }
 }

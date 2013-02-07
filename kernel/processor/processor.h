@@ -81,6 +81,7 @@ namespace processor
     }
     
     void initialize();
+    void ap_initialize();
     ioapic & get_ioapic(uint8_t);
     uint8_t translate_isa(uint8_t);
     

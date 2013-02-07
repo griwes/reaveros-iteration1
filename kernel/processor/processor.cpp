@@ -46,6 +46,8 @@ namespace
     processor::interrupt_entry _sources[128];
 }
 
+extern "C" void _load_gdt();
+extern "C" void _load_idt();
 extern "C" processor::gdt::gdt_entry gdt_start[];
 
 void processor::initialize()
@@ -77,6 +79,14 @@ void processor::initialize()
     smp::boot(_cores + 1, _num_cores - 1);
 }
 
+void processor::ap_initialize()
+{
+    _load_gdt();
+    _load_idt();
+    
+    current_core::initialize();
+}
+
 processor::ioapic & processor::get_ioapic(uint8_t irq)
 {
     for (uint64_t i = 0; i < _num_ioapics; ++i)
@@ -101,8 +111,6 @@ uint8_t processor::translate_isa(uint8_t irq)
     
     return irq;
 }
-
-extern "C" void _load_gdt();
 
 namespace
 {

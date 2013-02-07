@@ -100,6 +100,9 @@ namespace
     bool _invoked = false;
     uint64_t _ticks_per_second = 0;
     
+    uint8_t _spurious_vector = 0;
+    uint8_t _timer_vector = 0;
+    
     void _calibrate_local_timer(processor::idt::irq_context)
     {
         _invoked = true;
@@ -140,19 +143,24 @@ void processor::current_core::initialize()
     rdmsr(0x1B, a, b);
     wrmsr(0x1B, a | (1 << 11), b);
     
-    uint8_t irq = interrupts::allocate(_spurious);
-    _write_register(spurious_interrupt_vector, irq | 0x100);
-    
-    irq = interrupts::allocate(_calibrate_local_timer, 2);
-    
-    _write_register(lvt_timer, irq | (1 << 17));
-    _write_register(divide_configuration, 3);
-    
     if (_ticks_per_second)
     {
+        _write_register(spurious_interrupt_vector, _spurious_vector | 0x100);
+        _write_register(lvt_timer, _timer_vector | (1 << 17));
+        _write_register(divide_configuration, 3);
+        
         return;
     }
     
+    _spurious_vector = interrupts::allocate(_spurious);
+    
+    _write_register(spurious_interrupt_vector, _spurious_vector | 0x100);
+    
+    _timer_vector = interrupts::allocate(_calibrate_local_timer, 2);
+    
+    _write_register(lvt_timer, _timer_vector | (1 << 17));
+    _write_register(divide_configuration, 3);
+        
     // TODO: HPET
     
 /*    if (hpet::present())
@@ -179,8 +187,8 @@ void processor::current_core::initialize()
     
     screen::print("\nLAPIC tics per second (estimated): ", _ticks_per_second);
     
-    interrupts::remove_handler(irq);
-    interrupts::set_handler(irq, _lapic_timer);
+    interrupts::remove_handler(_timer_vector);
+    interrupts::set_handler(_timer_vector, _lapic_timer);
 }
 
 void processor::current_core::sleep(uint64_t nanoseconds)
