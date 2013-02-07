@@ -23,30 +23,33 @@
  * 
  **/
 
-#include <rose/rose.h>
-#include <rose/service.h>
+#pragma once
 
-#include "vmm.h"
+#include <map>
+#include <string>
+
+#include <rose/process.h>
 
 namespace rose
 {
+    class signal_description;
+    
+    namespace service
+    {
+        class exception_description;
+    }
+    
     namespace vmm
     {
-        std::map<rose::process, rose::vmm::address_space> address_spaces;
-        std::pair<uint64_t, uint64_t> allowed_addresses;
+        class address_space
+        {
+            
+        };
+        
+        void receive(const signal_description &);
+        void handle_pf(const service::exception_description &);
+        
+        extern std::map<rose::process, rose::vmm::address_space> address_spaces;
+        extern std::pair<uint64_t, uint64_t> allowed_addresses;
     }
-}
-
-int main()
-{
-    rose::vmm::allowed_addresses = rose::get_allowed_address_range();
-    
-    rose::register_handler(rose::signal::ipc, rose::pool(16), rose::vmm::receive);
-    rose::service::register_handler(rose::service::exceptions::pf, rose::pool(16), rose::vmm::handle_pf);
-    
-    while (rose::get_signal() != rose::signal::term)
-    {
-    }
-    
-    return 0;
 }
