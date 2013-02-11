@@ -198,3 +198,25 @@ void processor::current_core::sleep(uint64_t nanoseconds)
     
     asm volatile ("hlt");
 }
+
+void processor::current_core::ipi(uint64_t apic_id, processor::current_core::ipis type, uint8_t vector)
+{
+    _write_register(interrupt_command_32, apic_id << 24);
+    
+    switch (type)
+    {
+        case ipis::init:
+        {
+            _write_register(interrupt_command_0, 5 << 8);
+            
+            break;
+        }
+        
+        case ipis::sipi:
+        {
+            _write_register(interrupt_command_0, (6 << 8) | (vector));
+            
+            break;
+        }
+    }
+}

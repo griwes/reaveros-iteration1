@@ -28,8 +28,8 @@
 #include <processor/core.h>
 #include <memory/memory.h>
 
-extern "C" char trampoline_start[];
-extern "C" char trampoline_end[];
+extern "C" uint8_t trampoline_start[];
+extern "C" uint8_t trampoline_end[];
 
 void processor::smp::boot(core * cores, uint64_t num_cores)
 {
@@ -40,8 +40,9 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     
     for (uint64_t i = 0; i < num_cores; ++i)
     {
-        memory::copy(trampoline_start + trampoline_size * i, 0x500 + trampoline_size * (i + 1), trampoline_size);
-        *(uint64_t *)(trampoline_start + trampoline_size * i + 8) = &cores[i]->started;
+        memory::copy(trampoline_start + trampoline_size * i, (uint8_t *)0x1000 + trampoline_size * (i + 1), trampoline_size);
+        cores[i].started = (uint8_t*)(trampoline_start + trampoline_size * i + 8);
+//        *(uint64_t *)(trampoline_start + trampoline_size * i + 8) = (uint64_t)&cores[i].started;
     }
     
     // INIT IPI
@@ -55,7 +56,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     // SIPI
     for (uint64_t i = 0; i < num_cores; ++i)
     {
-        current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, 0x500 + trampoline_size * i);
+        current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, (0x1000 + trampoline_size * i) >> 12);
     }
     
     current_core::sleep(200000);
@@ -63,9 +64,9 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     // 2nd SIPI, if not started
     for (uint64_t i = 0; i < num_cores; ++i)
     {
-        if (!cores[i].started)
+        if (!*(cores[i].started))
         {
-            current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, 0x500 + trampoline_size * i);
+            current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, (0x1000 + trampoline_size * i) >> 12);
         }
     }
 }

@@ -29,9 +29,18 @@ namespace processor
 {
     namespace current_core
     {
+        enum class ipis
+        {
+            init,
+            sipi
+        };
+        
         void initialize();
         void eoi(uint8_t);
         
         void sleep(uint64_t); // subsecond
+        
+        void broadcast(ipis, uint64_t = 0);
+        void ipi(uint64_t, ipis, uint8_t = 0);
     };
 }
