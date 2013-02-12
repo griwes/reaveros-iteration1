@@ -77,6 +77,8 @@ void processor::initialize()
     current_core::initialize();
     
     smp::boot(_cores + 1, _num_cores - 1);
+    
+//    memory::pmm::split_frame_stack(_cores, _num_cores);
 }
 
 void processor::ap_initialize()
@@ -159,3 +161,13 @@ void processor::gdt::initialize()
     
     _load_gdt();
 }
+
+void processor::ipi(processor::core * core, processor::ipis ipi, uint8_t vector)
+{
+    processor::current_core::ipi(core->apic_id(), ipi, vector);
+}
+
+/*void processor::broadcast(processor::broadcast_types target, processor::current_core::ipis ipi, uint8_t vector)
+{
+    processor::current_core::broadcast(target, ipi, vector);
+}*/

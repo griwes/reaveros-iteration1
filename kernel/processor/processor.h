@@ -26,6 +26,7 @@
 #pragma once
 
 #include <memory/x64paging.h>
+#include <processor/current_core.h>
 
 namespace processor
 {
@@ -36,6 +37,7 @@ namespace processor
     extern "C" void reload_cr3();
     
     class ioapic;
+    class core;
     
     namespace gdt
     {
@@ -84,6 +86,12 @@ namespace processor
     void ap_initialize();
     ioapic & get_ioapic(uint8_t);
     uint8_t translate_isa(uint8_t);
+    
+    using current_core::ipis;
+    using current_core::broadcast_types;
+    
+    void ipi(core *, ipis, uint8_t = 0);
+    void broadcast(broadcast_types, ipis, uint8_t = 0);
     
     inline void invlpg(uint64_t addr)
     {

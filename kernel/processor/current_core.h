@@ -35,12 +35,18 @@ namespace processor
             sipi
         };
         
+        enum class broadcast_types
+        {
+            all,
+            others
+        };
+        
         void initialize();
         void eoi(uint8_t);
         
         void sleep(uint64_t); // subsecond
         
-        void broadcast(ipis, uint64_t = 0);
+        void broadcast(broadcast_types, ipis, uint8_t = 0);
         void ipi(uint64_t, ipis, uint8_t = 0);
     };
 }
