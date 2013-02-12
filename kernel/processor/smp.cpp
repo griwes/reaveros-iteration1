@@ -27,6 +27,7 @@
 #include <processor/current_core.h>
 #include <processor/core.h>
 #include <memory/memory.h>
+#include <screen/screen.h>
 
 extern "C" uint8_t trampoline_start[];
 extern "C" uint8_t trampoline_end[];
@@ -38,13 +39,6 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     trampoline_size += 4095;
     trampoline_size &= ~(uint64_t)4095;
     
-    for (uint64_t i = 0; i < num_cores; ++i)
-    {
-        memory::copy(trampoline_start + trampoline_size * i, (uint8_t *)0x1000 + trampoline_size * (i + 1), trampoline_size);
-        cores[i].started = (uint8_t*)(trampoline_start + trampoline_size * i + 8);
-//        *(uint64_t *)(trampoline_start + trampoline_size * i + 8) = (uint64_t)&cores[i].started;
-    }
-    
     // INIT IPI
     for (uint64_t i = 0; i < num_cores; ++i)
     {
@@ -52,6 +46,12 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     }
     
     current_core::sleep(10000000);
+    
+    for (uint64_t i = 0; i < num_cores; ++i)
+    {
+        memory::copy(trampoline_start, (uint8_t *)0x1000 + trampoline_size, trampoline_size);
+        cores[i].started = (uint8_t *)(trampoline_start + trampoline_size * i);
+    }
     
     // SIPI
     for (uint64_t i = 0; i < num_cores; ++i)
@@ -67,6 +67,19 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
         if (!*(cores[i].started))
         {
             current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, (0x1000 + trampoline_size * i) >> 12);
+        }
+    }
+    
+    for (uint64_t i = 0; i < num_cores; ++i)
+    {
+        if (*(cores[i].started))
+        {
+            screen::print("\nCPU #", cores[i].apic_id(), " booted.");
+        }
+        
+        else
+        {
+            screen::print("\nCPU #", cores[i].apic_id(), " failed to boot.");
         }
     }
 }
