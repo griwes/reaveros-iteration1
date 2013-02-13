@@ -133,9 +133,9 @@ stage2:
     mov     cr0, edx
 
     cli
-    mov al, 0xff                ; mask PIC
-    out 0xa1, al
-    out 0x21, al
+    mov     al, 0xff            ; mask PIC
+    out     0xa1, al
+    out     0x21, al
     sti
     
     nop

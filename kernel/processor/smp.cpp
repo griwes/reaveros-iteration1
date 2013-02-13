@@ -28,6 +28,8 @@
 #include <processor/core.h>
 #include <memory/memory.h>
 #include <screen/screen.h>
+#include <processor/processor.h>
+#include <memory/pmm.h>
 
 extern "C" uint8_t trampoline_start[];
 extern "C" uint8_t trampoline_end[];
@@ -50,6 +52,9 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     for (uint64_t i = 0; i < num_cores; ++i)
     {
         memory::copy(trampoline_start, (uint8_t *)0x1000 + trampoline_size * i, trampoline_size);
+        
+        //*(uint64_t volatile *)(0x1000 + trampoline_size * i + 16) = memory::clone();
+                
         cores[i].started = (uint8_t *)(trampoline_start + trampoline_size * i);
     }
     

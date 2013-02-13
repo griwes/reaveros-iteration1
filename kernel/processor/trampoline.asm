@@ -27,17 +27,95 @@ global  trampoline_end
 
 bits    16
 
-flag:
-    nop
-
 trampoline_start:
-    mov     byte [cs:0], 1
-    jmp     short startup
-
-startup:
-    cli
-    hlt
-    jmp     $
+    inc     byte [cs:24]
     
+    cli
+
+    jmp     over
+    
+    times   16 - ($ - $$)   db  0
+    
+pml4:   dq 0
+flag:   db 0
+
+    times   32 - ($ - $$)   db  0
+
+gdt_start:
+    ; null - 0x0
+    dd 0
+    dd 0
+
+    ; code - 0x8
+    dw 0xffff
+    dw 0
+    db 0
+    db 10011010b
+    db 11001111b
+    db 0
+
+    ; data - 0x10
+    dw 0xffff
+    dw 0
+    db 0
+    db 10010010b
+    db 11001111b
+    db 0
+
+gdt_end:
+    times   64 - ($ - $$)   db  0
+
+gdt:
+    dw 23
+    dd 0
+    
+over:
+    mov     ax, cs
+    mov     ds, ax
+    mov     es, ax
+    mov     fs, ax
+    mov     gs, ax
+    add     eax, 16
+    mov     ss, ax
+    mov     sp, 512
+
+    mov     eax, cs
+    mov     ebx, 0x10
+    mul     ebx
+    
+    xchg    bx, bx
+    
+    lea     ebx, [eax + 32]
+    mov     dword [66], ebx
+    
+    lgdt    [64]
+    
+    add     eax, 512
+    
+    push    word 0x8
+    push    ax
+    
+    mov     eax, cr0
+    or      al, 1
+    mov     cr0, eax
+    
+    retf
+    
+    times   256 - ($ - $$)  db  0
+    
+    times   512 - ($ - $$)  db  0
+stack_top:
+
+bits    32
+
+pmode:
+    mov     ax, 0x10
+    mov     ds, ax
+    mov     es, ax
+    mov     fs, ax
+    mov     gs, ax
+    mov     ss, ax
+    
+    hlt
+        
 trampoline_end:
-db      0
