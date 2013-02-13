@@ -48,7 +48,7 @@ namespace
 
 extern "C" void _load_gdt();
 extern "C" void _load_idt();
-extern "C" processor::gdt::gdt_entry gdt_start[];
+extern "C" processor::gdt::gdt_entry _gdt_start[];
 
 void processor::initialize()
 {
@@ -83,8 +83,16 @@ void processor::initialize()
 
 void processor::ap_initialize()
 {
-    _load_gdt();
-    _load_idt();
+    // TODO: stack management
+    memory::stack::set(memory::stack::get());
+    
+    uint32_t apic_id = current_core::id();
+    
+    // TODO: sparse arrays
+    processor::gdt::gdt_entry * _core_gdt = (processor::gdt::gdt_entry *)(memory::vm::ap_gdt_area + apic_id * sizeof(*_core_gdt) * 7);
+    processor::gdt::tss * _core_tss = (processor::gdt::tss *)(memory::vm::ap_tss_area + apic_id * sizeof(processor::gdt::tss));
+    processor::idt::idtr * _core_idtr = (processor::idt::idtr *)(memory::vm::ap_idtr_area + apic_id * sizeof(processor::idt::idtr));
+    processor::idt::idt_entry * _core_idt = (processor::idt::idt_entry *)(memory::vm::ap_idt_area + apic_id * 4096);
     
     current_core::initialize();
 }
@@ -118,46 +126,46 @@ namespace
 {
     processor::gdt::tss _tss;
     
-    void setup_gdte(uint64_t id, bool code, bool user)
+    void _setup_gdte(uint64_t id, bool code, bool user, processor::gdt::gdt_entry * start = _gdt_start)
     {
-        gdt_start[id].normal = 1;
+        start[id].normal = 1;
         
-        gdt_start[id].code = code;
-        gdt_start[id].dpl = user * 3;
-        gdt_start[id].long_mode = 1;
-        gdt_start[id].present = 1;
-        gdt_start[id].read_write = 1;
+        start[id].code = code;
+        start[id].dpl = user * 3;
+        start[id].long_mode = 1;
+        start[id].present = 1;
+        start[id].read_write = 1;
     }
     
-    void setup_tss(uint64_t id)
+    void _setup_tss(uint64_t id, processor::gdt::gdt_entry * start = _gdt_start, processor::gdt::tss * tss = &_tss)
     {
-        memory::zero(&_tss);
+        memory::zero(&tss);
         
-        _tss.iomap = sizeof(processor::gdt::tss);
+        tss->iomap = sizeof(processor::gdt::tss);
         
-        gdt_start[id].base_low = (uint64_t)&_tss & 0xFFFFFF;
-        gdt_start[id].base_high = ((uint64_t)&_tss >> 24) & 0xFF;
-        *(uint32_t *)&gdt_start[id + 1] = ((uint64_t)&_tss >> 32) & 0xFFFFFFFF;
+        start[id].base_low = (uint64_t)&tss & 0xFFFFFF;
+        start[id].base_high = ((uint64_t)&tss >> 24) & 0xFF;
+        *(uint32_t *)&start[id + 1] = ((uint64_t)&tss >> 32) & 0xFFFFFFFF;
         
-        gdt_start[id].limit_low = (sizeof(processor::gdt::tss) & 0xFFFF) - 1;
-        gdt_start[id].limit_high = sizeof(processor::gdt::tss) >> 16;
+        start[id].limit_low = (sizeof(processor::gdt::tss) & 0xFFFF) - 1;
+        start[id].limit_high = sizeof(processor::gdt::tss) >> 16;
         
-        gdt_start[id].accessed = 1;
-        gdt_start[id].code = 1;
-        gdt_start[id].present = 1;
-        gdt_start[id].dpl = 3;
+        start[id].accessed = 1;
+        start[id].code = 1;
+        start[id].present = 1;
+        start[id].dpl = 3;
     }
 }
 
 void processor::gdt::initialize()
 {
-    memory::zero(gdt_start, 7);
+    memory::zero(_gdt_start, 7);
     
-    setup_gdte(1, true, false);
-    setup_gdte(2, false, false);
-    setup_gdte(3, true, true);
-    setup_gdte(4, false, true);
-    setup_tss(5);
+    _setup_gdte(1, true, false);
+    _setup_gdte(2, false, false);
+    _setup_gdte(3, true, true);
+    _setup_gdte(4, false, true);
+    _setup_tss(5);
     
     _load_gdt();
 }

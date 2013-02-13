@@ -220,3 +220,8 @@ void processor::current_core::ipi(uint64_t apic_id, processor::current_core::ipi
         }
     }
 }
+
+uint32_t processor::current_core::id()
+{
+    return _read_register(apic_id);
+}

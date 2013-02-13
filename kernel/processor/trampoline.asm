@@ -20,10 +20,12 @@
 ; 3. This notice may not be removed or altered from any source distribution.
 ; 
 ; Michał "Griwes" Dominiak
-; 
+;
 
 global  trampoline_start
 global  trampoline_end
+
+extern  ap_initialize
 
 bits    16
 
@@ -61,12 +63,28 @@ gdt_start:
     db 10010010b
     db 11001111b
     db 0
+    
+    ; code 64 bit - 0x18
+    dw 0
+    dw 0
+    db 0
+    db 10011000b
+    db 00100000b
+    db 0
+
+    ; data 64 bit - 0x20
+    dw 0
+    dw 0
+    db 0
+    db 10010000b
+    db 0
+    db 0
 
 gdt_end:
-    times   64 - ($ - $$)   db  0
+    times   80 - ($ - $$)   db  0
 
 gdt:
-    dw 23
+    dw 39
     dd 0
     
 over:
@@ -78,17 +96,19 @@ over:
     add     eax, 16
     mov     ss, ax
     mov     sp, 512
-
+    
     mov     eax, cs
     mov     ebx, 0x10
     mul     ebx
     
+    mov     esi, eax
+    
     xchg    bx, bx
     
     lea     ebx, [eax + 32]
-    mov     dword [66], ebx
+    mov     dword [82], ebx
     
-    lgdt    [64]
+    lgdt    [80]
     
     add     eax, 512
     
@@ -115,6 +135,27 @@ pmode:
     mov     fs, ax
     mov     gs, ax
     mov     ss, ax
+    
+    mov     esp, esi + 512
+    
+    mov     eax, cr4
+    or      eax, 1 << 5
+    mov     cr4, eax
+    
+    mov     ecx, 0xC0000080
+    rdmsr
+    or      eax, 1 << 8
+    wrmsr
+    
+    mov     eax, [esi + 16]
+    mov     cr3, eax
+    
+    mov     eax, cr0
+    or      eax, 1 << 31
+    mov     cr0, eax
+    
+    push    dword 0x18
+    push    ap_initialize
     
     hlt
         

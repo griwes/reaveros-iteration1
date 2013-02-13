@@ -29,6 +29,27 @@ namespace processor
 {
     namespace idt
     {
+        struct idt_entry
+        {
+            uint16_t offset_low;
+            uint16_t selector;
+            uint8_t ist:3;
+            uint8_t zero:5;
+            uint8_t type:4;
+            uint8_t zero1:1;
+            uint8_t dpl:2;
+            uint8_t present:1;
+            uint16_t offset_middle;
+            uint32_t offset_high;
+            uint32_t zero2;
+        } __attribute__((packed));
+        
+        struct idtr
+        {
+            uint16_t limit;
+            uint64_t base;
+        } __attribute__((packed));
+        
         struct exc_context
         {
             uint64_t r15, r14, r13, r12, r11, r10, r9, r8;

@@ -44,6 +44,8 @@ namespace processor
         void initialize();
         void eoi(uint8_t);
         
+        uint32_t id();
+        
         void sleep(uint64_t); // subsecond
         
         void broadcast(broadcast_types, ipis, uint8_t = 0);
