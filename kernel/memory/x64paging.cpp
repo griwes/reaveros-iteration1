@@ -43,17 +43,17 @@ namespace
         
         memory::x64::pml4 * pml4()
         {
-            return (memory::x64::pml4 *)pt(_id, _id, _id);
+            return (memory::x64::pml4 *)pt(256, 256, 256);
         }
         
         memory::x64::pdpt * pdpt(uint64_t pml4e)
         {
-            return (memory::x64::pdpt *)pt(_id, _id, pml4e);
+            return (memory::x64::pdpt *)pt(256, 256, pml4e);
         }
         
         memory::x64::page_directory * pd(uint64_t pml4e, uint64_t pdpte)
         {
-            return (memory::x64::page_directory *)pt(_id, pml4e, pdpte);
+            return (memory::x64::page_directory *)pt(256, pml4e, pdpte);
         }
         
         memory::x64::page_table * pt(uint64_t pml4e, uint64_t pdpte, uint64_t pde)
@@ -328,11 +328,7 @@ uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging 
     address_generator gen(257);
     
     uint64_t pml4_frame = memory::pmm::pop();
-    current.pml4()->entries[257] = pml4_frame;
-    
-    invlpg((uint64_t)gen.pml4());
-    
-    gen.pml4()->entries[256] = pml4_frame;
+    set_foreign(pml4_frame);
     
     // 256 + 2 for recursive entries
     for (uint64_t startpml4e = 258; startpml4e < 512; ++startpml4e)
@@ -341,4 +337,14 @@ uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging 
     }
     
     return pml4_frame;
+}
+
+void memory::x64::set_foreign(uint64_t frame)
+{
+    address_generator current(256);
+    
+    current.pml4()->entries[257] = frame;
+    current.pdpt(257)->entries[256] = frame;
+
+    asm volatile ("movl %cr3, %eax; movl %eax, %cr3");
 }

@@ -48,7 +48,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     }
     
     current_core::sleep(10000000);
-    
+
     for (uint64_t i = 0; i < num_cores; ++i)
     {
         memory::copy(trampoline_start, (uint8_t *)0x1000 + trampoline_size * i, trampoline_size);

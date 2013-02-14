@@ -295,5 +295,6 @@ namespace memory
         void unmap(uint64_t, uint64_t, bool = false, bool = false);
         
         uint64_t clone_kernel();
+        void set_foreign(uint64_t);
     }
 }
