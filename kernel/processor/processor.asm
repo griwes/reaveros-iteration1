@@ -28,7 +28,9 @@ global  get_cr3
 global  reload_cr3
 global  _load_gdt
 global  _load_idt
-global  gdt_start
+global  _gdt_start
+global  _lock_bit
+global  _unlock_bit
 
 extern  idtr
 
@@ -73,7 +75,7 @@ _load_idt:
     
     ret
 
-gdt_start:
+_gdt_start:
     dq 0 ; null
     dq 0 ; code segment 64bit kernel - 0x8
     dq 0 ; data segment 64bit kernel - 0x10

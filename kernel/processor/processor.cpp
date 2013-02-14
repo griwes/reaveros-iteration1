@@ -88,7 +88,7 @@ void processor::ap_initialize()
     
     uint32_t apic_id = current_core::id();
     
-    // TODO: sparse arrays
+    // TODO: map those little... erm... guys :D
     processor::gdt::gdt_entry * _core_gdt = (processor::gdt::gdt_entry *)(memory::vm::ap_gdt_area + apic_id * sizeof(*_core_gdt) * 7);
     processor::gdt::tss * _core_tss = (processor::gdt::tss *)(memory::vm::ap_tss_area + apic_id * sizeof(processor::gdt::tss));
     processor::idt::idtr * _core_idtr = (processor::idt::idtr *)(memory::vm::ap_idtr_area + apic_id * sizeof(processor::idt::idtr));

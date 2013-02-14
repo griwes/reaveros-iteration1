@@ -66,6 +66,13 @@ namespace
     };
 }
 
+void memory::x64::invlpg(uint64_t addr)
+{
+    asm volatile ("invlpg (%0)" :: "r"(addr) : "memory");
+    
+    // scheduler::invlpg(addr);
+}
+
 void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start, bool foreign)
 {
     address_generator gen(foreign ? 257 : 256);
@@ -96,46 +103,59 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
     
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
+        gen.pml4()->entries[startpml4e].lock();
+        auto pml4e_guard = make_scope_guard([&](){ gen.pml4()->entries[startpml4e].unlock(); });
+        
         if (!gen.pml4()->entries[startpml4e].present)
         {
             gen.pml4()->entries[startpml4e] = memory::pmm::pop();
         }
         
         pdpt * table = gen.pdpt(startpml4e);
-        processor::invlpg((uint64_t)table);
+        invlpg((uint64_t)table);
         
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
+            (*table)[startpdpte].lock();
+            auto pdpte_guard = make_scope_guard([&](){ (*table)[startpdpte].unlock(); });
+            
             if (!(*table)[startpdpte].present)
             {
                 (*table)[startpdpte] = memory::pmm::pop();
             }
             
             page_directory * pd = gen.pd(startpml4e, startpdpte);
-            processor::invlpg((uint64_t)pd);
+            invlpg((uint64_t)pd);
             
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
-            {
+            {                
+                (*pd)[startpde].lock();
+                auto pde_guard = make_scope_guard([&](){ (*pd)[startpde].unlock(); });
+                
                 if (!(*pd)[startpde].present)
                 {
                     (*pd)[startpde] = memory::pmm::pop();
                 }
                 
                 page_table * pt = gen.pt(startpml4e, startpdpte, startpde);
-                processor::invlpg((uint64_t)pt);
+                invlpg((uint64_t)pt);
                 
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)
                 {
+                    (*pt)[startpte].lock();
+                    
                     if ((*pt)[startpte].present && physical_start != (*pt)[startpte].address << 12)
                     {
                         PANIC("Tried to map something at already mapped page"); // TODO: fix PANIC to provide more debugging info
                     }
                     
                     (*pt)[startpte++] = physical_start;
-                    processor::invlpg(virtual_start);
+                    invlpg(virtual_start);
+                    
+                    (*pt)[startpte].unlock();
                     
                     physical_start += 4096;
                     virtual_start += 4096;
@@ -221,6 +241,9 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
     
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
+        gen.pml4()->entries[startpml4e].lock();
+        auto pml4e_guard = make_scope_guard([&](){ gen.pml4()->entries[startpml4e].unlock(); });
+        
         if (!gen.pml4()->entries[startpml4e].present)
         {
             PANIC("Tried to unmap something not mapped");
@@ -231,6 +254,9 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
+            (*table)[startpdpte].lock();
+            auto pdpte_guard = make_scope_guard([&](){ (*table)[startpdpte].unlock(); });
+            
             if (!(*table)[startpdpte].present)
             {
                 PANIC("Tried to unmap something not mapped");
@@ -241,6 +267,9 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
             {
+                (*pd)[startpde].lock();
+                auto pde_guard = make_scope_guard([&](){ (*pd)[startpde].unlock(); });
+                
                 if (!(*pd)[startpde].present)
                 {
                     PANIC("Tried to unmap something not mapped");
@@ -251,18 +280,22 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)
                 {
+                    (*pt)[startpte].lock();
+                    
                     if (!(*pt)[startpte].present)
                     {
                         PANIC("tried to unmap not mapped page");
                     }
                     
                     (*pt)[startpte].present = 0;
-                    processor::invlpg(virtual_start);
+                    invlpg(virtual_start);
                     
                     if (push)
                     {
                         memory::pmm::push((*pt)[startpte].address << 12);
                     }
+                    
+                    (*pt)[startpte].unlock();
                     
                     ++startpte;
                     
@@ -304,4 +337,25 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
             return;
         }
     }
+}
+
+uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging structures
+{
+    address_generator current(256);
+    address_generator gen(257);
+    
+    uint64_t pml4_frame = memory::pmm::pop();
+    current.pml4()->entries[257] = pml4_frame;
+    
+    invlpg((uint64_t)gen.pml4());
+    
+    gen.pml4()->entries[256] = pml4_frame;
+    
+    // 256 + 2 for recursive entries
+    for (uint64_t startpml4e = 258; startpml4e < 512; ++startpml4e)
+    {
+        gen.pml4()->entries[startpml4e] = current.pml4()->entries[startpml4e];
+    }
+    
+    return pml4_frame;
 }

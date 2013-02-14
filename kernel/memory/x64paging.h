@@ -25,10 +25,15 @@
 
 #pragma once
 
+extern "C" void _lock_bit(uint64_t *, uint64_t);
+extern "C" void _unlock_bit(uint64_t *, uint64_t);
+
 namespace memory
 {
     namespace x64
     {
+        void invlpg(uint64_t);
+        
         struct page_table_entry
         {
             page_table_entry & operator=(uint64_t addr)
@@ -38,6 +43,16 @@ namespace memory
                 address = addr >> 12;
                 
                 return *this;
+            }
+            
+            void lock() const
+            {
+                _lock_bit((uint64_t *)this, 9);
+            }
+            
+            void unlock() const
+            {
+                _unlock_bit((uint64_t *)this, 9);
             }
             
             uint64_t present:1;
@@ -94,6 +109,16 @@ namespace memory
                 return *this;
             }
             
+            void lock() const
+            {
+                _lock_bit((uint64_t *)this, 9);
+            }
+            
+            void unlock() const
+            {
+                _unlock_bit((uint64_t *)this, 9);
+            }
+            
             uint64_t present:1;
             uint64_t read_write:1;
             uint64_t user:1;
@@ -145,6 +170,16 @@ namespace memory
                 address = pd >> 12;
                 
                 return *this;
+            }
+            
+            void lock() const
+            {
+                _lock_bit((uint64_t *)this, 9);
+            }
+            
+            void unlock() const
+            {
+                _unlock_bit((uint64_t *)this, 9);
             }
             
             uint64_t present:1;
@@ -202,6 +237,16 @@ namespace memory
                 return *this;
             }
             
+            void lock() const
+            {
+                _lock_bit((uint64_t *)this, 9);
+            }
+            
+            void unlock() const
+            {
+                _unlock_bit((uint64_t *)this, 9);
+            }
+            
             uint64_t present:1;
             uint64_t read_write:1;
             uint64_t user:1;
@@ -248,5 +293,7 @@ namespace memory
         
         void map(uint64_t, uint64_t, uint64_t, bool = false);
         void unmap(uint64_t, uint64_t, bool = false, bool = false);
+        
+        uint64_t clone_kernel();
     }
 }

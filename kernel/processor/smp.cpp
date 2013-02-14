@@ -53,7 +53,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     {
         memory::copy(trampoline_start, (uint8_t *)0x1000 + trampoline_size * i, trampoline_size);
         
-        //*(uint64_t volatile *)(0x1000 + trampoline_size * i + 16) = memory::clone();
+        *(uint64_t volatile *)(0x1000 + trampoline_size * i + 16) = memory::x64::clone_kernel();
                 
         cores[i].started = (uint8_t *)(trampoline_start + trampoline_size * i);
     }

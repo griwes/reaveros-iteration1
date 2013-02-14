@@ -92,9 +92,4 @@ namespace processor
     
     void ipi(core *, ipis, uint8_t = 0);
     void broadcast(broadcast_types, ipis, uint8_t = 0);
-    
-    inline void invlpg(uint64_t addr)
-    {
-        asm volatile ("invlpg (%0)" :: "r"(addr) : "memory");
-    }
 }
