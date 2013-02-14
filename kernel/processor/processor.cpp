@@ -48,6 +48,8 @@ namespace
 
 extern "C" void _load_gdt();
 extern "C" void _load_idt();
+extern "C" void _load_gdt_from(uint64_t);
+extern "C" void _load_idt_from(uint64_t);
 extern "C" processor::gdt::gdt_entry _gdt_start[];
 
 void processor::initialize()
@@ -84,15 +86,25 @@ void processor::initialize()
 void processor::ap_initialize()
 {
     // TODO: stack management
-    memory::stack::set(memory::stack::get());
+//    memory::stack::set(memory::stack::get());
     
     uint32_t apic_id = current_core::id();
     
-    // TODO: map those little... erm... guys :D
-    processor::gdt::gdt_entry * _core_gdt = (processor::gdt::gdt_entry *)(memory::vm::ap_gdt_area + apic_id * sizeof(*_core_gdt) * 7);
-    processor::gdt::tss * _core_tss = (processor::gdt::tss *)(memory::vm::ap_tss_area + apic_id * sizeof(processor::gdt::tss));
-    processor::idt::idtr * _core_idtr = (processor::idt::idtr *)(memory::vm::ap_idtr_area + apic_id * sizeof(processor::idt::idtr));
+    memory::vm::map(memory::vm::ap_gdt_area + apic_id * 4096);
+    processor::gdt::gdt_entry * _core_gdt = (processor::gdt::gdt_entry *)(memory::vm::ap_gdt_area + apic_id * 4096);
+    
+    memory::vm::map(memory::vm::ap_tss_area + apic_id * 4096);
+    processor::gdt::tss * _core_tss = (processor::gdt::tss *)(memory::vm::ap_tss_area + apic_id * 4096);
+    
+    memory::vm::map(memory::vm::ap_dtr_area + apic_id * 4096);
+    processor::idt::idtr * _core_idtr = (processor::idt::idtr *)(memory::vm::ap_dtr_area + apic_id * 4096);
+    processor::gdt::gdtr * _core_gdtr = (processor::gdt::gdtr *)(_core_idtr + 1);
+    
+    memory::vm::map(memory::vm::ap_idt_area + apic_id * 4096);
     processor::idt::idt_entry * _core_idt = (processor::idt::idt_entry *)(memory::vm::ap_idt_area + apic_id * 4096);
+    
+    gdt::ap_initialize(_core_gdtr, _core_gdt, _core_tss);
+    idt::ap_initialize(_core_idtr, _core_idt);
     
     current_core::initialize();
 }
@@ -168,6 +180,21 @@ void processor::gdt::initialize()
     _setup_tss(5);
     
     _load_gdt();
+}
+
+void processor::gdt::ap_initialize(processor::gdt::gdtr * gdtr, processor::gdt::gdt_entry * core_gdt, processor::gdt::tss * core_tss)
+{
+    memory::zero(core_gdt, 7);
+    
+    _setup_gdte(1, true, false, core_gdt);
+    _setup_gdte(2, false, false, core_gdt);
+    _setup_gdte(3, true, true, core_gdt);
+    _setup_gdte(4, false, true, core_gdt);
+    _setup_tss(5, core_gdt, core_tss);
+    
+    gdtr->limit = 7 * sizeof(gdt_entry) - 1;
+    gdtr->address = (uint64_t)core_gdt;
+    _load_gdt_from((uint64_t)gdtr);
 }
 
 void processor::ipi(processor::core * core, processor::ipis ipi, uint8_t vector)

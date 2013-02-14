@@ -136,7 +136,7 @@ pmode:
     mov     gs, ax
     mov     ss, ax
     
-    mov     esp, esi + 512
+    lea     esp, [esi + 512]
     
     mov     eax, cr4
     or      eax, 1 << 5
@@ -154,9 +154,14 @@ pmode:
     or      eax, 1 << 31
     mov     cr0, eax
     
-    push    dword 0x18
-    push    ap_initialize
+    push    word 0x18
+    lea     eax, [esi + 640]
+
+    times   640 - ($ - $$)  db  0
     
+bits    64
+
+lmode:
     hlt
-        
+
 trampoline_end:

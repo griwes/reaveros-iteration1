@@ -27,10 +27,11 @@ bits    64
 global  get_cr3
 global  reload_cr3
 global  _load_gdt
-global  _load_idt
+global  _load_idt_from
 global  _gdt_start
 global  _lock_bit
 global  _unlock_bit
+global  _load_gdt_from
 
 extern  idtr
 
@@ -47,7 +48,6 @@ reload_cr3:
     ret
 
 _load_gdt:
-    push    rax
     mov     rax, qword gdt
     lgdt    [rax]
 
@@ -63,18 +63,33 @@ _load_gdt:
     mov     ax, 0x28
     ltr     ax
     
-    pop     rax
-    
     ret
     
-_load_idt:
-    mov     rax, qword idtr
-    lidt    [rax]
+_load_idt_from:
+    lidt    [rdi]
     
     sti
     
     ret
 
+_load_gdt_from:
+    lgdt    [rdi]
+    
+    mov     rax, qword .ret
+    
+    jmp     0x8:rax
+    
+    .ret:
+    mov     ax, 0x10
+    mov     fs, ax
+    mov     gs, ax
+    mov     ss, ax
+    
+    mov     ax, 0x28
+    ltr     ax
+    
+    ret
+    
 _gdt_start:
     dq 0 ; null
     dq 0 ; code segment 64bit kernel - 0x8
@@ -87,5 +102,29 @@ _gdt_start:
 gdt_end:
 
 gdt:
-    dw gdt_end - gdt_start - 1
-    dq gdt_start
+    dw gdt_end - _gdt_start - 1
+    dq _gdt_start
+
+_lock_bit:
+    lock    bts     qword [rdi], rsi
+    
+    jc      .fail
+    
+    ret
+    
+    .fail:
+        clc
+        pause
+        
+        jmp     _lock_bit
+
+_unlock_bit:
+    mov     cx, si
+
+    mov     rax, 1
+    shl     rax, cl
+    not     rax
+    
+    lock    and     qword [rdi], rax
+    
+    ret
