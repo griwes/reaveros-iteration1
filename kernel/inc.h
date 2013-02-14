@@ -63,3 +63,20 @@ inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
 {
     asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
 }
+
+template<typename T>
+struct scope_guard
+{
+    ~scope_guard()
+    {
+        callback();
+    }
+    
+    T callback;
+};
+
+template<typename T>
+scope_guard<T> make_scope_guard(T callback)
+{
+    return scope_guard<T>{callback};
+}
