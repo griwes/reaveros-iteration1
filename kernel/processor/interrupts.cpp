@@ -46,7 +46,7 @@ void processor::idt::disable(uint8_t /*vector*/)
 //    processor::current_core::mask(vector);
 }
 
-extern "C" void _load_idt_from();
+extern "C" void _load_idt_from(processor::idt::idtr *);
 
 namespace
 {
@@ -67,8 +67,8 @@ namespace
     
     void _init(processor::idt::idtr * idtr, processor::idt::idt_entry * idt)
     {
-        idtr->base = (uint64_t)_idt;
-        idtr->limit = (uint64_t)(_idt + 256) - (uint64_t)_idt - 1;
+        idtr->base = (uint64_t)idt;
+        idtr->limit = (uint64_t)(idt + 256) - (uint64_t)idt - 1;
         
         memory::zero(idt, 256);
         
@@ -323,7 +323,7 @@ namespace
         _setup_idte(254, (uint64_t)processor::interrupts::irq254, 0x08, true, 0, 0xE, idt);
         _setup_idte(255, (uint64_t)processor::interrupts::irq255, 0x08, true, 0, 0xE, idt);
         
-        _load_idt_from();
+        _load_idt_from(idtr);
     }
 }
 
