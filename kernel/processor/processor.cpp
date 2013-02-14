@@ -55,7 +55,7 @@ extern "C" processor::gdt::gdt_entry _gdt_start[];
 void processor::initialize()
 {
     screen::transaction();
-
+    
     gdt::initialize();
     idt::initialize();
     

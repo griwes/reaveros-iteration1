@@ -36,6 +36,7 @@ namespace
     
     uint8_t boot_helper_frames[3 * 4096] __attribute__((aligned(4096)));
     uint8_t boot_helpers_available = 3;
+    uint64_t boot_helper_frames_start = 0;
     
     memory::map_entry * memory_map;
     uint64_t map_size;
@@ -43,6 +44,8 @@ namespace
 
 void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 {
+    boot_helper_frames_start = vm::get_physical_address((uint64_t)boot_helper_frames);
+    
     new ((void *)&boot_stack) frame_stack(map, map_size);
     
     memory_map = map;
@@ -96,7 +99,7 @@ uint64_t memory::pmm::frame_stack::pop()
             if (boot_helpers_available)
             {
                 --boot_helpers_available;
-                return vm::get_physical_address((uint64_t)boot_helper_frames + boot_helpers_available * 4096);
+                return boot_helper_frames_start + boot_helpers_available * 4096;
             }
             
             // if (scheduler::ready())
