@@ -117,6 +117,9 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
+            (*table)[startpdpte].lock();
+            auto pdpte_guard = make_scope_guard([&](){ (*table)[startpdpte].unlock(); });
+            
             if (!(*table)[startpdpte].present)
             {
                 (*table)[startpdpte] = memory::pmm::pop();
@@ -127,7 +130,10 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
             
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
-            {                
+            {
+                (*pd)[startpde].lock();
+                auto pde_guard = make_scope_guard([&](){ (*pd)[startpde].unlock(); });
+                
                 if (!(*pd)[startpde].present)
                 {
                     (*pd)[startpde] = memory::pmm::pop();
@@ -247,6 +253,9 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
+            (*table)[startpdpte].lock();
+            auto pdpte_guard = make_scope_guard([&](){ (*table)[startpdpte].unlock(); });
+            
             if (!(*table)[startpdpte].present)
             {
                 PANIC("Tried to unmap something not mapped");
@@ -257,6 +266,9 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
             {
+                (*pd)[startpde].lock();
+                auto pde_guard = make_scope_guard([&](){ (*pd)[startpde].unlock(); });
+                
                 if (!(*pd)[startpde].present)
                 {
                     PANIC("Tried to unmap something not mapped");
