@@ -25,6 +25,7 @@
 
 #include <screen/console.h>
 #include <screen/terminal.h>
+#include <processor/current_core.h>
 
 namespace screen
 {
@@ -380,4 +381,57 @@ void screen::kernel_console::special(bool b)
     {
         _status = _old;
     }
+}
+
+extern "C" void __lock(uint8_t *);
+extern "C" void __unlock(uint8_t *);
+
+void screen::kernel_console::lock()
+{
+    uint64_t id = processor::current_core::id();
+    
+    __lock(&_lock);
+    
+    if (_owner == id)
+    {
+        ++_count;
+    }
+    
+    else if (_count == 0)
+    {
+        _owner = id;
+        ++_count;
+    }
+    
+    else
+    {
+        __unlock(&_lock);
+        asm volatile ("pause");
+        lock();
+        
+        return;
+    }
+    
+    __unlock(&_lock);
+}
+
+void screen::kernel_console::unlock()
+{
+    uint64_t id = processor::current_core::id();
+    
+    __lock(&_lock);
+    
+    if (_owner != id)
+    {
+        PANIC("Tried to unlock console from wrong core");
+    }
+    
+    if (!_count)
+    {
+        PANIC("Tried to unlock not locked console");
+    }
+    
+    --_count;
+    
+    __unlock(&_lock);
 }

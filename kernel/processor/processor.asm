@@ -32,6 +32,8 @@ global  _gdt_start
 global  _lock_bit
 global  _unlock_bit
 global  _load_gdt_from
+global  __lock
+global  __unlock
 
 extern  idtr
 
@@ -106,17 +108,18 @@ gdt:
     dq _gdt_start
 
 _lock_bit:
-    lock    bts     qword [rdi], rsi
+    .start:
+        lock    bts     qword [rdi], rsi
     
-    jc      .fail
+        jc      .fail
     
-    ret
+        ret
     
     .fail:
         clc
         pause
         
-        jmp     _lock_bit
+        jmp     .start
 
 _unlock_bit:
     mov     cx, si
@@ -127,4 +130,23 @@ _unlock_bit:
     
     lock    and     qword [rdi], rax
     
+    ret
+
+__lock:
+    mov     al, 1
+    cmpxchg byte [rdi], al
+    
+    cmp     al, 1
+    
+    je      .retry
+    
+    ret
+    
+    .retry:
+        pause
+        
+        jmp     __lock
+    
+__unlock:
+    mov     byte [rdi], 0
     ret

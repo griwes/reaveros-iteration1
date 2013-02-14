@@ -62,7 +62,7 @@ namespace processor
             _is_nmi_valid = true;
         }
         
-        uint8_t * started = nullptr;
+        uint8_t volatile * started = nullptr;
         
     private:
         uint32_t _acpi_id;

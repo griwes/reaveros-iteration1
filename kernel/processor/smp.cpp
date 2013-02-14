@@ -54,8 +54,9 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
         memory::copy(trampoline_start, (uint8_t *)0x1000 + trampoline_size * i, trampoline_size);
         
         *(uint64_t volatile *)(0x1000 + trampoline_size * i + 16) = memory::x64::clone_kernel();
+        memory::x64::map(0, 1024 * 1024, 0, true);
                 
-        cores[i].started = (uint8_t *)(trampoline_start + trampoline_size * i);
+        cores[i].started = (uint8_t *)(0x1000 + trampoline_size * i);
     }
     
     // SIPI
@@ -64,7 +65,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
         current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, (0x1000 + trampoline_size * i) >> 12);
     }
     
-    current_core::sleep(200000);
+    current_core::sleep(500000);
     
     // 2nd SIPI, if not started
     for (uint64_t i = 0; i < num_cores; ++i)
@@ -84,7 +85,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
         
         else
         {
-            screen::print("\nCPU #", cores[i].apic_id(), " failed to boot.");
+            screen::print("\nCPU #", cores[i].apic_id(), " failed to boot (", cores[i].started, ").");
         }
     }
 }

@@ -87,14 +87,15 @@ void processor::ap_initialize()
 {
     // TODO: stack management
 //    memory::stack::set(memory::stack::get());
-    
+
+    current_core::initialize();
     uint32_t apic_id = current_core::id();
     
     memory::vm::map(memory::vm::ap_gdt_area + apic_id * 4096);
     processor::gdt::gdt_entry * _core_gdt = (processor::gdt::gdt_entry *)(memory::vm::ap_gdt_area + apic_id * 4096);
     
-    memory::vm::map(memory::vm::ap_tss_area + apic_id * 4096);
-    processor::gdt::tss * _core_tss = (processor::gdt::tss *)(memory::vm::ap_tss_area + apic_id * 4096);
+//    memory::vm::map(memory::vm::ap_tss_area + apic_id * 4096);
+//    processor::gdt::tss * _core_tss = (processor::gdt::tss *)(memory::vm::ap_tss_area + apic_id * 4096);
     
     memory::vm::map(memory::vm::ap_dtr_area + apic_id * 4096);
     processor::idt::idtr * _core_idtr = (processor::idt::idtr *)(memory::vm::ap_dtr_area + apic_id * 4096);
@@ -103,10 +104,10 @@ void processor::ap_initialize()
     memory::vm::map(memory::vm::ap_idt_area + apic_id * 4096);
     processor::idt::idt_entry * _core_idt = (processor::idt::idt_entry *)(memory::vm::ap_idt_area + apic_id * 4096);
     
-    gdt::ap_initialize(_core_gdtr, _core_gdt, _core_tss);
+    gdt::ap_initialize(_core_gdtr, _core_gdt, nullptr);//_core_tss);
     idt::ap_initialize(_core_idtr, _core_idt);
     
-    current_core::initialize();
+    for (;;) ;
 }
 
 processor::ioapic & processor::get_ioapic(uint8_t irq)

@@ -103,8 +103,6 @@ over:
     
     mov     esi, eax
     
-    xchg    bx, bx
-    
     lea     ebx, [eax + 32]
     mov     dword [82], ebx
     
@@ -156,12 +154,16 @@ pmode:
     
     push    word 0x18
     lea     eax, [esi + 640]
+    push    eax
+    
+    retf
 
     times   640 - ($ - $$)  db  0
     
 bits    64
 
 lmode:
-    hlt
+    mov     rax, qword ap_initialize
+    jmp     rax
 
 trampoline_end:

@@ -97,7 +97,14 @@ namespace screen
         
         void set_color(color::colors);
         
+        void lock();
+        void unlock();
+        
     private:
         terminal * _terminal;
+        
+        uint64_t _owner;
+        uint64_t _count;
+        uint8_t _lock;
     } console;
 }

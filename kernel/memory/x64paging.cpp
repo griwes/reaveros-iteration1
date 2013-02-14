@@ -346,5 +346,5 @@ void memory::x64::set_foreign(uint64_t frame)
     current.pml4()->entries[257] = frame;
     current.pdpt(257)->entries[256] = frame;
 
-    asm volatile ("movl %cr3, %eax; movl %eax, %cr3");
+    processor::reload_cr3();
 }
