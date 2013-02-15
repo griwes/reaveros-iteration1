@@ -360,3 +360,18 @@ void memory::x64::set_foreign(uint64_t frame)
 
     processor::reload_cr3();
 }
+
+// the function below may fail if some lock is acquired by different core while it is running
+// but it doesn't really matter; its only reason to exist is to allow frame_stack's pop() not call
+// _shrink() if it is called from mapping call that does something "near" the stack's region
+bool memory::x64::locked(uint64_t address)
+{
+    address_generator current(256);
+    
+    uint64_t pml4e = (address >> 39) & 511;
+    uint64_t pdpte = (address >> 30) & 511;
+    uint64_t pde = (address >> 21) & 511;
+    
+    return (*(uint64_t *)&(current.pml4()->entries[pml4e]) & (1 << 9)) || (*(uint64_t *)&(current.pdpt(pml4e)->entries[pdpte]) & (1 << 9))
+        || (*(uint64_t*)&(current.pd(pml4e, pdpte)->entries[pde]) & (1 << 9));
+}

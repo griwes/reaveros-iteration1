@@ -81,5 +81,10 @@ namespace memory
         {
             x64::unmap(start, end, push);
         }
+        
+        inline bool locked(uint64_t address)
+        {
+            return x64::locked(address);
+        }
     }
 }

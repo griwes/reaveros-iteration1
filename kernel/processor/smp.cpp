@@ -89,5 +89,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
         }
     }
     
+    processor::current_core::stop();
+    
     memory::pmm::split_frame_stack(cores, num_cores);
 }

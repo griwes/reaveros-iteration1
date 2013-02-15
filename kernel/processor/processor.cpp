@@ -227,5 +227,7 @@ processor::core * processor::get_core(uint64_t id)
         }
     }
     
+    PANIC("Tried to get core with nonexistent APIC ID");
+    
     return nullptr;
 }

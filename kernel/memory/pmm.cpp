@@ -94,9 +94,12 @@ void memory::pmm::frame_stack::_expand()
 
 void memory::pmm::frame_stack::_shrink()
 {
-    _capacity -= 512;
+    if (!vm::locked((uint64_t)_stack + _capacity * 8))
+    {
+        _capacity -= 512;
     
-    vm::unmap((uint64_t)_stack + _capacity * 8);
+        vm::unmap((uint64_t)_stack + _capacity * 8);
+    }
 }
 
 extern "C" void __lock(uint8_t *);
@@ -210,11 +213,24 @@ void memory::pmm::boot_report()
 void memory::pmm::split_frame_stack(processor::core * cores, uint64_t num_cores)
 {
     uint64_t frames_to_distribute = global_stack.size() / 2;
-    uint64_t frames_per_core = frames_to_distribute / num_cores;
+    uint64_t frames_per_core = frames_to_distribute / (num_cores + 1);
+    
+    if (frames_per_core > (64 * 1024 * 1024) / 512)
+    {
+        frames_per_core = (64 * 1024 * 1024) / 512;
+    }
+    
+    screen::print("\n", frames_to_distribute, " to distribute, ", frames_per_core, " per core.");
+    screen::print("\nFilling frame stack of CPU#", processor::current_core::id());
+    
+    for (uint64_t i = 0; i < frames_per_core; ++i)
+    {
+        processor::current_core::frame_stack().push(global_stack.pop());
+    }
     
     for (uint64_t i = 0; i < num_cores; ++i)
     {
-        dbg;
+        screen::print("\nFilling frame stack of CPU#", cores[i].apic_id());
         
         for (uint64_t j = 0; j < frames_per_core; ++j)
         {
