@@ -88,4 +88,6 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
             screen::print("\nCPU #", cores[i].apic_id(), " failed to boot (", cores[i].started, ").");
         }
     }
+    
+    memory::pmm::split_frame_stack(_cores, _num_cores);
 }

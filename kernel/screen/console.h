@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <processor/processor.h>
+
 namespace memory
 {
     struct map_entry;
@@ -100,7 +102,14 @@ namespace screen
         void lock();
         void unlock();
         
+        friend void processor::initalize();
+        
     private:
+        void _set_owner(uint64_t new_owner)
+        {
+            _owner = new_owner;
+        }
+        
         terminal * _terminal;
         
         uint64_t _owner;

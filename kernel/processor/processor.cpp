@@ -78,9 +78,9 @@ void processor::initialize()
     
     current_core::initialize();
     
-    smp::boot(_cores + 1, _num_cores - 1);
+    screen::console._set_owner(current_core::id());
     
-//    memory::pmm::split_frame_stack(_cores, _num_cores);
+    smp::boot(_cores + 1, _num_cores - 1);
 }
 
 void processor::ap_initialize()
