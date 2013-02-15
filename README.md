@@ -17,12 +17,13 @@ to file-oriented environment of UNIX family.
  1. Bootloader, with HDD and VESA mode support
  2. Kernel:
    * Basic initialization of outputting and physical memory management
+   * Basic ACPI table support (no AML here)
+   * Basic SMP support - booting APs and IPIs
    
 ##What is being worked on? - short roadmap for current development
 
  1. Kernel:
-   * Basic SMP support - booting APs and IPIs
-   * Basic ACPI table support (no AML here)
+   * Basic SMP support - some special IPIs
    * SMP aware physical memory manager
    * SMP aware scheduler
  2. Services:
