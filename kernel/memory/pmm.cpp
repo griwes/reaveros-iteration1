@@ -29,10 +29,11 @@
 #include <memory/x64paging.h>
 #include <processor/processor.h>
 #include <screen/screen.h>
+#include <processor/core.h>
 
 namespace
 {
-    memory::pmm::frame_stack boot_stack;
+    memory::pmm::frame_stack global_stack;
     
     uint8_t boot_helper_frames[3 * 4096] __attribute__((aligned(4096)));
     uint8_t boot_helpers_available = 3;
@@ -46,7 +47,7 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 {
     boot_helper_frames_start = vm::get_physical_address((uint64_t)boot_helper_frames);
     
-    new ((void *)&boot_stack) frame_stack(map, map_size);
+    new ((void *)&global_stack) frame_stack(map, map_size);
     
     memory_map = map;
     ::map_size = map_size;
@@ -56,7 +57,12 @@ memory::pmm::frame_stack::frame_stack() : _stack(nullptr), _size(0), _capacity(0
 {
 }
 
-memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::boot_page_stack), 
+memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)address), _size(0), _capacity(0)
+{
+    _expand();
+}
+
+memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::global_frame_stack), 
     _size(0), _capacity(0)
 {
     for (uint64_t i = 0; i < map_size; ++i)
@@ -81,17 +87,26 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
 
 void memory::pmm::frame_stack::_expand()
 {
-    vm::map(vm::boot_page_stack + _capacity * 8);
+    vm::map((uint64_t)_stack + _capacity * 8);
     
     _capacity += 512;
 }
 
 void memory::pmm::frame_stack::_shrink()
 {
+    _capacity -= 512;
+    
+    vm::unmap((uint64_t)_stack + _capacity * 8);
 }
+
+extern "C" void __lock(uint8_t *);
+extern "C" void __unlock(uint8_t *);
 
 uint64_t memory::pmm::frame_stack::pop()
 {
+    __lock(&_lock);
+    auto guard = make_scope_guard([&](){ __unlock(&_lock); });
+    
     if (_size == 0)
     {
         if (_capacity == 0)
@@ -131,16 +146,19 @@ uint64_t memory::pmm::frame_stack::pop()
     //     memory::vm::gc_paging_structures(false);
     // }    
     
-    // if (_capacity - _size > 512)
-    // {
-    //     _shrink();
-    // }
+    if (_capacity - _size > 512)
+    {
+        _shrink();
+    }
     
     return _stack[--_size];
 }
 
 void memory::pmm::frame_stack::push(uint64_t frame)
 {
+    __lock(&_lock);
+    auto guard = make_scope_guard([&](){ __unlock(&_lock); });
+    
     if (_size == _capacity)
     {
         _expand();
@@ -151,28 +169,28 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
 uint64_t memory::pmm::pop()
 {
-    // if (processor::ready())
-    // {
-    //     return processor::core.frame_stack.pop();
-    // }
+    if (processor::ready())
+    {
+        return processor::current_core::frame_stack().pop();
+    }
     
-    return boot_stack.pop();
+    return global_stack.pop();
 }
 
 void memory::pmm::push(uint64_t frame)
 {
-    // if (processor::ready())
-    // {
-    //     return processor::core.frame_stack.push(frame);
-    // }
+    if (processor::ready())
+    {
+        return processor::current_core::frame_stack().push(frame);
+    }
     
-    return boot_stack.push(frame);
+    return global_stack.push(frame);
 }
 
 void memory::pmm::boot_report()
 {
-    screen::print("Free memory: ", (boot_stack.size() * 4096) / (1024 * 1024 * 1024), " GiB ", ((boot_stack.size() * 4096 ) % 
-        (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", ((boot_stack.size() * 4096) % (1024 * 1024)) / 1024, " KiB", '\n');
+    screen::print("Free memory: ", (global_stack.size() * 4096) / (1024 * 1024 * 1024), " GiB ", ((global_stack.size() * 4096 ) % 
+        (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", ((global_stack.size() * 4096) % (1024 * 1024)) / 1024, " KiB", '\n');
     screen::print("Total usable memory detected at boot: ");
 
     uint64_t total = 0;
@@ -187,4 +205,20 @@ void memory::pmm::boot_report()
         
     screen::print(total / (1024 * 1024 * 1024), " GiB ", (total % (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", (total % (1024 * 1024)) 
         / 1024, " KiB", '\n', '\n');
+}
+
+void memory::pmm::split_frame_stack(processor::core * cores, uint64_t num_cores)
+{
+    uint64_t frames_to_distribute = global_stack.size() / 2;
+    uint64_t frames_per_core = frames_to_distribute / num_cores;
+    
+    for (uint64_t i = 0; i < num_cores; ++i)
+    {
+        dbg;
+        
+        for (uint64_t j = 0; j < frames_per_core; ++j)
+        {
+            cores[i].frame_stack().push(global_stack.pop());
+        }
+    }
 }

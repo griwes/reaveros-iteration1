@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <processor/processor.h>
+#include <memory/x64paging.h>
 #include <memory/pmm.h>
 
 namespace memory
@@ -34,7 +34,7 @@ namespace memory
     {
         enum addresses
         {
-            boot_page_stack =                   0xFFFFFFFF40000000,
+            global_frame_stack =                0xFFFFFFFF40000000,
             boot_video_memory =                 0xFFFFFFFE80000000,
             boot_backbuffer =                   0xFFFFFFFF00000000,
             acpi_temporal_table_mapping_start = 0xFFFFFFFFFFFE8000,
@@ -46,7 +46,8 @@ namespace memory
             ap_gdt_area =                       0xFFFFFFFE00000000,
             ap_tss_area =                       0xFFFFFFFDC0000000,
             ap_dtr_area =                       0xFFFFFFFD80000000,
-            ap_idt_area =                       0xFFFFFFFD40000000
+            ap_idt_area =                       0xFFFFFFFD40000000,
+            frame_stack_area =                  0xFFFFFFF540000000
         };
         
         inline void map(uint64_t virtual_address)

@@ -25,8 +25,13 @@
 
 #pragma once
 
+#include <memory/pmm.h>
+#include <processor/core.h>
+
 namespace processor
 {
+    processor::core * get_core(uint64_t);
+    
     namespace current_core
     {
         enum class ipis
@@ -50,5 +55,10 @@ namespace processor
         
         void broadcast(broadcast_types, ipis, uint8_t = 0);
         void ipi(uint64_t, ipis, uint8_t = 0);
+        
+        inline memory::pmm::frame_stack & frame_stack()
+        {
+            return processor::get_core(id())->frame_stack();
+        }
     };
 }

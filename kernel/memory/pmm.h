@@ -25,6 +25,11 @@
 
 #pragma once
 
+namespace processor
+{
+    class core;
+}
+
 namespace memory
 {
     struct map_entry;
@@ -41,8 +46,7 @@ namespace memory
         public:
             frame_stack();
             frame_stack(map_entry *, uint64_t);
-            
-            void split(/* const processor::env & */);
+            frame_stack(uint64_t);
             
             uint64_t pop();
             void push(uint64_t);
@@ -59,8 +63,12 @@ namespace memory
             uint64_t * _stack;
             uint64_t _size;
             uint64_t _capacity;
+            
+            uint8_t _lock;
         };
         
         void boot_report();
+        
+        void split_frame_stack(processor::core *, uint64_t);
     }
 }

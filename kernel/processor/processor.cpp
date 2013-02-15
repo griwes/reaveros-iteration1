@@ -44,6 +44,13 @@ namespace
     uint64_t _num_ioapics = 0;
     
     processor::interrupt_entry _sources[128];
+    
+    bool _ready = false;
+}
+
+bool processor::ready()
+{
+    return _ready;
 }
 
 extern "C" void _load_gdt();
@@ -81,6 +88,8 @@ void processor::initialize()
     screen::console._set_owner(current_core::id());
     
     smp::boot(_cores + 1, _num_cores - 1);
+    
+    _ready = true;
 }
 
 void processor::ap_initialize()
@@ -207,3 +216,16 @@ void processor::ipi(processor::core * core, processor::ipis ipi, uint8_t vector)
 {
     processor::current_core::broadcast(target, ipi, vector);
 }*/
+
+processor::core * processor::get_core(uint64_t id)
+{
+    for (uint64_t i = 0; i < _num_cores; ++i)
+    {
+        if (_cores[i].apic_id() == id)
+        {
+            return _cores + i;
+        }
+    }
+    
+    return nullptr;
+}

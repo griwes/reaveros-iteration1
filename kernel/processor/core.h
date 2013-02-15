@@ -35,7 +35,8 @@ namespace processor
         core() : _is_valid(false), _is_nmi_valid(false) {}
         
         core(uint32_t apic_id, uint32_t acpi_id, bool is_lapic = true) : _acpi_id(acpi_id), _apic_id(apic_id), 
-            _is_local_apic(is_lapic), _is_valid(true), _is_nmi_valid(false)
+            _is_local_apic(is_lapic), _is_valid(true), _is_nmi_valid(false), _frame_stack(memory::vm::frame_stack_area
+            + _apic_id * 64 * 1024 * 1024)
         {
         }
         
@@ -62,6 +63,11 @@ namespace processor
             _is_nmi_valid = true;
         }
         
+        memory::pmm::frame_stack & frame_stack()
+        {
+            return _frame_stack;
+        }
+        
         uint8_t volatile * started = nullptr;
         
     private:
@@ -74,5 +80,7 @@ namespace processor
         
         bool _is_valid;
         bool _is_nmi_valid;
+        
+        memory::pmm::frame_stack _frame_stack;
     };
 }

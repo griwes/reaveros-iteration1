@@ -102,7 +102,7 @@ namespace screen
         void lock();
         void unlock();
         
-        friend void processor::initalize();
+        friend void processor::initialize();
         
     private:
         void _set_owner(uint64_t new_owner)

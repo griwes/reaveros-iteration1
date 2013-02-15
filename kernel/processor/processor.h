@@ -30,6 +30,8 @@
 
 namespace processor
 {
+    bool ready();
+    
     constexpr uint64_t max_cores = 512;
     constexpr uint64_t max_ioapics = 16;
     
@@ -99,4 +101,6 @@ namespace processor
     
     void ipi(core *, ipis, uint8_t = 0);
     void broadcast(broadcast_types, ipis, uint8_t = 0);
+    
+    processor::core * get_core(uint64_t);
 }
