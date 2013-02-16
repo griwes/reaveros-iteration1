@@ -27,6 +27,7 @@
 #include <memory/memory.h>
 #include <memory/pmm.h>
 #include <processor/processor.h>
+#include <memory/stacks.h>
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
@@ -44,6 +45,10 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     
     screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();
+    
+    screen::print(tag::memory, "Initializing kernel stacks manager...");
+    memory::stack_manager::initialize();
+    screen::done();
     
     screen::print(tag::cpu, "Initializing processor...");
     processor::initialize();
@@ -90,7 +95,11 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::done();
     
     screen::print(tag::scheduler, "Starting filesystem driver...");
-    scheduler:: process filesystem = scheduler::create_process(initrd["filesystem.srv"]);
+    scheduler::process filesystem = scheduler::create_process(initrd["filesystem.srv"]);
     supervisor.watch_process(filesystem);
+    screen::done();
+    
+    screen::print(tag::scheduler, "Running /boot/init.srv...");
+    scheduler::process init = scheduler::create_process("/boot/init.srv");
     screen::done();*/
 }

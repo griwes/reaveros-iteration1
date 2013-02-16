@@ -47,7 +47,10 @@ namespace memory
             ap_tss_area =                       0xFFFFFFFDC0000000,
             ap_dtr_area =                       0xFFFFFFFD80000000,
             ap_idt_area =                       0xFFFFFFFD40000000,
-            frame_stack_area =                  0xFFFFFFF540000000
+            frame_stack_area =                  0xFFFFFFF540000000,
+            global_stack_stack_area =           0xFFFFFFF500000000,
+            stack_stack_area =                  0xFFFFFFF400000000,
+            stack_area =                        0xFFFFFF7580000000
         };
         
         inline void map(uint64_t virtual_address)

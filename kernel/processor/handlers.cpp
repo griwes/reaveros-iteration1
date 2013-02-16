@@ -157,6 +157,23 @@ void processor::exceptions::page_fault(processor::idt::exc_context_error ctx)
     
     asm volatile ("mov %%cr2, %0" : "=r"(addr));
     
+    uint64_t address = (uint64_t)addr;
+    if (address > memory::vm::stack_area && address <= memory::vm::stack_stack_area)
+    {
+        if (((address + 4095) & ~(uint64_t)4095) % 4096)
+        {
+            screen::transaction();
+            screen::print("\nAt: ", addr);
+            
+            PANIC("Kernel stack overflow");
+        }
+        
+        else
+        {
+            memory::vm::map(address % 4096 ? address : address - 1);
+        }
+    }
+    
     screen::transaction();
     screen::print("\n#PF address: ", addr);
     

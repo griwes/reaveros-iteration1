@@ -25,46 +25,25 @@
 
 #pragma once
 
-#include <memory/pmm.h>
-#include <processor/core.h>
-
 namespace processor
 {
-    processor::core * get_core(uint64_t);
+    class core;
+}
+
+namespace memory
+{
+    class index_stack;
     
-    namespace current_core
+    namespace stack_manager
     {
-        enum class ipis
-        {
-            init,
-            sipi
-        };
-        
-        enum class broadcast_types
-        {
-            all,
-            others
-        };
-        
         void initialize();
-        void eoi(uint8_t);
         
-        uint32_t id();
+        void set(uint64_t);
+        uint64_t allocate();
+        void free(uint64_t);
         
-        void sleep(uint64_t); // subsecond
-        void stop();
+        void split_stack_stack(processor::core *, uint64_t);
         
-        void broadcast(broadcast_types, ipis, uint8_t = 0);
-        void ipi(uint64_t, ipis, uint8_t = 0);
-        
-        inline memory::pmm::frame_stack & frame_stack()
-        {
-            return processor::get_core(id())->frame_stack();
-        }
-        
-        inline memory::index_stack & stack_stack()
-        {
-            return processor::get_core(id())->stack_stack();
-        }
-    };
+        index_stack * global_stack_stack();
+    }
 }

@@ -29,6 +29,6 @@ namespace processor
     
     namespace smp
     {
-        void boot(core *, uint64_t);
+        void boot(core *, uint64_t &);
     }
 }

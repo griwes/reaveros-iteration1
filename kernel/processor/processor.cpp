@@ -87,15 +87,16 @@ void processor::initialize()
     
     screen::console._set_owner(current_core::id());
     
-    smp::boot(_cores + 1, _num_cores - 1);
+    uint64_t num_ap_cores = _num_cores - 1;
+    smp::boot(_cores + 1, num_ap_cores);
+    _num_cores = num_ap_cores + 1;
     
     _ready = true;
 }
 
 void processor::ap_initialize()
 {
-    // TODO: stack management
-//    memory::stack::set(memory::stack::get());
+//    memory::stack_manager::set(memory::stack_manager::allocate());
 
     current_core::initialize();
     uint32_t apic_id = current_core::id();

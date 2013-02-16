@@ -53,17 +53,17 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
     ::map_size = map_size;
 }
 
-memory::pmm::frame_stack::frame_stack() : _stack(nullptr), _size(0), _capacity(0)
+memory::pmm::frame_stack::frame_stack() : _stack(nullptr), _size(0), _capacity(0), _lock(0)
 {
 }
 
-memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)address), _size(0), _capacity(0)
+memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)address), _size(0), _capacity(0), _lock(0)
 {
     _expand();
 }
 
 memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::global_frame_stack), 
-    _size(0), _capacity(0)
+    _size(0), _capacity(0), _lock(0)
 {
     for (uint64_t i = 0; i < map_size; ++i)
     {
@@ -112,6 +112,14 @@ uint64_t memory::pmm::frame_stack::pop()
     
     if (_size == 0)
     {
+        if (_capacity && global_stack.size())
+        {
+            for (uint64_t i = 0; i < (global_stack.size() > 512 ? 512 : global_stack.size()); ++i)
+            {
+                _stack[_size++] = global_stack.pop();
+            }
+        }
+        
         if (_capacity == 0)
         {
             if (boot_helpers_available)
@@ -133,10 +141,10 @@ uint64_t memory::pmm::frame_stack::pop()
             }
         }
         
-        // uint64_t ret_frame = memory::vm::get_physical_address(_stack);
-        // memory::vm::unmap(_stack);
-        // _stack = nullptr;
-        // return ret_frame;
+        uint64_t ret_frame = memory::vm::get_physical_address((uint64_t)_stack);
+        memory::vm::unmap((uint64_t)_stack);
+        _capacity = 0;
+        return ret_frame;
     }
     
     // if (_size < 128)
@@ -215,12 +223,12 @@ void memory::pmm::split_frame_stack(processor::core * cores, uint64_t num_cores)
     uint64_t frames_to_distribute = global_stack.size() / 2;
     uint64_t frames_per_core = frames_to_distribute / (num_cores + 1);
     
-    if (frames_per_core > (64 * 1024 * 1024) / 512)
+    if (frames_per_core > (64 * 1024 * 1024) / 8)
     {
-        frames_per_core = (64 * 1024 * 1024) / 512;
+        frames_per_core = (64 * 1024 * 1024) / 8;
     }
     
-    screen::print("\n", frames_to_distribute, " to distribute, ", frames_per_core, " per core.");
+    screen::print("\n", frames_to_distribute, " frames to distribute, ", frames_per_core, " per core.");
     screen::print("\nFilling frame stack of CPU#", processor::current_core::id());
     
     for (uint64_t i = 0; i < frames_per_core; ++i)

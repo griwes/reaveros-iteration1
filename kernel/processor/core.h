@@ -26,6 +26,8 @@
 #pragma once
 
 #include <memory/vm.h>
+#include <memory/index_stack.h>
+#include <memory/stacks.h>
 
 namespace processor
 {
@@ -36,10 +38,13 @@ namespace processor
         
         core(uint32_t apic_id, uint32_t acpi_id, bool is_lapic = true) : _acpi_id(acpi_id), _apic_id(apic_id), 
             _is_local_apic(is_lapic), _is_valid(true), _is_nmi_valid(false), _frame_stack(memory::vm::frame_stack_area
-            + _apic_id * 64 * 1024 * 1024)
+            + _apic_id * 64 * 1024 * 1024), _stack_stack(memory::vm::stack_stack_area + _apic_id * 1024 * 1024,
+            memory::stack_manager::global_stack_stack())
         {
         }
         
+        core & operator=(const core &) = default;
+
         uint32_t acpi_id()
         {
             return _acpi_id;
@@ -68,6 +73,11 @@ namespace processor
             return _frame_stack;
         }
         
+        memory::index_stack & stack_stack()
+        {
+            return _stack_stack;
+        }
+        
         uint8_t volatile * started = nullptr;
         
     private:
@@ -82,5 +92,6 @@ namespace processor
         bool _is_nmi_valid;
         
         memory::pmm::frame_stack _frame_stack;
+        memory::index_stack _stack_stack;
     };
 }

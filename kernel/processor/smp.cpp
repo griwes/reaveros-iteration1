@@ -30,11 +30,12 @@
 #include <screen/screen.h>
 #include <processor/processor.h>
 #include <memory/pmm.h>
+#include <memory/stacks.h>
 
 extern "C" uint8_t trampoline_start[];
 extern "C" uint8_t trampoline_end[];
 
-void processor::smp::boot(core * cores, uint64_t num_cores)
+void processor::smp::boot(core * cores, uint64_t & num_cores)
 {
     uint64_t trampoline_size = (uint64_t)(trampoline_end - trampoline_start);
     
@@ -77,7 +78,7 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
     }
     
     for (uint64_t i = 0; i < num_cores; ++i)
-    {
+    {        
         if (*(cores[i].started))
         {
             screen::print("\nCPU #", cores[i].apic_id(), " booted.");
@@ -86,10 +87,20 @@ void processor::smp::boot(core * cores, uint64_t num_cores)
         else
         {
             screen::print("\nCPU #", cores[i].apic_id(), " failed to boot (", cores[i].started, ").");
+            
+            for (uint64_t j = i; j < num_cores - 1; ++j)
+            {
+                screen::print("\nMoving CPU #", cores[j + 1].apic_id(), " into place of CPU#", cores[j].apic_id());
+                cores[j] = cores[j + 1];
+            }
+            
+            --i;
+            --num_cores;
         }
     }
     
     processor::current_core::stop();
     
     memory::pmm::split_frame_stack(cores, num_cores);
+    memory::stack_manager::split_stack_stack(cores, num_cores);
 }
