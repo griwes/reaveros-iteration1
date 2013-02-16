@@ -95,3 +95,10 @@ memory::index_stack * memory::stack_manager::global_stack_stack()
 {
     return &_global_stack_stack;
 }
+
+extern "C" void _move_stack(uint64_t);
+
+void memory::stack_manager::set(uint64_t stack)
+{
+    _move_stack(stack);
+}

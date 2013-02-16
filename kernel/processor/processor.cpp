@@ -96,7 +96,9 @@ void processor::initialize()
 
 void processor::ap_initialize()
 {
-//    memory::stack_manager::set(memory::stack_manager::allocate());
+    uint64_t stack = memory::stack_manager::allocate();
+    memory::vm::map(stack - 4096);
+    memory::stack_manager::set(stack);
 
     current_core::initialize();
     uint32_t apic_id = current_core::id();

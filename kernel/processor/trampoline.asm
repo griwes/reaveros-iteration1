@@ -95,7 +95,7 @@ over:
     mov     gs, ax
     add     eax, 16
     mov     ss, ax
-    mov     sp, 512
+    mov     sp, 4096
     
     mov     eax, cs
     mov     ebx, 0x10
@@ -108,7 +108,7 @@ over:
     
     lgdt    [80]
     
-    add     eax, 512
+    add     eax, 256
     
     push    word 0x8
     push    ax
@@ -120,9 +120,6 @@ over:
     retf
     
     times   256 - ($ - $$)  db  0
-    
-    times   512 - ($ - $$)  db  0
-stack_top:
 
 bits    32
 
@@ -134,7 +131,7 @@ pmode:
     mov     gs, ax
     mov     ss, ax
     
-    lea     esp, [esi + 512]
+    lea     esp, [esi + 4096]
     
     mov     eax, cr4
     or      eax, 1 << 5
@@ -153,12 +150,12 @@ pmode:
     mov     cr0, eax
     
     push    word 0x18
-    lea     eax, [esi + 640]
+    lea     eax, [esi + 512]
     push    eax
     
     retf
 
-    times   640 - ($ - $$)  db  0
+    times   512 - ($ - $$)  db  0
     
 bits    64
 
@@ -166,4 +163,7 @@ lmode:
     mov     rax, qword ap_initialize
     jmp     rax
 
+    times   4096 - ($ - $$)  db  0
+stack_top:
+    
 trampoline_end:
