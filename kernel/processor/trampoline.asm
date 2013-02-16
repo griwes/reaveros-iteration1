@@ -163,7 +163,7 @@ lmode:
     mov     rax, qword ap_initialize
     jmp     rax
 
-    times   4096 - ($ - $$)  db  0
+    times   8192 - ($ - $$)  db  0
 stack_top:
     
 trampoline_end:
