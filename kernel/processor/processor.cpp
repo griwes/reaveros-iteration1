@@ -34,6 +34,7 @@
 #include <processor/pit.h>
 #include <processor/interrupt_entry.h>
 #include <processor/smp.h>
+#include <scheduler/scheduler.h>
 
 namespace
 {
@@ -118,6 +119,8 @@ void processor::ap_initialize()
     
     gdt::ap_initialize(_core_gdtr, _core_gdt, _core_tss);
     idt::ap_initialize(_core_idtr, _core_idt);
+    
+    scheduler::ap_initialize();
     
     for (;;) ;
 }
@@ -222,10 +225,10 @@ void processor::ipi(processor::core * core, processor::ipis ipi, uint8_t vector)
     processor::current_core::ipi(core->apic_id(), ipi, vector);
 }
 
-/*void processor::broadcast(processor::broadcast_types target, processor::current_core::ipis ipi, uint8_t vector)
+void processor::broadcast(processor::broadcast_types target, processor::current_core::ipis ipi, uint8_t vector)
 {
     processor::current_core::broadcast(target, ipi, vector);
-}*/
+}
 
 processor::core * processor::get_core(uint64_t id)
 {

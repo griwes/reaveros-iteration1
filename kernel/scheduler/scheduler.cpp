@@ -23,49 +23,25 @@
  * 
  **/
 
-#pragma once
+#include <scheduler/scheduler.h>
+#include <processor/current_core.h>
 
-#include <memory/pmm.h>
-#include <processor/core.h>
-
-namespace processor
+namespace 
 {
-    processor::core * get_core(uint64_t);
+    bool _initialize_aps = false;
+}
+
+void scheduler::initialize()
+{
     
-    namespace current_core
+    
+    _initialize_aps = true;
+}
+
+void scheduler::ap_initialize()
+{
+    while (!_initialize_aps)
     {
-        enum class ipis
-        {
-            init,
-            sipi,
-            panic
-        };
-        
-        enum class broadcast_types
-        {
-            all = 2,
-            others = 3
-        };
-        
-        void initialize();
-        void eoi(uint8_t);
-        
-        uint32_t id();
-        
-        void sleep(uint64_t); // subsecond
-        void stop();
-        
-        void broadcast(broadcast_types, ipis, uint8_t = 0);
-        void ipi(uint64_t, ipis, uint8_t = 0);
-        
-        inline memory::pmm::frame_stack & frame_stack()
-        {
-            return processor::get_core(id())->frame_stack();
-        }
-        
-        inline memory::index_stack & stack_stack()
-        {
-            return processor::get_core(id())->stack_stack();
-        }
-    };
+        processor::current_core::sleep(200000);
+    }
 }

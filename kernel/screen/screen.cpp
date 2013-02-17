@@ -41,13 +41,16 @@ void screen::print(tag::tags t)
     switch (t)
     {
         case tag::memory:
-            screen::print("[Memory] ");
+            screen::print("[Memory   ] ");
             break;
         case tag::cpu:
-            screen::print("[CPU   ] ");
+            screen::print("[CPU      ] ");
             break;
         case tag::acpi:
-            screen::print("[ACPI  ] ");
+            screen::print("[ACPI     ] ");
+            break;
+        case tag::scheduler:
+            screen::print("[Scheduler] ");
     }
     
     screen::print(color::gray);

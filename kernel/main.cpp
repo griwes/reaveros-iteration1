@@ -28,6 +28,7 @@
 #include <memory/pmm.h>
 #include <processor/processor.h>
 #include <memory/stacks.h>
+#include <scheduler/scheduler.h>
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
@@ -54,13 +55,13 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     processor::initialize();
     screen::done();
     
-    for (;;) ;
-    
-/*    screen::print(tag::scheduler, "Initializing scheduler...");
+    screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     screen::done();
     
-    screen::print(tag::scheduler, "Starting service supervisor...");
+    for (;;) ;
+    
+/*    screen::print(tag::scheduler, "Starting service supervisor...");
     scheduler::process supervisor = scheduler::create_process(initrd["superv.srv"]);
     supervisor.set_priority(10);
     screen::done();

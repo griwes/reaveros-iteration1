@@ -54,7 +54,11 @@ _load_gdt:
     lgdt    [rax]
 
     mov     rax, qword .ret
-    jmp     0x8:rax
+
+    push    0x8
+    push    rax
+    
+    retf
 
     .ret:
     mov     ax, 0x10
@@ -62,7 +66,7 @@ _load_gdt:
     mov     gs, ax
     mov     ss, ax
     
-    mov     ax, 0x28
+    mov     ax, 0x2B
     ltr     ax
     
     ret
@@ -79,7 +83,10 @@ _load_gdt_from:
     
     mov     rax, qword .ret
     
-    jmp     0x8:rax
+    push    0x8
+    push    rax
+    
+    retf
     
     .ret:
     mov     ax, 0x10

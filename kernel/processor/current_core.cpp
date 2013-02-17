@@ -103,13 +103,21 @@ namespace
     uint8_t _spurious_vector = 0;
     uint8_t _timer_vector = 0;
     
+    uint8_t _panic_vector = 0;
+    
     void _calibrate_local_timer(processor::idt::irq_context)
     {
         _invoked = true;
     }
     
-    void _lapic_timer(processor::idt::irq_context)
+    void _lapic_timer(processor::idt::irq_context ctx)
     {
+    }
+    
+    void _panic_core(processor::idt::irq_context)
+    {
+        screen::console.release();
+        asm volatile ("cli; hlt");
     }
 }
 
@@ -160,6 +168,8 @@ void processor::current_core::initialize()
     
     _write_register(lvt_timer, _timer_vector | (1 << 17));
     _write_register(divide_configuration, 3);
+    
+    _panic_vector = interrupts::allocate(_panic_core, 2);
         
     // TODO: HPET
     
@@ -185,7 +195,7 @@ void processor::current_core::initialize()
     _ticks_per_second = (0xFFFFFFFF - _read_register(current_count)) * 16 * 100;
     _write_register(initial_count, 0);
     
-    screen::print("\nLAPIC tics per second (estimated): ", _ticks_per_second);
+    screen::debug("\nLAPIC tics per second (estimated): ", _ticks_per_second);
     
     interrupts::remove_handler(_timer_vector);
     interrupts::set_handler(_timer_vector, _lapic_timer);
@@ -218,8 +228,34 @@ void processor::current_core::ipi(uint64_t apic_id, processor::current_core::ipi
             
             break;
         }
+        
+        default:
+        {
+            break;
+        }
     }
 }
+
+void processor::current_core::broadcast(processor::current_core::broadcast_types type, processor::current_core::ipis ipi, uint8_t vector)
+{
+    _write_register(interrupt_command_32, 0xFF << 24);
+    
+    switch (ipi)
+    {
+        case ipis::panic:
+        {
+            _write_register(interrupt_command_0, ((uint8_t)type << 18) | _panic_vector);
+            
+            break;
+        }
+        
+        default:
+        {
+            break;
+        }
+    }
+}
+
 
 uint32_t processor::current_core::id()
 {
