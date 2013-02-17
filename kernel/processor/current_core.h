@@ -37,7 +37,8 @@ namespace processor
         enum class ipis
         {
             init,
-            sipi
+            sipi,
+//            panic
         };
         
         enum class broadcast_types

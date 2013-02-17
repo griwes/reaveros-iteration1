@@ -99,7 +99,7 @@ void processor::ap_initialize()
     uint64_t stack = memory::stack_manager::allocate();
     memory::vm::map(stack - 4096);
     memory::stack_manager::set(stack);
-
+    
     current_core::initialize();
     uint32_t apic_id = current_core::id();
     
@@ -168,9 +168,9 @@ namespace
         
         tss->iomap = sizeof(processor::gdt::tss);
         
-        start[id].base_low = (uint64_t)&tss & 0xFFFFFF;
-        start[id].base_high = ((uint64_t)&tss >> 24) & 0xFF;
-        *(uint32_t *)&start[id + 1] = ((uint64_t)&tss >> 32) & 0xFFFFFFFF;
+        start[id].base_low = (uint64_t)tss & 0xFFFFFF;
+        start[id].base_high = ((uint64_t)tss >> 24) & 0xFF;
+        *(uint32_t *)&start[id + 1] = ((uint64_t)tss >> 32) & 0xFFFFFFFF;
         
         start[id].limit_low = (sizeof(processor::gdt::tss) & 0xFFFF) - 1;
         start[id].limit_high = sizeof(processor::gdt::tss) >> 16;
@@ -179,6 +179,13 @@ namespace
         start[id].code = 1;
         start[id].present = 1;
         start[id].dpl = 3;
+        
+        tss->ist1 = memory::stack_manager::allocate();
+        memory::vm::map(tss->ist1 - 1);
+        tss->ist2 = memory::stack_manager::allocate();
+        memory::vm::map(tss->ist2 - 1);
+        tss->ist3 = memory::stack_manager::allocate();
+        memory::vm::map(tss->ist3 - 1);
     }
 }
 

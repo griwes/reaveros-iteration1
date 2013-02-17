@@ -74,19 +74,19 @@ namespace
         
         _setup_idte(0, (uint64_t)processor::handlers::de, 0x08, true, 0, 0xE, idt);
         _setup_idte(1, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE, idt);
-        _setup_idte(2, (uint64_t)processor::handlers::nmi, 0x08, true, 0, 0xE, idt); // TODO: add IST
+        _setup_idte(2, (uint64_t)processor::handlers::nmi, 0x08, true, 0, 0xE, idt, 1);
         _setup_idte(3, (uint64_t)processor::handlers::rp, 0x08, true, 0, 0xE, idt); // breakpoint
         _setup_idte(4, (uint64_t)processor::handlers::of, 0x08, true, 0, 0xE, idt);
         _setup_idte(5, (uint64_t)processor::handlers::br, 0x08, true, 0, 0xE, idt);
         _setup_idte(6, (uint64_t)processor::handlers::ud, 0x08, true, 0, 0xE, idt);
         _setup_idte(7, (uint64_t)processor::handlers::nm, 0x08, true, 0, 0xE, idt);
-        _setup_idte(8, (uint64_t)processor::handlers::df, 0x08, true, 0, 0xE, idt); // TODO: add IST
+        _setup_idte(8, (uint64_t)processor::handlers::df, 0x08, true, 0, 0xE, idt, 2);
         _setup_idte(9, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE, idt);
         _setup_idte(10, (uint64_t)processor::handlers::ts, 0x08, true, 0, 0xE, idt);
         _setup_idte(11, (uint64_t)processor::handlers::np, 0x08, true, 0, 0xE, idt);
         _setup_idte(12, (uint64_t)processor::handlers::sf, 0x08, true, 0, 0xE, idt);
         _setup_idte(13, (uint64_t)processor::handlers::gp, 0x08, true, 0, 0xE, idt);
-        _setup_idte(14, (uint64_t)processor::handlers::pf, 0x08, true, 0, 0xE, idt);
+        _setup_idte(14, (uint64_t)processor::handlers::pf, 0x08, true, 0, 0xE, idt, 3);
         _setup_idte(15, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE, idt);
         _setup_idte(16, (uint64_t)processor::handlers::mf, 0x08, true, 0, 0xE, idt);
         _setup_idte(17, (uint64_t)processor::handlers::ac, 0x08, true, 0, 0xE, idt);

@@ -36,8 +36,9 @@ namespace
 
 void memory::stack_manager::initialize()
 {
-    new ((void *)&_global_stack_stack) memory::index_stack(vm::global_stack_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);   
+    new ((void *)&_global_stack_stack) memory::index_stack(vm::global_stack_stack_area, 0, 64 * 1024 - 1, 64 * 1024 * 1024);   
     // number of threads limited to 64 * 1024 * 1024 should be sane
+    // doesn't work without -1; locks somewhere in mapping it (?!)
 }
 
 void memory::stack_manager::split_stack_stack(processor::core * cores, uint64_t num_cores)

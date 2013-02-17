@@ -26,6 +26,7 @@
 #include <screen/screen.h>
 #include <memory/memory.h>
 #include <processor/interrupts.h>
+#include <processor/processor.h>
 
 void * __dso_handle = 0;
 
@@ -52,6 +53,8 @@ void _panic(const char * message, const char * file, uint64_t line, const char *
     screen::commit();
 
     asm volatile ("cli; hlt");
+    
+    // processor::broadcast(processor::broadcasts::others, processor::ipis::panic);
     
     // debugger::start();
 }

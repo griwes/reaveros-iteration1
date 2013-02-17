@@ -87,7 +87,7 @@ _load_gdt_from:
     mov     gs, ax
     mov     ss, ax
     
-    mov     ax, 0x28
+    mov     ax, 0x2B
     ltr     ax
     
     ret
