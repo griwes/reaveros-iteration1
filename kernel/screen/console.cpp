@@ -406,7 +406,12 @@ void screen::kernel_console::lock()
     else
     {
         __unlock(&_lock);
-        asm volatile ("pause");
+        
+        while (_count)
+        {
+            asm volatile ("pause");
+        }
+        
         lock();
         
         return;
@@ -419,19 +424,23 @@ void screen::kernel_console::unlock()
 {
     uint64_t id = processor::current_core::id();
     
-    __lock(&_lock);
+    if (!_count)
+    {
+        PANIC("Tried to unlock not locked console");
+    }
     
     if (_owner != id)
     {
         PANIC("Tried to unlock console from wrong core");
     }
     
-    if (!_count)
-    {
-        PANIC("Tried to unlock not locked console");
-    }
-    
     --_count;
-    
-    __unlock(&_lock);
+}
+
+void screen::kernel_console::release()
+{
+    if (_count && _owner == processor::current_core::id())
+    {
+        _count = 0;
+    }
 }

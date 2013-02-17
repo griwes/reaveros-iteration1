@@ -73,7 +73,7 @@ namespace
         {
             memory::vm::unmap(memory::vm::acpi_temporal_rsdt_mapping_start, memory::vm::acpi_temporal_rsdt_mapping_end, false);
             
-            screen::print(tag::acpi, "XSDT invalid, falling back to RSDT\n");
+            screen::debug(tag::acpi, "XSDT invalid, falling back to RSDT\n");
             
             _install_rsdt(ptr);
         }
@@ -216,7 +216,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
                 {
                     new ((void *)(cores + core_num++)) processor::core(lapic->apic_id, lapic->acpi_id);
                 
-                    screen::print("\nFound LAPIC entry: ", lapic->apic_id);
+                    screen::debug("\nFound LAPIC entry: ", lapic->apic_id);
                 }
                 
                 break;
@@ -228,7 +228,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
                 
                 new ((void *)(ioapics + ioapic_num++)) processor::ioapic(ioapic->apic_id, ioapic->base_int, ioapic->base_address);
                 
-                screen::print("\nFound I/O APIC entry: ", ioapic->apic_id, ", handling vectors from ", ioapic->base_int, " to ", ioapics[ioapic_num - 1].end());
+                screen::debug("\nFound I/O APIC entry: ", ioapic->apic_id, ", handling vectors from ", ioapic->base_int, " to ", ioapics[ioapic_num - 1].end());
                                 
                 break;
             }
@@ -239,38 +239,38 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
                 
                 ints[iso->source].set(iso->source, iso->int_number, iso->flags);
                 
-                screen::print("\nFound redirection entry: ", iso->source, " -> ", iso->int_number, ", polarity: ");
+                screen::debug("\nFound redirection entry: ", iso->source, " -> ", iso->int_number, ", polarity: ");
                 
                 switch (iso->flags & 3)
                 {
                     case 0:
-                        screen::print("standard");
+                        screen::debug("standard");
                         break;
                     case 1:
-                        screen::print("active high");
+                        screen::debug("active high");
                         break;
                     case 2:
-                        screen::print("RESERVED");
+                        screen::debug("RESERVED");
                         PANIC("Reserved polarity in MADT");
                     case 3:
-                        screen::print("active low");
+                        screen::debug("active low");
                 }
                 
-                screen::print(", trigger mode: ");
+                screen::debug(", trigger mode: ");
                 
                 switch ((iso->flags >> 2) & 3)
                 {
                     case 0:
-                        screen::print("standard");
+                        screen::debug("standard");
                         break;
                     case 1:
-                        screen::print("edge");
+                        screen::debug("edge");
                         break;
                     case 2:
-                        screen::print("RESERVED");
+                        screen::debug("RESERVED");
                         PANIC("Reserved trigger mode in MADT");
                     case 3:
-                        screen::print("level");
+                        screen::debug("level");
                 }
             }
             
@@ -306,7 +306,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
                 {
                     new ((void *)(cores + core_num++)) processor::core(x2apic->x2apic_id, x2apic->acpi_uuid, false);
                     
-                    screen::print("\nFound x2APIC entry: ", x2apic->x2apic_id);
+                    screen::debug("\nFound x2APIC entry: ", x2apic->x2apic_id);
                 }
                 
                 break;
@@ -350,7 +350,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
                     
                     if (idx == core_num - 1)
                     {
-                        screen::print(tag::acpi, "Ignoring NMI vector entry for unknown ACPI ID ", lapic_nmi->acpi_id, "\n");
+                        screen::debug(tag::acpi, "Ignoring NMI vector entry for unknown ACPI ID ", lapic_nmi->acpi_id, "\n");
                     }
                 }
                 
@@ -383,7 +383,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
                     
                     if (idx == core_num - 1)
                     {
-                        screen::print(tag::acpi, "Ignoring x2APIC NMI entry for unknown ACPI UUID ", x2apic_nmi->acpi_uuid, "\n");
+                        screen::debug(tag::acpi, "Ignoring x2APIC NMI entry for unknown ACPI UUID ", x2apic_nmi->acpi_uuid, "\n");
                     }
                 }
                 

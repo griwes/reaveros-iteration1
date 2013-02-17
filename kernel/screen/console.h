@@ -102,6 +102,8 @@ namespace screen
         void lock();
         void unlock();
         
+        void release();
+        
         friend void processor::initialize();
         
     private:

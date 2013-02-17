@@ -38,7 +38,8 @@ namespace tag
     {
         memory,
         cpu,
-        acpi
+        acpi,
+        scheduler
     };
 }
 
@@ -113,5 +114,13 @@ namespace screen
         console.commit();
         screen::print("\n");
         console.unlock();
+    }
+    
+    template<typename... Args>
+    inline void debug(const Args &... args)
+    {
+#ifdef ROSEDEBUG
+        print(args...);
+#endif
     }
 }

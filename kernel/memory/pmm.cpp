@@ -228,8 +228,8 @@ void memory::pmm::split_frame_stack(processor::core * cores, uint64_t num_cores)
         frames_per_core = (64 * 1024 * 1024) / 8;
     }
     
-    screen::print("\n", frames_to_distribute, " frames to distribute, ", frames_per_core, " per core.");
-    screen::print("\nFilling frame stack of CPU#", processor::current_core::id());
+    screen::debug("\n", frames_to_distribute, " frames to distribute, ", frames_per_core, " per core.");
+    screen::debug("\nFilling frame stack of CPU#", processor::current_core::id());
     
     for (uint64_t i = 0; i < frames_per_core; ++i)
     {
@@ -238,7 +238,7 @@ void memory::pmm::split_frame_stack(processor::core * cores, uint64_t num_cores)
     
     for (uint64_t i = 0; i < num_cores; ++i)
     {
-        screen::print("\nFilling frame stack of CPU#", cores[i].apic_id());
+        screen::debug("\nFilling frame stack of CPU#", cores[i].apic_id());
         
         for (uint64_t j = 0; j < frames_per_core; ++j)
         {

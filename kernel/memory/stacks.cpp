@@ -51,9 +51,9 @@ void memory::stack_manager::split_stack_stack(processor::core * cores, uint64_t 
         stacks_per_core = (1024 * 1024) / 8;
     }
     
-    screen::print("\n", stacks_to_distribute, " stacks to distribute, ", stacks_per_core, " per core");
+    screen::debug("\n", stacks_to_distribute, " stacks to distribute, ", stacks_per_core, " per core");
     
-    screen::print("\nFilling stack stack of CPU#", processor::current_core::id());
+    screen::debug("\nFilling stack stack of CPU#", processor::current_core::id());
     
     for (uint64_t i = 0; i < stacks_per_core; ++i)
     {
@@ -62,7 +62,7 @@ void memory::stack_manager::split_stack_stack(processor::core * cores, uint64_t 
     
     for (uint64_t i = 0; i < num_cores; ++i)
     {
-        screen::print("\nFilling stack stack of CPU#", cores[i].apic_id());
+        screen::debug("\nFilling stack stack of CPU#", cores[i].apic_id());
         
         for (uint64_t j = 0; j < stacks_per_core; ++j)
         {
