@@ -98,6 +98,16 @@ void memory::index_stack::push(uint64_t idx)
     }
     
     _stack[_size++] = idx;
+    
+    while (_size > _global->size())
+    {
+        _global->push(_stack[--_size]);
+    }
+    
+    while (_capacity - _size > 512)
+    {
+        _shrink();
+    }
 }
 
 void memory::index_stack::_expand()
