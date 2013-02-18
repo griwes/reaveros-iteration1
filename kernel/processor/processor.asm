@@ -115,15 +115,21 @@ gdt:
     dq _gdt_start
 
 _lock_bit:
+    cli
+
     lock    bts     qword [rdi], rsi
     
     jc      .fail
 
 ;    call    disable_scheduler
-        
+
+    sti
+    
     ret
     
     .fail:
+        sti
+    
         clc
         pause
         
@@ -143,6 +149,8 @@ _unlock_bit:
     ret
 
 __lock:
+    cli
+
     mov     al, 1
     cmpxchg byte [rdi], al
     
@@ -151,6 +159,8 @@ __lock:
     je      .retry
     
 ;    call    disable_scheduler
+
+    sti
     
     ret
     
