@@ -44,6 +44,7 @@ void _panic(const char * message, const char * file, uint64_t line, const char *
     processor::broadcast(processor::broadcast_types::others, processor::ipis::panic);
     
     screen::clear();
+    screen::print(color::gray);
     
     screen::console.special();
     
