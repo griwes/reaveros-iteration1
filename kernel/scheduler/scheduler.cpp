@@ -26,22 +26,53 @@
 #include <scheduler/scheduler.h>
 #include <processor/current_core.h>
 
-namespace 
+namespace
 {
     bool _initialize_aps = false;
+    uint64_t _in_init = 0;
+    
+    memory::index_stack _global_pcb_stack;
+    memory::index_stack _global_tcb_stack;
+    
+//    scheduler::thread_queue _wait_for_irq[256];
+    
+//    scheduler::thread_scheduler _global_scheduler;
 }
 
 void scheduler::initialize()
 {
+    // TODO:
+    // 1. initialize PCB global and local stacks
+    // 2. initialize TCB global and local stacks
+    // 3. initialize thread queues for each priority
+    // 4. initialize thread queues waiting on each interrupt or exception
+    // 5. initialize kernel process and current thread
+    // 6. initialize IPC subsystem
+    // 7. set _initialize_aps
+    // 8. wait for rest of the cores to finish scheduler initialization
+    // 9. schedule current thread
     
+    new ((void *)&_global_pcb_stack) memory::index_stack(memory::vm::global_pcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
+    new ((void *)&_global_tcb_stack) memory::index_stack(memory::vm::global_tcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
     
     _initialize_aps = true;
+    
+    while (_in_init)
+    {
+        processor::current_core::sleep(2000000);
+    }
+    
+//    _global_scheduler.add(_create_current_thread());
 }
 
 void scheduler::ap_initialize()
 {
+    ++_in_init;
+    
     while (!_initialize_aps)
     {
-        processor::current_core::sleep(200000);
+        processor::current_core::sleep(2000000);
     }
+    
+    --_in_init;
 }

@@ -50,7 +50,9 @@ namespace memory
             frame_stack_area =                  0xFFFFFFF540000000,
             global_stack_stack_area =           0xFFFFFFF500000000,
             stack_stack_area =                  0xFFFFFFF400000000,
-            stack_area =                        0xFFFFFF7580000000
+            stack_area =                        0xFFFFFF7580000000,
+            global_pcb_stack_area =             0xFFFFFF7540000000,
+            global_tcb_stack_area =             0xFFFFFF7500000000
         };
         
         inline void map(uint64_t virtual_address)
