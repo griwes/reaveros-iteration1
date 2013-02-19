@@ -25,23 +25,19 @@
 
 #pragma once
 
+#include <scheduler/thread.h>
+
 namespace scheduler
 {
-    class thread
-    {
-    };
-    
-    inline thread _create_current_thread()
-    {
-        return {};
-    }
-    
     class thread_scheduler
     {
     public:
-        thread_scheduler() {}
-        thread_scheduler(thread_scheduler *) {}
+        thread_scheduler();
+        thread_scheduler(thread_scheduler *);
         
-        void add(const thread &) {}
+        void add(thread *);
+        
+    private:
+        thread_scheduler * _global;
     };
 }

@@ -298,5 +298,7 @@ namespace memory
         void set_foreign(uint64_t);
         
         bool locked(uint64_t);
+        
+        void drop_bootloader_mapping(bool);
     }
 }

@@ -375,3 +375,53 @@ bool memory::x64::locked(uint64_t address)
     return (*(uint64_t *)&(current.pml4()->entries[pml4e]) & (1 << 9)) || (*(uint64_t *)&(current.pdpt(pml4e)->entries[pdpte]) & (1 << 9))
         || (*(uint64_t*)&(current.pd(pml4e, pdpte)->entries[pde]) & (1 << 9));
 }
+
+// clears mappings in lower half and pushes paging structures' addresses, but doesn't
+// push mapped frames, that may be used somewhere in current paging structures
+void memory::x64::drop_bootloader_mapping(bool push)
+{
+    address_generator gen(256);
+    
+    if (!push)
+    {
+        for (uint64_t pml4e = 0; pml4e < 256; ++pml4e)
+        {
+            gen.pml4()->entries[pml4e].present = 0;
+        }
+    }
+    
+    for (uint64_t pml4e = 0; pml4e < 256; ++pml4e)
+    {
+        if (!gen.pml4()->entries[pml4e].present)
+        {
+            continue;
+        }
+        
+        for (uint64_t pdpte = 0; pdpte < 512; ++pdpte)
+        {
+            if (!gen.pdpt(pml4e)->entries[pdpte].present)
+            {
+                continue;
+            }
+            
+            for (uint64_t pde = 0; pde < 512; ++pde)
+            {
+                if (!gen.pd(pml4e, pdpte)->entries[pde].present)
+                {
+                    continue;
+                }
+                
+                pmm::push(gen.pd(pml4e, pdpte)->entries[pde].address << 12);
+                gen.pd(pml4e, pdpte)->entries[pde].present = 0;
+            }
+            
+            pmm::push(gen.pdpt(pml4e)->entries[pdpte].address << 12);
+            gen.pdpt(pml4e)->entries[pdpte].present = 0;
+        }
+        
+        pmm::push(gen.pml4()->entries[pml4e].address << 12);
+        gen.pml4()->entries[pml4e].present = 0;
+    }
+    
+    processor::reload_cr3();
+}

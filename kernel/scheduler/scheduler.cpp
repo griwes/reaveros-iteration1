@@ -28,13 +28,18 @@
 
 namespace
 {
-    bool _initialize_aps = false;
-    uint64_t _in_init = 0;
+    volatile bool _initialize_aps = false;
+    volatile uint64_t _in_init = 0;
     
     memory::index_stack _global_pcb_stack;
     memory::index_stack _global_tcb_stack;
     
     scheduler::thread_scheduler _global_scheduler;
+    
+    scheduler::thread * _create_current_thread()
+    {
+        return nullptr;
+    }
 }
 
 void scheduler::initialize()
@@ -49,7 +54,7 @@ void scheduler::initialize()
     // 7. set _initialize_aps
     // 8. wait for rest of the cores to finish scheduler initialization
     // 9. schedule current thread
-    
+
     new ((void *)&_global_pcb_stack) memory::index_stack(memory::vm::global_pcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
     new ((void *)&_global_tcb_stack) memory::index_stack(memory::vm::global_tcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
     new ((void *)&_global_scheduler) scheduler::thread_scheduler();

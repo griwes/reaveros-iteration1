@@ -92,6 +92,8 @@ void processor::initialize()
     smp::boot(_cores + 1, num_ap_cores);
     _num_cores = num_ap_cores + 1;
     
+    memory::drop_bootloader_mapping();
+    
     _ready = true;
 }
 
@@ -121,6 +123,8 @@ void processor::ap_initialize()
     idt::ap_initialize(_core_idtr, _core_idt);
     
     scheduler::ap_initialize();
+    
+    memory::drop_bootloader_mapping(false);
     
     for (;;) ;
 }
