@@ -175,14 +175,17 @@ void memory::pmm::frame_stack::push(uint64_t frame)
         _expand();
     }
     
-    while (_size > global_stack.size())
+    if (this != &global_stack)
     {
-        global_stack.push(_stack[--_size]);
-    }
+        while (_size > global_stack.size())
+        {
+            global_stack.push(_stack[--_size]);
+        }
     
-    while (_capacity - _size > 512)
-    {
-        _shrink();
+        while (_capacity - _size > 512)
+        {
+            _shrink();
+        }
     }
     
     _stack[_size++] = frame;

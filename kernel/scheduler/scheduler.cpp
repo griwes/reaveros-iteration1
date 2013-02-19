@@ -75,8 +75,10 @@ void scheduler::ap_initialize()
         processor::current_core::sleep(2000000);
     }
         
-    new ((void *)&processor::current_core::pcb_stack()) memory::index_stack(memory::vm::pcb_stack_area, &_global_pcb_stack);
-    new ((void *)&processor::current_core::tcb_stack()) memory::index_stack(memory::vm::tcb_stack_area, &_global_tcb_stack);
+    new ((void *)&processor::current_core::pcb_stack()) memory::index_stack(memory::vm::pcb_stack_area + processor::current_core::id() 
+        * 1024 * 1024, &_global_pcb_stack);
+    new ((void *)&processor::current_core::tcb_stack()) memory::index_stack(memory::vm::tcb_stack_area + processor::current_core::id() 
+        * 1024 * 1024, &_global_tcb_stack);
     
     for (uint64_t i = 0; i < 1024; ++i)
     {

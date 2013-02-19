@@ -60,6 +60,11 @@ uint64_t memory::index_stack::pop()
             {
                 push(_global->pop());
             }
+            
+            if (_global->size() == 0)
+            {
+                _global->_add();
+            }
         }
         
         else if (_top != _max)
@@ -91,6 +96,19 @@ void memory::index_stack::push(uint64_t idx)
 {
     __lock(&_lock);
     auto guard = make_scope_guard([&](){ __unlock(&_lock); });
+    
+    if (_global && _size == 128 * 1024)
+    {
+        for (uint64_t i = 0; i < 4097; ++i)
+        {
+            _global->push(_stack[--_size]);
+        }
+        
+        for (uint64_t i = 0; i < 8; ++i)
+        {
+            _shrink();
+        }
+    }
     
     if (_size == _capacity)
     {
@@ -128,7 +146,7 @@ void memory::index_stack::_add()
 {
     _expand();
     
-    for (uint64_t i = _top; i < _top + 512; ++i)
+    for (uint64_t i = _top; i < (_top + 512 < _max ? _top + 512 : _max); ++i)
     {
         _stack[_size++] = i;
     }
