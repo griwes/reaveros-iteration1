@@ -34,9 +34,7 @@ namespace
     memory::index_stack _global_pcb_stack;
     memory::index_stack _global_tcb_stack;
     
-//    scheduler::thread_queue _wait_for_irq[256];
-    
-//    scheduler::thread_scheduler _global_scheduler;
+    scheduler::thread_scheduler _global_scheduler;
 }
 
 void scheduler::initialize()
@@ -54,15 +52,18 @@ void scheduler::initialize()
     
     new ((void *)&_global_pcb_stack) memory::index_stack(memory::vm::global_pcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
     new ((void *)&_global_tcb_stack) memory::index_stack(memory::vm::global_tcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
+    new ((void *)&_global_scheduler) scheduler::thread_scheduler();
     
     _initialize_aps = true;
+    
+    ap_initialize(); // this looks funny here, on BSP
     
     while (_in_init)
     {
         processor::current_core::sleep(2000000);
     }
     
-//    _global_scheduler.add(_create_current_thread());
+    _global_scheduler.add(_create_current_thread());
 }
 
 void scheduler::ap_initialize()
@@ -73,6 +74,18 @@ void scheduler::ap_initialize()
     {
         processor::current_core::sleep(2000000);
     }
+        
+    new ((void *)&processor::current_core::pcb_stack()) memory::index_stack(memory::vm::pcb_stack_area, &_global_pcb_stack);
+    new ((void *)&processor::current_core::tcb_stack()) memory::index_stack(memory::vm::tcb_stack_area, &_global_tcb_stack);
+    
+    for (uint64_t i = 0; i < 1024; ++i)
+    {
+        processor::current_core::pcb_stack().push(_global_pcb_stack.pop());
+        processor::current_core::tcb_stack().push(_global_tcb_stack.pop());
+        processor::current_core::tcb_stack().push(_global_tcb_stack.pop());
+    }
+    
+    new ((void *)&processor::current_core::scheduler()) scheduler::thread_scheduler(&_global_scheduler);
     
     --_in_init;
 }

@@ -28,6 +28,7 @@
 #include <memory/vm.h>
 #include <memory/index_stack.h>
 #include <memory/stacks.h>
+#include <scheduler/thread_scheduler.h>
 
 namespace processor
 {
@@ -78,6 +79,21 @@ namespace processor
             return _stack_stack;
         }
         
+        memory::index_stack & pcb_stack()
+        {
+            return _pcb_stack;
+        }
+        
+        memory::index_stack & tcb_stack()
+        {
+            return _tcb_stack;
+        }
+        
+        scheduler::thread_scheduler & scheduler()
+        {
+            return _scheduler;
+        }
+        
         uint8_t volatile * started = nullptr;
         
     private:
@@ -93,5 +109,9 @@ namespace processor
         
         memory::pmm::frame_stack _frame_stack;
         memory::index_stack _stack_stack;
+        
+        memory::index_stack _pcb_stack;
+        memory::index_stack _tcb_stack;
+        scheduler::thread_scheduler _scheduler;
     };
 }

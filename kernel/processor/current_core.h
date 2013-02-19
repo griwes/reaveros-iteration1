@@ -67,5 +67,20 @@ namespace processor
         {
             return processor::get_core(id())->stack_stack();
         }
+        
+        inline memory::index_stack & pcb_stack()
+        {
+            return processor::get_core(id())->pcb_stack();
+        }
+        
+        inline memory::index_stack & tcb_stack()
+        {
+            return processor::get_core(id())->tcb_stack();
+        }
+        
+        inline scheduler::thread_scheduler & scheduler()
+        {
+            return processor::get_core(id())->scheduler();
+        }
     };
 }
