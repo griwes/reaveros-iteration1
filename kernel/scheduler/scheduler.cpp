@@ -25,6 +25,8 @@
 
 #include <scheduler/scheduler.h>
 #include <processor/current_core.h>
+#include <scheduler/thread.h>
+#include <scheduler/process.h>
 
 namespace
 {
@@ -56,7 +58,7 @@ void scheduler::initialize()
     // 9. schedule current thread
 
     new ((void *)&_global_pcb_stack) memory::index_stack(memory::vm::global_pcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
-    new ((void *)&_global_tcb_stack) memory::index_stack(memory::vm::global_tcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
+    new ((void *)&_global_tcb_stack) memory::index_stack(memory::vm::global_tcb_stack_area, 0, 64 * 1024, 256 * 1024 * 1024);
     new ((void *)&_global_scheduler) scheduler::thread_scheduler();
     
     _initialize_aps = true;

@@ -133,7 +133,7 @@ void processor::current_core::eoi(uint8_t vec_number)
 
 void processor::current_core::initialize()
 {
-    _write_register(destination_format, 0xF0000000);
+    _write_register(destination_format, _read_register(destination_format) & 0xF0000000);
     _write_register(logical_destination, 0xFF000000);
     
     // TODO: add CPUID checks and enable model-dependant LVT disable

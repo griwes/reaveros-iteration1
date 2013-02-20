@@ -52,9 +52,16 @@ namespace memory
             stack_stack_area =                  0xFFFFFFF400000000,
             stack_area =                        0xFFFFFF7580000000,
             global_pcb_stack_area =             0xFFFFFF7540000000,
-            global_tcb_stack_area =             0xFFFFFF7500000000,
-            pcb_stack_area =                    0xFFFFFF7400000000,
-            tcb_stack_area =                    0xFFFFFF7300000000
+            global_tcb_stack_area =             0xFFFFFF74C0000000,
+            pcb_stack_area =                    0xFFFFFF73C0000000,
+            tcb_stack_area =                    0xFFFFFF72C0000000,
+            pcb_area =                          0xFFFFFF71C0000000,
+            tcb_area =                          0xFFFFFF61C0000000
+        };
+        
+        const uint64_t sparse_areas[][2] = {
+            { pcb_area, global_tcb_stack_area },
+            { tcb_area, pcb_area }
         };
         
         inline void map(uint64_t virtual_address)

@@ -296,6 +296,7 @@ namespace memory
         
         uint64_t clone_kernel();
         void set_foreign(uint64_t);
+        void release_foreign();
         
         bool locked(uint64_t);
         

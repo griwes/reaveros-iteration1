@@ -25,37 +25,30 @@
 
 #pragma once
 
+namespace user
+{
+    class user;
+}
+
 namespace scheduler
 {
-    class process;
-    class sse_state;
-    class mailbox;
+    class thread;
     
-    class thread
+    class process
     {
     public:
     private:
-        process * _parent;
-        thread * _prev;
-        thread * _next;
+        process * _owner;
+        user::user * _user;
         
-        uint64_t _rax, _rbx, _rcx, _rdx;
-        uint64_t _rbp, _rsp, _rsi, _rdi;
-        uint64_t _r8, _r9, _r10, _r11;
-        uint64_t _r12, _r13, _r14, _r15;
-        uint64_t _rip, _cs, _ss, _rflags;
-        uint64_t _kernel_cs, _kernel_ss, _kernel_rsp;
+        thread * _main_thread;
+        uint64_t _pml4;
         
         uint64_t _priority;
-        uint64_t _time;
+        uint64_t _num_threads;
+        uint64_t _num_zombies;
         
-        sse_state * _sse_state;
-        
-        mailbox * _mailbox;
-        
-        uint64_t _dead:1;
-        uint64_t _sse:1;
-        uint64_t _unused:62;
-        uint64_t _unused2;
+        uint64_t _service:1;
+        uint64_t _unused:63;
     };
 }

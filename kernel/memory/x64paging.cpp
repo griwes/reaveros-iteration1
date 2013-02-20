@@ -348,17 +348,25 @@ uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging 
         gen.pml4()->entries[startpml4e] = current.pml4()->entries[startpml4e];
     }
     
+    release_foreign();
+    
     return pml4_frame;
 }
 
 void memory::x64::set_foreign(uint64_t frame)
 {
     address_generator current(256);
+    current.pml4()->entries[257].lock();
     
     current.pml4()->entries[257] = frame;
     current.pdpt(257)->entries[256] = frame;
 
     processor::reload_cr3();
+}
+
+void memory::x64::release_foreign()
+{
+    address_generator(256).pml4()->entries[257].unlock();
 }
 
 // the function below may fail if some lock is acquired by different core while it is running

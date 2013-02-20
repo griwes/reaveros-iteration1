@@ -82,5 +82,5 @@ namespace processor
         {
             return processor::get_core(id())->scheduler();
         }
-    };
+    }
 }
