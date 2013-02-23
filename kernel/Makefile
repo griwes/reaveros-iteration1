@@ -10,8 +10,8 @@ OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=builds/kernel.img
 
 all: $(SOURCES) $(EXECUTABLE)
-	
-$(EXECUTABLE): $(OBJECTS) 
+
+$(EXECUTABLE): $(OBJECTS)
 	yasm -f elf64 -o entry.o entry.asm
 	yasm -f elf64 -o processor/asm.o processor/processor.asm
 	yasm -f elf64 -o processor/handlersasm.o processor/handlers.asm
