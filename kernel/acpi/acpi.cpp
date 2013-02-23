@@ -41,12 +41,12 @@ namespace
     {
         new_root = nullptr;
 
-        memory::vm::map_multiple(memory::vm::acpi_temporal_rsdt_mapping_start, memory::vm::acpi_temporal_rsdt_mapping_end,
+        memory::vm::map_multiple(memory::vm::acpi_temporal_rsdt_mapping, memory::vm::acpi_temporal_rsdt_mapping + 0x8000,
             ptr->rsdt_ptr);
 
-        if (((acpi::rsdt *)(memory::vm::acpi_temporal_rsdt_mapping_start + ptr->rsdt_ptr % 4096))->validate("RSDT"))
+        if (((acpi::rsdt *)(memory::vm::acpi_temporal_rsdt_mapping + ptr->rsdt_ptr % 4096))->validate("RSDT"))
         {
-            root = (acpi::rsdt *)(memory::vm::acpi_temporal_rsdt_mapping_start + ptr->rsdt_ptr % 4096);
+            root = (acpi::rsdt *)(memory::vm::acpi_temporal_rsdt_mapping + ptr->rsdt_ptr % 4096);
 
             return;
         }
@@ -59,19 +59,19 @@ namespace
 
     void _install_xsdt(acpi::rsdp * ptr)
     {
-        memory::vm::map_multiple(memory::vm::acpi_temporal_rsdt_mapping_start, memory::vm::acpi_temporal_rsdt_mapping_end,
+        memory::vm::map_multiple(memory::vm::acpi_temporal_rsdt_mapping, memory::vm::acpi_temporal_rsdt_mapping + 0x8000,
             ptr->xsdt_ptr);
 
-        if (((acpi::xsdt *)(memory::vm::acpi_temporal_rsdt_mapping_start + ptr->xsdt_ptr % 4096))->validate("XSDT"))
+        if (((acpi::xsdt *)(memory::vm::acpi_temporal_rsdt_mapping + ptr->xsdt_ptr % 4096))->validate("XSDT"))
         {
-            new_root = (acpi::xsdt *)(memory::vm::acpi_temporal_rsdt_mapping_start + ptr->xsdt_ptr % 4096);
+            new_root = (acpi::xsdt *)(memory::vm::acpi_temporal_rsdt_mapping + ptr->xsdt_ptr % 4096);
 
             return;
         }
 
         else
         {
-            memory::vm::unmap(memory::vm::acpi_temporal_rsdt_mapping_start, memory::vm::acpi_temporal_rsdt_mapping_end, false);
+            memory::vm::unmap(memory::vm::acpi_temporal_rsdt_mapping, memory::vm::acpi_temporal_rsdt_mapping + 0x8000, false);
 
             screen::debug(tag::acpi, "XSDT invalid, falling back to RSDT\n");
 
@@ -144,10 +144,9 @@ namespace
         {
             for (uint64_t i = 0; i < (new_root->length - 36) / 8; ++i)
             {
-                table = (acpi::description_table_header *)(memory::vm::acpi_temporal_table_mapping_start +
-                    new_root->entries[i] % 4096);
+                table = (acpi::description_table_header *)(memory::vm::acpi_temporal_table_mapping + new_root->entries[i] % 4096);
 
-                memory::vm::map_multiple(memory::vm::acpi_temporal_table_mapping_start, memory::vm::acpi_temporal_table_mapping_end,
+                memory::vm::map_multiple(memory::vm::acpi_temporal_table_mapping, memory::vm::acpi_temporal_table_mapping + 0x8000,
                     new_root->entries[i]);
 
                 if (table->validate(sign))
@@ -155,7 +154,7 @@ namespace
                     return table;
                 }
 
-                memory::vm::unmap(memory::vm::acpi_temporal_table_mapping_start, memory::vm::acpi_temporal_table_mapping_end, false);
+                memory::vm::unmap(memory::vm::acpi_temporal_table_mapping, memory::vm::acpi_temporal_table_mapping + 0x8000, false);
             }
         }
 
@@ -163,9 +162,9 @@ namespace
         {
             for (uint64_t i = 0; i < (root->length - 36) / 4; ++i)
             {
-                table = (acpi::description_table_header *)(memory::vm::acpi_temporal_table_mapping_start + root->entries[i] % 4096);
+                table = (acpi::description_table_header *)(memory::vm::acpi_temporal_table_mapping + root->entries[i] % 4096);
 
-                memory::vm::map_multiple(memory::vm::acpi_temporal_table_mapping_start, memory::vm::acpi_temporal_table_mapping_end,
+                memory::vm::map_multiple(memory::vm::acpi_temporal_table_mapping, memory::vm::acpi_temporal_table_mapping + 0x8000,
                     root->entries[i]);
 
                 if (table->validate(sign))
@@ -173,7 +172,7 @@ namespace
                     return table;
                 }
 
-                memory::vm::unmap(memory::vm::acpi_temporal_table_mapping_start, memory::vm::acpi_temporal_table_mapping_end, false);
+                memory::vm::unmap(memory::vm::acpi_temporal_table_mapping, memory::vm::acpi_temporal_table_mapping + 0x8000, false);
             }
         }
 
@@ -182,7 +181,7 @@ namespace
 
     void _free_table()
     {
-        memory::vm::unmap(memory::vm::acpi_temporal_table_mapping_start, memory::vm::acpi_temporal_table_mapping_end, false);
+        memory::vm::unmap(memory::vm::acpi_temporal_table_mapping, memory::vm::acpi_temporal_table_mapping + 0x8000, false);
     }
 }
 

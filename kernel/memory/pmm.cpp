@@ -65,7 +65,7 @@ memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)add
 memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::global_frame_stack),
     _size(0), _capacity(0), _lock(0)
 {
-    for (uint64_t i = 0; i < map_size; ++i)
+    for (uint64_t i = 0; i < map_size && global_stack.size() < max_memory_supported / 4096; ++i)
     {
         if (map[i].type != 1)
         {
@@ -227,6 +227,11 @@ void memory::pmm::boot_report()
         }
     }
 
+    if (total > max_memory_supported)
+    {
+        total = max_memory_supported;
+    }
+
     screen::print(total / (1024 * 1024 * 1024), " GiB ", (total % (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", (total % (1024 * 1024))
         / 1024, " KiB", '\n', '\n');
 }
@@ -236,9 +241,9 @@ void memory::pmm::split_frame_stack(processor::core * cores, uint64_t num_cores)
     uint64_t frames_to_distribute = global_stack.size() / 2;
     uint64_t frames_per_core = frames_to_distribute / (num_cores + 1);
 
-    if (frames_per_core > (64 * 1024 * 1024) / 8)
+    if (frames_per_core > (stack_size) / 8)
     {
-        frames_per_core = (64 * 1024 * 1024) / 8;
+        frames_per_core = (stack_size) / 8;
     }
 
     screen::debug("\n", frames_to_distribute, " frames to distribute, ", frames_per_core, " per core.");

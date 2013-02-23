@@ -75,7 +75,7 @@ namespace processor
                                    // type
 
         void initialize();
-        void ap_initialize(idtr *, idt_entry *);
+        void ap_initialize();
 
         void enable(uint8_t);
         void disable(uint8_t);

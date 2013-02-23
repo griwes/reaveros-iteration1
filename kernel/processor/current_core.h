@@ -53,7 +53,7 @@ namespace processor
         uint32_t id();
 
         void sleep(uint64_t); // subsecond
-        void stop();
+        void stop_timer();
 
         void broadcast(broadcast_types, ipis, uint8_t = 0);
         void ipi(uint64_t, ipis, uint8_t = 0);

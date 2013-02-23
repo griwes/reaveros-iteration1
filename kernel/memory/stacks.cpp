@@ -36,7 +36,7 @@ namespace
 
 void memory::stack_manager::initialize()
 {
-    new ((void *)&_global_stack_stack) memory::index_stack(vm::global_stack_stack_area, 0, 64 * 1024 - 1, 64 * 1024 * 1024);
+    new ((void *)&_global_stack_stack) memory::index_stack(vm::global_stack_stack_area, 0, 64 * 1024 - 1, scheduler::max_threads);
     // number of threads limited to 64 * 1024 * 1024 should be sane
     // doesn't work without -1; locks somewhere in mapping it (?!)
 }
@@ -46,9 +46,9 @@ void memory::stack_manager::split_stack_stack(processor::core * cores, uint64_t 
     uint64_t stacks_to_distribute = _global_stack_stack.size() / 2;
     uint64_t stacks_per_core = stacks_to_distribute / (num_cores + 1);
 
-    if (stacks_per_core > (1024 * 1024) / 8)
+    if (stacks_per_core > (core_index_stack_size) / 8)
     {
-        stacks_per_core = (1024 * 1024) / 8;
+        stacks_per_core = (core_index_stack_size) / 8;
     }
 
     screen::debug("\n", stacks_to_distribute, " stacks to distribute, ", stacks_per_core, " per core");

@@ -267,7 +267,7 @@ uint32_t processor::current_core::id()
     return 0;
 }
 
-void processor::current_core::stop()
+void processor::current_core::stop_timer()
 {
     _write_register(initial_count, 0);
 }

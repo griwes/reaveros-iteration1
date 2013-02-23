@@ -42,6 +42,8 @@ void processor::smp::boot(core * cores, uint64_t & num_cores)
     trampoline_size += 4095;
     trampoline_size &= ~(uint64_t)4095;
 
+    uint64_t boot_at_once = 0x7F000 / trampoline_size;
+
     // INIT IPI
     for (uint64_t i = 0; i < num_cores; ++i)
     {
@@ -50,56 +52,60 @@ void processor::smp::boot(core * cores, uint64_t & num_cores)
 
     current_core::sleep(10000000);
 
-    for (uint64_t i = 0; i < num_cores; ++i)
+    for (uint64_t booted = 0; booted < num_cores; ++booted)
     {
-        memory::copy(trampoline_start, (uint8_t *)0x1000 + trampoline_size * i, trampoline_size);
-
-        *(uint64_t volatile *)(0x1000 + trampoline_size * i + 16) = memory::x64::clone_kernel();
-        memory::x64::map(0, 1024 * 1024, 0, true);
-
-        cores[i].started = (uint8_t *)(0x1000 + trampoline_size * i);
-    }
-
-    // SIPI
-    for (uint64_t i = 0; i < num_cores; ++i)
-    {
-        current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, (0x1000 + trampoline_size * i) >> 12);
-    }
-
-    current_core::sleep(500000);
-
-    // 2nd SIPI, if not started
-    for (uint64_t i = 0; i < num_cores; ++i)
-    {
-        if (!*(cores[i].started))
+        for (uint64_t i = booted; i < booted + boot_at_once && i < num_cores; ++i)
         {
-            current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, (0x1000 + trampoline_size * i) >> 12);
-        }
-    }
+            memory::copy(trampoline_start, (uint8_t *)0x1000 + trampoline_size * (i - booted), trampoline_size);
 
-    for (uint64_t i = 0; i < num_cores; ++i)
-    {
-        if (*(cores[i].started))
-        {
-            screen::print("\nCPU #", cores[i].apic_id(), " booted.");
+            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 16) = memory::x64::clone_kernel();
+            memory::x64::map(0, 1024 * 1024, 0, true);
+
+            cores[i].started = (uint8_t *)(0x1000 + trampoline_size * (i - booted));
         }
 
-        else
+        // SIPI
+        for (uint64_t i = booted; i < booted + boot_at_once && i < num_cores; ++i)
         {
-            screen::print("\nCPU #", cores[i].apic_id(), " failed to boot (", cores[i].started, ").");
+            current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, (0x1000 + trampoline_size * (i - booted)) >> 12);
+        }
 
-            for (uint64_t j = i; j < num_cores - 1; ++j)
+        current_core::sleep(500000);
+
+        // 2nd SIPI, if not started
+        for (uint64_t i = booted; i < booted + boot_at_once && i < num_cores; ++i)
+        {
+            if (!*(cores[i].started))
             {
-                screen::print("\nMoving CPU #", cores[j + 1].apic_id(), " into place of CPU#", cores[j].apic_id());
-                cores[j] = cores[j + 1];
+                current_core::ipi(cores[i].apic_id(), current_core::ipis::sipi, (0x1000 + trampoline_size * (i - booted)) >> 12);
+            }
+        }
+
+        for (uint64_t i = booted; i < booted + boot_at_once && i < num_cores; ++i)
+        {
+            if (*(cores[i].started))
+            {
+                screen::print("\nCPU #", cores[i].apic_id(), " booted.");
             }
 
-            --i;
-            --num_cores;
+            else
+            {
+                screen::print("\nCPU #", cores[i].apic_id(), " failed to boot (", cores[i].started, ").");
+
+                for (uint64_t j = i; j < num_cores - 1; ++j)
+                {
+                    screen::print("\nMoving CPU #", cores[j + 1].apic_id(), " into place of CPU#", cores[j].apic_id());
+                    cores[j] = cores[j + 1];
+                }
+
+                --i;
+                --num_cores;
+                --booted;
+            }
         }
     }
 
-    processor::current_core::stop();
+    processor::current_core::stop_timer();
 
     memory::pmm::split_frame_stack(cores, num_cores);
     memory::stack_manager::split_stack_stack(cores, num_cores);

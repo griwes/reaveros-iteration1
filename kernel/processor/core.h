@@ -29,9 +29,12 @@
 #include <memory/index_stack.h>
 #include <memory/stacks.h>
 #include <scheduler/thread_scheduler.h>
+#include <processor/gdt.h>
 
 namespace processor
 {
+    extern "C" void ap_initialize();
+
     class core
     {
     public:
@@ -39,7 +42,7 @@ namespace processor
 
         core(uint32_t apic_id, uint32_t acpi_id, bool is_lapic = true) : _acpi_id(acpi_id), _apic_id(apic_id),
             _is_local_apic(is_lapic), _is_valid(true), _is_nmi_valid(false), _frame_stack(memory::vm::frame_stack_area
-            + _apic_id * 64 * 1024 * 1024), _stack_stack(memory::vm::stack_stack_area + _apic_id * 1024 * 1024,
+            + _apic_id * memory::stack_size), _stack_stack(memory::vm::stack_stack_area + _apic_id * memory::core_index_stack_size,
             memory::stack_manager::global_stack_stack())
         {
         }
@@ -96,6 +99,8 @@ namespace processor
 
         uint8_t volatile * started = nullptr;
 
+        friend void processor::ap_initialize();
+
     private:
         uint32_t _acpi_id;
         uint32_t _apic_id;
@@ -107,11 +112,16 @@ namespace processor
         bool _is_valid;
         bool _is_nmi_valid;
 
+        processor::gdt::gdt_entry _gdt[7];
+        processor::gdt::tss _tss;
+        processor::gdt::gdtr _gdtr;
+
         memory::pmm::frame_stack _frame_stack;
         memory::index_stack _stack_stack;
 
         memory::index_stack _pcb_stack;
         memory::index_stack _tcb_stack;
+
         scheduler::thread_scheduler _scheduler;
     };
 }

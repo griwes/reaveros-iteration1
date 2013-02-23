@@ -151,8 +151,6 @@ void processor::exceptions::page_fault(processor::idt::exc_context_error ctx)
         return;
     }
 
-    // TODO: #PF logic for sparse arrays
-
     void * addr = nullptr;
 
     asm volatile ("mov %%cr2, %0" : "=r"(addr));
@@ -160,18 +158,10 @@ void processor::exceptions::page_fault(processor::idt::exc_context_error ctx)
     uint64_t address = (uint64_t)addr;
     if (address > memory::vm::stack_area && address <= memory::vm::stack_stack_area)
     {
-        if (((address + 4095) & ~(uint64_t)4095) % 4096)
-        {
-            screen::transaction();
-            screen::print("\nAt: ", addr);
+        screen::transaction();
+        screen::print("\nAt: ", addr);
 
-            PANIC("Kernel stack overflow");
-        }
-
-        else
-        {
-            memory::vm::map(address % 4096 ? address : address - 1);
-        }
+        PANIC("Kernel stack overflow");
     }
 
     screen::transaction();
@@ -295,9 +285,13 @@ namespace
     bool _handlers[224] = { false };
 }
 
+extern "C" void __lock(bool *);
+extern "C" void __unlock(bool *);
+
 uint8_t processor::interrupts::allocate(processor::interrupts::handler h, uint8_t priority)
 {
-    _handlers[0xFF - 32] = true;
+    __lock(&_handlers[0xFF - 32]);
+    auto guard = make_scope_guard([&](){ __unlock(&_handlers[0xFF - 32]); });
 
     if (priority < 2)
     {

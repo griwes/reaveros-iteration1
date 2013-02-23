@@ -27,6 +27,9 @@
 
 #include <memory/x64paging.h>
 #include <memory/pmm.h>
+#include <memory/aligner.h>
+#include <scheduler/process.h>
+#include <scheduler/thread.h>
 
 namespace memory
 {
@@ -34,34 +37,23 @@ namespace memory
     {
         enum addresses
         {
-            global_frame_stack =                0xFFFFFFFF40000000,
-            boot_video_memory =                 0xFFFFFFFE80000000,
-            boot_backbuffer =                   0xFFFFFFFF00000000,
-            acpi_temporal_table_mapping_start = 0xFFFFFFFFFFFE8000,
-            acpi_temporal_table_mapping_end =   0xFFFFFFFFFFFEFFFF,
-            acpi_temporal_rsdt_mapping_start =  0xFFFFFFFFFFFF0000,
-            acpi_temporal_rsdt_mapping_end =    0xFFFFFFFFFFFF7FFF,
-            local_apic_address =                0xFFFFFFFFFFFE0000,
-            ioapic_area =                       0xFFFFFFFE40000000,
-            ap_gdt_area =                       0xFFFFFFFE00000000,
-            ap_tss_area =                       0xFFFFFFFDC0000000,
-            ap_dtr_area =                       0xFFFFFFFD80000000,
-            ap_idt_area =                       0xFFFFFFFD40000000,
-            frame_stack_area =                  0xFFFFFFF540000000,
-            global_stack_stack_area =           0xFFFFFFF500000000,
-            stack_stack_area =                  0xFFFFFFF400000000,
-            stack_area =                        0xFFFFFF7580000000,
-            global_pcb_stack_area =             0xFFFFFF7540000000,
-            global_tcb_stack_area =             0xFFFFFF74C0000000,
-            pcb_stack_area =                    0xFFFFFF73C0000000,
-            tcb_stack_area =                    0xFFFFFF72C0000000,
-            pcb_area =                          0xFFFFFF71C0000000,
-            tcb_area =                          0xFFFFFF61C0000000
-        };
-
-        const uint64_t sparse_areas[][2] = {
-            { pcb_area, global_tcb_stack_area },
-            { tcb_area, pcb_area }
+            acpi_temporal_rsdt_mapping = 0xFFFFFFFFFFFF0000 - 0x8000,
+            acpi_temporal_table_mapping = acpi_temporal_rsdt_mapping - 0x8000,
+            local_apic_address = acpi_temporal_table_mapping - 0x1000,
+            global_frame_stack = 0xFFFFFFF400000000 - memory::max_memory_supported / (8 * 4 * 1024),
+            boot_backbuffer = global_frame_stack - 0x40000000,
+            boot_video_memory = boot_backbuffer - 0x40000000,
+            ioapic_area = boot_video_memory - processor::max_ioapics * 4096,
+            frame_stack_area = ioapic_area - memory::stack_size * processor::max_cores,
+            global_stack_stack_area = frame_stack_area - scheduler::max_threads * 8,
+            stack_stack_area = global_stack_stack_area - memory::stack_size * processor::max_cores,
+            stack_area = stack_stack_area - memory::stack_size * 2 * 4096,
+            global_pcb_stack_area = stack_area - scheduler::max_processes * 8,
+            global_tcb_stack_area = global_pcb_stack_area - scheduler::max_processes * 8,
+            pcb_stack_area = global_tcb_stack_area - memory::core_index_stack_size,
+            tcb_stack_area = pcb_stack_area - memory::core_index_stack_size,
+            pcb_area = tcb_stack_area - scheduler::max_processes * aligner<scheduler::process>::size,
+            tcb_area = pcb_area - scheduler::max_threads * aligner<scheduler::thread>::size
         };
 
         inline void map(uint64_t virtual_address)

@@ -25,29 +25,38 @@
 
 #pragma once
 
-#include <memory/x64paging.h>
-#include <processor/current_core.h>
-
-namespace processor
+namespace memory
 {
-    bool ready();
+    namespace _detail
+    {
+        constexpr uint64_t _is_power_two(uint64_t number)
+        {
+            return (number & (number - 1)) == 0;
+        }
 
-    extern "C" memory::x64::pml4 * get_cr3();
-    extern "C" void reload_cr3();
+        constexpr uint64_t _empty_leading_bits(uint64_t number, uint64_t count = 0)
+        {
+            return !number ? 64 - count : _empty_leading_bits(number >> 1, count + 1);
+        }
 
-    class ioapic;
-    class core;
+        constexpr uint64_t _next_power(uint64_t number)
+        {
+            return 1ull << (64 - _empty_leading_bits(number));
+        }
 
-    void initialize();
-    extern "C" void ap_initialize();
-    ioapic & get_ioapic(uint8_t);
-    uint8_t translate_isa(uint8_t);
+        constexpr uint64_t _up_to_power(uint64_t number)
+        {
+            return _is_power_two(number) ? number : _next_power(number);
+        }
+    }
 
-    using current_core::ipis;
-    using current_core::broadcast_types;
+    template<typename T>
+    struct aligner
+    {
+        constexpr static uint64_t size = _detail::_up_to_power(sizeof(T));
 
-    void ipi(core *, ipis, uint8_t = 0);
-    void broadcast(broadcast_types, ipis, uint8_t = 0);
-
-    processor::core * get_core(uint64_t);
+        class alignas(size) type : public T
+        {
+        };
+    };
 }

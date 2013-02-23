@@ -97,7 +97,7 @@ void memory::index_stack::push(uint64_t idx)
     __lock(&_lock);
     auto guard = make_scope_guard([&](){ __unlock(&_lock); });
 
-    if (_global && _size == 128 * 1024)
+    if (_global && _size == core_index_stack_size)
     {
         for (uint64_t i = 0; i < 4097; ++i)
         {

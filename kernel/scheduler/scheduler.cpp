@@ -57,8 +57,8 @@ void scheduler::initialize()
     // 8. wait for rest of the cores to finish scheduler initialization
     // 9. schedule current thread
 
-    new ((void *)&_global_pcb_stack) memory::index_stack(memory::vm::global_pcb_stack_area, 0, 64 * 1024, 64 * 1024 * 1024);
-    new ((void *)&_global_tcb_stack) memory::index_stack(memory::vm::global_tcb_stack_area, 0, 64 * 1024, 256 * 1024 * 1024);
+    new ((void *)&_global_pcb_stack) memory::index_stack(memory::vm::global_pcb_stack_area, 0, 64 * 1024, max_processes);
+    new ((void *)&_global_tcb_stack) memory::index_stack(memory::vm::global_tcb_stack_area, 0, 64 * 1024, max_threads);
     new ((void *)&_global_scheduler) scheduler::thread_scheduler();
 
     _initialize_aps = true;
@@ -83,9 +83,9 @@ void scheduler::ap_initialize()
     }
 
     new ((void *)&processor::current_core::pcb_stack()) memory::index_stack(memory::vm::pcb_stack_area + processor::current_core::id()
-        * 1024 * 1024, &_global_pcb_stack);
+        * memory::core_index_stack_size, &_global_pcb_stack);
     new ((void *)&processor::current_core::tcb_stack()) memory::index_stack(memory::vm::tcb_stack_area + processor::current_core::id()
-        * 1024 * 1024, &_global_tcb_stack);
+        * memory::core_index_stack_size, &_global_tcb_stack);
 
     for (uint64_t i = 0; i < 1024; ++i)
     {

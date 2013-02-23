@@ -81,8 +81,21 @@ scope_guard<T> make_scope_guard(T callback)
     return scope_guard<T>{callback};
 }
 
+namespace memory
+{
+    constexpr uint64_t stack_size = 64 * 1024 * 1024;
+    constexpr uint64_t core_index_stack_size = 1024 * 1024;
+    constexpr uint64_t max_memory_supported = 64ull * 1024 * 1024 * 1024;
+}
+
 namespace processor
 {
     constexpr uint64_t max_cores = 512;
     constexpr uint64_t max_ioapics = 16;
+}
+
+namespace scheduler
+{
+    constexpr uint64_t max_processes = 64 * 1024 * 1024;
+    constexpr uint64_t max_threads = 1024 * 1024 * 1024;
 }

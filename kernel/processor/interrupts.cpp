@@ -332,7 +332,7 @@ void processor::idt::initialize()
     _init(&::idtr, _idt);
 }
 
-void processor::idt::ap_initialize(processor::idt::idtr * idtr, processor::idt::idt_entry * idt)
+void processor::idt::ap_initialize()
 {
-    _init(idtr, idt);
+    _load_idt_from(&::idtr);
 }

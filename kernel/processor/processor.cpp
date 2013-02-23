@@ -104,23 +104,14 @@ void processor::ap_initialize()
     memory::stack_manager::set(stack);
 
     current_core::initialize();
-    uint32_t apic_id = current_core::id();
+    core * current = get_core(current_core::id());
 
-    memory::vm::map(memory::vm::ap_gdt_area + apic_id * 4096);
-    processor::gdt::gdt_entry * _core_gdt = (processor::gdt::gdt_entry *)(memory::vm::ap_gdt_area + apic_id * 4096);
-
-    memory::vm::map(memory::vm::ap_tss_area + apic_id * 4096);
-    processor::gdt::tss * _core_tss = (processor::gdt::tss *)(memory::vm::ap_tss_area + apic_id * 4096);
-
-    memory::vm::map(memory::vm::ap_dtr_area + apic_id * 4096);
-    processor::idt::idtr * _core_idtr = (processor::idt::idtr *)(memory::vm::ap_dtr_area + apic_id * 4096);
-    processor::gdt::gdtr * _core_gdtr = (processor::gdt::gdtr *)(_core_idtr + 1);
-
-    memory::vm::map(memory::vm::ap_idt_area + apic_id * 4096);
-    processor::idt::idt_entry * _core_idt = (processor::idt::idt_entry *)(memory::vm::ap_idt_area + apic_id * 4096);
+    processor::gdt::gdt_entry * _core_gdt = current->_gdt;
+    processor::gdt::tss * _core_tss = &current->_tss;
+    processor::gdt::gdtr * _core_gdtr = &current->_gdtr;
 
     gdt::ap_initialize(_core_gdtr, _core_gdt, _core_tss);
-    idt::ap_initialize(_core_idtr, _core_idt);
+    idt::ap_initialize();
 
     scheduler::ap_initialize();
 
