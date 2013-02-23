@@ -6,3 +6,4 @@ utils/builder/build/*
 builds/*
 utils/tools/*
 .gcc/*
+*-swp
