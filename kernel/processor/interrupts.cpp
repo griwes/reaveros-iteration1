@@ -1,26 +1,26 @@
 /**
  * Reaver Project OS, Rose License
- * 
+ *
  * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation is required.
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- * 
+ *
  * Michał "Griwes" Dominiak
- * 
+ *
  **/
 
 #include <processor/interrupts.h>
@@ -30,7 +30,7 @@
 
 extern "C" processor::idt::idtr idtr;
 processor::idt::idtr idtr;
-        
+
 namespace
 {
     processor::idt::idt_entry _idt[256];
@@ -64,14 +64,14 @@ namespace
         table[id].type = type;
         table[id].ist = ist;
     }
-    
+
     void _init(processor::idt::idtr * idtr, processor::idt::idt_entry * idt)
     {
         idtr->base = (uint64_t)idt;
         idtr->limit = (uint64_t)(idt + 256) - (uint64_t)idt - 1;
-        
+
         memory::zero(idt, 256);
-        
+
         _setup_idte(0, (uint64_t)processor::handlers::de, 0x08, true, 0, 0xE, idt);
         _setup_idte(1, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE, idt);
         _setup_idte(2, (uint64_t)processor::handlers::nmi, 0x08, true, 0, 0xE, idt, 1);
@@ -92,12 +92,12 @@ namespace
         _setup_idte(17, (uint64_t)processor::handlers::ac, 0x08, true, 0, 0xE, idt);
         _setup_idte(18, (uint64_t)processor::handlers::mc, 0x08, true, 0, 0xE, idt);
         _setup_idte(19, (uint64_t)processor::handlers::xm, 0x08, true, 0, 0xE, idt);
-        
+
         for (uint8_t i = 20; i < 32; ++i)
         {
             _setup_idte(i, (uint64_t)processor::handlers::res, 0x08, true, 0, 0xE, idt);
         }
-        
+
         _setup_idte(32, (uint64_t)processor::interrupts::irq32, 0x08, true, 0, 0xE, idt);
         _setup_idte(33, (uint64_t)processor::interrupts::irq33, 0x08, true, 0, 0xE, idt);
         _setup_idte(34, (uint64_t)processor::interrupts::irq34, 0x08, true, 0, 0xE, idt);
@@ -322,7 +322,7 @@ namespace
         _setup_idte(253, (uint64_t)processor::interrupts::irq253, 0x08, true, 0, 0xE, idt);
         _setup_idte(254, (uint64_t)processor::interrupts::irq254, 0x08, true, 0, 0xE, idt);
         _setup_idte(255, (uint64_t)processor::interrupts::irq255, 0x08, true, 0, 0xE, idt);
-        
+
         _load_idt_from(idtr);
     }
 }

@@ -1,26 +1,26 @@
 /**
  * Reaver Project OS, Rose License
- * 
+ *
  * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation is required.
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- * 
+ *
  * Michał "Griwes" Dominiak
- * 
+ *
  **/
 
 #pragma once
@@ -38,26 +38,26 @@ namespace acpi
         uint64_t xsdt_ptr;
         uint8_t ext_checksum;
         uint8_t reserved[3];
-        
+
         bool validate()
         {
             if (signature[0] == 'R' && signature[1] == 'S' && signature[2] == 'D' && signature[3] == ' '
                 && signature[4] == 'P' && signature[5] == 'T' && signature[6] == 'R' && signature[7] == ' ')
             {
                 uint8_t checksum = 0;
-                
+
                 for (uint8_t i = 0; i < sizeof(rsdp); ++i)
                 {
                     checksum += *((uint8_t *)this + i);
                 }
-                
+
                 return !checksum;
             }
-            
+
             return false;
         }
     } __attribute__((packed));
-    
+
     struct description_table_header
     {
         char signature[4];
@@ -69,42 +69,42 @@ namespace acpi
         uint32_t oem_revision;
         uint32_t creator_id;
         uint32_t creator_revision;
-        
+
         bool validate(const char * sign)
         {
             if (signature[0] == sign[0] && signature[1] == sign[1] && signature[2] == sign[2] && signature[3] == sign[3])
             {
                 uint8_t checksum = 0;
-                
+
                 for (uint32_t i = 0; i < length; ++i)
                 {
                     checksum += *((uint8_t *)this + i);
                 }
-                
+
                 return !checksum;
             }
-            
+
             return false;
         }
     } __attribute__((packed));
-    
+
     struct rsdt : public description_table_header
     {
         uint32_t entries[1];
     } __attribute__((packed));
-    
+
     struct xsdt : public description_table_header
     {
         uint64_t entries[1];
     } __attribute__((packed));
-    
+
     struct madt_lapic_entry
     {
         uint8_t acpi_id;
         uint8_t apic_id;
         uint32_t flags;
     } __attribute__((packed));
-    
+
     struct madt_ioapic_entry
     {
         uint8_t apic_id;
@@ -112,7 +112,7 @@ namespace acpi
         uint32_t base_address;
         uint32_t base_int;
     } __attribute__((packed));
-    
+
     struct madt_int_override_entry
     {
         uint8_t bus;
@@ -120,26 +120,26 @@ namespace acpi
         uint32_t int_number;
         uint16_t flags;
     } __attribute__((packed));
-    
+
     struct madt_nmi_source_entry
     {
         uint16_t flags;
         uint32_t int_number;
     } __attribute__((packed));
-    
+
     struct madt_lapic_nmi_entry
     {
         uint8_t acpi_id;
         uint16_t flags;
         uint8_t int_number;
     } __attribute__((packed));
-    
+
     struct madt_lapic_address_override_entry
     {
         uint16_t reserved;
         uint64_t base_address;
     } __attribute__((packed));
-    
+
     struct madt_x2apic_entry
     {
         uint16_t reserved;
@@ -147,7 +147,7 @@ namespace acpi
         uint32_t flags;
         uint32_t acpi_uuid;
     } __attribute__((packed));
-    
+
     struct madt_x2apic_nmi_entry
     {
         uint16_t flags;
@@ -156,13 +156,13 @@ namespace acpi
         uint8_t reserved;
         uint16_t reserved2;
     } __attribute__((packed));
-    
+
     struct madt_entry
     {
         uint8_t type;
         uint8_t length;
     } __attribute__((packed));
-    
+
     struct madt : public description_table_header
     {
         uint32_t lic_address;
