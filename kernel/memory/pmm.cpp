@@ -65,7 +65,7 @@ memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)add
 memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::global_frame_stack),
     _size(0), _capacity(0), _lock(0)
 {
-    for (uint64_t i = 0; i < map_size && global_stack.size() < max_memory_supported / 4096; ++i)
+    for (uint64_t i = 0; i < map_size && global_stack.size() <= max_memory_supported / 4096; ++i)
     {
         if (map[i].type != 1)
         {
@@ -169,6 +169,19 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 {
     __lock(&_lock);
     auto guard = make_scope_guard([&](){ __unlock(&_lock); });
+
+    if (_size == max_memory_supported / 4096)
+    {
+        for (uint64_t i = 0; i < 4097; ++i)
+        {
+            global_stack.push(_stack[--_size]);
+        }
+
+        for (uint64_t i = 0; i < 8; ++i)
+        {
+            _shrink();
+        }
+    }
 
     if (_size == _capacity)
     {

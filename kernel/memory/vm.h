@@ -40,7 +40,7 @@ namespace memory
             acpi_temporal_rsdt_mapping = 0xFFFFFFFFFFFF0000 - 0x8000,
             acpi_temporal_table_mapping = acpi_temporal_rsdt_mapping - 0x8000,
             local_apic_address = acpi_temporal_table_mapping - 0x1000,
-            global_frame_stack = 0xFFFFFFF400000000 - memory::max_memory_supported / (8 * 4 * 1024),
+            global_frame_stack = 0xFFFFFFFF40000000 - memory::max_memory_supported / (4096) * 8,
             boot_backbuffer = global_frame_stack - 0x40000000,
             boot_video_memory = boot_backbuffer - 0x40000000,
             ioapic_area = boot_video_memory - processor::max_ioapics * 4096,
