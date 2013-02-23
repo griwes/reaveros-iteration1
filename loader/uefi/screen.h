@@ -10,7 +10,7 @@ namespace Screen
 
     extern Console * uout;
     const char * nl = L"\n\r";
-    
+
     void Initialize(EFI_SYSTEM_TABLE *);
     VideoMode * SelectVideoMode();
 }

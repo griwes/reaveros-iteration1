@@ -9,9 +9,9 @@
  * 0.1.x alpha - Cotyledon alpha
  * 0.2.x beta - Cotyledon beta
  * 0.3.x - Cotyledon stable
- 
+
 ## Release #2: Thornbirth
-    
+
  * 0.4.x dev - Thornbirth early development, mostly unusable
  * 0.5.x alpha - Thornbirth alpha
  * 0.6.x beta - Thornbirth beta

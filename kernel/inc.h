@@ -80,3 +80,9 @@ scope_guard<T> make_scope_guard(T callback)
 {
     return scope_guard<T>{callback};
 }
+
+namespace processor
+{
+    constexpr uint64_t max_cores = 512;
+    constexpr uint64_t max_ioapics = 16;
+}

@@ -1,26 +1,26 @@
 /**
  * Reaver Project OS, Rose License
- * 
+ *
  * Copyright (C) 2011-2012 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation is required.
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- * 
+ *
  * Michał "Griwes" Dominiak
- * 
+ *
  **/
 
 #pragma once
@@ -67,16 +67,16 @@ helper(uint64_t);
 namespace screen
 {
     class boot_mode;
-    
+
     extern console output;
-    
+
     inline mode * get_video_mode()
     {
         return output.get_video_mode();
     }
-    
+
     void initialize(boot_mode *, void *);
-    
+
     template<unsigned N>
     void print(const char (&s)[N])
     {
@@ -85,65 +85,65 @@ namespace screen
             output.put_char(s[i]);
         }
     }
-    
+
     void print(const char *);
     void print(char);
-    
+
     void line();
-    
+
     template<typename T>
     void print_impl(const T &);
-    
+
     template<typename T>
     typename enable_if<!is_integral<T>::value>::type print(const T & a)
     {
         print_impl(a);
     }
-        
+
     template<typename T>
     typename enable_if<is_integral<T>::value>::type print(const T & a)
-    {        
+    {
         if (a == 0)
         {
             output.put_char('0');
             return;
         }
-        
+
         else if (!(a > 0 || a == 0))
         {
             output.put_char('-');
         }
-        
+
         T div = a / 10;
         T mod = a % 10;
-        
+
         if (div != 0)
         {
             print(div);
         }
-        
+
         output.put_char('0' + mod);
     }
-    
+
     template<typename First, typename... T>
     void print(const First & first, const T &... rest)
     {
         print(first);
         print(rest...);
     }
-    
+
     template<typename... T>
     void printl(const T &... a)
     {
         print(a...);
         line();
     }
-    
+
     inline void printf(const char * str)
     {
         print(str);
     }
-    
+
     template<typename T>
     void printf(const char *& str, const T & param)
     {
@@ -153,7 +153,7 @@ namespace screen
             {
                 output.put_char(*str++);
             }
-            
+
             else
             {
                 switch (*++str)
@@ -172,18 +172,18 @@ namespace screen
                                                 {
                                                     print('0');
                                                 }
-                                                
+
                                                 for (int32_t i = sizeof(T) * 8 - 4; i >= 0; i -= 4)
                                                 {
                                                     print("0123456789ABCDEF"[(param >> i) & 0xf]);
                                                 }
-                                                
+
                                                 ++str;
                                         }
                                 }
                         }
                 }
-                
+
                 while (*str != 0 && *str != '%')
                 {
                     output.put_char(*str++);
@@ -191,33 +191,33 @@ namespace screen
             }
         }
     }
-    
+
     template<typename First, typename... T>
     void printf(const char *& str, const First & first, const T &... rest)
     {
         printf(str, first);
-        
+
         if (*str == 0)
         {
             return;
         }
-        
+
         printf(str, rest...);
-        
+
         if (*str == 0)
         {
-            return; 
+            return;
         }
-        
+
         print(str);
     }
-    
+
     template<typename... T>
     void printf(const char * str, const T &... rest)
     {
         printf(str, rest...);
     }
-    
+
     template<typename... T>
     void printfl(const char * s, const T &... a)
     {

@@ -9,22 +9,22 @@
 ;
 ; Copyright (C) 2011-2012 Reaver Project Team:
 ; 1. Michał "Griwes" Dominiak
-; 
+;
 ; This software is provided 'as-is', without any express or implied
 ; warranty. In no event will the authors be held liable for any damages
 ; arising from the use of this software.
-; 
+;
 ; Permission is granted to anyone to use this software for any purpose,
 ; including commercial applications, adn to alter it and redistribute it
 ; freely, subject to the following restrictions:
-; 
+;
 ; 1. The origin of this software must not be misrepresented; you must not
 ;    claim that you wrote the original software. If you use this software
 ;    in a product, an acknowledgment in the product documentation is required.
 ; 2. Altered source versions must be plainly marked as such, and must not be
 ;    misrepresented as being the original software.
 ; 3. This notice may not be removed or altered from any source distribution.
-; 
+;
 ; Michał "Griwes" Dominiak
 ;
 
@@ -41,7 +41,7 @@ selected:           dw 0
 vbe_controller_info:
     .signature:     dd 0
     .version:       dw 0
-    .oemstringoff:  dw 0        ; far ptr 
+    .oemstringoff:  dw 0        ; far ptr
     .oemstringseg:  dw 0
     .capabilities:  dd 0
     .videomodesoff: dw 0
@@ -131,10 +131,10 @@ get_controller_info:
     jne     .not_supported
 
     ret
-    
+
     .not_supported:
         xor     eax, eax
-    
+
         ret
 
 ;
@@ -260,37 +260,37 @@ setup_video_mode:
 
         mov     ax, bx
         call    get_mode_info
-        
+
         mov     si, resprint
         call    print16
-        
+
         xor     eax, eax
-        
+
         mov     ax, word [video_mode_description.xres]
         call    printnum16
-        
+
         mov     si, x
         call    print16
-        
+
         mov     ax, word [video_mode_description.yres]
         call    printnum16
-        
+
         mov     si, bppprint
         call    print16
-        
+
         xor     eax, eax
         mov     al, byte [video_mode_description.bpp]
         call    printnum16
-        
+
         mov     si, bufferprint
         call    print16
-        
+
         mov     eax, dword [video_mode_description.physbaseaddr]
         call    printhex16
-        
+
         mov     si, finalprint
         call    print16
-    
+
         xor     eax, eax
 
         ; set only bit D14 and D0-D8 (use linar frame buffer mode)
@@ -328,10 +328,10 @@ setup_video_mode:
 get_bios_vga_font:
     push    ds
     push    es
-    
+
     mov     ax, 0x1130
     mov     bh, 6
-        
+
     int     0x10
 
     push    es

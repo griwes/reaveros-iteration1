@@ -1,26 +1,26 @@
 /**
  * Reaver Project OS, Rose License
- * 
+ *
  * Copyright (C) 2012 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
- * 
+ *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
  * arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
- * 
+ *
  * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation is required.
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- * 
+ *
  * Michał "Griwes" Dominiak
- * 
+ *
  **/
 
 #include <processor/processor.h>
@@ -78,7 +78,7 @@ extern "C" processor::idtr idtr;
 processor::idtr idtr;
 
 namespace
-{    
+{
     void _setup_idte(uint8_t id, uint64_t address, uint16_t selector, uint8_t flags)
     {
         processor::idt[id].zero = 0;
@@ -94,7 +94,7 @@ namespace
 extern "C" uint8_t sbss[];
 
 void processor::setup_idt()
-{       
+{
     _setup_idte(0, (uint64_t)isr0, 0x08, 0x8e);
     _setup_idte(1, (uint64_t)isr1, 0x08, 0x8e);
     _setup_idte(2, (uint64_t)isr2, 0x08, 0x8e);
@@ -127,16 +127,16 @@ void processor::setup_idt()
     _setup_idte(29, (uint64_t)isr29, 0x08, 0x8e);
     _setup_idte(30, (uint64_t)isr30, 0x08, 0x8e);
     _setup_idte(31, (uint64_t)isr31, 0x08, 0x8e);
-    
+
     ::idtr.limit = 32 * 16 - 1;
     ::idtr.base = (uint64_t)idt;
-    
+
     _setup_idt();
 }
 
 namespace
 {
-    const char * exception_messages[] = 
+    const char * exception_messages[] =
     {
         "#DE: Divide error",
         "#DB: Reserved",
@@ -182,8 +182,8 @@ extern "C" void isr_handler(processor::isr_stack_frame stack_frame)
     screen::printfl("RSI = 0x%016x RDI = 0x%016x\nCS  = 0x%016x RIP = 0x%016x", stack_frame.rsi, stack_frame.rdi,
                    stack_frame.cs, stack_frame.rip);
     screen::printfl("SS  = 0x%016x RSP = 0x%016x", stack_frame.ss, stack_frame.rsp);
-    
+
     // TODO: error code handling, cr2 handling for page faults
-    
+
     asm volatile ("cli; hlt");
 }

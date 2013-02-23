@@ -3,24 +3,24 @@
 ;
 ; Copyright (C) 2011-2012 Reaver Project Team:
 ; 1. Michał "Griwes" Dominiak
-; 
+;
 ; This software is provided 'as-is', without any express or implied
 ; warranty. In no event will the authors be held liable for any damages
 ; arising from the use of this software.
-; 
+;
 ; Permission is granted to anyone to use this software for any purpose,
 ; including commercial applications, and to alter it and redistribute it
 ; freely, subject to the following restrictions:
-; 
+;
 ; 1. The origin of this software must not be misrepresented; you must not
 ;    claim that you wrote the original software. If you use this software
 ;    in a product, an acknowledgment in the product documentation is required.
 ; 2. Altered source versions must be plainly marked as such, and must not be
 ;    misrepresented as being the original software.
 ; 3. This notice may not be removed or altered from any source distribution.
-; 
+;
 ; Michał "Griwes" Dominiak
-; 
+;
 
 bits    32
 
@@ -46,32 +46,32 @@ _check_long_mode:
     popa
 
     mov     eax, 1
-    
+
     ret
 
     .no:
         popa
 
         xor     eax, eax
-        
+
         ret
 
 enter_long_mode:
     mov     eax, cr4
     or      eax, 1 << 5
     mov     cr4, eax
-    
+
     mov     ecx, 0xC0000080
     rdmsr
     or      eax, 1 << 8
     wrmsr
-    
+
     mov     eax, cr0
     or      eax, 1 << 31
     mov     cr0, eax
-    
+
     ret
-        
+
 setup_gdt:
     pusha
     lgdt    [gdt]
@@ -88,23 +88,23 @@ setup_gdt:
     mov     ss, ax
 
     ret
-    
+
 extern  idtr
-    
+
 _setup_idt:
     pusha
     lidt    [idtr]
     popa
-    
+
     sti
-    
+
     ret
 
 gdt_start:
     ; null:
     dq 0
 
-    ; code 64 bit: 
+    ; code 64 bit:
     dw 0
     dw 0
     db 0
@@ -203,32 +203,32 @@ isrh:
     push    rdx
     push    rsi
     push    rdi
-    
+
     push    0x10
     push    plm
-    
+
     retf
-    
-.sti:    
+
+.sti:
     pop     rdi
     pop     rsi
     pop     rdx
     pop     rcx
     pop     rbx
     pop     rax
-    
+
     add     esp, 16
-    
+
     iretq
 
 bits    32
 
 plm:
     call    isr_handler
-    
+
     push    dword 0x8
     push    isrh.sti
-    
+
     retf
 
 bits    32
@@ -238,22 +238,22 @@ call_kernel:
 
     push    ebp
     mov     ebp, esp
-    
+
     pop     eax ; previous ebp
     pop     eax ; call return address
-    
+
     ; now on call stack are only arguments
-    
+
     push    dword 0x8
     push    long_mode
-    
+
     retf
-    
+
 bits    64
-    
+
 long_mode:
     ; we have clean parameter stack now
-    
+
     pop     rax ; kernel start
     pop     rdi ; initrd start
     pop     rsi ; initrd end
@@ -261,9 +261,9 @@ long_mode:
     pop     rdx ; mode
     pop     rcx ; memory map
     pop     r8  ; memory map size
-    
+
     mov     rsp, rbp
     mov     rbp, qword 0 ; oh, this seems so backwards... :D
-    
+
     jmp     rax
-    
+

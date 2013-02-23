@@ -8,7 +8,7 @@ bochs:
 	cd builds && bochs -q
 
 qemu:
-	qemu-system-x86_64 -smp 4,cores=4 -monitor stdio -m 2048 -no-kvm -parallel file:/dev/stdout -hda builds/hdd.img 
+	qemu-system-x86_64 -smp 4,cores=4 -monitor stdio -m 2048 -no-kvm -parallel file:/dev/stdout -hda builds/hdd.img
 
 uefi-qemu:
 	cd builds/efi && qemu-system-x86_64 -L . -bios OVMF.fd -m 2048 -cpu kvm64 -hda efidisk.hdd -enable-kvm
@@ -17,7 +17,7 @@ vbox: hdd
 	@rm builds/vbox.vdi
 	VBoxManage convertfromraw builds/hdd.img builds/vbox.vdi --format vdi
 	virtualbox
-	
+
 hdd:
 	cd loader/hdd; \
 	yasm stage1.asm -o ../../builds/stage1.img

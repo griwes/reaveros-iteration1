@@ -19,7 +19,7 @@ to file-oriented environment of UNIX family.
    * Basic initialization of outputting and physical memory management
    * Basic ACPI table support (no AML here)
    * Basic SMP support - booting APs and IPIs
-   
+
 ##What is being worked on? - short roadmap for current development
 
  1. Kernel:
@@ -28,7 +28,7 @@ to file-oriented environment of UNIX family.
    * SMP aware scheduler
  2. Services:
    * SMP aware virtual memory manager
-   
+
 ##What are the features that are planned in distant future?
 
  1. Virtual Input/Output LAyer - VIOLA, allowing both filesystem and device access use the same
