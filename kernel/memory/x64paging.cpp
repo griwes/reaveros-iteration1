@@ -27,6 +27,7 @@
 #include <memory/memory.h>
 #include <memory/pmm.h>
 #include <processor/processor.h>
+#include <screen/screen.h>
 
 namespace
 {
@@ -147,7 +148,9 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 {
                     if ((*pt)[startpte].present && physical_start != (*pt)[startpte].address << 12)
                     {
-                        PANIC("Tried to map something at already mapped page"); // TODO: fix PANIC to provide more debugging info
+                        screen::transaction();
+                        screen::print("\nAddress: ", (void *)virtual_start);
+                        PANIC("Tried to map something at already mapped page");
                     }
 
                     (*pt)[startpte++] = physical_start;

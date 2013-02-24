@@ -170,7 +170,12 @@ void memory::pmm::frame_stack::push(uint64_t frame)
     __lock(&_lock);
     auto guard = make_scope_guard([&](){ __unlock(&_lock); });
 
-    if (_size == max_memory_supported / 4096)
+    if (this == &global_stack && _size == max_memory_supported)
+    {
+        PANIC("Too much memory!");
+    }
+
+    if (_size == stack_size)
     {
         for (uint64_t i = 0; i < 4097; ++i)
         {

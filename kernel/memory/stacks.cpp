@@ -73,18 +73,26 @@ void memory::stack_manager::split_stack_stack(processor::core * cores, uint64_t 
 
 uint64_t memory::stack_manager::allocate()
 {
+    uint64_t top = 0;
+
     if (processor::ready())
     {
-        return memory::vm::stack_area + (processor::current_core::stack_stack().pop() + 1) * 2 * 4096;
+        top = memory::vm::stack_area + (processor::current_core::stack_stack().pop() + 1) * 2 * 4096;
     }
 
-    return memory::vm::stack_area + (_global_stack_stack.pop() + 1) * 2 * 4096;
+    top = memory::vm::stack_area + (_global_stack_stack.pop() + 1) * 2 * 4096;
+
+    memory::vm::map(top - 4096);
+
+    return top;
 }
 
 void memory::stack_manager::free(uint64_t stack)
 {
     stack += 8095;
     stack &= ~(uint64_t)8095;
+
+    memory::vm::unmap(stack - 4096);
 
     if (processor::ready())
     {

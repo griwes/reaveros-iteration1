@@ -52,7 +52,7 @@ void processor::smp::boot(core * cores, uint64_t & num_cores)
 
     current_core::sleep(10000000);
 
-    for (uint64_t booted = 0; booted < num_cores; ++booted)
+    for (uint64_t booted = 0; booted < num_cores; booted += boot_at_once)
     {
         for (uint64_t i = booted; i < booted + boot_at_once && i < num_cores; ++i)
         {

@@ -100,7 +100,6 @@ void processor::initialize()
 void processor::ap_initialize()
 {
     uint64_t stack = memory::stack_manager::allocate();
-    memory::vm::map(stack - 4096);
     memory::stack_manager::set(stack);
 
     current_core::initialize();
@@ -179,11 +178,8 @@ namespace
         start[id].dpl = 3;
 
         tss->ist1 = memory::stack_manager::allocate();
-        memory::vm::map(tss->ist1 - 1);
         tss->ist2 = memory::stack_manager::allocate();
-        memory::vm::map(tss->ist2 - 1);
         tss->ist3 = memory::stack_manager::allocate();
-        memory::vm::map(tss->ist3 - 1);
     }
 }
 
