@@ -105,7 +105,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
         gen.pml4()->entries[startpml4e].lock();
-        auto pml4e_guard = make_scope_guard([&](){ gen.pml4()->entries[startpml4e].unlock(); });
+        auto pml4e_guard = make_scope_guard([&gen, startpml4e](){ gen.pml4()->entries[startpml4e].unlock(); });
 
         if (!gen.pml4()->entries[startpml4e].present)
         {
@@ -119,7 +119,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
             && startpdpte < 512)
         {
             (*table)[startpdpte].lock();
-            auto pdpte_guard = make_scope_guard([&](){ (*table)[startpdpte].unlock(); });
+            auto pdpte_guard = make_scope_guard([&table, startpdpte](){ (*table)[startpdpte].unlock(); });
 
             if (!(*table)[startpdpte].present)
             {
@@ -133,7 +133,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 && startpde < 512)
             {
                 (*pd)[startpde].lock();
-                auto pde_guard = make_scope_guard([&](){ (*pd)[startpde].unlock(); });
+                auto pde_guard = make_scope_guard([&pd, startpde](){ (*pd)[startpde].unlock(); });
 
                 if (!(*pd)[startpde].present)
                 {
@@ -244,7 +244,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
         gen.pml4()->entries[startpml4e].lock();
-        auto pml4e_guard = make_scope_guard([&](){ gen.pml4()->entries[startpml4e].unlock(); });
+        auto pml4e_guard = make_scope_guard([&gen, startpml4e](){ gen.pml4()->entries[startpml4e].unlock(); });
 
         if (!gen.pml4()->entries[startpml4e].present)
         {
@@ -257,7 +257,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
             && startpdpte < 512)
         {
             (*table)[startpdpte].lock();
-            auto pdpte_guard = make_scope_guard([&](){ (*table)[startpdpte].unlock(); });
+            auto pdpte_guard = make_scope_guard([&table, startpdpte](){ (*table)[startpdpte].unlock(); });
 
             if (!(*table)[startpdpte].present)
             {
@@ -270,7 +270,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
                 && startpde < 512)
             {
                 (*pd)[startpde].lock();
-                auto pde_guard = make_scope_guard([&](){ (*pd)[startpde].unlock(); });
+                auto pde_guard = make_scope_guard([&pd, startpde](){ (*pd)[startpde].unlock(); });
 
                 if (!(*pd)[startpde].present)
                 {
@@ -383,8 +383,8 @@ bool memory::x64::locked(uint64_t address)
     uint64_t pdpte = (address >> 30) & 511;
     uint64_t pde = (address >> 21) & 511;
 
-    return (*(uint64_t *)&(current.pml4()->entries[pml4e]) & (1 << 9)) || (*(uint64_t *)&(current.pdpt(pml4e)->entries[pdpte]) & (1 << 9))
-        || (*(uint64_t*)&(current.pd(pml4e, pdpte)->entries[pde]) & (1 << 9));
+    return (current.pml4()->entries[pml4e].ignored2 & 1) || (current.pdpt(pml4e)->entries[pdpte].ignored2 & 1)
+        || (current.pd(pml4e, pdpte)->entries[pde].ignored2 & 1);
 }
 
 // clears mappings in lower half and pushes paging structures' addresses, but doesn't
@@ -399,7 +399,10 @@ void memory::x64::drop_bootloader_mapping(bool push)
         {
             gen.pml4()->entries[pml4e].present = 0;
         }
+
+        return;
     }
+
 
     for (uint64_t pml4e = 0; pml4e < 256; ++pml4e)
     {

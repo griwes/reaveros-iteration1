@@ -59,8 +59,10 @@ memory::pmm::frame_stack::frame_stack() : _stack(nullptr), _size(0), _capacity(0
 
 memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)address), _size(0), _capacity(0), _lock(0)
 {
-    _expand();
+//    _expand();
 }
+
+bool _ready = false;
 
 memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::global_frame_stack),
     _size(0), _capacity(0), _lock(0)
@@ -83,6 +85,8 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
             push(frame);
         }
     }
+
+    _ready = true;
 }
 
 void memory::pmm::frame_stack::_expand()
@@ -259,12 +263,12 @@ void memory::pmm::split_frame_stack(processor::core * cores, uint64_t num_cores)
     uint64_t frames_to_distribute = global_stack.size() / 2;
     uint64_t frames_per_core = frames_to_distribute / (num_cores + 1);
 
-    if (frames_per_core > (stack_size) / 8)
+    if (frames_per_core > stack_size / 8)
     {
-        frames_per_core = (stack_size) / 8;
+        frames_per_core = stack_size / 8;
     }
 
-    screen::debug("\n", frames_to_distribute, " frames to distribute, ", frames_per_core, " per core.");
+    screen::debug("\n", frames_per_core * (num_cores + 1), " frames to distribute, ", frames_per_core, " per core.");
     screen::debug("\nFilling frame stack of CPU#", processor::current_core::id());
 
     for (uint64_t i = 0; i < frames_per_core; ++i)

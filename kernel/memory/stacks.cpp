@@ -51,7 +51,7 @@ void memory::stack_manager::split_stack_stack(processor::core * cores, uint64_t 
         stacks_per_core = (core_index_stack_size) / 8;
     }
 
-    screen::debug("\n", stacks_to_distribute, " stacks to distribute, ", stacks_per_core, " per core");
+    screen::debug("\n", stacks_per_core * (num_cores + 1), " stacks to distribute, ", stacks_per_core, " per core");
 
     screen::debug("\nFilling stack stack of CPU#", processor::current_core::id());
 
