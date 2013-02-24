@@ -30,7 +30,7 @@
 #include <cstdint>
 #include <cstddef>
 
-#define PANIC(X) _panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 #define DUMP(X) _dump_registers(X);
 
 void _panic(const char *, const char *, uint64_t, const char *);
@@ -84,7 +84,7 @@ scope_guard<T> make_scope_guard(T callback)
 namespace memory
 {
     constexpr uint64_t stack_size = 64 * 1024 * 1024;
-    constexpr uint64_t core_index_stack_size = 1024 * 1024;
+    constexpr uint64_t core_index_stack_size = 8 * 1024 * 1024;
     constexpr uint64_t max_memory_supported = 64ull * 1024 * 1024 * 1024;
 }
 

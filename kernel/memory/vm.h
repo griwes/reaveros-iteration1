@@ -50,8 +50,8 @@ namespace memory
             stack_area = stack_stack_area - memory::stack_size * 2 * 4096,
             global_pcb_stack_area = stack_area - scheduler::max_processes * 8,
             global_tcb_stack_area = global_pcb_stack_area - scheduler::max_processes * 8,
-            pcb_stack_area = global_tcb_stack_area - memory::core_index_stack_size,
-            tcb_stack_area = pcb_stack_area - memory::core_index_stack_size,
+            pcb_stack_area = global_tcb_stack_area - memory::core_index_stack_size * processor::max_cores,
+            tcb_stack_area = pcb_stack_area - memory::core_index_stack_size * processor::max_cores,
             pcb_area = tcb_stack_area - scheduler::max_processes * aligner<scheduler::process>::size,
             tcb_area = pcb_area - scheduler::max_threads * aligner<scheduler::thread>::size
         };

@@ -117,5 +117,6 @@ namespace screen
         uint64_t _owner;
         uint64_t _count;
         uint8_t _lock;
+        uint8_t _panicing;
     } console;
 }

@@ -59,10 +59,7 @@ memory::pmm::frame_stack::frame_stack() : _stack(nullptr), _size(0), _capacity(0
 
 memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)address), _size(0), _capacity(0), _lock(0)
 {
-//    _expand();
 }
-
-bool _ready = false;
 
 memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::global_frame_stack),
     _size(0), _capacity(0), _lock(0)
@@ -85,8 +82,6 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
             push(frame);
         }
     }
-
-    _ready = true;
 }
 
 void memory::pmm::frame_stack::_expand()

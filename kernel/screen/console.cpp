@@ -78,7 +78,7 @@ namespace
     }
 }
 
-screen::kernel_console::kernel_console(terminal * term) : _terminal(term)
+screen::kernel_console::kernel_console(terminal * term) : _terminal(term), _owner(0), _count(0), _lock(0), _panicing(0)
 {
 }
 
@@ -388,40 +388,44 @@ extern "C" void __unlock(uint8_t *);
 
 void screen::kernel_console::lock()
 {
+    if (_panicing)
+    {
+        return;
+    }
+
     uint64_t id = processor::current_core::id();
 
     __lock(&_lock);
+    auto guard = make_scope_guard([&](){ __unlock(&_lock); });
 
     if (_owner == id)
     {
         ++_count;
     }
 
-    else if (_count == 0)
+    else
     {
+        while (_count)
+        {
+            __unlock(&_lock);
+            asm volatile ("pause");
+            __lock(&_lock);
+        }
+
         _owner = id;
         ++_count;
     }
-
-    else
-    {
-        __unlock(&_lock);
-
-        while (_count)
-        {
-            asm volatile ("pause");
-        }
-
-        lock();
-
-        return;
-    }
-
-    __unlock(&_lock);
 }
 
 void screen::kernel_console::unlock()
 {
+    if (_panicing || !_count)
+    {
+        return;
+    }
+
+    __lock(&_lock);
+
     uint64_t id = processor::current_core::id();
 
     if (!_count)
@@ -431,16 +435,29 @@ void screen::kernel_console::unlock()
 
     if (_owner != id)
     {
+        for (;;);
         PANIC("Tried to unlock console from wrong core");
     }
 
     --_count;
+
+    __unlock(&_lock);
 }
 
 void screen::kernel_console::release()
 {
+    if (_panicing)
+    {
+        return;
+    }
+
+    __lock(&_lock);
+    _panicing = 1;
+
     if (_count && _owner == processor::current_core::id())
     {
         _count = 0;
     }
+
+    __unlock(&_lock);
 }
