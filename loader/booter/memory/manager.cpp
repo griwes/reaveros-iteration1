@@ -28,7 +28,7 @@
 #include <memory/x64paging.h>
 
 memory::manager::placement_allocator::placement_allocator(uint32_t placement)
-    : placement_address(placement), base(0x100000), type(5), top_mapped(64 * 1024 * 1024 - 1)
+    : placement_address{placement}, base{0x100000}, type{5}, top_mapped{64 * 1024 * 1024 - 1}
 {
 }
 
@@ -38,7 +38,7 @@ memory::manager::placement_allocator::~placement_allocator()
 
 void memory::manager::placement_allocator::save()
 {
-    map_entry entry;
+    map_entry entry{};
 
     entry.base = base & ~(uint64_t)4095;
     entry.length = (placement_address - base + 4095) & ~(uint64_t)4095;

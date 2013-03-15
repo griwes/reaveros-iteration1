@@ -43,8 +43,8 @@ int main()
 
     rose::vmm::allowed_addresses = rose::get_allowed_address_range();
 
-    rose::register_handler(rose::signal::ipc, rose::pool(16), rose::vmm::receive);
-    rose::service::register_handler(rose::service::exceptions::pf, rose::pool(16), rose::vmm::handle_pf);
+    rose::register_handler(rose::signal::ipc, rose::pool{16}, rose::vmm::receive);
+    rose::service::register_handler(rose::service::exceptions::pf, rose::pool{16}, rose::vmm::handle_pf);
 
     while (rose::get_signal() != rose::signal::term)
     {

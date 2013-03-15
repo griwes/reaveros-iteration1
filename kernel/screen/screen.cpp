@@ -30,8 +30,8 @@
 
 void screen::initialize(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
 {
-    new ((void *)&term) boot_terminal(video_mode, map, map_size);
-    new ((void *)&console) kernel_console(&term);
+    new ((void *)&term) boot_terminal{video_mode, map, map_size};
+    new ((void *)&console) kernel_console{&term};
 }
 
 void screen::print(tag::tags t)

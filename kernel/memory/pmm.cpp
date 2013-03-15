@@ -53,16 +53,16 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
     ::map_size = map_size;
 }
 
-memory::pmm::frame_stack::frame_stack() : _stack(nullptr), _size(0), _capacity(0), _lock(0)
+memory::pmm::frame_stack::frame_stack() : _stack{}, _size{}, _capacity{}, _lock{}
 {
 }
 
-memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)address), _size(0), _capacity(0), _lock(0)
+memory::pmm::frame_stack::frame_stack(uint64_t address) : _stack((uint64_t *)address), _size{}, _capacity{}, _lock{}
 {
 }
 
-memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack((uint64_t *)vm::global_frame_stack),
-    _size(0), _capacity(0), _lock(0)
+memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _stack{(uint64_t *)vm::global_frame_stack},
+    _size{}, _capacity{}, _lock{}
 {
     for (uint64_t i = 0; i < map_size && global_stack.size() <= max_memory_supported / 4096; ++i)
     {

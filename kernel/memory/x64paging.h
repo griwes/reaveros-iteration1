@@ -76,7 +76,7 @@ namespace memory
             {
                 for (uint32_t i = 0; i < 512; ++i)
                 {
-                    entries[i] = page_table_entry();
+                    entries[i] = page_table_entry{};
                 }
             }
 
@@ -139,7 +139,7 @@ namespace memory
             {
                 for (uint32_t i = 0; i < 512; ++i)
                 {
-                    entries[i] = page_directory_entry();
+                    entries[i] = page_directory_entry{};
                 }
             }
 
@@ -202,7 +202,7 @@ namespace memory
             {
                 for (uint32_t i = 0; i < 512; ++i)
                 {
-                    entries[i] = pdpt_entry();
+                    entries[i] = pdpt_entry{};
                 }
             }
 
@@ -267,7 +267,7 @@ namespace memory
             {
                 for (uint32_t i = 0; i < 512; ++i)
                 {
-                    entries[i] = pml4_entry();
+                    entries[i] = pml4_entry{};
                 }
             }
 

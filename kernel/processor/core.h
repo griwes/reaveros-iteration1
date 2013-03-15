@@ -38,12 +38,12 @@ namespace processor
     class core
     {
     public:
-        core() : _is_valid(false), _is_nmi_valid(false) {}
+        core() : _is_valid{}, _is_nmi_valid{} {}
 
-        core(uint32_t apic_id, uint32_t acpi_id, bool is_lapic = true) : _acpi_id(acpi_id), _apic_id(apic_id),
-            _is_local_apic(is_lapic), _is_valid(true), _is_nmi_valid(false), _frame_stack(memory::vm::frame_stack_area
-            + _apic_id * memory::stack_size), _stack_stack(memory::vm::stack_stack_area + _apic_id * memory::core_index_stack_size,
-            memory::stack_manager::global_stack_stack())
+        core(uint32_t apic_id, uint32_t acpi_id, bool is_lapic = true) : _acpi_id{acpi_id}, _apic_id{apic_id},
+            _is_local_apic{is_lapic}, _is_valid{true}, _is_nmi_valid{}, _frame_stack{memory::vm::frame_stack_area
+            + _apic_id * memory::stack_size}, _stack_stack{memory::vm::stack_stack_area + _apic_id * memory::core_index_stack_size,
+            memory::stack_manager::global_stack_stack()}
         {
         }
 

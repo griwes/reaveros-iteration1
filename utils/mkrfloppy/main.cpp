@@ -32,7 +32,7 @@
 #include <iostream>
 #include <fstream>
 
-void Usage()
+void usage()
 {
     std::cout << "ReaverFS bootfloppy creator, version 0.2" << std::endl << std::endl;
     std::cout << "Usage:" << std::endl;
@@ -41,7 +41,7 @@ void Usage()
     return;
 }
 
-void Zero(char * buffer, int size)
+void zero(char * buffer, int size)
 {
     for (int i = 0; i < size; i++)
     {
@@ -55,60 +55,58 @@ int main(int argc, char ** argv)
 {
     if (argc != 7)
     {
-        Usage();
+        usage();
         return 1;
     }
 
-    std::fstream output(argv[1], std::fstream::out | std::fstream::trunc | std::fstream::binary);
-    if (!output.good())
+    std::fstream output{argv[1], std::fstream::out | std::fstream::trunc | std::fstream::binary};
+    if (!output)
     {
         std::cout << "Couldn't open output file." << std::endl;
         return 2;
     }
 
-    std::fstream stage1(argv[2], std::fstream::in | std::fstream::binary);
-    if (!stage1.good())
+    std::fstream stage1{argv[2], std::fstream::in | std::fstream::binary};
+    if (!stage1)
     {
         std::cout << "Couldn't open stage 1 file." << std::endl;
         return 3;
     }
 
-    std::fstream stage2(argv[3], std::fstream::in | std::fstream::binary);
-    if (!stage2.good())
+    std::fstream stage2{argv[3], std::fstream::in | std::fstream::binary};
+    if (!stage2)
     {
         std::cout << "Couldn't open stage 2 file." << std::endl;
         return 4;
     }
 
-    std::fstream booter(argv[4], std::fstream::in | std::fstream::binary);
-    if (!booter.good())
+    std::fstream booter{argv[4], std::fstream::in | std::fstream::binary};
+    if (!booter)
     {
         std::cout << "Couldn't open booter file." << std::endl;
         return 5;
     }
 
-    std::fstream kernel;
-    kernel.open(argv[5], std::fstream::in | std::fstream::binary);
-    if (!kernel.good())
+    std::fstream kernel{argv[5], std::fstream::in | std::fstream::binary};
+    if (!kernel)
     {
         std::cout << "Couldn't open kernel file." << std::endl;
         return 6;
     }
 
-    std::fstream initrd;
-    initrd.open(argv[6], std::fstream::in | std::fstream::binary);
-    if (!initrd.good())
+    std::fstream initrd{argv[6], std::fstream::in | std::fstream::binary};
+    if (!initrd)
     {
         std::cout << "Couldn't open intird file." << std::endl;
         return 7;
     }
 
-    char * buffer = new char[512];
-    Zero(buffer, 512);
+    char * buffer = new char[512]{};
+    zero(buffer, 512);
 
     stage1.read(buffer, 512);
     output.write(buffer, 512);
-    Zero(buffer, 512);
+    zero(buffer, 512);
 
     stage1.close();
 
@@ -117,7 +115,7 @@ int main(int argc, char ** argv)
     {
         stage2.read(buffer, 512);
         output.write(buffer, 512);
-        Zero(buffer, 512);
+        zero(buffer, 512);
         counter++;
     }
     stage2.close();
@@ -136,7 +134,7 @@ int main(int argc, char ** argv)
     {
         booter.read(buffer, 512);
         output.write(buffer, 512);
-        Zero(buffer, 512);
+        zero(buffer, 512);
         booter_counter++;
     }
     booter.close();
@@ -152,7 +150,7 @@ int main(int argc, char ** argv)
     {
         kernel.read(buffer, 512);
         output.write(buffer, 512);
-        Zero(buffer, 512);
+        zero(buffer, 512);
         kernel_counter++;
     }
 
@@ -167,7 +165,7 @@ int main(int argc, char ** argv)
     {
         initrd.read(buffer, 512);
         output.write(buffer, 512);
-        Zero(buffer, 512);
+        zero(buffer, 512);
         initrd_counter++;
     }
 

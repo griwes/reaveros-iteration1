@@ -213,7 +213,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
 
                 if (lapic->flags & 1)
                 {
-                    new ((void *)(cores + core_num++)) processor::core(lapic->apic_id, lapic->acpi_id);
+                    new ((void *)(cores + core_num++)) processor::core{lapic->apic_id, lapic->acpi_id};
 
                     screen::debug("\nFound LAPIC entry: ", lapic->apic_id);
                 }
@@ -225,7 +225,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
             {
                 auto ioapic = (acpi::madt_ioapic_entry *)((entry + 1));
 
-                new ((void *)(ioapics + ioapic_num++)) processor::ioapic(ioapic->apic_id, ioapic->base_int, ioapic->base_address);
+                new ((void *)(ioapics + ioapic_num++)) processor::ioapic{ioapic->apic_id, ioapic->base_int, ioapic->base_address};
 
                 screen::debug("\nFound I/O APIC entry: ", ioapic->apic_id, ", handling vectors from ", ioapic->base_int, " to ", ioapics[ioapic_num - 1].end());
 
@@ -303,7 +303,7 @@ void acpi::parse_madt(processor::core * cores, uint64_t & core_num, processor::i
 
                 if (x2apic->flags & 1)
                 {
-                    new ((void *)(cores + core_num++)) processor::core(x2apic->x2apic_id, x2apic->acpi_uuid, false);
+                    new ((void *)(cores + core_num++)) processor::core{x2apic->x2apic_id, x2apic->acpi_uuid, false};
 
                     screen::debug("\nFound x2APIC entry: ", x2apic->x2apic_id);
                 }

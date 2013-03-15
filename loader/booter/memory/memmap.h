@@ -35,7 +35,7 @@ namespace memory
     class map_entry
     {
     public:
-        map_entry() : base(0), length(0), type(0), extended_attribs(0)
+        map_entry() : base{}, length{}, type{}, extended_attribs{}
         {
         }
 

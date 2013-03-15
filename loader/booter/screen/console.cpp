@@ -28,8 +28,8 @@
 #include <memory/manager.h>
 
 screen::console::console(screen::boot_mode * mode, void * font)
-    : _mode(mode), _font((uint8_t *)font), _x(0), _y(0), _maxx(mode->resolution_x / 8), _maxy(mode->resolution_y / 16),
-      _backbuffer(0)
+    : _mode{mode}, _font{(uint8_t *)font}, _x{}, _y{}, _maxx{mode->resolution_x / 8}, _maxy{mode->resolution_y / 16},
+      _backbuffer{}
 {
     _clear();
 }
@@ -40,7 +40,7 @@ screen::console::~console()
 
 void screen::console::init_backbuffer()
 {
-    _backbuffer = (uint32_t)((memory::manager::backwards_allocator()).allocate(_mode.bytes_per_line * _mode.resolution_y));
+    _backbuffer = (uint32_t)((memory::manager::backwards_allocator{}).allocate(_mode.bytes_per_line * _mode.resolution_y));
     memory::zero((uint8_t *)_backbuffer, _mode.resolution_y * _mode.bytes_per_line);
     save_backbuffer_info();
 }

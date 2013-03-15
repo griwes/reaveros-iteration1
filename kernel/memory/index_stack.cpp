@@ -29,12 +29,12 @@
 extern "C" void __lock(uint8_t *);
 extern "C" void __unlock(uint8_t *);
 
-memory::index_stack::index_stack() : _stack(nullptr), _size(0), _capacity(0), _lock(0)
+memory::index_stack::index_stack() : _stack{}, _size{}, _capacity{}, _lock{}
 {
 }
 
 memory::index_stack::index_stack(uint64_t stack_address, uint64_t bottom, uint64_t top, uint64_t max)
-    : _global(nullptr), _stack((uint64_t *)stack_address), _size(0), _capacity(0), _top(top), _max(max != 0 ? max : top), _lock(0)
+    : _global{}, _stack{(uint64_t *)stack_address}, _size{}, _capacity{}, _top{top}, _max{max != 0 ? max : top}, _lock(0)
 {
     for (uint64_t i = bottom; i < top; ++i)
     {
@@ -42,8 +42,8 @@ memory::index_stack::index_stack(uint64_t stack_address, uint64_t bottom, uint64
     }
 }
 
-memory::index_stack::index_stack(uint64_t stack_address, memory::index_stack * global) : _global(global),
-    _stack((uint64_t *)stack_address), _size(0), _capacity(0), _lock(0)
+memory::index_stack::index_stack(uint64_t stack_address, memory::index_stack * global) : _global{global},
+    _stack{(uint64_t *)stack_address}, _size{0}, _capacity{0}, _lock{0}
 {
 }
 

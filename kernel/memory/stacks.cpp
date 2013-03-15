@@ -36,7 +36,7 @@ namespace
 
 void memory::stack_manager::initialize()
 {
-    new ((void *)&_global_stack_stack) memory::index_stack(vm::global_stack_stack_area, 0, 64 * 1024 - 1, scheduler::max_threads);
+    new ((void *)&_global_stack_stack) memory::index_stack{vm::global_stack_stack_area, 0, 64 * 1024 - 1, scheduler::max_threads};
     // number of threads limited to 64 * 1024 * 1024 should be sane
     // doesn't work without -1; locks somewhere in mapping it (?!)
 }

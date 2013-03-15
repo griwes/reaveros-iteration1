@@ -32,8 +32,8 @@ void * operator new(size_t, void *);
 
 namespace memory
 {
-    manager::placement_allocator default_allocator(0);
-    x64::pml4 * vas;
+    manager::placement_allocator default_allocator{0};
+    x64::pml4 * vas = nullptr;
 }
 
 void memory::initialize(uint32_t placement, map_entry * memory_map, uint32_t memory_map_length)
@@ -48,7 +48,7 @@ void memory::initialize(uint32_t placement, map_entry * memory_map, uint32_t mem
         memory::map::add_entry(memory_map[i]);
     }
 
-    new ((void *)&default_allocator) manager::placement_allocator(placement);
+    new ((void *)&default_allocator) manager::placement_allocator{placement};
 }
 
 void memory::prepare_long_mode()

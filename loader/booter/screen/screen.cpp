@@ -34,7 +34,7 @@ namespace screen
 
 void screen::initialize(screen::boot_mode * mode, void * font)
 {
-    new ((void *)&output) console(mode, font);
+    new ((void *)&output) console{mode, font};
     screen::output.init_backbuffer();
 }
 

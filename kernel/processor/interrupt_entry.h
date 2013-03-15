@@ -30,7 +30,7 @@ namespace processor
     class interrupt_entry
     {
     public:
-        interrupt_entry() : _valid(false)
+        interrupt_entry() : _valid{}
         {
         }
 

@@ -78,7 +78,7 @@ namespace
     }
 }
 
-screen::kernel_console::kernel_console(terminal * term) : _terminal(term), _owner(0), _count(0), _lock(0), _panicing(0)
+screen::kernel_console::kernel_console(terminal * term) : _terminal{term}, _owner{}, _count{}, _lock{}, _panicing{}
 {
 }
 

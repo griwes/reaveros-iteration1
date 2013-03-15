@@ -25,11 +25,11 @@
 
 #include <scheduler/thread_scheduler.h>
 
-scheduler::thread_scheduler::thread_scheduler() : _global(nullptr)
+scheduler::thread_scheduler::thread_scheduler() : _global{}
 {
 }
 
-scheduler::thread_scheduler::thread_scheduler(scheduler::thread_scheduler * global) : _global(global)
+scheduler::thread_scheduler::thread_scheduler(scheduler::thread_scheduler * global) : _global{global}
 {
 }
 

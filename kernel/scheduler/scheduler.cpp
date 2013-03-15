@@ -48,19 +48,19 @@ namespace
 void scheduler::initialize()
 {
     // TODO:
-    // 1. initialize PCB global and local stacks
-    // 2. initialize TCB global and local stacks
+    // 1. initialize PCB global and local stacks - DONE
+    // 2. initialize TCB global and local stacks - DONE
     // 3. initialize thread queues for each priority
     // 4. initialize thread queues waiting on each interrupt or exception
     // 5. initialize kernel process and current thread
     // 6. initialize IPC subsystem
-    // 7. set _initialize_aps
-    // 8. wait for rest of the cores to finish scheduler initialization
+    // 7. set _initialize_aps - DONE
+    // 8. wait for rest of the cores to finish scheduler initialization - DONE
     // 9. schedule current thread
 
-    new ((void *)&_global_pcb_stack) memory::index_stack(memory::vm::global_pcb_stack_area, 0, 64 * 1024, max_processes);
-    new ((void *)&_global_tcb_stack) memory::index_stack(memory::vm::global_tcb_stack_area, 0, 64 * 1024, max_threads);
-    new ((void *)&_global_scheduler) scheduler::thread_scheduler();
+    new ((void *)&_global_pcb_stack) memory::index_stack{memory::vm::global_pcb_stack_area, 0, 64 * 1024, max_processes};
+    new ((void *)&_global_tcb_stack) memory::index_stack{memory::vm::global_tcb_stack_area, 0, 64 * 1024, max_threads};
+    new ((void *)&_global_scheduler) scheduler::thread_scheduler{};
 
     _bsp = processor::current_core::id();
     _initialize_aps = true;
@@ -86,10 +86,10 @@ void scheduler::ap_initialize()
 
     processor::core * current = processor::get_core(processor::current_core::id());
 
-    new ((void *)&current->pcb_stack()) memory::index_stack(memory::vm::pcb_stack_area + processor::current_core::id()
-        * memory::core_index_stack_size, &_global_pcb_stack);
-    new ((void *)&current->tcb_stack()) memory::index_stack(memory::vm::tcb_stack_area + processor::current_core::id()
-        * memory::core_index_stack_size, &_global_tcb_stack);
+    new ((void *)&current->pcb_stack()) memory::index_stack{memory::vm::pcb_stack_area + processor::current_core::id()
+        * memory::core_index_stack_size, &_global_pcb_stack};
+    new ((void *)&current->tcb_stack()) memory::index_stack{memory::vm::tcb_stack_area + processor::current_core::id()
+        * memory::core_index_stack_size, &_global_tcb_stack};
 
     for (uint64_t i = 0; i < 1024; ++i)
     {
@@ -98,7 +98,7 @@ void scheduler::ap_initialize()
         current->tcb_stack().push(_global_tcb_stack.pop());
     }
 
-    new ((void *)&current->scheduler()) scheduler::thread_scheduler(&_global_scheduler);
+    new ((void *)&current->scheduler()) scheduler::thread_scheduler{&_global_scheduler};
 
     --_in_init;
 
