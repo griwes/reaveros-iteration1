@@ -48,8 +48,8 @@ uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
 }
 
 screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * map, uint64_t map_size)
-    : _mode{mode}, _backbuffer{_find_backbuffer(map, map_size)}, _maxx{mode->resolution_x / 8}, _maxy{mode->resolution_y / 16},
-      _x{}, _y{}
+    : _mode{ mode }, _backbuffer{ _find_backbuffer(map, map_size) }, _maxx{ static_cast<uint16_t>(mode->resolution_x / 8) },
+        _maxy{ static_cast<uint16_t>(mode->resolution_y / 16) }, _x{}, _y{}
 {
     memory::vm::map_multiple(memory::vm::boot_video_memory, memory::vm::boot_video_memory + mode->resolution_y * mode->bytes_per_line, mode->short_addr);
     _mode->addr = memory::vm::boot_video_memory;

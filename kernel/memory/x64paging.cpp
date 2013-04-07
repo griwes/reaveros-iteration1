@@ -76,7 +76,7 @@ void memory::x64::invlpg(uint64_t addr)
 
 void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start, bool foreign)
 {
-    address_generator gen{foreign ? 257 : 256};
+    address_generator gen{ foreign ? 257u : 256u };
 
     if (virtual_start >= 0xFFFF800000000000 && virtual_start < 0xFFFF800000000000 + 2 * 512 * 1024 * 1024 * 1024)
     {
@@ -199,7 +199,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
 
 uint64_t memory::x64::get_physical_address(uint64_t addr, bool foreign)
 {
-    address_generator gen{foreign ? 257 : 256};
+    address_generator gen{ foreign ? 257u : 256u };
 
     gen.pml4()->entries[(addr >> 39) & 511].lock();
     auto guard = make_scope_guard([&](){ gen.pml4()->entries[(addr >> 39) & 511].unlock(); });
@@ -225,7 +225,7 @@ uint64_t memory::x64::get_physical_address(uint64_t addr, bool foreign)
 
 void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push, bool foreign)
 {
-    address_generator gen(foreign ? 257 : 256);
+    address_generator gen{ foreign ? 257u : 256u };
 
     virtual_start &= ~(uint64_t)4095;
     virtual_end += 4095;
@@ -339,8 +339,8 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
 
 uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging structures
 {
-    address_generator current{256};
-    address_generator gen{257};
+    address_generator current{ 256 };
+    address_generator gen{ 257 };
 
     uint64_t pml4_frame = memory::pmm::pop();
     set_foreign(pml4_frame);
@@ -358,7 +358,7 @@ uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging 
 
 void memory::x64::set_foreign(uint64_t frame)
 {
-    address_generator current{256};
+    address_generator current{ 256 };
     current.pml4()->entries[257].lock();
 
     current.pml4()->entries[257] = frame;
@@ -369,7 +369,7 @@ void memory::x64::set_foreign(uint64_t frame)
 
 void memory::x64::release_foreign()
 {
-    address_generator{256}.pml4()->entries[257].unlock();
+    address_generator{ 256 }.pml4()->entries[257].unlock();
 }
 
 // the function below may fail if some lock is acquired by different core while it is running
@@ -377,7 +377,7 @@ void memory::x64::release_foreign()
 // _shrink() if it is called from mapping call that does something "near" the stack's region
 bool memory::x64::locked(uint64_t address)
 {
-    address_generator current{256};
+    address_generator current{ 256 };
 
     uint64_t pml4e = (address >> 39) & 511;
     uint64_t pdpte = (address >> 30) & 511;
@@ -391,7 +391,7 @@ bool memory::x64::locked(uint64_t address)
 // push mapped frames, that may be used somewhere in current paging structures
 void memory::x64::drop_bootloader_mapping(bool push)
 {
-    address_generator gen{256};
+    address_generator gen{ 256 };
 
     if (!push)
     {

@@ -28,8 +28,8 @@
 #include <memory/manager.h>
 
 screen::console::console(screen::boot_mode * mode, void * font)
-    : _mode{mode}, _font{(uint8_t *)font}, _x{}, _y{}, _maxx{mode->resolution_x / 8}, _maxy{mode->resolution_y / 16},
-      _backbuffer{}
+    : _mode{ mode }, _font{ (uint8_t *)font }, _x{}, _y{}, _maxx{ static_cast<uint16_t>(mode->resolution_x / 8) },
+        _maxy{ static_cast<uint16_t>(mode->resolution_y / 16) }, _backbuffer{}
 {
     _clear();
 }
