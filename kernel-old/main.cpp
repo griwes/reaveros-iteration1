@@ -23,8 +23,12 @@
  *
  **/
 
-#include <memory/memory.h>
 #include <screen/screen.h>
+#include <memory/memory.h>
+#include <memory/pmm.h>
+#include <processor/processor.h>
+#include <memory/stacks.h>
+#include <scheduler/scheduler.h>
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
@@ -32,7 +36,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     memory::copy_bootloader_data(video, memory_map, memory_map_size);
     memory::initialize_paging();
 
-//    memory::pmm::initialize(memory_map, memory_map_size);
+    memory::pmm::initialize(memory_map, memory_map_size);
 
     screen::initialize(video, memory_map, memory_map_size); // memory map required to get preallocated backbuffer info from bootloader
 
@@ -40,7 +44,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print("Version: 0.0.2 dev, Codename \"Cotyledon\"\n");
     screen::print("Copyright (C) 2012-2013 Reaver Project Team\n\n");
 
-/*    screen::print(tag::memory, "Reporting memory manager status...\n");
+    screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();
 
     screen::print(tag::memory, "Initializing kernel stacks manager...");
@@ -54,7 +58,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     screen::done();
-*/
+
     for (;;) ;
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager server...");

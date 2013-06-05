@@ -38,22 +38,21 @@ uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
     {
         if (map[i].type == 4)
         {
-            uint64_t ret = memory::vm::allocate_address_range(map[i].length);
-            memory::vm::map_multiple(ret, ret + map[i].length, map[i].base);
+            memory::vm::map_multiple(memory::vm::boot_backbuffer, memory::vm::boot_backbuffer + map[i].length, map[i].base);
 
-            return ret;
+            return memory::vm::boot_backbuffer;
         }
     }
 
     return 0;
 }
 
-screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * map, uint64_t map_size) : _mode{ mode },
-    _backbuffer{ _find_backbuffer(map, map_size) }, _maxx{ static_cast<uint16_t>(mode->resolution_x / 8) },
-    _maxy{ static_cast<uint16_t>(mode->resolution_y / 16) }, _x{}, _y{}
+screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * map, uint64_t map_size)
+    : _mode{ mode }, _backbuffer{ _find_backbuffer(map, map_size) }, _maxx{ static_cast<uint16_t>(mode->resolution_x / 8) },
+        _maxy{ static_cast<uint16_t>(mode->resolution_y / 16) }, _x{}, _y{}
 {
-    _mode->addr = memory::vm::allocate_address_range(_mode->resolution_y * mode->bytes_per_line);
-    memory::vm::map_multiple(_mode->addr, _mode->addr + mode->resolution_y * mode->bytes_per_line, mode->short_addr);
+    memory::vm::map_multiple(memory::vm::boot_video_memory, memory::vm::boot_video_memory + mode->resolution_y * mode->bytes_per_line, mode->short_addr);
+    _mode->addr = memory::vm::boot_video_memory;
 
     clear();
 

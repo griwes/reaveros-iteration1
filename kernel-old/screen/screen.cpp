@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
+ * Copyright (C) 2011-2012 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -30,8 +30,8 @@
 
 void screen::initialize(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
 {
-    new ((void *)&term) boot_terminal{ video_mode, map, map_size };
-    new ((void *)&console) kernel_console{ &term };
+    new ((void *)&term) boot_terminal{video_mode, map, map_size};
+    new ((void *)&console) kernel_console{&term};
 }
 
 void screen::print(tag::tags t)
@@ -54,4 +54,19 @@ void screen::print(tag::tags t)
     }
 
     screen::print(color::gray);
+}
+
+void screen::transaction()
+{
+    screen::console.transaction();
+}
+
+void screen::commit()
+{
+    screen::console.commit();
+}
+
+void screen::clear()
+{
+    screen::console.clear();
 }

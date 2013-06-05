@@ -23,43 +23,31 @@
  *
  **/
 
-#define dbg asm volatile ("xchg %bx, %bx")
-#define cli asm volatile ("cli")
-#define sti asm volatile ("sti")
+#pragma once
 
-#include <cstdint>
-#include <cstddef>
+#include <memory/x64paging.h>
+#include <processor/current_core.h>
 
-#define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-#define DUMP(X) _dump_registers(X);
-
-void _panic(const char *, const char *, uint64_t, const char *);
-template<typename T>
-void _dump_registers(const T &);
-
-inline void * operator new (uint64_t, void * addr)
+namespace processor
 {
-    return addr;
-}
+    bool ready();
 
-inline void outb(uint16_t port, uint8_t value)
-{
-    asm volatile ("outb %1, %0" :: "dN" (port), "a" (value));
-}
+    extern "C" memory::x64::pml4 * get_cr3();
+    extern "C" void reload_cr3();
 
-inline uint8_t inb(uint16_t port)
-{
-    uint8_t ret;
-    asm volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
-}
+    class ioapic;
+    class core;
 
-inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
-{
-    asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));
-}
+    void initialize();
+    extern "C" void ap_initialize();
+    ioapic & get_ioapic(uint8_t);
+    uint8_t translate_isa(uint8_t);
 
-inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
-{
-    asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+    using current_core::ipis;
+    using current_core::broadcast_types;
+
+    void ipi(core *, ipis, uint8_t = 0);
+    void broadcast(broadcast_types, ipis, uint8_t = 0);
+
+    processor::core * get_core(uint64_t);
 }

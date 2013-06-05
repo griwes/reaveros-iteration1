@@ -23,43 +23,40 @@
  *
  **/
 
-#define dbg asm volatile ("xchg %bx, %bx")
-#define cli asm volatile ("cli")
-#define sti asm volatile ("sti")
+#include <memory/memory.h>
+#include <memory/x64paging.h>
+#include <processor/processor.h>
 
-#include <cstdint>
-#include <cstddef>
-
-#define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-#define DUMP(X) _dump_registers(X);
-
-void _panic(const char *, const char *, uint64_t, const char *);
-template<typename T>
-void _dump_registers(const T &);
-
-inline void * operator new (uint64_t, void * addr)
+namespace
 {
-    return addr;
+    screen::mode _mode;
+    memory::map_entry _map[512] = {};
+    uint8_t _font[4096];
 }
 
-inline void outb(uint16_t port, uint8_t value)
+void memory::copy_bootloader_data(screen::mode *& video, memory::map_entry *& entries, uint64_t size)
 {
-    asm volatile ("outb %1, %0" :: "dN" (port), "a" (value));
+    _mode = *video;
+    memory::copy(entries, _map, size);
+    memory::copy(_mode.font, _font, 4096);
+    _mode.font = _font;
+
+    video = &_mode;
+    entries = _map;
+
+    return;
 }
 
-inline uint8_t inb(uint16_t port)
+void memory::initialize_paging()
 {
-    uint8_t ret;
-    asm volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
+    x64::pml4 * boot_vas = processor::get_cr3();
+
+    (*boot_vas)[256] = (uint64_t)boot_vas;
+
+    processor::reload_cr3();
 }
 
-inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
+void memory::drop_bootloader_mapping(bool push)
 {
-    asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));
-}
-
-inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
-{
-    asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+    memory::x64::drop_bootloader_mapping(push);
 }

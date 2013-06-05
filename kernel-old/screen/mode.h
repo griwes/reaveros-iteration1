@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
+ * Copyright (C) 2011-2012 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -25,13 +25,23 @@
 
 #pragma once
 
-namespace memory
+namespace screen
 {
-    struct map_entry
+    struct mode
     {
-        uint64_t base;
-        uint64_t length;
-        uint32_t type;
-        uint32_t extended_attribs;
+        uint32_t short_addr;
+        uint16_t resolution_x;
+        uint16_t resolution_y;
+        uint16_t bytes_per_line;
+
+        uint8_t bpp;
+        uint8_t red_size, red_pos;
+        uint8_t green_size, green_pos;
+        uint8_t blue_size, blue_pos;
+        uint8_t rsvd_size, rsvd_pos;
+
+        uint8_t * font;
+
+        uint64_t addr;
     } __attribute__((packed));
 }

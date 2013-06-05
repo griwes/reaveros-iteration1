@@ -49,11 +49,9 @@ namespace screen
 
     void initialize(mode *, memory::map_entry *, uint64_t);
 
-    void clear()
-    {
-        auto _ = console.lock();
-        screen::console.clear();
-    }
+    void transaction();
+    void commit();
+    void clear();
 
     inline void print()
     {
@@ -61,51 +59,61 @@ namespace screen
 
     inline void print(char c)
     {
-        auto _ = console.lock();
+        console.lock();
         console.print(c);
+        console.unlock();
     }
 
     inline void print(const char * str)
     {
-        auto _ = console.lock();
+        console.lock();
         console.print(str);
+        console.unlock();
     }
 
     void print(tag::tags);
 
     inline void print(color::colors c)
     {
-        auto _ = console.lock();
+        console.lock();
         console.set_color(c);
+        console.unlock();
     }
 
     template<typename T>
     void print(const T & t)
     {
-        auto _ = console.lock();
+        console.lock();
         console.print(t);
+        console.unlock();
     }
 
     template<typename T>
     void print(const T * ptr)
     {
-        auto _ = console.lock();
+        console.lock();
         console.print((void *)ptr);
+        console.unlock();
     }
 
     template<typename First, typename... Rest>
     void print(const First & first, const Rest &... rest)
     {
-        auto _ = console.lock();
+        console.lock();
         print(first);
         print(rest...);
+        console.unlock();
     }
 
     inline void done()
     {
-        auto _ = console.lock();
+        console.lock();
+        console.special();
         screen::print(color::green, " done.", color::gray);
+        console.special(false);
+        console.commit();
         screen::print("\n");
+        console.unlock();
     }
 
     template<typename... Args>

@@ -23,43 +23,12 @@
  *
  **/
 
-#define dbg asm volatile ("xchg %bx, %bx")
-#define cli asm volatile ("cli")
-#define sti asm volatile ("sti")
+#pragma once
 
-#include <cstdint>
-#include <cstddef>
-
-#define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-#define DUMP(X) _dump_registers(X);
-
-void _panic(const char *, const char *, uint64_t, const char *);
-template<typename T>
-void _dump_registers(const T &);
-
-inline void * operator new (uint64_t, void * addr)
+namespace utils
 {
-    return addr;
-}
+    class semaphore
+    {
 
-inline void outb(uint16_t port, uint8_t value)
-{
-    asm volatile ("outb %1, %0" :: "dN" (port), "a" (value));
-}
-
-inline uint8_t inb(uint16_t port)
-{
-    uint8_t ret;
-    asm volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
-}
-
-inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
-{
-    asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));
-}
-
-inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
-{
-    asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+    };
 }

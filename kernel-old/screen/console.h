@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
+ * Copyright (C) 2011-2012 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -25,8 +25,7 @@
 
 #pragma once
 
-#include <utils/semaphore.h>
-#include <utils/locks.h>
+#include <processor/processor.h>
 
 namespace memory
 {
@@ -68,6 +67,11 @@ namespace screen
         kernel_console() {}
         kernel_console(terminal *);
 
+        void transaction();
+        void commit();
+
+        void special(bool = true);
+
         void print(char);
         void print(const char *);
 
@@ -95,10 +99,24 @@ namespace screen
 
         void set_color(color::colors);
 
-        utils::unique_lock<utils::semaphore> lock();
+        void lock();
+        void unlock();
+
+        void release();
+
+        friend void processor::initialize();
 
     private:
+        void _set_owner(uint64_t new_owner)
+        {
+            _owner = new_owner;
+        }
+
         terminal * _terminal;
-        utils::semaphore _semaphore;
+
+        uint64_t _owner;
+        uint64_t _count;
+        uint8_t _lock;
+        uint8_t _panicing;
     } console;
 }

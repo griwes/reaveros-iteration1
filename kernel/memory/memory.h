@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2012 Reaver Project Team:
+ * Copyright (C) 2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -23,61 +23,18 @@
  *
  **/
 
-#pragma once
-
-#include <memory/map.h>
 #include <screen/mode.h>
+#include <memory/map.h>
 
 namespace memory
 {
     template<typename T>
-    void zero(T * ptr, uint64_t count = 1)
-    {
-        zero((uint8_t *)ptr, sizeof(T) * count);
-    }
-
-    inline void zero(uint8_t * ptr, uint64_t count = 1)
-    {
-        uint64_t * ptrl = (uint64_t *)ptr;
-
-        for (uint64_t i = 0; i < count / 8; ++i)
-        {
-            *ptrl++ = {};
-        }
-
-        for (uint64_t i = 0; i < count % 8; ++i)
-        {
-            *(ptr + count - count % 8 + i) = {};
-        }
-    }
+    void zero(T *, uint64_t = 1);
 
     template<typename T>
-    void copy(T * src, T * dest, uint64_t count = 1)
-    {
-        for (uint64_t i = 0; i < count; ++i)
-        {
-            *dest++ = *src++;
-        }
-//        copy((uint8_t *)src, (uint8_t *)dest, sizeof(T) * count);
-    }
-
-    inline void copy(uint8_t * src, uint8_t * dest, uint64_t count = 1)
-    {
-        uint64_t * srcl = (uint64_t *)src;
-        uint64_t * destl = (uint64_t *)dest;
-
-        for (uint64_t i = 0; i < count / 8; ++i)
-        {
-            *destl++ = *srcl++;
-        }
-
-        for (uint64_t i = 0; i < count % 8; ++i)
-        {
-            *(dest + count - count % 8 + i) = *(src + count - count % 8 + i);
-        }
-    }
+    void copy(T *, T *, uint64_t = 1);
 
     void copy_bootloader_data(screen::mode *&, map_entry *&, uint64_t);
     void initialize_paging();
-    void drop_bootloader_mapping(bool = true);
+    void drop_bootloader_mapping(bool);
 }

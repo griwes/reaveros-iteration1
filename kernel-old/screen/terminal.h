@@ -23,43 +23,23 @@
  *
  **/
 
-#define dbg asm volatile ("xchg %bx, %bx")
-#define cli asm volatile ("cli")
-#define sti asm volatile ("sti")
+#pragma once
 
-#include <cstdint>
-#include <cstddef>
+#include <screen/screen.h>
 
-#define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-#define DUMP(X) _dump_registers(X);
-
-void _panic(const char *, const char *, uint64_t, const char *);
-template<typename T>
-void _dump_registers(const T &);
-
-inline void * operator new (uint64_t, void * addr)
+namespace screen
 {
-    return addr;
-}
+    class terminal
+    {
+    public:
+        terminal() {}
+        virtual ~terminal() {}
 
-inline void outb(uint16_t port, uint8_t value)
-{
-    asm volatile ("outb %1, %0" :: "dN" (port), "a" (value));
-}
+        virtual void put_char(char) = 0;
+        virtual void clear() = 0;
+        virtual void scroll_up() {}
+        virtual void scroll_down() {}
 
-inline uint8_t inb(uint16_t port)
-{
-    uint8_t ret;
-    asm volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
-}
-
-inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
-{
-    asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));
-}
-
-inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
-{
-    asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+        virtual void set_color(color::colors) {}
+    };
 }

@@ -25,6 +25,7 @@
 
 #include <screen/screen.h>
 #include <memory/memory.h>
+#include <processor/interrupts.h>
 #include <processor/processor.h>
 
 void * __dso_handle = 0;
@@ -40,17 +41,41 @@ extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
 
 void _panic(const char * message, const char * file, uint64_t line, const char * func)
 {
-//    processor::broadcast(processor::broadcast_types::others, processor::ipis::panic);
+    processor::broadcast(processor::broadcast_types::others, processor::ipis::panic);
 
     screen::clear();
     screen::print(color::gray);
 
+    screen::console.special();
+
     screen::print("Kernel panic: ", message);
     screen::print("\n", file, ":", line, ": ", func);
+
+    screen::console.special(false);
+
+    screen::commit();
 
     asm volatile ("cli; hlt");
 
     // debugger::start();
+}
+
+template<>
+void _dump_registers(const processor::idt::irq_context &)
+{
+
+}
+
+template<>
+void _dump_registers(const processor::idt::exc_context &)
+{
+
+}
+
+template<>
+void _dump_registers(const processor::idt::exc_context_error &)
+{
+
 }
 
 extern "C" void * memcpy(void * dest, void * src, uint64_t count)

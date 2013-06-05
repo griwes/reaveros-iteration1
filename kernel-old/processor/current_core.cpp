@@ -203,7 +203,7 @@ void processor::current_core::initialize()
 
 void processor::current_core::sleep(uint64_t nanoseconds)
 {
-    _write_register(divide_configuration, 3);
+//    _write_register(divide_configuration, 3);
     _write_register(initial_count, (_ticks_per_second / 16) / (1000000000 / nanoseconds));
 
     asm volatile ("hlt");

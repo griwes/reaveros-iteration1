@@ -47,13 +47,13 @@ inline void outb(uint16_t port, uint8_t value)
     asm volatile ("outb %1, %0" :: "dN" (port), "a" (value));
 }
 
-inline uint8_t inb(uint16_t port)
+inline
+uint8_t inb(uint16_t port)
 {
     uint8_t ret;
     asm volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
     return ret;
 }
-
 inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
 {
     asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));
@@ -62,4 +62,40 @@ inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
 inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
 {
     asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+}
+
+template<typename T>
+struct scope_guard
+{
+    ~scope_guard()
+    {
+        callback();
+    }
+
+    T callback;
+};
+
+template<typename T>
+scope_guard<T> make_scope_guard(T callback)
+{
+    return scope_guard<T>{callback};
+}
+
+namespace memory
+{
+    constexpr uint64_t stack_size = 64 * 1024 * 1024;
+    constexpr uint64_t core_index_stack_size = 8 * 1024 * 1024;
+    constexpr uint64_t max_memory_supported = 64ull * 1024 * 1024 * 1024;
+}
+
+namespace processor
+{
+    constexpr uint64_t max_cores = 512;
+    constexpr uint64_t max_ioapics = 16;
+}
+
+namespace scheduler
+{
+    constexpr uint64_t max_processes = 64 * 1024 * 1024;
+    constexpr uint64_t max_threads = 1024 * 1024 * 1024;
 }

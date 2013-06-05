@@ -2,7 +2,8 @@ CC=clang++
 LD=../utils/tools/bin/x86_64-elf-ld
 CFLAGS=$(CFL) -c -Wall -Wextra -pedantic -Werror -nostdlib -fno-exceptions -fno-rtti -fno-stack-protector -std=c++0x \
 		-mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-avx -ffreestanding -Os -stdlib=libc++ -fno-builtin \
-		-mcmodel=kernel -Wno-unused-variable -Wno-unused-parameter -MD
+		-Wno-unused-private-field -mcmodel=kernel -Wno-unused-function -Wno-unused-parameter
+# 		^ eh
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=$(shell find . -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)
@@ -24,5 +25,3 @@ $(EXECUTABLE): $(OBJECTS)
 clean:
 	@rm -rfv *.o
 	@rm -rfv */*.o
-
--include $(SOURCES:.cpp=.d)

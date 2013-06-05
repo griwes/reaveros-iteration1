@@ -38,7 +38,7 @@ namespace
         {
             if (_id < 256)
             {
-                PANIC("Tried to create address generator for lower half PML4 recursive entry");
+                 PANIC("Tried to create address generator for lower half PML4 recursive entry");
             }
         }
 
