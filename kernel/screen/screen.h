@@ -49,7 +49,7 @@ namespace screen
 
     void initialize(mode *, memory::map_entry *, uint64_t);
 
-    void clear()
+    inline void clear()
     {
         auto _ = console.lock();
         screen::console.clear();

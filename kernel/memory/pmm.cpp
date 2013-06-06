@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
+ * Copyright (C) 2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -23,17 +23,23 @@
  *
  **/
 
-#pragma once
+#include <memory/pmm.h>
+#include <memory/map.h>
+#include <memory/stack.h>
+#include <memory/vm.h>
 
-namespace utils
+namespace
 {
-    class spinlock
-    {
+    memory::pmm::frame_stack _global_stack;
 
-    };
+    uint8_t _boot_frames[3 * 4096] __attribute__((aligned(4096)));
+    uint8_t _boot_frames_available = 3;
+    uint64_t boot_frames_start = 0;
+}
 
-    class recursive_spinlock
-    {
+void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
+{
+    boot_frames_start = vm::get_physical_address((uint64_t)_boot_frames);
 
-    };
+    new (&_global_stack) frame_stack{ map, map_size };
 }

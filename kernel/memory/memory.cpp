@@ -47,15 +47,6 @@ void memory::copy_bootloader_data(screen::mode *& video, memory::map_entry *& en
     return;
 }
 
-void memory::initialize_paging()
-{
-    x64::pml4 * boot_vas = processor::get_cr3();
-
-    (*boot_vas)[256] = (uint64_t)boot_vas;
-
-    processor::reload_cr3();
-}
-
 void memory::drop_bootloader_mapping(bool push)
 {
     memory::x64::drop_bootloader_mapping(push);

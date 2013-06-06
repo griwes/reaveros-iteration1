@@ -25,15 +25,38 @@
 
 #pragma once
 
-namespace utils
+#include <utils/spinlock.h>
+
+namespace memory
 {
-    class spinlock
+    struct map_entry;
+
+    namespace pmm
     {
+        class frame_stack_chunk
+        {
+            frame_stack_chunk * prev;
+            frame_stack_chunk * next;
+            utils::spinlock lock;
+            uint64_t size;
+            uint64_t stack[509];
+        };
 
-    };
+        class frame_stack
+        {
+        public:
+            frame_stack();
+            frame_stack(map_entry *, uint64_t);
 
-    class recursive_spinlock
-    {
+            uint64_t pop();
+            void push(uint64_t);
 
-    };
+            void pop_chunk();
+            void push_chunk(frame_stack_chunk *);
+
+        private:
+            frame_stack_chunk * _last;
+            uint64_t _count;
+        };
+    }
 }

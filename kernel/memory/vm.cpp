@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
+ * Copyright (C) 2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -23,17 +23,30 @@
  *
  **/
 
-#pragma once
+#include <atomic>
 
-namespace utils
+#include <memory/vm.h>
+#include <memory/x64paging.h>
+#include <processor/processor.h>
+
+namespace
 {
-    class spinlock
-    {
+    std::atomic<uint64_t> _lowest;
+}
 
-    };
+void memory::vm::initialize()
+{
+    x64::pml4 * boot_vas = processor::get_cr3();
 
-    class recursive_spinlock
-    {
+    (*boot_vas)[256] = (uint64_t)boot_vas;
 
-    };
+    processor::reload_cr3();
+
+    new (&_lowest) std::atomic<uint64_t>{ 0xFFFFFFFF80000000 };
+}
+
+uint64_t memory::vm::allocate_address_range(uint64_t size)
+{
+    size &= ~(uint64_t)4095;
+    return _lowest.fetch_sub(size) - size;
 }

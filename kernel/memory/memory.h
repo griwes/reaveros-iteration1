@@ -29,12 +29,56 @@
 namespace memory
 {
     template<typename T>
-    void zero(T *, uint64_t = 1);
+    void zero(T * src, uint64_t count = 1)
+    {
+        while (count--)
+        {
+            *src++ = {};
+        }
+    }
+
+    template<>
+    inline void zero<uint8_t>(uint8_t * src, uint64_t count)
+    {
+        uint64_t * srcl = (uint64_t *)src;
+
+        for (uint64_t i = 0; i < count / 8; ++i)
+        {
+            *srcl++ = {};
+        }
+
+        for (uint64_t i = 0; i < count % 8; ++i)
+        {
+            *(srcl + count - count % 8 + i) = {};
+        }
+    }
 
     template<typename T>
-    void copy(T *, T *, uint64_t = 1);
+    void copy(T * src, T * dest, uint64_t count = 1)
+    {
+        while (count--)
+        {
+            *dest++ = *src++;
+        }
+    }
+
+    template<>
+    inline void copy<uint8_t>(uint8_t * src, uint8_t * dest, uint64_t count)
+    {
+        uint64_t * srcl = (uint64_t *)src;
+        uint64_t * destl = (uint64_t *)dest;
+
+        for (uint64_t i = 0; i < count / 8; ++i)
+        {
+            *destl++ = *srcl++;
+        }
+
+        for (uint64_t i = 0; i < count % 8; ++i)
+        {
+            *(dest + count - count % 8 + i) = *(src + count - count % 8 + i);
+        }
+    }
 
     void copy_bootloader_data(screen::mode *&, map_entry *&, uint64_t);
-    void initialize_paging();
     void drop_bootloader_mapping(bool);
 }
