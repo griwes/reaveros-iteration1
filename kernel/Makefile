@@ -24,5 +24,7 @@ $(EXECUTABLE): $(OBJECTS)
 clean:
 	@rm -rfv *.o
 	@rm -rfv */*.o
+	@rm -rfv *.d
+	@rm -rfv */*.d
 
 -include $(SOURCES:.cpp=.d)

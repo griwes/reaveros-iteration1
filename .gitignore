@@ -7,3 +7,4 @@ builds/*
 utils/tools/*
 .gcc/*
 *-swp
+*.d

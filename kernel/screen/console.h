@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <utils/semaphore.h>
+#include <utils/spinlock.h>
 #include <utils/locks.h>
 
 namespace memory
@@ -95,10 +95,10 @@ namespace screen
 
         void set_color(color::colors);
 
-        utils::unique_lock<utils::semaphore> lock();
+        utils::unique_lock<utils::recursive_spinlock> lock();
 
     private:
         terminal * _terminal;
-        utils::semaphore _semaphore;
+        utils::recursive_spinlock _semaphore;
     } console;
 }

@@ -33,4 +33,10 @@ namespace utils
     public:
         unique_lock(const T &);
     };
+
+    class bit_lock
+    {
+    public:
+        bit_lock(uint8_t *, uint64_t);
+    };
 }

@@ -166,7 +166,7 @@ void screen::kernel_console::print(void * ptr)
     }
 }
 
-utils::unique_lock<utils::semaphore> screen::kernel_console::lock()
+utils::unique_lock<utils::recursive_spinlock> screen::kernel_console::lock()
 {
     return { _semaphore };
 }

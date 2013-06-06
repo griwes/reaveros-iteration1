@@ -25,14 +25,13 @@
 
 #pragma once
 
-extern "C" void _lock_bit(uint64_t *, uint64_t);
-extern "C" void _unlock_bit(uint64_t *, uint64_t);
+#include <utils/locks.h>
 
 namespace memory
 {
     namespace x64
     {
-        void invlpg(uint64_t);
+        void invlpg(uint64_t addr);
 
         struct page_table_entry
         {
@@ -45,14 +44,9 @@ namespace memory
                 return *this;
             }
 
-            void lock() const
+            utils::bit_lock lock()
             {
-                _lock_bit((uint64_t *)this, 9);
-            }
-
-            void unlock() const
-            {
-                _unlock_bit((uint64_t *)this, 9);
+                return { (uint8_t *)this, 9 };
             }
 
             uint64_t present:1;
@@ -109,14 +103,9 @@ namespace memory
                 return *this;
             }
 
-            void lock() const
+            utils::bit_lock lock()
             {
-                _lock_bit((uint64_t *)this, 9);
-            }
-
-            void unlock() const
-            {
-                _unlock_bit((uint64_t *)this, 9);
+                return { (uint8_t *)this, 9 };
             }
 
             uint64_t present:1;
@@ -172,14 +161,9 @@ namespace memory
                 return *this;
             }
 
-            void lock() const
+            utils::bit_lock lock()
             {
-                _lock_bit((uint64_t *)this, 9);
-            }
-
-            void unlock() const
-            {
-                _unlock_bit((uint64_t *)this, 9);
+                return { (uint8_t *)this, 9 };
             }
 
             uint64_t present:1;
@@ -237,14 +221,9 @@ namespace memory
                 return *this;
             }
 
-            void lock() const
+            utils::bit_lock lock()
             {
-                _lock_bit((uint64_t *)this, 9);
-            }
-
-            void unlock() const
-            {
-                _unlock_bit((uint64_t *)this, 9);
+                return { (uint8_t *)this, 9 };
             }
 
             uint64_t present:1;
@@ -295,10 +274,10 @@ namespace memory
         void unmap(uint64_t, uint64_t, bool = false, bool = false);
 
         uint64_t clone_kernel();
-        void set_foreign(uint64_t);
+        void set_foreign(uint64_t index);
         void release_foreign();
 
-        bool locked(uint64_t);
+        bool locked(uint64_t address);
 
         void drop_bootloader_mapping(bool);
     }

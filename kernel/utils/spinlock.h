@@ -27,7 +27,7 @@
 
 namespace utils
 {
-    class semaphore
+    class recursive_spinlock
     {
 
     };

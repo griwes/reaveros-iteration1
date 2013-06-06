@@ -104,8 +104,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
 
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
-        gen.pml4()->entries[startpml4e].lock();
-        auto pml4e_guard = make_scope_guard([&gen, startpml4e](){ gen.pml4()->entries[startpml4e].unlock(); });
+        auto _ = gen.pml4()->entries[startpml4e].lock();
 
         if (!gen.pml4()->entries[startpml4e].present)
         {
@@ -118,8 +117,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
-            (*table)[startpdpte].lock();
-            auto pdpte_guard = make_scope_guard([&table, startpdpte](){ (*table)[startpdpte].unlock(); });
+            auto _ = (*table)[startpdpte].lock();
 
             if (!(*table)[startpdpte].present)
             {
@@ -132,8 +130,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
             {
-                (*pd)[startpde].lock();
-                auto pde_guard = make_scope_guard([&pd, startpde](){ (*pd)[startpde].unlock(); });
+                auto _ = (*pd)[startpde].lock();
 
                 if (!(*pd)[startpde].present)
                 {
@@ -148,8 +145,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 {
                     if ((*pt)[startpte].present && physical_start != (*pt)[startpte].address << 12)
                     {
-                        screen::transaction();
-                        screen::print("\nAddress: ", (void *)virtual_start);
+//                        screen::print("\nAddress: ", (void *)virtual_start);
                         PANIC("Tried to map something at already mapped page");
                     }
 
@@ -201,8 +197,7 @@ uint64_t memory::x64::get_physical_address(uint64_t addr, bool foreign)
 {
     address_generator gen{ foreign ? 257u : 256u };
 
-    gen.pml4()->entries[(addr >> 39) & 511].lock();
-    auto guard = make_scope_guard([&](){ gen.pml4()->entries[(addr >> 39) & 511].unlock(); });
+    auto _ = gen.pml4()->entries[(addr >> 39) & 511].lock();
 
     if (gen.pml4()->entries[(addr >> 39) & 511].present)
     {
@@ -243,8 +238,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
 
     while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte))
     {
-        gen.pml4()->entries[startpml4e].lock();
-        auto pml4e_guard = make_scope_guard([&gen, startpml4e](){ gen.pml4()->entries[startpml4e].unlock(); });
+        auto _ = gen.pml4()->entries[startpml4e].lock();
 
         if (!gen.pml4()->entries[startpml4e].present)
         {
@@ -256,8 +250,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
-            (*table)[startpdpte].lock();
-            auto pdpte_guard = make_scope_guard([&table, startpdpte](){ (*table)[startpdpte].unlock(); });
+            auto _ = (*table)[startpdpte].lock();
 
             if (!(*table)[startpdpte].present)
             {
@@ -269,8 +262,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
             {
-                (*pd)[startpde].lock();
-                auto pde_guard = make_scope_guard([&pd, startpde](){ (*pd)[startpde].unlock(); });
+                auto _ = (*pd)[startpde].lock();
 
                 if (!(*pd)[startpde].present)
                 {
@@ -284,8 +276,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
                 {
                     if (!(*pt)[startpte].present)
                     {
-                        screen::transaction();
-                        screen::print("\nAt address ", (void *)virtual_start);
+//                        screen::print("\nAt address ", (void *)virtual_start);
                         PANIC("tried to unmap not mapped page");
                     }
 
@@ -361,7 +352,9 @@ uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging 
 void memory::x64::set_foreign(uint64_t frame)
 {
     address_generator current{ 256 };
-    current.pml4()->entries[257].lock();
+    auto _ = current.pml4()->entries[257].lock();
+
+//    scheduler::disable();
 
     current.pml4()->entries[257] = frame;
     current.pdpt(257)->entries[256] = frame;
@@ -371,7 +364,7 @@ void memory::x64::set_foreign(uint64_t frame)
 
 void memory::x64::release_foreign()
 {
-    address_generator{ 256 }.pml4()->entries[257].unlock();
+//    scheduler::enable();
 }
 
 // the function below may fail if some lock is acquired by different core while it is running
