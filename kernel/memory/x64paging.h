@@ -46,7 +46,7 @@ namespace memory
 
             utils::bit_lock lock()
             {
-                return { (uint8_t *)this, 9 };
+                return { (uint64_t *)this, 9 };
             }
 
             uint64_t present:1;
@@ -105,7 +105,7 @@ namespace memory
 
             utils::bit_lock lock()
             {
-                return { (uint8_t *)this, 9 };
+                return { (uint64_t *)this, 9 };
             }
 
             uint64_t present:1;
@@ -163,7 +163,7 @@ namespace memory
 
             utils::bit_lock lock()
             {
-                return { (uint8_t *)this, 9 };
+                return { (uint64_t *)this, 9 };
             }
 
             uint64_t present:1;
@@ -223,7 +223,7 @@ namespace memory
 
             utils::bit_lock lock()
             {
-                return { (uint8_t *)this, 9 };
+                return { (uint64_t *)this, 9 };
             }
 
             uint64_t present:1;

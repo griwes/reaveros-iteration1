@@ -31,12 +31,57 @@ namespace utils
     class unique_lock
     {
     public:
-        unique_lock(const T &);
+        unique_lock(T & lock) : _lock{ lock }
+        {
+            _lock.lock();
+        }
+
+        ~unique_lock()
+        {
+            _lock.unlock();
+        }
+
+        unique_lock(const unique_lock<T> &) = delete;
+        unique_lock(unique_lock<T> &&) = default;
+        unique_lock<T> & operator=(const unique_lock<T> &) = delete;
+        unique_lock<T> & operator=(unique_lock<T> &&) = delete;
+
+    private:
+        T & _lock;
     };
+
+    template<typename T>
+    unique_lock<T> make_unique_lock(T & lock)
+    {
+        return { lock };
+    }
 
     class bit_lock
     {
     public:
-        bit_lock(uint8_t *, uint64_t);
+        bit_lock(uint64_t * address, uint8_t bit) : _address{ address }, _bit{ bit }
+        {
+            while (__sync_fetch_and_or(address, 1 << (_bit - 1)))
+            {
+                asm volatile ("pause" ::: "memory");
+            }
+        }
+
+        ~bit_lock()
+        {
+            while (__sync_fetch_and_and(_address, ~static_cast<uint64_t>(1 << (_bit - 1))))
+            {
+                asm volatile ("pause" ::: "memory");
+            }
+        }
+
+        bit_lock(const bit_lock &) = delete;
+        bit_lock(bit_lock &&) = default;
+        bit_lock & operator=(const bit_lock &) = delete;
+        bit_lock & operator=(bit_lock &&) = delete;
+
+    private:
+        uint64_t * _address;
+        uint8_t _bit;
     };
 }

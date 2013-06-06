@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
+ * Copyright (C) 2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -25,15 +25,80 @@
 
 #pragma once
 
+#include <atomic>
+
+#include <processor/processor.h>
+
 namespace utils
 {
     class spinlock
     {
+    public:
+        void lock()
+        {
+            bool locked = false;
 
+            while (!_lock.compare_exchange_strong(locked, true))
+            {
+                asm volatile ("pause");
+            }
+        }
+
+        void unlock()
+        {
+            if (!_lock)
+            {
+                PANIC("tried to unlock unlocked spinlock!");
+            }
+
+            _lock = false;
+        }
+
+    private:
+        std::atomic<bool> _lock;
     };
 
     class recursive_spinlock
     {
+    public:
+        void lock()
+        {
+            uint64_t cpu = processor::initial_id();
 
+            while (_owner != cpu)
+            {
+                while (_count != 0)
+                {
+                    asm volatile ("pause");
+                }
+
+                auto _ = utils::make_unique_lock(_inner_lock);
+
+                if (_count != 0)
+                {
+                    continue;
+                }
+
+                _owner = cpu;
+                ++_count;
+            }
+        }
+
+        void unlock()
+        {
+            uint64_t cpu = processor::initial_id();
+
+            if (_count != 0 && _owner != cpu)
+            {
+                PANIC("invalid unlock on recursive spinlock!");
+            }
+
+            --_count;
+        }
+
+    private:
+        spinlock _inner_lock;
+        std::atomic<uint64_t> _count;
+        std::atomic<uint64_t> _owner;
     };
 }

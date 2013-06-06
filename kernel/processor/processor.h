@@ -31,4 +31,6 @@ namespace processor
 {
     extern "C" memory::x64::pml4 * get_cr3();
     extern "C" void reload_cr3();
+
+    extern "C" uint32_t initial_id();
 }
