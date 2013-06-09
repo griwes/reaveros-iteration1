@@ -30,6 +30,9 @@
 #include <cstdint>
 #include <cstddef>
 
+#include <memory/vm.h>
+#include <memory/pmm.h>
+
 #define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 #define DUMP(X) _dump_registers(X);
 
@@ -37,7 +40,7 @@ void _panic(const char *, const char *, uint64_t, const char *);
 template<typename T>
 void _dump_registers(const T &);
 
-inline void * operator new (uint64_t, void * addr)
+inline void * operator new(uint64_t, void * addr)
 {
     return addr;
 }
@@ -62,4 +65,27 @@ inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
 inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
 {
     asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+}
+
+template<typename T>
+T * allocate_chained(uint64_t physical = 0)
+{
+    static_assert(4096 % sizeof(T) == 0 || sizeof(T) % 4096 == 0, "wrong chained type requested");
+
+    if (sizeof(T) >= 4096)
+    {
+        auto address = memory::vm::allocate_address_range(sizeof(T));
+        return new (memory::vm::map_multiple(address, address + sizeof(T), physical ? physical : memory::pmm::pop())) T{};
+    }
+
+    T * address = static_cast<T *>(memory::vm::allocate_address_range(4096));
+
+    for (auto i = 0; i < 4096 / sizeof(T); ++i)
+    {
+        new (address + i) T{};
+        address[i].prev = (i != 0 ? address + i - 1 : nullptr);
+        address[i].next = (i != 4096 / sizeof(T) - 1 ? address + i + 1 : nullptr);
+    }
+
+    return address;
 }

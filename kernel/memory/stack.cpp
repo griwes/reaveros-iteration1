@@ -23,44 +23,40 @@
  *
  **/
 
-#pragma once
+#include <memory/stack.h>
+#include <memory/map.h>
 
-#include <utils/spinlock.h>
-
-namespace memory
+memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size)
 {
-    struct map_entry;
-
-    namespace pmm
+    for (uint64_t i = 0; i < map_size; ++i)
     {
-        class frame_stack_chunk
+        if (map[i].type == 1 && (map[i].base >= 1024 * 1024 || map[i].base + map[i].length > 1024 * 1024))
         {
-            frame_stack_chunk * prev;
-            frame_stack_chunk * next;
-            utils::spinlock lock;
-            uint64_t size;
-            uint64_t stack[509 - sizeof(utils::spinlock)];
-        };
-
-        static_assert(sizeof(frame_stack_chunk) == 4096, "wrong size of frame stack chunk");
-
-        class frame_stack
-        {
-        public:
-            frame_stack() {}
-            frame_stack(map_entry *, uint64_t);
-
-            uint64_t pop();
-            void push(uint64_t);
-
-            void pop_chunk();
-            void push_chunk(frame_stack_chunk *);
-
-        private:
-            frame_stack_chunk * _first;
-            frame_stack_chunk * _last;
-            uint64_t _count;
-            frame_stack * _global;
-        };
+            for (uint64_t frame = (map[i].base < 1024 * 1024) ? (1024 * 1024) : ((map[i].base + 4095) & ~(uint64_t)4095);
+                frame < map[i].base + map[i].length; frame += 4096)
+            {
+                push(frame);
+            }
+        }
     }
+}
+
+uint64_t memory::pmm::frame_stack::pop()
+{
+
+}
+
+void memory::pmm::frame_stack::pop_chunk()
+{
+
+}
+
+void memory::pmm::frame_stack::push(uint64_t )
+{
+
+}
+
+void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * )
+{
+
 }

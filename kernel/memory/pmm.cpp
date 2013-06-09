@@ -34,12 +34,31 @@ namespace
 
     uint8_t _boot_frames[3 * 4096] __attribute__((aligned(4096)));
     uint8_t _boot_frames_available = 3;
-    uint64_t boot_frames_start = 0;
+    uint64_t _boot_frames_start = 0;
 }
 
 void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 {
-    boot_frames_start = vm::get_physical_address((uint64_t)_boot_frames);
+    _boot_frames_start = vm::get_physical_address((uint64_t)_boot_frames);
 
     new (&_global_stack) frame_stack{ map, map_size };
+}
+
+uint64_t memory::pmm::pop()
+{
+    if (_boot_frames_available)
+    {
+        return _boot_frames_start + (3 - _boot_frames_available--) * 4096;
+    }
+
+//    memory::pmm::frame_stack & stack = processor::smp_ready() ? processor::get_core().frame_stack : _global_stack;
+    memory::pmm::frame_stack & stack = _global_stack;
+
+    return _global_stack.pop();
+}
+
+void memory::pmm::push(uint64_t frame)
+{
+//    (processor::smp_ready() ? processor::get_core().frame_stack : _global_stack).push(frame);
+    _global_stack.push(frame);
 }
