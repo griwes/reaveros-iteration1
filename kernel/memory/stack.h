@@ -63,6 +63,7 @@ namespace memory
             frame_stack_chunk * _last;
             uint64_t _size;
             frame_stack * _global;
+            utils::spinlock _lock;
         };
     }
 }

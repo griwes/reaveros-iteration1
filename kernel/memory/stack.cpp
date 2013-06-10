@@ -26,6 +26,8 @@
 #include <memory/stack.h>
 #include <memory/map.h>
 
+#include <screen/screen.h>
+
 extern memory::pmm::frame_stack _global_stack;
 
 memory::pmm::frame_stack::frame_stack() : _first{}, _last{}, _size{}, _global{ &_global_stack }
@@ -74,7 +76,7 @@ uint64_t memory::pmm::frame_stack::pop()
 
     auto _ = utils::make_unique_lock(_last->lock);
 
-    uint64_t ret = _last->stack[_last->size--];
+    uint64_t ret = _last->stack[--_last->size];
 
     if (_last != _first && _last->size == 0)
     {
@@ -97,7 +99,13 @@ uint64_t memory::pmm::frame_stack::pop()
 
 memory::pmm::frame_stack_chunk * memory::pmm::frame_stack::pop_chunk()
 {
-    auto _ = utils::make_unique_lock(_first->lock);
+    if (_first == _last)
+    {
+        return nullptr;
+    }
+
+    auto _ = utils::make_unique_lock(_last->lock);
+    auto __ = utils::make_unique_lock(_first->lock);
 
     if (_first->next)
     {
@@ -114,9 +122,12 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 {
     if (!_first)
     {
-        _first = allocate_chained<frame_stack_chunk>();
+        auto _ = utils::make_unique_lock(_lock);
 
-        _last = _first;
+        if (!_first)
+        {
+            _last = _first = allocate_chained<frame_stack_chunk>();
+        }
     }
 
     if (_last->size == frame_stack_chunk::max - 100 && !_last->next)
@@ -125,17 +136,23 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
         _last->next = allocate_chained<frame_stack_chunk>();
         _last->next->prev = _last;
+
+        screen::print("frame_stack::push(): allocated another\n");
+    }
+
+    {
+        auto _ = utils::make_unique_lock(_lock);
+
+        if (_last->size == frame_stack_chunk::max)
+        {
+            _last = _last->next;
+        }
     }
 
     auto _ = utils::make_unique_lock(_last->lock);
 
-    _last->stack[_last->size++] = frame;
+//    _last->stack[_last->size++] = frame;
     ++_size;
-
-    if (_last->size == frame_stack_chunk::max)
-    {
-        _last = _last->next;
-    }
 }
 
 void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk)
