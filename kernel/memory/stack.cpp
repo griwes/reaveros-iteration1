@@ -26,8 +26,6 @@
 #include <memory/stack.h>
 #include <memory/map.h>
 
-#include <screen/screen.h>
-
 extern memory::pmm::frame_stack _global_stack;
 
 memory::pmm::frame_stack::frame_stack() : _first{}, _last{}, _size{}, _global{ &_global_stack }
@@ -43,7 +41,6 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
             for (uint64_t frame = (map[i].base < 1024 * 1024) ? (1024 * 1024) : ((map[i].base + 4095) & ~(uint64_t)4095);
                 frame < map[i].base + map[i].length; frame += 4096)
             {
-                screen::print("Adding frame: ", (void *)frame, "\n");
                 push(frame);
             }
         }
@@ -79,11 +76,15 @@ uint64_t memory::pmm::frame_stack::pop()
 
     uint64_t ret = _last->stack[_last->size--];
 
-    if (_last->size == 0)
+    if (_last != _first && _last->size == 0)
     {
-        auto __ = utils::make_unique_lock(_last->prev->lock);
-
         _last = _last->prev;
+    }
+
+    if (_last != _first && _last->size == frame_stack_chunk::max - 50)
+    {
+        auto _ = utils::make_unique_lock(_last->lock);
+        auto __ = utils::make_unique_lock(_last->next->lock);
 
         if (_last->next->next)
         {
@@ -130,6 +131,11 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
     _last->stack[_last->size++] = frame;
     ++_size;
+
+    if (_last->size == frame_stack_chunk::max)
+    {
+        _last = _last->next;
+    }
 }
 
 void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk)

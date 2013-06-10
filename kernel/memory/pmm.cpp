@@ -48,7 +48,7 @@ uint64_t memory::pmm::pop()
 {
     if (_boot_frames_available)
     {
-        return _boot_frames_start + (3 - _boot_frames_available--) * 4096;
+        return _boot_frames_start + (8 - _boot_frames_available--) * 4096;
     }
 
 //    memory::pmm::frame_stack & stack = processor::smp_ready() ? processor::get_core().frame_stack : _global_stack;

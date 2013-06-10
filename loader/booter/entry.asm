@@ -29,4 +29,4 @@ global  entry
 extern  booter_main
 
 entry:
-    call   booter_main
+    call    booter_main
