@@ -33,13 +33,15 @@ namespace memory
 
     namespace pmm
     {
-        class frame_stack_chunk
+        struct frame_stack_chunk
         {
+            static constexpr uint64_t max = 509 - sizeof(utils::spinlock);
+
             frame_stack_chunk * prev;
             frame_stack_chunk * next;
             utils::spinlock lock;
             uint64_t size;
-            uint64_t stack[509 - sizeof(utils::spinlock)];
+            uint64_t stack[max];
         };
 
         static_assert(sizeof(frame_stack_chunk) == 4096, "wrong size of frame stack chunk");
@@ -53,13 +55,13 @@ namespace memory
             uint64_t pop();
             void push(uint64_t);
 
-            void pop_chunk();
+            frame_stack_chunk * pop_chunk();
             void push_chunk(frame_stack_chunk *);
 
         private:
             frame_stack_chunk * _first;
             frame_stack_chunk * _last;
-            uint64_t _count;
+            uint64_t _size;
             frame_stack * _global;
         };
     }

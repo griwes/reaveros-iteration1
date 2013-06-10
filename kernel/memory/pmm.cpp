@@ -32,8 +32,8 @@ namespace
 {
     memory::pmm::frame_stack _global_stack;
 
-    uint8_t _boot_frames[3 * 4096] __attribute__((aligned(4096)));
-    uint8_t _boot_frames_available = 3;
+    uint8_t _boot_frames[8 * 4096] __attribute__((aligned(4096)));
+    uint8_t _boot_frames_available = 8;
     uint64_t _boot_frames_start = 0;
 }
 

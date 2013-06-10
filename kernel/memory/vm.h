@@ -34,9 +34,14 @@ namespace memory
         void initialize();
         uint64_t allocate_address_range(uint64_t size);
 
-        inline void map_multiple(uint64_t base, uint64_t end, uint64_t size)
+        inline void map(uint64_t address, uint64_t physical)
         {
-            x64::map(base, end, size);
+            x64::map(address, address + 4096, physical);
+        }
+
+        inline void map_multiple(uint64_t base, uint64_t end, uint64_t physical)
+        {
+            x64::map(base, end, physical);
         }
 
         inline uint64_t get_physical_address(uint64_t virtual_address)

@@ -30,9 +30,6 @@
 #include <cstdint>
 #include <cstddef>
 
-#include <memory/vm.h>
-#include <memory/pmm.h>
-
 #define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 #define DUMP(X) _dump_registers(X);
 
@@ -67,6 +64,9 @@ inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
     asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
 }
 
+#include <memory/vm.h>
+#include <memory/pmm.h>
+
 template<typename T>
 T * allocate_chained(uint64_t physical = 0)
 {
@@ -75,12 +75,14 @@ T * allocate_chained(uint64_t physical = 0)
     if (sizeof(T) >= 4096)
     {
         auto address = memory::vm::allocate_address_range(sizeof(T));
-        return new (memory::vm::map_multiple(address, address + sizeof(T), physical ? physical : memory::pmm::pop())) T{};
+        memory::vm::map_multiple(address, address + sizeof(T), physical ? physical : memory::pmm::pop());
+        return new ((void *)address) T{};
     }
 
-    T * address = static_cast<T *>(memory::vm::allocate_address_range(4096));
+    T * address = (T *)memory::vm::allocate_address_range(4096);
+    memory::vm::map((uint64_t)address, physical ? physical : memory::pmm::pop());
 
-    for (auto i = 0; i < 4096 / sizeof(T); ++i)
+    for (uint64_t i = 0; i < 4096 / sizeof(T); ++i)
     {
         new (address + i) T{};
         address[i].prev = (i != 0 ? address + i - 1 : nullptr);

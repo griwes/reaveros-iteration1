@@ -43,20 +43,99 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
 
 uint64_t memory::pmm::frame_stack::pop()
 {
+    if (!_size)
+    {
+        PANIC("TODO: _size = 0");
 
+        if (_first)
+        {
+            // dealocate chunk
+        }
+
+        else
+        {
+            if (_global)
+            {
+                push_chunk(_global->pop_chunk());
+            }
+
+            else
+            {
+                // free caches etc.
+            }
+        }
+    }
+
+    auto _ = utils::make_unique_lock(_last->lock);
+
+    uint64_t ret = _last->stack[_last->size--];
+
+    if (_last->size == 0)
+    {
+        auto __ = utils::make_unique_lock(_last->prev->lock);
+
+        _last = _last->prev;
+
+        if (_last->next->next)
+        {
+            // free _last->next->next
+        }
+    }
+
+    return ret;
 }
 
-void memory::pmm::frame_stack::pop_chunk()
+memory::pmm::frame_stack_chunk * memory::pmm::frame_stack::pop_chunk()
 {
+    auto _ = utils::make_unique_lock(_first->lock);
 
+    if (_first->next)
+    {
+        auto _ = utils::make_unique_lock(_first->next->lock);
+    }
+
+    auto ret = _first;
+    _first = _first->next;
+
+    return ret;
 }
 
-void memory::pmm::frame_stack::push(uint64_t )
+void memory::pmm::frame_stack::push(uint64_t frame)
 {
+    if (!_first)
+    {
+        _first = allocate_chained<frame_stack_chunk>();
 
+        _last = _first;
+    }
+
+    if (_last->size == frame_stack_chunk::max - 100 && !_last->next)
+    {
+        auto _ = utils::make_unique_lock(_last->lock);
+
+        _last->next = allocate_chained<frame_stack_chunk>();
+        _last->next->prev = _last;
+    }
+
+    auto _ = utils::make_unique_lock(_last->lock);
+
+    _last->stack[_last->size++] = frame;
+    ++_size;
 }
 
-void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * )
+void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk)
 {
+    auto _ = utils::make_unique_lock(_last->lock);
+    auto __ = utils::make_unique_lock(chunk->lock);
 
+    auto last = _last;
+
+    while (last->next)
+    {
+        last = last->next;
+    }
+
+    auto ___ = utils::make_unique_lock(last->lock);
+
+    last->next = chunk;
 }

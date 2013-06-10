@@ -79,6 +79,15 @@ namespace memory
         }
     }
 
+    template<typename T>
+    void set(T * dest, const T & val, uint64_t count = 1)
+    {
+        for (uint64_t i = 0; i < count; ++i)
+        {
+            *dest++ = val;
+        }
+    }
+
     void copy_bootloader_data(screen::mode *&, map_entry *&, uint64_t);
     void drop_bootloader_mapping(bool);
 }

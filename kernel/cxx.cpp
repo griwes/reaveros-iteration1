@@ -59,3 +59,10 @@ extern "C" void * memcpy(void * dest, void * src, uint64_t count)
 
     return dest;
 }
+
+extern "C" void * memset(void * dest, int ch, uint64_t count)
+{
+    memory::set((uint8_t *)dest, (uint8_t)ch, count);
+
+    return dest;
+}
