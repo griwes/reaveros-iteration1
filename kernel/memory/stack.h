@@ -49,7 +49,7 @@ namespace memory
         class frame_stack
         {
         public:
-            frame_stack() {}
+            frame_stack();
             frame_stack(map_entry *, uint64_t);
 
             uint64_t pop();

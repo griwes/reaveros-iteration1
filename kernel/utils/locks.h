@@ -61,7 +61,7 @@ namespace utils
     public:
         bit_lock(uint64_t * address, uint8_t bit) : _address{ address }, _bit{ bit }
         {
-            while (__sync_fetch_and_or(address, 1 << (_bit - 1)))
+            while (__sync_fetch_and_or(address, 1 << (_bit - 1)) & (1 << (_bit - 1)))
             {
                 asm volatile ("pause" ::: "memory");
             }

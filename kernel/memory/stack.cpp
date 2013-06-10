@@ -26,7 +26,15 @@
 #include <memory/stack.h>
 #include <memory/map.h>
 
-memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size)
+#include <screen/screen.h>
+
+extern memory::pmm::frame_stack _global_stack;
+
+memory::pmm::frame_stack::frame_stack() : _first{}, _last{}, _size{}, _global{ &_global_stack }
+{
+}
+
+memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size) : _first{}, _last{}, _size{}, _global{}
 {
     for (uint64_t i = 0; i < map_size; ++i)
     {
@@ -35,6 +43,7 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
             for (uint64_t frame = (map[i].base < 1024 * 1024) ? (1024 * 1024) : ((map[i].base + 4095) & ~(uint64_t)4095);
                 frame < map[i].base + map[i].length; frame += 4096)
             {
+                screen::print("Adding frame: ", (void *)frame, "\n");
                 push(frame);
             }
         }
