@@ -90,12 +90,13 @@ namespace screen
             return _backbuffer + _mode.resolution_y * _mode.bytes_per_line;
         }
 
+        void clear();
+
     private:
         void _put_16(char);
         void _put_32(char);
 
         void _scroll();
-        void _clear();
 
         mode _mode;
         uint8_t * _font;

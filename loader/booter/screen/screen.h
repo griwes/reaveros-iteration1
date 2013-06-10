@@ -77,6 +77,11 @@ namespace screen
 
     void initialize(boot_mode *, void *);
 
+    inline void clear()
+    {
+        output.clear();
+    }
+
     template<unsigned N>
     void print(const char (&s)[N])
     {

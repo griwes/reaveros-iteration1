@@ -91,6 +91,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     uint64_t kernel_stack_end = kernel_end;
 
     screen::print("[CPU  ] Calling kernel...");
+    screen::clear();
     processor::call_kernel(kernel_start, initrd_start, initrd_start + initrd_size, kernel_stack_end,
         (uint64_t)screen::get_video_mode(), (uint64_t)memory::map::get_entries(), memory::map::size());
 
