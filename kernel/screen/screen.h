@@ -47,7 +47,8 @@ namespace screen
 {
     struct mode;
 
-    void initialize(mode *, memory::map_entry *, uint64_t);
+    void initialize_console();
+    void initialize_terminal(mode *, memory::map_entry *, uint64_t);
 
     inline void clear()
     {

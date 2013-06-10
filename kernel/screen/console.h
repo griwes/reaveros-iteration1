@@ -95,6 +95,11 @@ namespace screen
 
         void set_color(color::colors);
 
+        void set_terminal(terminal * term)
+        {
+            _terminal = term;
+        }
+
         utils::unique_lock<utils::recursive_spinlock> lock();
 
     private:

@@ -51,12 +51,18 @@ screen::kernel_console::kernel_console(terminal * term) : _terminal{ term }
 
 void screen::kernel_console::clear()
 {
-    _terminal->clear();
+    if (_terminal)
+    {
+        _terminal->clear();
+    }
 }
 
 void screen::kernel_console::print(char c)
 {
-    _terminal->put_char(c);
+    if (_terminal)
+    {
+        _terminal->put_char(c);
+    }
 
     if (c != '\0' && _lpt_port != -1)
     {
@@ -77,13 +83,21 @@ void screen::kernel_console::print(const char * str)
             outb(_lpt_port + 2, 0x0d);
         }
 
-        _terminal->put_char(*str++);
+        if (_terminal)
+        {
+            _terminal->put_char(*str);
+        }
+
+        ++str;
     }
 }
 
 void screen::kernel_console::set_color(color::colors c)
 {
-    _terminal->set_color(c);
+    if (_terminal)
+    {
+        _terminal->set_color(c);
+    }
 }
 
 namespace

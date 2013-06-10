@@ -69,10 +69,7 @@ namespace utils
 
         ~bit_lock()
         {
-            while (__sync_fetch_and_and(_address, ~static_cast<uint64_t>(1 << (_bit - 1))))
-            {
-                asm volatile ("pause" ::: "memory");
-            }
+            __sync_fetch_and_and(_address, ~static_cast<uint64_t>(1 << (_bit - 1)));
         }
 
         bit_lock(const bit_lock &) = delete;

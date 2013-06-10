@@ -28,10 +28,15 @@
 #include <screen/console.h>
 #include <screen/bootterm.h>
 
-void screen::initialize(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
+void screen::initialize_console()
+{
+    new ((void *)&console) kernel_console{ nullptr };
+}
+
+void screen::initialize_terminal(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
 {
     new ((void *)&term) boot_terminal{ video_mode, map, map_size };
-    new ((void *)&console) kernel_console{ &term };
+    console.set_terminal(&term);
 }
 
 void screen::print(tag::tags t)
