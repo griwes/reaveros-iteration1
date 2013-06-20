@@ -27,6 +27,7 @@ bits    64
 global  get_cr3
 global  reload_cr3
 global  initial_id
+global  load_gdt
 
 get_cr3:
     mov     rax, cr3
@@ -73,3 +74,27 @@ initial_id:
         pop     rbx
 
         ret
+
+load_gdt:
+    lgdt    [rdi]
+
+    xchg    bx, bx
+
+    mov     rax, qword .ret
+
+    push    0x8
+    push    rax
+
+    retf
+
+    .ret:
+    mov     ax, 0x10
+    mov     fs, ax
+    mov     gs, ax
+    mov     ss, ax
+
+    mov     ax, 0x2B
+    ltr     ax
+
+    ret
+

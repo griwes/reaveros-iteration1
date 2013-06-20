@@ -48,15 +48,11 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();
 
-/*    screen::print(tag::memory, "Initializing kernel stacks manager...");
-    memory::stack_manager::initialize();
-    screen::done();
-
     screen::print(tag::cpu, "Initializing processor...");
     processor::initialize();
     screen::done();
 
-    screen::print(tag::scheduler, "Initializing scheduler...");
+/*    screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     screen::done();
 */

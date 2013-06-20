@@ -23,17 +23,55 @@
  *
  **/
 
-#pragma once
+#include <processor/processor.h>
+#include <memory/memory.h>
+#include <processor/interrupt_entry.h>
+#include <processor/gdt.h>
+#include <processor/idt.h>
 
-#include <memory/x64paging.h>
-
-namespace processor
+namespace
 {
-    extern "C" memory::x64::pml4 * get_cr3();
-    extern "C" void reload_cr3();
+//    processor::core * _cores;
+//    processor::ioapic * _ioapics;
 
-    extern "C" uint32_t initial_id();
+    uint64_t _num_cores;
+    uint64_t _num_ioapics;
 
-    void initialize();
-    bool ready();
+    processor::interrupt_entry _sources[128];
+
+    bool _ready = false;
+}
+
+bool processor::ready()
+{
+    return _ready;
+}
+
+void processor::initialize()
+{
+    gdt::initialize();
+    idt::initialize();
+
+/*    acpi::initialize();
+
+    acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
+
+    for (uint64_t i = 0; i < _num_ioapics; ++i)
+    {
+        _ioapics[i].initialize(_sources);
+    }
+
+    hpet::initialize();
+
+    if (!hpet::ready())
+    {
+        pit::initialize();
+    }
+
+    lapic::initialize();
+    smp::boot(_cores + 1, _num_cores - 1);
+
+    memory::drop_bootloader_mapping();
+
+    _ready = true;*/
 }

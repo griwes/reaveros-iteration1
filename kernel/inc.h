@@ -75,7 +75,11 @@ T * allocate_chained(uint64_t physical = 0)
     if (sizeof(T) >= 4096)
     {
         auto address = memory::vm::allocate_address_range(sizeof(T));
-        memory::vm::map_multiple(address, address + sizeof(T), physical ? physical : memory::pmm::pop());
+
+        for (uint64_t i = 0; i < sizeof(T); i += 4096)
+        {
+            memory::vm::map(address + i, physical ? physical + i : memory::pmm::pop());
+        }
         return new ((void *)address) T{};
     }
 

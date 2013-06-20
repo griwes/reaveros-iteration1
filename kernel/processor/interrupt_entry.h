@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -25,15 +25,59 @@
 
 #pragma once
 
-#include <memory/x64paging.h>
-
 namespace processor
 {
-    extern "C" memory::x64::pml4 * get_cr3();
-    extern "C" void reload_cr3();
+    class interrupt_entry
+    {
+    public:
+        interrupt_entry() : _valid{}
+        {
+        }
 
-    extern "C" uint32_t initial_id();
+        void set(uint8_t source, uint32_t global, uint16_t flags)
+        {
+            _source = source;
+            _global_vector = global;
+            _flags = flags;
+            _valid = true;
+        }
 
-    void initialize();
-    bool ready();
+        operator bool()
+        {
+            return _valid;
+        }
+
+        uint32_t vector()
+        {
+            return _global_vector;
+        }
+
+        bool standard_polarity()
+        {
+            return !(_flags & 3);
+        }
+
+        bool low()
+        {
+            return (_flags & 3) == 3;
+        }
+
+        bool standard_trigger()
+        {
+            return !((_flags >> 2) & 3);
+        }
+
+        bool level()
+        {
+            return ((_flags >> 2) & 3) == 3;
+        }
+
+    private:
+        uint8_t _source;
+        uint32_t _global_vector;
+
+        uint16_t _flags;
+
+        bool _valid;
+    };
 }
