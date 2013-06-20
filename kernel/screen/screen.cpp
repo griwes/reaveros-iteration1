@@ -36,6 +36,7 @@ void screen::initialize_console()
 void screen::initialize_terminal(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
 {
     new ((void *)&term) boot_terminal{ video_mode, map, map_size };
+
     console.set_terminal(&term);
 }
 

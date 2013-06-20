@@ -47,6 +47,7 @@ void memory::vm::initialize()
 
 uint64_t memory::vm::allocate_address_range(uint64_t size)
 {
+    size += 4095;
     size &= ~(uint64_t)4095;
     return _lowest.fetch_sub(size) - size;
 }

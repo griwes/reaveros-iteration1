@@ -38,7 +38,8 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     memory::vm::initialize();
     memory::pmm::initialize(memory_map, memory_map_size);
 
-    screen::initialize_terminal(video, memory_map, memory_map_size); // memory map required to get preallocated backbuffer info from bootloader
+    // memory map required to get preallocated backbuffer info from bootloader
+    screen::initialize_terminal(video, memory_map, memory_map_size);
 
     screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
     screen::print("Version: 0.0.2 dev, Codename \"Cotyledon\"\n");
