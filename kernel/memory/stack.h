@@ -58,6 +58,11 @@ namespace memory
             frame_stack_chunk * pop_chunk();
             void push_chunk(frame_stack_chunk *);
 
+            uint64_t size() const
+            {
+                return _size;
+            }
+
         private:
             frame_stack_chunk * _first;
             frame_stack_chunk * _last;

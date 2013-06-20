@@ -27,6 +27,7 @@
 #include <memory/map.h>
 #include <memory/stack.h>
 #include <memory/vm.h>
+#include <screen/screen.h>
 
 memory::pmm::frame_stack _global_stack;
 
@@ -35,6 +36,9 @@ namespace
     uint8_t _boot_frames[8 * 4096] __attribute__((aligned(4096)));
     uint8_t _boot_frames_available = 8;
     uint64_t _boot_frames_start = 0;
+
+    memory::map_entry * _map;
+    uint64_t _map_size;
 }
 
 void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
@@ -42,6 +46,9 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
     _boot_frames_start = vm::get_physical_address((uint64_t)_boot_frames);
 
     new (&_global_stack) frame_stack{ map, map_size };
+
+    _map = map;
+    _map_size = map_size;
 }
 
 uint64_t memory::pmm::pop()
@@ -61,4 +68,24 @@ void memory::pmm::push(uint64_t frame)
 {
 //    (processor::smp_ready() ? processor::get_core().frame_stack : _global_stack).push(frame);
     _global_stack.push(frame);
+}
+
+void memory::pmm::boot_report()
+{
+    screen::print("Free memory: ", (_global_stack.size() * 4096) / (1024 * 1024 * 1024), " GiB ", ((_global_stack.size() * 4096) %
+        (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", ((_global_stack.size() * 4096) % (1024 * 1024)) / 1024, " KiB", '\n');
+    screen::print("Total usable memory detected at boot: ");
+
+    uint64_t total = 0;
+
+    for (uint64_t i = 0; i < _map_size; ++i)
+    {
+        if (_map[i].type != 6 && _map[i].type != 8 && _map[i].type != 9)
+        {
+            total += _map[i].length;
+        }
+    }
+
+    screen::print(total / (1024 * 1024 * 1024), " GiB ", (total % (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ",
+        (total % (1024 * 1024)) / 1024, " KiB", '\n', '\n');
 }

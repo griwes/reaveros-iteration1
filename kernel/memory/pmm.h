@@ -35,5 +35,7 @@ namespace memory
 
         uint64_t pop();
         void push(uint64_t address);
+
+        void boot_report();
     }
 }

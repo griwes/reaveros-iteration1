@@ -45,10 +45,10 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print("Version: 0.0.2 dev, Codename \"Cotyledon\"\n");
     screen::print("Copyright (C) 2012-2013 Reaver Project Team\n\n");
 
-/*    screen::print(tag::memory, "Reporting memory manager status...\n");
+    screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();
 
-    screen::print(tag::memory, "Initializing kernel stacks manager...");
+/*    screen::print(tag::memory, "Initializing kernel stacks manager...");
     memory::stack_manager::initialize();
     screen::done();
 
