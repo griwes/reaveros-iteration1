@@ -28,6 +28,9 @@ global  get_cr3
 global  reload_cr3
 global  initial_id
 global  load_gdt
+global  common_interrupt_stub
+
+extern  _common_interrupt_handler
 
 get_cr3:
     mov     rax, cr3
@@ -78,8 +81,6 @@ initial_id:
 load_gdt:
     lgdt    [rdi]
 
-    xchg    bx, bx
-
     mov     rax, qword .ret
 
     push    0x8
@@ -98,3 +99,39 @@ load_gdt:
 
     ret
 
+common_interrupt_stub:
+    push    rax
+    push    rbx
+    push    rcx
+    push    rdx
+    push    rsi
+    push    rdi
+    push    r8
+    push    r9
+    push    r10
+    push    r11
+    push    r12
+    push    r13
+    push    r14
+    push    r15
+
+    call    _common_interrupt_handler
+
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    pop     r11
+    pop     r10
+    pop     r9
+    pop     r8
+    pop     rdi
+    pop     rsi
+    pop     rdx
+    pop     rcx
+    pop     rbx
+    pop     rax
+
+    add     rsp, 16
+
+    iretq

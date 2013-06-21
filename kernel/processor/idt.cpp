@@ -23,9 +23,109 @@
  *
  **/
 
+#include <reaver/static_for.h>
+
 #include <processor/idt.h>
+#include <screen/screen.h>
+
+namespace
+{
+    processor::idt::idt_entry _idt[256];
+    processor::idt::idtr _idtr;
+
+    extern "C" void _common_interrupt_handler(processor::idt::isr_context context)
+    {
+        screen::print("\nhere be dragons\n");
+    }
+
+    extern "C" void common_interrupt_stub();
+
+    // no error code
+    template<uint64_t I, typename std::enable_if<I != 8 && (I < 10 || I > 14) && I != 17, int>::type = 0>
+    __attribute__((naked)) void _isr()
+    {
+        asm volatile (
+            R"(
+                push    $0
+                push    %0
+
+                jmp     common_interrupt_stub
+            )" :: "i"(I)
+        );
+    }
+
+    // error code
+    template<uint64_t I, typename std::enable_if<I == 8 || (I >= 10 && I <= 14) || I == 17, int>::type = 0>
+    __attribute__((naked)) void _isr()
+    {
+        asm volatile (
+            R"(
+                push    %0
+
+                jmp     common_interrupt_stub
+            )" :: "i"(I)
+        );
+    }
+
+    void _setup_idte(uint8_t id, void (*fun)(), uint16_t selector, bool present, uint8_t dpl, uint8_t type,
+        processor::idt::idt_entry * table, uint8_t ist = 0)
+    {
+        uint64_t address = (uint64_t)fun;
+
+        table[id].zero = 0;
+        table[id].zero1 = 0;
+        table[id].zero2 = 0;
+        table[id].offset_low = address & 0xffff;
+        table[id].offset_middle = (address >> 16) & 0xffff;
+        table[id].offset_high = (address >> 32) & 0xffffffff;
+        table[id].selector = selector;
+        table[id].present = present;
+        table[id].dpl = dpl;
+        table[id].type = type;
+        table[id].ist = ist;
+    }
+
+    template<uint64_t I>
+    struct _setup_isr
+    {
+        void operator()()
+        {
+            _setup_idte(I, &_isr<I>, 0x8, true, 0, 0xE, _idt);
+        }
+    };
+
+    template<>
+    struct _setup_isr<2>
+    {
+        void operator()()
+        {
+            _setup_idte(2, &_isr<2>, 0x8, true, 0, 0xE, _idt, 1);
+        }
+    };
+
+    template<>
+    struct _setup_isr<8>
+    {
+        void operator()()
+        {
+            _setup_idte(8, &_isr<8>, 0x8, true, 0, 0xE, _idt, 2);
+        }
+    };
+
+    template<>
+    struct _setup_isr<14>
+    {
+        void operator()()
+        {
+            _setup_idte(14, &_isr<14>, 0x8, true, 0, 0xE, _idt, 3);
+        }
+    };
+}
 
 void processor::idt::initialize()
 {
-    
+    reaver::static_for<0, 256, _setup_isr>::exec();
+
+    _idtr.address = _idt;
+    _idtr.limit = 256 * sizeof(idt_entry) - 1;
 }
