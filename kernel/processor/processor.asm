@@ -28,6 +28,7 @@ global  get_cr3
 global  reload_cr3
 global  initial_id
 global  load_gdt
+global  load_idt
 global  common_interrupt_stub
 
 extern  _common_interrupt_handler
@@ -96,6 +97,13 @@ load_gdt:
 
     mov     ax, 0x2B
     ltr     ax
+
+    ret
+
+load_idt:
+    lidt    [rdi]
+
+    int     0x80
 
     ret
 

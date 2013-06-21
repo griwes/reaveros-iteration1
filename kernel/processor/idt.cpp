@@ -35,7 +35,7 @@ namespace
 
     extern "C" void _common_interrupt_handler(processor::idt::isr_context context)
     {
-        screen::print("\nhere be dragons\n");
+        // TODO
     }
 
     extern "C" void common_interrupt_stub();
@@ -122,10 +122,14 @@ namespace
     };
 }
 
+extern "C" void load_idt(processor::idt::idtr *);
+
 void processor::idt::initialize()
 {
     reaver::static_for<0, 256, _setup_isr>::exec();
 
     _idtr.address = _idt;
     _idtr.limit = 256 * sizeof(idt_entry) - 1;
+
+    load_idt(&_idtr);
 }
