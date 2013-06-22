@@ -35,6 +35,11 @@ namespace memory
         void initialize();
         uint64_t allocate_address_range(uint64_t size);
 
+        inline void map(uint64_t address)
+        {
+            x64::map(address, address + 4096, memory::pmm::pop());
+        }
+
         inline void map(uint64_t address, uint64_t physical)
         {
             x64::map(address, address + 4096, physical);
@@ -42,7 +47,7 @@ namespace memory
 
         inline void map_multiple(uint64_t base, uint64_t end)
         {
-            while (base != end)
+            while (base < end)
             {
                 x64::map(base, base + 4096, memory::pmm::pop());
 
@@ -53,6 +58,11 @@ namespace memory
         inline void map_multiple(uint64_t base, uint64_t end, uint64_t physical)
         {
             x64::map(base, end, physical);
+        }
+
+        inline void unmap(uint64_t base, uint64_t end, bool push_frames = true)
+        {
+            x64::unmap(base, end, push_frames);
         }
 
         inline uint64_t get_physical_address(uint64_t virtual_address)

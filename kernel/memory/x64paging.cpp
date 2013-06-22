@@ -145,7 +145,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 {
                     if ((*pt)[startpte].present && physical_start != (*pt)[startpte].address << 12)
                     {
-//                        screen::print("\nAddress: ", (void *)virtual_start);
+                        screen::print("\nAddress: ", (void *)virtual_start);
                         PANIC("Tried to map something at already mapped page");
                     }
 

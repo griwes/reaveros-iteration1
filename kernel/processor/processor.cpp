@@ -29,9 +29,12 @@
 #include <processor/gdt.h>
 #include <processor/idt.h>
 #include <acpi/acpi.h>
+#include <processor/ioapic.h>
 
 namespace
 {
+    uint64_t _lapic_base;
+
     processor::core * _cores;
     processor::ioapic * _ioapics;
 
@@ -48,21 +51,38 @@ bool processor::ready()
     return _ready;
 }
 
+uint64_t processor::get_lapic_base()
+{
+    return _lapic_base;
+}
+
+uint8_t processor::translate_isa(uint8_t irq)
+{
+    if (_sources[irq])
+    {
+        return _sources[irq].vector();
+    }
+
+    return irq;
+}
+
 void processor::initialize()
 {
+    _lapic_base = memory::vm::allocate_address_range(4096);
+
     gdt::initialize();
     idt::initialize();
 
     acpi::initialize();
 
-/*    acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
+    acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
 
     for (uint64_t i = 0; i < _num_ioapics; ++i)
     {
         _ioapics[i].initialize(_sources);
     }
 
-    hpet::initialize();
+/*    hpet::initialize();
 
     if (!hpet::ready())
     {

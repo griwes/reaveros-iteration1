@@ -33,6 +33,8 @@ namespace processor
     extern "C" void reload_cr3();
 
     extern "C" uint32_t initial_id();
+    uint64_t get_lapic_base();
+    uint8_t translate_isa(uint8_t);
 
     void initialize();
     bool ready();
