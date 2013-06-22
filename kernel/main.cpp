@@ -42,7 +42,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::initialize_terminal(video, memory_map, memory_map_size);
 
     screen::print("ReaverOS: Reaver Project Operating System \"Rose\"\n");
-    screen::print("Version: 0.0.2 dev, Codename \"Cotyledon\"\n");
+    screen::print("Version: 0.0.1 dev, Codename \"Cotyledon\"\n");
     screen::print("Copyright (C) 2012-2013 Reaver Project Team\n\n");
 
     screen::print(tag::memory, "Reporting memory manager status...\n");

@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2011-2013 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -25,39 +25,15 @@
 
 #pragma once
 
-#include <memory/x64paging.h>
-#include <memory/pmm.h>
-
-namespace memory
+namespace processor
 {
-    namespace vm
-    {
-        void initialize();
-        uint64_t allocate_address_range(uint64_t size);
+    class core;
+    class ioapic;
+    class interrupt_entry;
+}
 
-        inline void map(uint64_t address, uint64_t physical)
-        {
-            x64::map(address, address + 4096, physical);
-        }
-
-        inline void map_multiple(uint64_t base, uint64_t end)
-        {
-            while (base != end)
-            {
-                x64::map(base, base + 4096, memory::pmm::pop());
-
-                base += 4096;
-            }
-        }
-
-        inline void map_multiple(uint64_t base, uint64_t end, uint64_t physical)
-        {
-            x64::map(base, end, physical);
-        }
-
-        inline uint64_t get_physical_address(uint64_t virtual_address)
-        {
-            return x64::get_physical_address(virtual_address);
-        }
-    }
+namespace acpi
+{
+    void initialize();
+    void parse_madt(processor::core *&, uint64_t &, processor::ioapic *&, uint64_t &, processor::interrupt_entry *);
 }

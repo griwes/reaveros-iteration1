@@ -28,11 +28,12 @@
 #include <processor/interrupt_entry.h>
 #include <processor/gdt.h>
 #include <processor/idt.h>
+#include <acpi/acpi.h>
 
 namespace
 {
-//    processor::core * _cores;
-//    processor::ioapic * _ioapics;
+    processor::core * _cores;
+    processor::ioapic * _ioapics;
 
     uint64_t _num_cores;
     uint64_t _num_ioapics;
@@ -52,9 +53,9 @@ void processor::initialize()
     gdt::initialize();
     idt::initialize();
 
-/*    acpi::initialize();
+    acpi::initialize();
 
-    acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
+/*    acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
 
     for (uint64_t i = 0; i < _num_ioapics; ++i)
     {

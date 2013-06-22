@@ -65,7 +65,6 @@ inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
 }
 
 #include <memory/vm.h>
-#include <memory/pmm.h>
 
 template<typename T>
 T * allocate_chained(uint64_t physical = 0)
@@ -76,10 +75,16 @@ T * allocate_chained(uint64_t physical = 0)
     {
         auto address = memory::vm::allocate_address_range(sizeof(T));
 
-        for (uint64_t i = 0; i < sizeof(T); i += 4096)
+        if (physical)
         {
-            memory::vm::map(address + i, physical ? physical + i : memory::pmm::pop());
+            memory::vm::map_multiple(address, address + sizeof(T), physical);
         }
+
+        else
+        {
+            memory::vm::map_multiple(address, address + sizeof(T));
+        }
+
         return new ((void *)address) T{};
     }
 
