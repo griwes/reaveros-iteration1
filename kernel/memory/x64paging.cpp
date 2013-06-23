@@ -143,6 +143,8 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)
                 {
+                    auto _ = (*pt)[startpte].lock();
+
                     if ((*pt)[startpte].present && physical_start != (*pt)[startpte].address << 12)
                     {
                         screen::print("\nAddress: ", (void *)virtual_start);
@@ -274,6 +276,8 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)
                 {
+                    auto _ = (*pt)[startpte].lock();
+
                     if (!(*pt)[startpte].present)
                     {
 //                        screen::print("\nAt address ", (void *)virtual_start);
