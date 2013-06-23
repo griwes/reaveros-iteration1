@@ -27,6 +27,7 @@
 
 #include <processor/idt.h>
 #include <screen/screen.h>
+#include <processor/handlers.h>
 
 namespace
 {
@@ -35,7 +36,8 @@ namespace
 
     extern "C" void _common_interrupt_handler(processor::idt::isr_context context)
     {
-        // TODO
+        processor::handle(context);
+//        scheduler::trigger(context.number);
     }
 
     extern "C" void common_interrupt_stub();

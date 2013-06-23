@@ -1,4 +1,4 @@
-# Planned releases and versions
+# Planned and past releases and versions
 
 ## Release #1: Cotyledon
 
