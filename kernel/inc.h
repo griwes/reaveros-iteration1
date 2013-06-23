@@ -31,11 +31,24 @@
 #include <cstddef>
 
 #define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define PANICEX(X, Y) ::_panic(X, Y, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 #define DUMP(X) _dump_registers(X);
 
-void _panic(const char *, const char *, uint64_t, const char *);
-template<typename T>
-void _dump_registers(const T &);
+void _panic(const char *, const char *, uint64_t, const char *, bool = false);
+
+template<typename F>
+void _panic(const char * message, const F & f, const char * file, uint64_t line, const char * func)
+{
+    _panic(message, file, line, func, true);
+    f();
+
+    while (true)
+    {
+        asm volatile ("cli; hlt");
+    }
+
+//    debugger::start();
+}
 
 inline void * operator new(uint64_t, void * addr)
 {

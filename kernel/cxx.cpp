@@ -38,7 +38,7 @@ extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
     return 0;
 }
 
-void _panic(const char * message, const char * file, uint64_t line, const char * func)
+void _panic(const char * message, const char * file, uint64_t line, const char * func, bool additional)
 {
 //    processor::broadcast(processor::broadcast_types::others, processor::ipis::panic);
 
@@ -48,9 +48,10 @@ void _panic(const char * message, const char * file, uint64_t line, const char *
     screen::print("Kernel panic: ", message);
     screen::print("\n", file, ":", line, ": ", func);
 
-    asm volatile ("cli; hlt");
-
-    // debugger::start();
+    if (additional)
+    {
+        screen::print("\nMore information:\n");
+    }
 }
 
 extern "C" void * memcpy(void * dest, void * src, uint64_t count)

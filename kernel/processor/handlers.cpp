@@ -25,6 +25,7 @@
 
 #include <processor/handlers.h>
 #include <utils/spinlock.h>
+#include <screen/screen.h>
 
 namespace
 {
@@ -36,6 +37,11 @@ namespace
     uint8_t _vector_allocated[224] = {};
 }
 
+void processor::initialize_exceptions()
+{
+    // TODO
+}
+
 void processor::handle(processor::idt::isr_context context)
 {
     _handler handler = _handlers[context.number];
@@ -43,6 +49,15 @@ void processor::handle(processor::idt::isr_context context)
     if (handler)
     {
         handler(context);
+
+        return;
+    }
+
+    if (context.number < 32)
+    {
+        PANICEX("Unhandled CPU exception.", [=]{
+            screen::print("Exception vector: ", context.number, "\n");
+        });
     }
 }
 
@@ -50,7 +65,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
 {
     auto _ = utils::make_unique_lock(_lock);
 
-    uint64_t min_sum = ~0;
+    uint64_t min_sum = ~0ull;
 
     for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1), penalty = 0; ret < 224; ret += count, penalty += count)
     {
@@ -60,7 +75,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
         {
             if (_vector_allocated[ret + i] == 255)
             {
-                goto skip;
+                goto skip1;
             }
 
             sum += _vector_allocated[ret + i];
@@ -78,11 +93,11 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
 
         min_sum = sum < min_sum ? sum : min_sum;
 
-    skip:
+    skip1:
         continue;
     }
 
-    if (min_sum == ~0)
+    if (min_sum == ~0ull)
     {
         PANIC("Interrupt number allocation algorithm failed hard. File a bug request with full machine specs attached.");
     }
@@ -95,7 +110,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
         {
             if (_vector_allocated[ret + i] == 255)
             {
-                goto skip;
+                goto skip2;
             }
 
             sum += _vector_allocated[ret + i];
@@ -111,7 +126,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
             return ret - 32;
         }
 
-    skip:
+    skip2:
         continue;
     }
 
