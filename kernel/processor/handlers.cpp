@@ -50,7 +50,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
 {
     auto _ = utils::make_unique_lock(_lock);
 
-    uint64_t min_sum = 0;
+    uint64_t min_sum = ~0;
 
     for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1), penalty = 0; ret < 224; ret += count, penalty += count)
     {
@@ -58,6 +58,11 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
 
         for (uint8_t i = 0; i < ret; ++i)
         {
+            if (_vector_allocated[ret + i] == 255)
+            {
+                goto skip;
+            }
+
             sum += _vector_allocated[ret + i];
         }
 
@@ -72,6 +77,14 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
         }
 
         min_sum = sum < min_sum ? sum : min_sum;
+
+    skip:
+        continue;
+    }
+
+    if (min_sum == ~0)
+    {
+        PANIC("Interrupt number allocation algorithm failed hard. File a bug request with full machine specs attached.");
     }
 
     for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1), penalty = 0; ret < 224; ret += count, penalty += count)
@@ -80,6 +93,11 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
 
         for (uint8_t i = 0; i < ret; ++i)
         {
+            if (_vector_allocated[ret + i] == 255)
+            {
+                goto skip;
+            }
+
             sum += _vector_allocated[ret + i];
         }
 
@@ -92,6 +110,9 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
 
             return ret - 32;
         }
+
+    skip:
+        continue;
     }
 
     __builtin_unreachable();
