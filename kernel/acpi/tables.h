@@ -182,11 +182,14 @@ namespace acpi
     struct hpet : public description_table_header
     {
         uint8_t hardware_rev_id;
-        uint8_t comparators_count:5;
+        uint8_t comparator_count:5;
         uint8_t counter_size:1;
         uint8_t reserved:1;
         uint8_t legacy_replacement:1;
-        uint16_t pci_vendor_id;
+        pci_vendor_t pci_vendor_id;
         address_structure address;
+        uint8_t hpet_number;
+        uint16_t minimum_tick;
+        uint8_t page_protection;
     } __attribute__((packed));
 }

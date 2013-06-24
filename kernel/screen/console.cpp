@@ -180,6 +180,16 @@ void screen::kernel_console::print(void * ptr)
     }
 }
 
+void screen::kernel_console::print(pci_vendor_t vendor)
+{
+    print("0x");
+
+    for (uint64_t i = 16; i > 0; i -= 4)
+    {
+        print("0123456789ABCDEF"[(vendor.vendor >> (i - 4)) & 0xF]);
+    }
+}
+
 utils::unique_lock<utils::recursive_spinlock> screen::kernel_console::lock()
 {
     return { _semaphore };

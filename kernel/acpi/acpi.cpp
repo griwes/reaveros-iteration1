@@ -440,13 +440,28 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
 void acpi::parse_hpet(processor::hpet::timer *& timers, uint64_t & timers_num)
 {
-    auto table = _find_table("HPET");
+    hpet * table = (hpet *)_find_table("HPET");
+
+    timers_num = 0;
+    timers = nullptr;
 
     if (!table)
     {
         screen::print(" ...no HPET ACPI table, falling back to PIT... ");
         return;
     }
+
+    screen::debug("\nFound HPET.");
+    screen::debug("\nNumber: ", table->hpet_number);
+    screen::debug("\nPCI vendor ID: ", table->pci_vendor_id);
+    screen::debug("\nAddress: ", (void *)table->address.address);
+    screen::debug("\nCounter size: ", 32 + 32 * table->counter_size);
+    screen::debug("\nNumber of comparators: ", table->comparator_count);
+
+    timers_num = 1;
+//    timers = new ((void *)memory::vm::allocate_address_range(sizeof(processor::hpet::timer))) processor::hpet::timer{
+  //      table->hpet_number, table->pci_vendor_id, (void *)table->address.address, 32 + 32 * table->counter_size,
+    //    table->comparator_count };
 
     _free_table();
 }

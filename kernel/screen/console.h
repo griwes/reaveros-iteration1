@@ -81,6 +81,7 @@ namespace screen
         void print(uint64_t);
 
         void print(void *);
+        void print(pci_vendor_t);
 
         template<typename T>
         void print(const T * ptr)

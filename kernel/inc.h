@@ -77,6 +77,11 @@ inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
     asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
 }
 
+struct pci_vendor_t
+{
+    uint16_t vendor;
+} __attribute__((packed));
+
 #include <memory/vm.h>
 
 template<typename T>
