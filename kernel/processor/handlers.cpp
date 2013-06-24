@@ -35,11 +35,33 @@ namespace
     _handler _handlers[256] = {};
 
     uint8_t _vector_allocated[224] = {};
+
+    void _page_fault(processor::idt::isr_context context)
+    {
+        if ((context.cs & 3) != 0)
+        {
+            return;
+        }
+
+        uint64_t cr2 = 0;
+
+        asm volatile ("mov %%cr2, %%rax" : "=a"(cr2));
+
+        PANICEX("Page fault in kernel code.", [&]
+        {
+            screen::print("Fault address: ", (void *)cr2, "\n");
+            screen::print("Instruction pointer: ", (void *)context.rip, "\n");
+            screen::print("Error cause: ", context.error & 1 ? "present" : "non-present", ", ");
+            screen::print(context.error & 2 ? "write" : "read", ", ");
+            screen::print(context.error & (1 << 3) ? "reserved bit violation" : "");
+            screen::print(context.error & (1 << 4) ? ", instruction fetch\n" : "\n");
+        });
+    }
 }
 
 void processor::initialize_exceptions()
 {
-    // TODO
+    _handlers[14] = _page_fault;
 }
 
 void processor::handle(processor::idt::isr_context context)
@@ -53,10 +75,13 @@ void processor::handle(processor::idt::isr_context context)
         return;
     }
 
-    if (context.number < 32)
+    if (context.number < 32 && (context.cs & 3) == 0)
     {
-        PANICEX("Unhandled CPU exception.", [=]{
+        PANICEX("Unhandled CPU exception.", [&]
+        {
             screen::print("Exception vector: ", context.number, "\n");
+            screen::print("Error code: ", context.error, "\n");
+            screen::print("Instruction pointer: ", (void *)context.rip, "\n");
         });
     }
 }

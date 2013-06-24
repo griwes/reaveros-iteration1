@@ -55,13 +55,16 @@ uint64_t memory::pmm::pop()
 {
     if (_boot_frames_available)
     {
+        screen::debug("\nPopping one of ", _boot_frames_available, " available boot frames.");
         return _boot_frames_start + (8 - _boot_frames_available--) * 4096;
     }
 
 //    memory::pmm::frame_stack & stack = processor::smp_ready() ? processor::get_core().frame_stack : _global_stack;
     memory::pmm::frame_stack & stack = _global_stack;
 
-    return _global_stack.pop();
+    auto foo = _global_stack.pop();
+    screen::debug("\nPopped frame: ", (void *)foo);
+    return foo;
 }
 
 void memory::pmm::push(uint64_t frame)

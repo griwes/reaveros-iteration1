@@ -30,6 +30,8 @@
 #include <processor/idt.h>
 #include <acpi/acpi.h>
 #include <processor/ioapic.h>
+#include <processor/hpet.h>
+#include <processor/handlers.h>
 
 namespace
 {
@@ -73,6 +75,8 @@ void processor::initialize()
     gdt::initialize();
     idt::initialize();
 
+    initialize_exceptions();
+
     acpi::initialize();
 
     acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
@@ -82,9 +86,9 @@ void processor::initialize()
         _ioapics[i].initialize(_sources);
     }
 
-/*    hpet::initialize();
+    hpet::initialize();
 
-    if (!hpet::ready())
+/*    if (!hpet::ready())
     {
         pit::initialize();
     }

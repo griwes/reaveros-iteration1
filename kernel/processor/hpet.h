@@ -25,16 +25,11 @@
 
 #pragma once
 
-#include <processor/idt.h>
-
 namespace processor
 {
-    void initialize_exceptions();
-
-    void handle(idt::isr_context);
-
-    uint8_t allocate_isr(uint8_t priority, uint8_t count = 1);
-    void free_isr(uint8_t number);
-    void register_handler(uint8_t number, void (*)(idt::isr_context));
-    void unregister_handler(uint8_t number);
+    namespace hpet
+    {
+        void initialize();
+        bool ready();
+    }
 }

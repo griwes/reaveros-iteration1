@@ -76,6 +76,9 @@ void memory::x64::invlpg(uint64_t addr)
 
 void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start, bool foreign)
 {
+    screen::debug("\nMapping ", (void *)virtual_start, "-", (void *)virtual_end, " to ", (void *)physical_start,
+        foreign ? "for foreign VAS" : "");
+
     address_generator gen{ foreign ? 257u : 256u };
 
     if (virtual_start >= 0xFFFF800000000000 && virtual_start < 0xFFFF800000000000 + 2ull * 512 * 1024 * 1024 * 1024)
@@ -109,6 +112,8 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
         if (!gen.pml4()->entries[startpml4e].present)
         {
             gen.pml4()->entries[startpml4e] = memory::pmm::pop();
+
+            new (gen.pdpt(startpml4e)) pdpt{};
         }
 
         pdpt * table = gen.pdpt(startpml4e);
@@ -122,6 +127,8 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
             if (!(*table)[startpdpte].present)
             {
                 (*table)[startpdpte] = memory::pmm::pop();
+
+                new (gen.pd(startpml4e, startpdpte)) page_directory{};
             }
 
             page_directory * pd = gen.pd(startpml4e, startpdpte);
@@ -135,6 +142,8 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 if (!(*pd)[startpde].present)
                 {
                     (*pd)[startpde] = memory::pmm::pop();
+
+                    new (gen.pt(startpml4e, startpdpte, startpde)) page_table{};
                 }
 
                 page_table * pt = gen.pt(startpml4e, startpdpte, startpde);

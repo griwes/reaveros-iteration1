@@ -23,18 +23,16 @@
  *
  **/
 
-#pragma once
+#include <processor/hpet.h>
+#include <acpi/acpi.h>
 
-#include <processor/idt.h>
-
-namespace processor
+namespace
 {
-    void initialize_exceptions();
+    processor::hpet::timer * _timers;
+    uint64_t _num_timers;
+}
 
-    void handle(idt::isr_context);
-
-    uint8_t allocate_isr(uint8_t priority, uint8_t count = 1);
-    void free_isr(uint8_t number);
-    void register_handler(uint8_t number, void (*)(idt::isr_context));
-    void unregister_handler(uint8_t number);
+void processor::hpet::initialize()
+{
+    acpi::parse_hpet(_timers, _num_timers);
 }

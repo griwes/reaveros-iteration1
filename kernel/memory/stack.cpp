@@ -78,9 +78,17 @@ uint64_t memory::pmm::frame_stack::pop()
 
     uint64_t ret = _last->stack[--_last->size];
 
-    if (_last != _first && _last->size == 0)
+    if (_last->size == 0)
     {
-        _last = _last->prev;
+        if (_first != _last)
+        {
+            _last = _last->prev;
+        }
+
+        else
+        {
+            PANIC("TODO: frame stack exhausted");
+        }
     }
 
     if (_last != _first && _last->size == frame_stack_chunk::max - 50)
@@ -93,6 +101,8 @@ uint64_t memory::pmm::frame_stack::pop()
             // free _last->next->next
         }
     }
+
+    screen::debug("\nframe_stack::pop(): returning ", (void *)ret);
 
     return ret;
 }
@@ -132,7 +142,7 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
     if (_last->size == frame_stack_chunk::max - 100 && !_last->next)
     {
-        auto _ = utils::make_unique_lock(_last->lock);
+//        auto _ = utils::make_unique_lock(_last->lock);
 
         _last->next = allocate_chained<frame_stack_chunk>();
         _last->next->prev = _last;
@@ -151,7 +161,7 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
     auto _ = utils::make_unique_lock(_last->lock);
 
-//    _last->stack[_last->size++] = frame;
+    _last->stack[_last->size++] = frame;
     ++_size;
 }
 
