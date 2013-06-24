@@ -36,9 +36,7 @@ namespace utils
     public:
         void lock()
         {
-            bool locked = false;
-
-            while (!_lock.compare_exchange_strong(locked, true))
+            while (_lock.exchange(true))
             {
                 asm volatile ("pause");
             }
@@ -67,15 +65,15 @@ namespace utils
 
             while (_owner != cpu)
             {
-                while (_count != 0)
-                {
-                    asm volatile ("pause");
-                }
-
                 auto _ = utils::make_unique_lock(_inner_lock);
 
                 if (_count != 0)
                 {
+                    while (_count != 0)
+                    {
+                        asm volatile ("pause");
+                    }
+
                     continue;
                 }
 

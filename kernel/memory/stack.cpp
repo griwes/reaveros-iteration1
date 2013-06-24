@@ -130,10 +130,10 @@ memory::pmm::frame_stack_chunk * memory::pmm::frame_stack::pop_chunk()
 
 void memory::pmm::frame_stack::push(uint64_t frame)
 {
+    auto _ = utils::make_unique_lock(_lock);
+
     if (!_first)
     {
-        auto _ = utils::make_unique_lock(_lock);
-
         if (!_first)
         {
             _last = _first = allocate_chained<frame_stack_chunk>();
@@ -142,24 +142,27 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
     if (_last->size == frame_stack_chunk::max - 100 && !_last->next)
     {
-//        auto _ = utils::make_unique_lock(_last->lock);
+        auto __ = utils::make_unique_lock(_last->lock);
+
+        screen::debug("\nLocked lock at ", &_last->lock);
 
         _last->next = allocate_chained<frame_stack_chunk>();
         _last->next->prev = _last;
 
-        screen::print("frame_stack::push(): allocated another\n");
+        screen::debug("\nframe_stack::push(): allocated another at ", _last->next);
     }
 
     {
-        auto _ = utils::make_unique_lock(_lock);
+        auto __ = utils::make_unique_lock(_last->lock);
 
         if (_last->size == frame_stack_chunk::max)
         {
+            screen::debug("\nframe_stack::push(): set _last to _next");
             _last = _last->next;
         }
     }
 
-    auto _ = utils::make_unique_lock(_last->lock);
+    auto __ = utils::make_unique_lock(_last->lock);
 
     _last->stack[_last->size++] = frame;
     ++_size;
@@ -167,6 +170,17 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
 void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk)
 {
+    if (chunk->size == frame_stack_chunk::max)
+    {
+        auto _ = utils::make_unique_lock(_first->lock);
+
+        chunk->prev = nullptr;
+        chunk->next = _first;
+        _first = chunk;
+
+        return;
+    }
+
     auto _ = utils::make_unique_lock(_last->lock);
     auto __ = utils::make_unique_lock(chunk->lock);
 
@@ -180,4 +194,8 @@ void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk
     auto ___ = utils::make_unique_lock(last->lock);
 
     last->next = chunk;
+    chunk->prev = last;
+    chunk->next = nullptr;
+
+    _size += chunk->size;
 }

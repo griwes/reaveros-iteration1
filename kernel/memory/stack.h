@@ -35,11 +35,11 @@ namespace memory
     {
         struct frame_stack_chunk
         {
-            static constexpr uint64_t max = 509 - sizeof(utils::spinlock);
+            static constexpr uint64_t max = 509 - sizeof(utils::recursive_spinlock) / 8;
 
             frame_stack_chunk * prev;
             frame_stack_chunk * next;
-            utils::spinlock lock;
+            utils::recursive_spinlock lock;
             uint64_t size;
             uint64_t stack[max];
         };
@@ -66,7 +66,7 @@ namespace memory
         private:
             frame_stack_chunk * _first;
             frame_stack_chunk * _last;
-            uint64_t _size;
+            std::atomic<uint64_t> _size;
             frame_stack * _global;
             utils::spinlock _lock;
         };
