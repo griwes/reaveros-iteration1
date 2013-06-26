@@ -27,6 +27,8 @@
 
 namespace processor
 {
+    extern "C" bool x2apic_capable();
+
     class lapic
     {
     public:

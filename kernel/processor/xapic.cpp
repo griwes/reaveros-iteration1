@@ -24,6 +24,8 @@
  **/
 
 #include <processor/xapic.h>
+#include <processor/processor.h>
+#include <screen/screen.h>
 
 namespace
 {
@@ -77,4 +79,25 @@ namespace
         _current_count = 0x390,
         _divide_configuration = 0x3E0
     };
+}
+
+processor::xapic::xapic() : _register{ processor::get_lapic_base() }
+{
+    _register(_destination_format, _register(_destination_format) & 0xF0000000);
+    _register(_logical_destination, 0xFF000000);
+
+    if (((_register(_apic_version) >> 16) & 0xFF) == 6)
+    {
+        _register(_lvt_cmci, 0x10000);
+    }
+
+    _register(_lvt_error, 0x10000);
+    _register(_lvt_lint0, 0x10000);
+    _register(_lvt_lint1, 0x10000);
+    _register(_lvt_performance_monitor, 0x10000);
+    _register(_lvt_thermal_sensor, 0x10000);
+    _register(_lvt_timer, 0x10000);
+
+    screen::debug("\nInitialized xAPIC. APIC version: ", _register(_apic_version) & 0xFF, ", number of LVTs: ",
+        ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
 }

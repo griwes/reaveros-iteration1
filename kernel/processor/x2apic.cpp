@@ -24,6 +24,7 @@
  **/
 
 #include <processor/x2apic.h>
+#include <screen/screen.h>
 
 namespace
 {
@@ -74,4 +75,26 @@ namespace
         _divide_configuration = 0x83E,
         _self_ipi = 0x83F
     };
+
+    uint64_t _apic_base_msr = 0x01B;
+}
+
+processor::x2apic::x2apic()
+{
+    wrmsr(_apic_base_msr, rdmsr(_apic_base_msr) | (1 << 10));
+
+    if (((_register(_apic_version) >> 16) & 0xFF) == 6)
+    {
+        _register(_lvt_cmci, 0x10000);
+    }
+
+    _register(_lvt_error, 0x10000);
+    _register(_lvt_lint0, 0x10000);
+    _register(_lvt_lint1, 0x10000);
+    _register(_lvt_performance_monitor, 0x10000);
+    _register(_lvt_thermal_sensor, 0x10000);
+    _register(_lvt_timer, 0x10000);
+
+    screen::debug("\nInitialized x2APIC. APIC version: ", _register(_apic_version) & 0xFF, ", number of LVTs: ",
+        ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
 }

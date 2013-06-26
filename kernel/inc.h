@@ -72,9 +72,22 @@ inline void rdmsr(uint32_t msr, uint32_t & low, uint32_t & high)
     asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));
 }
 
+inline uint64_t rdmsr(uint32_t msr)
+{
+    uint32_t low, high;
+    rdmsr(msr, low, high);
+
+    return ((uint64_t)high << 32) | low;
+}
+
 inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)
 {
     asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+}
+
+inline void wrmsr(uint32_t msr, uint64_t val)
+{
+    wrmsr(msr, val & 0xFFFFFFFF, val >> 32);
 }
 
 struct pci_vendor_t

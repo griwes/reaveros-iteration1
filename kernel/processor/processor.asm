@@ -30,6 +30,7 @@ global  initial_id
 global  load_gdt
 global  load_idt
 global  common_interrupt_stub
+global  x2apic_capable
 
 extern  _common_interrupt_handler
 
@@ -42,6 +43,30 @@ reload_cr3:
     mov     rax, cr3
     mov     cr3, rax
     pop     rax
+
+    ret
+
+x2apic_capable:
+    push    rbx
+    push    rcx
+    push    rdx
+
+    mov     rax, 0
+
+    mov     eax, 1
+    cpuid
+
+    bt      ecx, 21
+    jc      .x2apic
+
+    mov     rax, 0
+
+    .x2apic:
+        mov     rax, 1
+
+    pop     rdx
+    pop     rcx
+    pop     rbx
 
     ret
 

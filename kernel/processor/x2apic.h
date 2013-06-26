@@ -31,6 +31,19 @@ namespace processor
 {
     class x2apic : public lapic
     {
-        
+    public:
+        x2apic();
+        virtual ~x2apic() {}
+
+    private:
+        uint64_t _register(uint64_t reg)
+        {
+            return rdmsr(reg);
+        }
+
+        void _register(uint64_t reg, uint64_t val)
+        {
+            wrmsr(reg, val);
+        }
     };
 }

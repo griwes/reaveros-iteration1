@@ -34,7 +34,7 @@ namespace processor
 
     extern "C" uint32_t initial_id();
     uint64_t get_lapic_base();
-    uint8_t translate_isa(uint8_t);
+    uint8_t translate_isa(uint8_t irq);
 
     void initialize();
     bool ready();

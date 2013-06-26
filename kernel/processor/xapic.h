@@ -26,17 +26,19 @@
 #pragma once
 
 #include <processor/lapic.h>
+#include <utils/mmio.h>
 
 namespace processor
 {
     class xapic : public lapic
     {
     public:
+        xapic();
         virtual ~xapic() {}
 
-        bool x2apic_capable() const
-        {
-            return false;
-        }
+        bool x2apic_capable() const;
+
+    private:
+        utils::mmio_helper<uint32_t> _register;
     };
 }
