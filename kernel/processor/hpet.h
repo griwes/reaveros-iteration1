@@ -25,11 +25,49 @@
 
 #pragma once
 
+#include <processor/timer.h>
+#include <utils/spinlock.h>
+#include <utils/mmio.h>
+
 namespace processor
 {
     namespace hpet
     {
         void initialize();
         bool ready();
+
+        struct timer_description
+        {
+            timer_description * prev;
+            timer_description * next;
+            utils::spinlock lock;
+            uint64_t id;
+        };
+
+        class timer : public processor::timer
+        {
+        public:
+            timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size, uint8_t comparators,
+                uint16_t minimum_tick, uint8_t page_protection);
+
+            virtual ~timer() {}
+
+            virtual timer_event_handle one_shot(uint64_t, timer_handler);
+            virtual timer_event_handle periodic(uint64_t, timer_handler);
+            virtual void cancel(uint64_t);
+
+        private:
+            uint8_t _number;
+            pci_vendor_t _pci_vendor;
+            uint8_t _size;
+            uint8_t _comparators;
+            uint16_t _minimum_tick;
+            uint8_t _page_protection;
+
+            utils::mmio_helper _register;
+
+            timer_description * _active_timers;
+            timer_description * _free_descriptors;
+        };
     }
 }

@@ -104,6 +104,8 @@ uint64_t memory::pmm::frame_stack::pop()
 
     screen::debug("\nframe_stack::pop(): returning ", (void *)ret);
 
+    --_size;
+
     return ret;
 }
 

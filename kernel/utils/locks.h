@@ -81,4 +81,34 @@ namespace utils
         uint64_t * _address;
         uint8_t _bit;
     };
+
+    class interrupt_lock
+    {
+    public:
+        interrupt_lock()
+        {
+            uint64_t flags = 0;
+            asm volatile ("pushfq; pop %%rax" : "=a"(flags) :: "rax");
+
+            _enable = flags & (1 << 9);
+
+            asm volatile ("cli");
+        }
+
+        ~interrupt_lock()
+        {
+            if (_enable)
+            {
+                asm volatile ("sti");
+            }
+        }
+
+    private:
+        bool _enable;
+    };
+
+    inline interrupt_lock cli()
+    {
+        return {};
+    }
 }

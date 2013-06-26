@@ -52,8 +52,8 @@ namespace
             screen::print("Fault address: ", (void *)cr2, "\n");
             screen::print("Instruction pointer: ", (void *)context.rip, "\n");
             screen::print("Error cause: ", context.error & 1 ? "present" : "non-present", ", ");
-            screen::print(context.error & 2 ? "write" : "read", ", ");
-            screen::print(context.error & (1 << 3) ? "reserved bit violation" : "");
+            screen::print(context.error & 2 ? "write" : "read", "");
+            screen::print(context.error & (1 << 3) ? ", reserved bit violation" : "");
             screen::print(context.error & (1 << 4) ? ", instruction fetch\n" : "\n");
         });
     }

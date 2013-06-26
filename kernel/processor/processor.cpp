@@ -86,6 +86,8 @@ void processor::initialize()
         _ioapics[i].initialize(_sources);
     }
 
+    lapic::initialize();
+
     hpet::initialize();
 
 /*    if (!hpet::ready())
@@ -93,7 +95,7 @@ void processor::initialize()
         pit::initialize();
     }
 
-    lapic::initialize();
+    lapic::initialize_timer();
     smp::boot(_cores + 1, _num_cores - 1);
 
     memory::drop_bootloader_mapping();

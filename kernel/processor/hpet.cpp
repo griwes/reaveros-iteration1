@@ -36,3 +36,31 @@ void processor::hpet::initialize()
 {
     acpi::parse_hpet(_timers, _num_timers);
 }
+
+bool processor::hpet::ready()
+{
+    return _num_timers;
+}
+
+processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size,
+    uint8_t comparators, uint16_t minimum_tick, uint8_t page_protection) : _number{ number }, _pci_vendor{ pci_vendor.vendor },
+    _size{ (uint8_t)(32 + 32 * counter_size) }, _comparators{ comparators }, _minimum_tick{ minimum_tick },
+    _page_protection{ page_protection }, _register{ address }, _active_timers{}, _free_descriptors{}
+{
+
+}
+
+processor::timer_event_handle processor::hpet::timer::one_shot(uint64_t , processor::timer_handler )
+{
+    return {};
+}
+
+processor::timer_event_handle processor::hpet::timer::periodic(uint64_t , processor::timer_handler )
+{
+    return {};
+}
+
+void processor::hpet::timer::cancel(uint64_t )
+{
+
+}

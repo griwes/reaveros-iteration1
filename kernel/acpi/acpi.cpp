@@ -31,6 +31,7 @@
 #include <processor/core.h>
 #include <processor/ioapic.h>
 #include <processor/interrupt_entry.h>
+#include <processor/hpet.h>
 
 namespace
 {
@@ -453,15 +454,17 @@ void acpi::parse_hpet(processor::hpet::timer *& timers, uint64_t & timers_num)
 
     screen::debug("\nFound HPET.");
     screen::debug("\nNumber: ", table->hpet_number);
-    screen::debug("\nPCI vendor ID: ", table->pci_vendor_id);
+    screen::debug("\nPCI vendor ID :", table->pci_vendor_id);
     screen::debug("\nAddress: ", (void *)table->address.address);
     screen::debug("\nCounter size: ", 32 + 32 * table->counter_size);
-    screen::debug("\nNumber of comparators: ", table->comparator_count);
+    screen::debug("\nNumber of comparators: ", table->comparator_count + 1);
+    screen::debug("\nMinimum tick: ", table->minimum_tick);
 
     timers_num = 1;
-//    timers = new ((void *)memory::vm::allocate_address_range(sizeof(processor::hpet::timer))) processor::hpet::timer{
-  //      table->hpet_number, table->pci_vendor_id, (void *)table->address.address, 32 + 32 * table->counter_size,
-    //    table->comparator_count };
+    uint64_t address = memory::vm::allocate_address_range(sizeof(processor::hpet::timer));
+    memory::vm::map(address);
+    timers = new ((void *)address) processor::hpet::timer{ table->hpet_number, table->pci_vendor_id, table->address.address,
+        table->counter_size, table->comparator_count, table->minimum_tick, table->page_protection };
 
     _free_table();
 }
