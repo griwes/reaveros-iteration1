@@ -64,7 +64,7 @@ namespace processor
             uint16_t _minimum_tick;
             uint8_t _page_protection;
 
-            utils::mmio_helper _register;
+            utils::mmio_helper<uint64_t> _register;
 
             timer_description * _active_timers;
             timer_description * _free_descriptors;

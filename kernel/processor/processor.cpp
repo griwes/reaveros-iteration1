@@ -32,6 +32,7 @@
 #include <processor/ioapic.h>
 #include <processor/hpet.h>
 #include <processor/handlers.h>
+#include <processor/lapic.h>
 
 namespace
 {
@@ -88,9 +89,9 @@ void processor::initialize()
 
     lapic::initialize();
 
-    hpet::initialize();
+/*    hpet::initialize();
 
-/*    if (!hpet::ready())
+    if (!hpet::ready())
     {
         pit::initialize();
     }
