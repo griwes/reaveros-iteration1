@@ -34,7 +34,7 @@ namespace
     using _handler = void (*)(processor::idt::isr_context);
     _handler _handlers[256] = {};
 
-    uint8_t _vector_allocated[224] = {};
+    bool _vector_allocated[224] = {};
 
     void _page_fault(processor::idt::isr_context context)
     {
@@ -86,76 +86,86 @@ void processor::handle(processor::idt::isr_context context)
     }
 }
 
-uint8_t processor::allocate_isr(uint8_t priority, uint8_t count)
+uint8_t processor::allocate_isr(uint8_t priority)
 {
+    uint8_t i = 1;
+    return allocate_isr(priority, i);
+}
+
+uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
+{
+    if (count == 0)
+    {
+        PANIC("Invalid request to allocate 0 interrupt numbers.");
+    }
+
     auto _ = utils::make_unique_lock(_lock);
 
-    uint64_t min_sum = ~0ull;
-
-    for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1), penalty = 0; ret < 224; ret += count, penalty += count)
+    for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1);; ret -= count)
     {
-        uint64_t sum = penalty;
+        bool good = true;
 
-        for (uint8_t i = 0; i < ret; ++i)
+        for (uint8_t i = 0; i < count; ++i)
         {
-            if (_vector_allocated[ret + i] == 255)
+            if (_vector_allocated[ret + i])
             {
-                goto skip1;
+                good = false;
+                break;
             }
-
-            sum += _vector_allocated[ret + i];
         }
 
-        if (sum == 0)
+        if (good)
         {
-            for (uint8_t i = 0; i < ret; ++i)
+            for (uint8_t i = 0; i < count; ++i)
             {
-                ++_vector_allocated[ret + i];
+                _vector_allocated[ret + i] = true;
             }
 
-            return ret - 32;
+            return ret;
         }
 
-        min_sum = sum < min_sum ? sum : min_sum;
-
-    skip1:
-        continue;
+        if (ret == 0)
+        {
+            break;
+        }
     }
 
-    if (min_sum == ~0ull)
+    for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1); ret < 224; ret += count)
     {
-        PANIC("Interrupt number allocation algorithm failed hard. File a bug request with full machine specs attached.");
-    }
+        bool good = true;
 
-    for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1), penalty = 0; ret < 224; ret += count, penalty += count)
-    {
-        uint64_t sum = penalty;
-
-        for (uint8_t i = 0; i < ret; ++i)
+        for (uint8_t i = 0; i < count; ++i)
         {
-            if (_vector_allocated[ret + i] == 255)
+            if (_vector_allocated[ret + i])
             {
-                goto skip2;
+                good = false;
+                break;
             }
-
-            sum += _vector_allocated[ret + i];
         }
 
-        if (sum == min_sum)
+        if (good)
         {
-            for (uint8_t i = 0; i < ret; ++i)
+            for (uint8_t i = 0; i < count; ++i)
             {
-                ++_vector_allocated[ret + i];
+                _vector_allocated[ret + i] = true;
             }
 
-            return ret - 32;
+            return ret;
         }
-
-    skip2:
-        continue;
     }
 
-    __builtin_unreachable();
+    if (count != 1)
+    {
+        count /= 2;
+        return allocate_isr(priority, count);
+    }
+
+//    if (!processor::spawned_per_processor_interupts())
+//    {
+//        processor::spawn_per_processor_interrupts();
+//    }
+
+    PANIC("Interrupt allocation failed. TODO: implement and uncomment above functions.");
 }
 
 void processor::free_isr(uint8_t number)
@@ -167,7 +177,7 @@ void processor::free_isr(uint8_t number)
         PANIC("Tried to free a non-allocated interrupt number.");
     }
 
-    --_vector_allocated[number - 32];
+    _vector_allocated[number - 32] = false;
 }
 
 void processor::register_handler(uint8_t number, _handler handler)

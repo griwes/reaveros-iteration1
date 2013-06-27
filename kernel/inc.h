@@ -30,8 +30,8 @@
 #include <cstdint>
 #include <cstddef>
 
-#define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__)
-#define PANICEX(X, Y) ::_panic(X, Y, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
+#define PANICEX(X, Y) ::_panic(X, Y, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
 #define DUMP(X) _dump_registers(X);
 
 void _panic(const char *, const char *, uint64_t, const char *, bool = false);

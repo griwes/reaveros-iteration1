@@ -89,9 +89,9 @@ void processor::initialize()
 
     lapic::initialize();
 
-/*    hpet::initialize();
+    hpet::initialize();
 
-    if (!hpet::ready())
+/*    if (!hpet::ready())
     {
         pit::initialize();
     }
