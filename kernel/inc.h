@@ -33,6 +33,8 @@
 #define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
 #define PANICEX(X, Y) ::_panic(X, Y, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
 #define DUMP(X) _dump_registers(X);
+#define TODO PANIC("TODO: implement me!")
+#define NEVER PANIC("This function was not supposed to be ever called; file a bug report.")
 
 void _panic(const char *, const char *, uint64_t, const char *, bool = false);
 
