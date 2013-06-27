@@ -55,4 +55,10 @@ namespace processor
             device->cancel(id);
         }
     };
+
+    void set_high_precision_timer(timer *);
+    void set_scheduling_timer(timer *);
+
+    timer * get_high_precision_timer();
+    timer * get_scheduling_timer();
 }

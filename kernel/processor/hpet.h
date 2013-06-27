@@ -44,9 +44,35 @@ namespace processor
             uint64_t id;
         };
 
+        class timer;
+
+        class comparator : public processor::timer
+        {
+        public:
+            comparator();
+            comparator(timer * parent, uint8_t index, uint8_t size, uint16_t minimum_tick);
+
+            virtual ~comparator() {}
+
+            virtual timer_event_handle one_shot(uint64_t, timer_handler);
+            virtual timer_event_handle periodic(uint64_t, timer_handler);
+            virtual void cancel(uint64_t);
+
+        private:
+            timer * _parent;
+            uint8_t _index;
+            uint8_t _size;
+            uint16_t _minimum_tick;
+
+            timer_description * _active_timers;
+            timer_description * _free_descriptors;
+        };
+
         class timer : public processor::timer
         {
         public:
+            friend class comparator;
+
             timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size, uint8_t comparators,
                 uint16_t minimum_tick, uint8_t page_protection);
 
@@ -60,14 +86,13 @@ namespace processor
             uint8_t _number;
             pci_vendor_t _pci_vendor;
             uint8_t _size;
-            uint8_t _comparators;
+            uint8_t _comparators_count;
             uint16_t _minimum_tick;
             uint8_t _page_protection;
 
             utils::mmio_helper<uint64_t> _register;
 
-            timer_description * _active_timers;
-            timer_description * _free_descriptors;
+            comparator _comparators[32];
         };
     }
 }

@@ -460,10 +460,13 @@ void acpi::parse_hpet(processor::hpet::timer *& timers, uint64_t & timers_num)
     screen::debug("\nNumber of comparators: ", table->comparator_count + 1);
     screen::debug("\nMinimum tick: ", table->minimum_tick);
 
+    uint64_t mmio = memory::vm::allocate_address_range(4096);
+    memory::vm::map(mmio, table->address.address);
+
     timers_num = 1;
     uint64_t address = memory::vm::allocate_address_range(sizeof(processor::hpet::timer));
     memory::vm::map(address);
-    timers = new ((void *)address) processor::hpet::timer{ table->hpet_number, table->pci_vendor_id, table->address.address,
+    timers = new ((void *)address) processor::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio,
         table->counter_size, table->comparator_count, table->minimum_tick, table->page_protection };
 
     _free_table();

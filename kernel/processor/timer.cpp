@@ -30,9 +30,32 @@
 namespace
 {
     std::atomic<uint64_t> _id;
+
+    processor::timer * _hp_timer = nullptr;
+    processor::timer * _sched_timer = nullptr;
 }
 
 uint64_t processor::allocate_timer_event_id()
 {
     return _id.fetch_add(1);
+}
+
+void processor::set_high_precision_timer(processor::timer * t)
+{
+    _hp_timer = t;
+}
+
+void processor::set_scheduling_timer(processor::timer * t)
+{
+    _sched_timer = t;
+}
+
+processor::timer* processor::get_high_precision_timer()
+{
+    return _hp_timer;
+}
+
+processor::timer* processor::get_scheduling_timer()
+{
+    return _sched_timer;
 }
