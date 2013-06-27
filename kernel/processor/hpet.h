@@ -42,7 +42,13 @@ namespace processor
             timer_description * next;
             utils::spinlock lock;
             uint64_t id;
+            timer_handler handler;
+            uint64_t handler_parameter;
+            uint64_t periodic:1;
+            uint64_t period;
         };
+
+        static_assert(4096 % sizeof(timer_description) == 0, "Invalid size of timer description.");
 
         class timer;
 
@@ -50,22 +56,34 @@ namespace processor
         {
         public:
             comparator();
-            comparator(timer * parent, uint8_t index, uint8_t size, uint16_t minimum_tick);
+            comparator(timer * parent, uint8_t index);
 
             virtual ~comparator() {}
 
-            virtual timer_event_handle one_shot(uint64_t, timer_handler);
-            virtual timer_event_handle periodic(uint64_t, timer_handler);
+            virtual timer_event_handle one_shot(uint64_t, timer_handler, uint64_t = 0);
+            virtual timer_event_handle periodic(uint64_t, timer_handler, uint64_t = 0);
             virtual void cancel(uint64_t);
+
+            uint64_t get_usage() const
+            {
+                return _usage;
+            }
+
+            bool valid() const
+            {
+                return _parent;
+            }
 
         private:
             timer * _parent;
             uint8_t _index;
-            uint8_t _size;
-            uint16_t _minimum_tick;
+
+            uint64_t _usage;
 
             timer_description * _active_timers;
             timer_description * _free_descriptors;
+
+            utils::spinlock _lock;
         };
 
         class timer : public processor::timer
@@ -78,17 +96,19 @@ namespace processor
 
             virtual ~timer() {}
 
-            virtual timer_event_handle one_shot(uint64_t, timer_handler);
-            virtual timer_event_handle periodic(uint64_t, timer_handler);
+            virtual timer_event_handle one_shot(uint64_t, timer_handler, uint64_t = 0);
+            virtual timer_event_handle periodic(uint64_t, timer_handler, uint64_t = 0);
             virtual void cancel(uint64_t);
 
         private:
             uint8_t _number;
             pci_vendor_t _pci_vendor;
             uint8_t _size;
-            uint8_t _comparators_count;
+            uint8_t _comparator_count;
             uint16_t _minimum_tick;
             uint8_t _page_protection;
+
+            uint64_t _frequency;
 
             utils::mmio_helper<uint64_t> _register;
 

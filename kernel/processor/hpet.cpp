@@ -73,50 +73,97 @@ bool processor::hpet::ready()
 
 processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size,
     uint8_t comparators, uint16_t minimum_tick, uint8_t page_protection) : _number{ number }, _pci_vendor{ pci_vendor.vendor },
-    _size{ (uint8_t)(32 + 32 * counter_size) }, _comparators_count{ comparators }, _minimum_tick{ minimum_tick },
+    _size{ (uint8_t)(32 + 32 * counter_size) }, _comparator_count{ comparators }, _minimum_tick{ minimum_tick },
     _page_protection{ page_protection }, _register{ address }
 {
     _register(_general_configuration, _register(_general_configuration) | 1);
 
-    for (uint8_t i = 0; i < _comparators_count; ++i)
+    for (uint8_t i = 0; i < _comparator_count; ++i)
     {
-        new (_comparators + i) comparator{ this, i, _size, minimum_tick };
+        new (_comparators + i) comparator{ this, i };
     }
+
+    uint64_t period = _register(_general_capabilities) >> 32;
+    _frequency = 1000000000000000ull / period;
+
+    screen::debug("\nDetected HPET counter period: ", period);
+    screen::debug("\nDetected HPET counter frequency: ", _frequency);
 }
 
-processor::timer_event_handle processor::hpet::timer::one_shot(uint64_t , processor::timer_handler )
+processor::timer_event_handle processor::hpet::timer::one_shot(uint64_t time, processor::timer_handler handler, uint64_t param)
 {
-    return {};
+    uint64_t min = _comparators[0].get_usage();
+    uint64_t min_idx = 0;
+
+    for (uint8_t i = 1; i < _comparator_count; ++i)
+    {
+        if (_comparators[i].valid() && _comparators[i].get_usage() < min)
+        {
+            min_idx = i;
+            min = _comparators[i].get_usage();
+        }
+    }
+
+    return _comparators[min_idx].periodic(time, handler, param);
 }
 
-processor::timer_event_handle processor::hpet::timer::periodic(uint64_t , processor::timer_handler )
+processor::timer_event_handle processor::hpet::timer::periodic(uint64_t period, processor::timer_handler handler, uint64_t param)
 {
-    return {};
+    uint64_t min = _comparators[0].get_usage();
+    uint64_t min_idx = 0;
+
+    for (uint8_t i = 1; i < _comparator_count; ++i)
+    {
+        if (_comparators[i].valid() &&_comparators[i].get_usage() < min)
+        {
+            min_idx = i;
+            min = _comparators[i].get_usage();
+        }
+    }
+
+    return _comparators[min_idx].periodic(period, handler, param);
 }
 
-void processor::hpet::timer::cancel(uint64_t )
+void processor::hpet::timer::cancel(uint64_t)
 {
+    NEVER;
 }
 
 processor::hpet::comparator::comparator() : _parent{}
 {
 }
 
-processor::hpet::comparator::comparator(processor::timer * parent, uint8_t index, uint8_t size, uint16_t minimum_tick)
-    : _parent{ parent }, _index{ index }, _size{ size }, _minimum_tick{ minimum_tick }, _active_timers{}, _free_descriptors{}
+processor::hpet::comparator::comparator(processor::timer * parent, uint8_t index) : _parent{ parent }, _index{ index },
+    _active_timers{}, _free_descriptors{}
 {
+    TODO;
 }
 
-processor::timer_event_handle processor::hpet::comparator::one_shot(uint64_t , processor::timer_handler )
+processor::timer_event_handle processor::hpet::comparator::one_shot(uint64_t , processor::timer_handler , uint64_t )
 {
+    utils::interrupt_lock _;
+    auto __ = utils::make_unique_lock(_lock);
+
+    ++_usage;
+
+    TODO;
+
     return {};
 }
 
-processor::timer_event_handle processor::hpet::comparator::periodic(uint64_t , processor::timer_handler )
+processor::timer_event_handle processor::hpet::comparator::periodic(uint64_t period, processor::timer_handler handler, uint64_t param)
 {
+    utils::interrupt_lock _;
+    auto __ = utils::make_unique_lock(_lock);
+
+    _usage += 100;
+
+    TODO;
+
     return {};
 }
 
 void processor::hpet::comparator::cancel(uint64_t )
 {
+    TODO;
 }

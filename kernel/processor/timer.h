@@ -31,7 +31,7 @@ namespace processor
 
     class timer;
 
-    using timer_handler = void (*)(timer *);
+    using timer_handler = void (*)(timer *, uint64_t);
 
     struct timer_event_handle;
 
@@ -40,8 +40,8 @@ namespace processor
     public:
         virtual ~timer() {}
 
-        virtual timer_event_handle one_shot(uint64_t, timer_handler) = 0;
-        virtual timer_event_handle periodic(uint64_t, timer_handler) = 0;
+        virtual timer_event_handle one_shot(uint64_t, timer_handler, uint64_t = 0) = 0;
+        virtual timer_event_handle periodic(uint64_t, timer_handler, uint64_t = 0) = 0;
         virtual void cancel(uint64_t) = 0;
     };
 
