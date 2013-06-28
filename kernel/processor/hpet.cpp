@@ -139,7 +139,7 @@ processor::hpet::comparator::comparator(processor::timer * parent, uint8_t index
     TODO;
 }
 
-processor::timer_event_handle processor::hpet::comparator::one_shot(uint64_t , processor::timer_handler , uint64_t )
+processor::timer_event_handle processor::hpet::comparator::one_shot(uint64_t time, processor::timer_handler handler, uint64_t param)
 {
     utils::interrupt_lock _;
     auto __ = utils::make_unique_lock(_lock);

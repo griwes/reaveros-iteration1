@@ -42,7 +42,11 @@ void _panic(const char * message, const char * file, uint64_t line, const char *
 {
 //    processor::broadcast(processor::broadcast_types::others, processor::ipis::panic);
 
-//    screen::clear();
+#ifdef ROSEDEBUG
+    screen::print("\n");
+#else
+    screen::clear();
+#endif
 
     screen::print(color::red, "Kernel panic: ", color::gray, message);
     screen::print("\n", file, ":", line, ": ", func);
