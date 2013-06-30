@@ -28,8 +28,12 @@
 #include <memory/x64paging.h>
 
 memory::manager::placement_allocator::placement_allocator(uint32_t placement)
-    : placement_address{placement}, base{0x100000}, type{5}, top_mapped{64 * 1024 * 1024 - 1}
+    : placement_address{ placement }, _current{}, _leeched{}, top_mapped{ 64 * 1024 * 1024 - 1 }
 {
+    _leeched = memory::map::next_usable(0x100000 - 1);
+    _current = memory::map::allocate_empty_entry(_leeched);
+    _current->type = 5;
+    _current->length = placement < 0x100000 ? 0 : placement - 0x100000;
 }
 
 memory::manager::placement_allocator::~placement_allocator()
@@ -38,27 +42,28 @@ memory::manager::placement_allocator::~placement_allocator()
 
 void memory::manager::placement_allocator::save()
 {
-    map_entry entry{};
+    placement_address += 4095;
+    placement_address &= ~(uint32_t)4095;
 
-    entry.base = base & ~(uint64_t)4095;
-    entry.length = (placement_address - base + 4095) & ~(uint64_t)4095;
-    entry.type = type;
+    _current->length = placement_address - _current->base;
 
-    switch (type)
+    if (_current->type == 3)
     {
-        case 5:
-            type = 2;
-            break;
-        case 2:
-            type = 3;
-            break;
-        case 3:
-            type = ~0;
+        return;
     }
 
-    base = entry.base + entry.length;
+    map_entry * next = memory::map::allocate_empty_entry(_leeched);
 
-    map::add_entry(entry);
+    switch (_current->type)
+    {
+        case 5:
+            next->type = 2;
+            break;
+        case 2:
+            next->type = 3;
+    }
+
+    _current = next;
 }
 
 void * memory::manager::placement_allocator::allocate(uint32_t size)
@@ -83,18 +88,31 @@ void * memory::manager::placement_allocator::allocate(uint32_t size)
     size += 15;
     size &= ~(uint32_t)15;
 
-    while (!memory::map::usable(placement_address) || !memory::map::usable(placement_address + size - 1))
+    while (placement_address + size >= _leeched->base + _leeched->length)
     {
-        placement_address = memory::map::next_usable(placement_address);
+        _leeched = memory::map::next_usable(placement_address);
 
-        if (placement_address == 0)
+        if (_leeched == nullptr)
         {
             PANIC("Not enough memory installed on the system.");
         }
+
+        placement_address = _leeched->base;
+
+        auto next = memory::map::allocate_empty_entry(_leeched);
+        next->type = _current->type;
+        _current = next;
     }
 
     auto ret = placement_address;
     placement_address += size;
+
+    while (placement_address >= _current->base + _current->length)
+    {
+        _current->length += 4096;
+        _leeched->base += 4096;
+        _leeched->length -= 4096;
+    }
 
     return (void *)ret;
 }

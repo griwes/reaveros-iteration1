@@ -58,7 +58,8 @@ namespace memory
         static void add_entry(map_entry &);
 
         static bool usable(uint64_t);
-        static uint64_t next_usable(uint64_t);
+        static map_entry * next_usable(uint64_t);
+        static map_entry * allocate_empty_entry(map_entry *&);
 
         static uint32_t find_last_usable(uint32_t);
 

@@ -47,7 +47,7 @@ bool memory::map::usable(uint64_t addr)
     return false;
 }
 
-uint64_t memory::map::next_usable(uint64_t addr)
+memory::map_entry * memory::map::next_usable(uint64_t addr)
 {
     for (uint32_t i = 0; i < _num_entries; ++i)
     {
@@ -55,12 +55,12 @@ uint64_t memory::map::next_usable(uint64_t addr)
         {
             if (_entries[i].type == 1)
             {
-                return _entries[i].base;
+                return _entries + i;
             }
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 void print(memory::map_entry & entry)
@@ -179,18 +179,24 @@ void memory::map::add_entry(memory::map_entry & entry)
     {
         if (entry.type == _entries[i].type)
         {
+            // entry:          [=============]
+            // i:      [==============================]
             if (entry.base >= _entries[i].base && entry.base + entry.length <= _entries[i].base + _entries[i].length)
             {
                 return;
             }
 
+            // entry:        [=====================]
+            // i:       [====================]
             if (_entries[i].base + _entries[i].length >= entry.base && _entries[i].base + _entries[i].length <= entry.base + entry.length)
             {
-                map_entry tmp = entry;
-                entry = _entries[i];
-                _entries[i] = tmp;
+                _entries[i].length += _entries[i].base - entry.base;
+
+                return;
             }
 
+            // entry:   [======================]
+            // i:            [========================]
             if (entry.base + entry.length >= _entries[i].base && entry.base + entry.length <= _entries[i].base + _entries[i].length)
             {
                 _entries[i].length = _entries[i].base + _entries[i].length - entry.base;
@@ -200,14 +206,19 @@ void memory::map::add_entry(memory::map_entry & entry)
             }
         }
 
+        // entry:      [======================]
+        // i:                [===========]
         if (entry.base < _entries[i].base && entry.base + entry.length > _entries[i].base + _entries[i].length)
         {
+            return;
             map_entry tmp;
             tmp = entry;
             entry = _entries[i];
             _entries[i] = tmp;
         }
 
+        // entry:              [==================]
+        // i:          [==============================]
         if (entry.base >= _entries[i].base && entry.base + entry.length <= _entries[i].base + _entries[i].length)
         {
             if (_entries[i].type > entry.type)
@@ -233,15 +244,20 @@ void memory::map::add_entry(memory::map_entry & entry)
             return;
         }
 
+        // entry:         [===============]
+        // i:         [=============]
         if (_entries[i].base < entry.base && _entries[i].base + _entries[i].length > entry.base && _entries[i].base +
             _entries[i].length < entry.base + entry.length)
         {
+            return;
             map_entry tmp;
             tmp = entry;
             entry = _entries[i];
             _entries[i] = tmp;
         }
 
+        // entry:     [================]
+        // i:                [=================]
         if (entry.base < _entries[i].base && entry.base + entry.length > _entries[i].base && entry.base + entry.length <
             _entries[i].base + _entries[i].length)
         {
@@ -320,4 +336,14 @@ uint32_t memory::map::find_last_usable(uint32_t size)
     PANIC("call to find_last_usable failed.");
 
     return 0;
+}
+
+memory::map_entry* memory::map::allocate_empty_entry(memory::map_entry *& entry)
+{
+    _expand(entry - _entries);
+    entry->base = (entry + 1)->base;
+    entry->length = 0;
+    entry->extended_attribs = 0;
+
+    return entry++;
 }

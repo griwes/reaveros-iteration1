@@ -51,8 +51,8 @@ namespace memory
         private:
             uint32_t placement_address;
 
-            uint32_t base;
-            uint32_t type;
+            map_entry * _current;
+            map_entry * _leeched;
 
             uint32_t top_mapped;
         };

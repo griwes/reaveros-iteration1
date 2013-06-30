@@ -48,7 +48,7 @@ void memory::initialize(uint32_t placement, map_entry * memory_map, uint32_t mem
         memory::map::add_entry(memory_map[i]);
     }
 
-    new ((void *)&default_allocator) manager::placement_allocator{placement};
+    new ((void *)&default_allocator) manager::placement_allocator{ placement };
 }
 
 void memory::prepare_long_mode()

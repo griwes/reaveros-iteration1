@@ -223,7 +223,7 @@ setup_video_mode:
         jl      .advance
 
         ; hack to make entire bochs window visible on my 1600x900 notebook
-        cmp     ax, 760
+        cmp     ax, 790
         jg      .advance
 
         mov     al, byte [video_mode_description.bpp]
@@ -306,7 +306,7 @@ setup_video_mode:
         push    es
         xor     ax, ax
         mov     es, ax
-        mov     di, 0x5c00
+        mov     di, 0x1000
         call    get_bios_vga_font
         pop     es
 

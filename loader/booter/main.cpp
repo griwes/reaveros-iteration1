@@ -40,6 +40,11 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::printl("Copyright (C) 2012 Reaver Project Team");
     screen::line();
 
+    if (kernel < 0x100000)
+    {
+        PANIC("Insane kernel address");
+    }
+
     screen::print("[CPU  ] Checking CPU's long mode support... ");
     processor::check_long_mode();
     screen::printl("done.");
@@ -52,12 +57,12 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
 
     screen::print("[MEM  ] Preparing long mode paging... ");
     memory::prepare_long_mode();
+    memory::vas->map(screen::output.video_start(), screen::output.video_end(), screen::output.video_start());
+    memory::vas->map(screen::output.backbuffer_start(), screen::output.backbuffer_end(), screen::output.backbuffer_start());
     screen::printl("done.");
 
     screen::print("[CPU  ] Entering long mode... ");
     processor::enter_long_mode();
-    memory::vas->map(screen::output.video_start(), screen::output.video_end(), screen::output.video_start());
-    memory::vas->map(screen::output.backbuffer_start(), screen::output.backbuffer_end(), screen::output.backbuffer_start());
     screen::printl("done.");
 
     screen::print("[CPU  ] Installing long mode GDT... ");
