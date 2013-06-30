@@ -78,8 +78,6 @@ progress:       db ".", 0
 ;
 
 stage2:
-    cli
-
     mov     ax, 0x0
     mov     ds, ax
     mov     es, ax
@@ -122,15 +120,9 @@ stage2:
 
     call    setup_video_mode
 
-    sti
-
-    mov     di, 0x7c00
+    mov     di, 0x6000
     call    get_memory_map
     mov     word [memregcount], bp
-
-    mov     edx, cr0
-    or      dl, 1
-    mov     cr0, edx
 
     cli
     mov     al, 0xff            ; mask PIC
@@ -145,6 +137,10 @@ stage2:
     nop
 
     cli                         ; long time until we see again, interrupts...
+
+    mov     edx, cr0
+    or      dl, 1
+    mov     cr0, edx
 
     jmp     0x08:stage3
 
@@ -164,7 +160,7 @@ stage3:
     mov     ss, ax
     mov     esp, 0x90000
 
-    push    dword 0x5c00
+    push    dword 0x1000
     push    dword video_mode_description
 
     xor     eax, eax
@@ -180,14 +176,12 @@ stage3:
     add     eax, dword [booterstart]
     push    eax
 
-;    push    dword 0x100000
-
     xor     eax, eax
     mov     ax, word [memregcount]
     push    eax
 
     xor     eax, eax
-    mov     ax, word 0x7c00
+    mov     ax, word 0x6000
     push    eax
 
     jmp     0x100000
