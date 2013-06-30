@@ -194,6 +194,7 @@ void acpi::initialize()
     _table_address = memory::vm::allocate_address_range(8 * 4096);
 
     _find_rsdp();
+    _find_table("FFFF");
 }
 
 void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::ioapic *& ioapics, uint64_t & ioapic_num,
@@ -448,13 +449,13 @@ void acpi::parse_hpet(processor::hpet::timer *& timers, uint64_t & timers_num)
 
     if (!table)
     {
-        screen::print(" ...no HPET ACPI table, falling back to PIT... ");
+        screen::debug("\nNo HPET ACPI table, falling back to PIT");
         return;
     }
 
     screen::debug("\nFound HPET.");
     screen::debug("\nNumber: ", table->hpet_number);
-    screen::debug("\nPCI vendor ID :", table->pci_vendor_id);
+    screen::debug("\nPCI vendor ID: ", table->pci_vendor_id);
     screen::debug("\nAddress: ", (void *)table->address.address);
     screen::debug("\nCounter size: ", 32 + 32 * table->counter_size);
     screen::debug("\nNumber of comparators: ", table->comparator_count + 1);
@@ -467,7 +468,7 @@ void acpi::parse_hpet(processor::hpet::timer *& timers, uint64_t & timers_num)
     uint64_t address = memory::vm::allocate_address_range(sizeof(processor::hpet::timer));
     memory::vm::map(address);
     timers = new ((void *)address) processor::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio,
-        table->counter_size, table->comparator_count, table->minimum_tick, table->page_protection };
+        table->counter_size, (uint8_t)(table->comparator_count + 1), table->minimum_tick, table->page_protection };
 
     _free_table();
 }

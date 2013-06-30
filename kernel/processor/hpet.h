@@ -56,7 +56,7 @@ namespace processor
         {
         public:
             comparator();
-            comparator(timer * parent, uint8_t index);
+            comparator(hpet::timer * parent, uint8_t index);
 
             virtual ~comparator() {}
 
@@ -75,7 +75,7 @@ namespace processor
             }
 
         private:
-            timer * _parent;
+            hpet::timer * _parent;
             uint8_t _index;
 
             uint64_t _usage;

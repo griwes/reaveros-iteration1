@@ -32,6 +32,8 @@ namespace
     processor::hpet::timer * _timers = nullptr;
     uint64_t _num_timers = 0;
 
+    uint32_t _used_interrupts = 0;
+
     enum _hpet_registers
     {
         _general_capabilities = 0x0,
@@ -133,9 +135,27 @@ processor::hpet::comparator::comparator() : _parent{}
 {
 }
 
-processor::hpet::comparator::comparator(processor::timer * parent, uint8_t index) : _parent{ parent }, _index{ index },
+processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : _parent{ parent }, _index{ index },
     _active_timers{}, _free_descriptors{}
 {
+    if (_parent->_register(_timer_configuration(_index)) & (1 << 15))
+    {
+        screen::debug("\nHPET comparator #", _index, " is FSB capable; better implement FSB interrupt routing.");
+
+        // TODO
+    }
+
+    uint32_t possible_routes = _parent->_register(_timer_configuration(_index)) >> 32;
+    screen::debug("\nPossible IOAPIC inputs for HPET comparator #", _index, ": ");
+
+    for (uint8_t i = 0; i < 32; ++i)
+    {
+        if (possible_routes & (1 << i))
+        {
+            screen::debug(i, " ");
+        }
+    }
+
     TODO;
 }
 

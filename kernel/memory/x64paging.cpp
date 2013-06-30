@@ -289,8 +289,9 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
 
                     if (!(*pt)[startpte].present)
                     {
-                        screen::print("\nAt address ", (void *)virtual_start);
-                        PANIC("tried to unmap not mapped page");
+                        PANICEX("tried to unmap not mapped page", [=]{
+                            screen::print("At address ", (void *)virtual_start);
+                        });
                     }
 
                     (*pt)[startpte].present = 0;
