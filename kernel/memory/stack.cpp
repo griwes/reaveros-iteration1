@@ -74,7 +74,7 @@ uint64_t memory::pmm::frame_stack::pop()
         }
     }
 
-    auto _ = utils::make_unique_lock(_last->lock);
+    LOCK(_last->lock);
 
     uint64_t ret = _last->stack[--_last->size];
 
@@ -93,8 +93,8 @@ uint64_t memory::pmm::frame_stack::pop()
 
     if (_last != _first && _last->size == frame_stack_chunk::max - 50)
     {
-        auto _ = utils::make_unique_lock(_last->lock);
-        auto __ = utils::make_unique_lock(_last->next->lock);
+        LOCK(_last->lock);
+        LOCK(_last->next->lock);
 
         if (_last->next->next)
         {
@@ -116,55 +116,56 @@ memory::pmm::frame_stack_chunk * memory::pmm::frame_stack::pop_chunk()
         return nullptr;
     }
 
-    auto _ = utils::make_unique_lock(_last->lock);
-    auto __ = utils::make_unique_lock(_first->lock);
+    LOCK(_first->lock);
 
     if (_first->next)
     {
-        auto _ = utils::make_unique_lock(_first->next->lock);
+        LOCK(_first->next->lock);
+
+        _first->next->prev = nullptr;
     }
 
     auto ret = _first;
     _first = _first->next;
+
+    _size -= ret->size;
 
     return ret;
 }
 
 void memory::pmm::frame_stack::push(uint64_t frame)
 {
-    auto _ = utils::make_unique_lock(_lock);
-
-    if (!_first)
     {
+        LOCK(_lock);
+
         if (!_first)
         {
-            _last = _first = allocate_chained<frame_stack_chunk>();
+            if (!_first)
+            {
+                _last = _first = allocate_chained<frame_stack_chunk>();
+            }
         }
-    }
 
-    if (_last->size == frame_stack_chunk::max - 100 && !_last->next)
-    {
-        auto __ = utils::make_unique_lock(_last->lock);
-
-        screen::debug("\nLocked lock at ", &_last->lock);
-
-        _last->next = allocate_chained<frame_stack_chunk>();
-        _last->next->prev = _last;
-
-        screen::debug("\nframe_stack::push(): allocated another at ", _last->next);
-    }
-
-    {
-        auto __ = utils::make_unique_lock(_last->lock);
-
-        if (_last->size == frame_stack_chunk::max)
+        if (_last->size == frame_stack_chunk::max - 100 && !_last->next)
         {
-            screen::debug("\nframe_stack::push(): set _last to _next");
-            _last = _last->next;
+            LOCK(_last->lock);
+
+            _last->next = allocate_chained<frame_stack_chunk>();
+            _last->next->prev = _last;
+        }
+
+        {
+            LOCK(_last->lock);
+
+            if (_last->size == frame_stack_chunk::max)
+            {
+                screen::debug("\nframe_stack::push(): set _last to _next");
+                _last = _last->next;
+            }
         }
     }
 
-    auto __ = utils::make_unique_lock(_last->lock);
+    LOCK(_last->lock);
 
     _last->stack[_last->size++] = frame;
     ++_size;
@@ -174,7 +175,7 @@ void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk
 {
     if (chunk->size == frame_stack_chunk::max)
     {
-        auto _ = utils::make_unique_lock(_first->lock);
+        LOCK(_first->lock);
 
         chunk->prev = nullptr;
         chunk->next = _first;
@@ -183,8 +184,8 @@ void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk
         return;
     }
 
-    auto _ = utils::make_unique_lock(_last->lock);
-    auto __ = utils::make_unique_lock(chunk->lock);
+    LOCK(_last->lock);
+    LOCK(chunk->lock);
 
     auto last = _last;
 
@@ -193,7 +194,7 @@ void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk
         last = last->next;
     }
 
-    auto ___ = utils::make_unique_lock(last->lock);
+    LOCK(last->lock);
 
     last->next = chunk;
     chunk->prev = last;

@@ -50,3 +50,8 @@ void processor::lapic::initialize()
         _lapic = new (&_xapic) xapic;
     }
 }
+
+processor::lapic * processor::get_lapic()
+{
+    return _lapic;
+}

@@ -25,21 +25,50 @@
 
 #pragma once
 
-#include <memory/x64paging.h>
+#include <processor/timer.h>
 
 namespace processor
 {
-    class ioapic;
+    namespace idt
+    {
+        struct isr_context;
+    }
 
-    extern "C" memory::x64::pml4 * get_cr3();
-    extern "C" void reload_cr3();
+    namespace _detail
+    {
+        void _pit_handler(processor::idt::isr_context, uint64_t);
+    }
 
-    extern "C" uint32_t initial_id();
-    uint64_t get_lapic_base();
-    uint8_t translate_isa(uint8_t irq);
+    namespace pit
+    {
+        void initialize();
+        bool ready();
 
-    ioapic * get_ioapic(uint8_t input);
+        class timer : public processor::timer
+        {
+        public:
+            timer();
 
-    void initialize();
-    bool ready();
+            virtual ~timer() {}
+
+            virtual timer_event_handle one_shot(uint64_t, timer_handler, uint64_t = 0);
+            virtual timer_event_handle periodic(uint64_t, timer_handler, uint64_t = 0);
+            virtual void cancel(uint64_t);
+
+        private:
+            friend void _detail::_pit_handler(processor::idt::isr_context, uint64_t);
+
+            void _handle(processor::idt::isr_context);
+
+            bool _periodic;
+            uint64_t _usage;
+
+            uint8_t _int_vector;
+
+            timer_description * _active_timers;
+            timer_description * _free_descriptors;
+
+            utils::spinlock _lock;
+        };
+    }
 }

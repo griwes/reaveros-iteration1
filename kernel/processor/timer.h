@@ -25,13 +25,18 @@
 
 #pragma once
 
+#include <utils/spinlock.h>
+
 namespace processor
 {
     uint64_t allocate_timer_event_id();
 
-    class timer;
+    namespace idt
+    {
+        struct isr_context;
+    }
 
-    using timer_handler = void (*)(timer *, uint64_t);
+    using timer_handler = void (*)(idt::isr_context, uint64_t);
 
     struct timer_event_handle;
 
@@ -55,6 +60,20 @@ namespace processor
             device->cancel(id);
         }
     };
+
+    struct timer_description
+    {
+        timer_description * prev;
+        timer_description * next;
+        utils::spinlock lock;
+        uint64_t id;
+        timer_handler handler;
+        uint64_t handler_parameter;
+        uint64_t periodic:1;
+        uint64_t period;
+    };
+
+    static_assert(4096 % sizeof(timer_description) == 0, "Invalid size of timer description.");
 
     void set_high_precision_timer(timer *);
     void set_scheduling_timer(timer *);

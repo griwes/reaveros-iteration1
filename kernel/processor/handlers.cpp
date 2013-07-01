@@ -26,17 +26,20 @@
 #include <processor/handlers.h>
 #include <utils/spinlock.h>
 #include <screen/screen.h>
+#include <processor/ioapic.h>
+#include <processor/lapic.h>
 
 namespace
 {
     utils::spinlock _lock;
 
-    using _handler = void (*)(processor::idt::isr_context);
+    using _handler = void (*)(processor::idt::isr_context, uint64_t);
     _handler _handlers[256] = {};
+    uint64_t _contexts[256] = {};
 
     bool _vector_allocated[224] = {};
 
-    void _page_fault(processor::idt::isr_context context)
+    void _page_fault(processor::idt::isr_context context, uint64_t)
     {
         if ((context.cs & 3) != 0)
         {
@@ -66,11 +69,17 @@ void processor::initialize_exceptions()
 
 void processor::handle(processor::idt::isr_context context)
 {
+    if (context.number > 31)
+    {
+        get_lapic()->eoi();
+    }
+
+    uint64_t c = _contexts[context.number];
     _handler handler = _handlers[context.number];
 
     if (handler)
     {
-        handler(context);
+        handler(context, _contexts[c]);
 
         return;
     }
@@ -99,7 +108,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
         PANIC("Invalid request to allocate 0 interrupt numbers.");
     }
 
-    auto _ = utils::make_unique_lock(_lock);
+    LOCK(_lock);
 
     for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1);; ret -= count)
     {
@@ -170,7 +179,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
 
 void processor::free_isr(uint8_t number)
 {
-    auto _ = utils::make_unique_lock(_lock);
+    LOCK(_lock);
 
     if (!_vector_allocated[number - 32])
     {
@@ -180,9 +189,9 @@ void processor::free_isr(uint8_t number)
     _vector_allocated[number - 32] = false;
 }
 
-void processor::register_handler(uint8_t number, _handler handler)
+void processor::register_handler(uint8_t number, _handler handler, uint64_t context)
 {
-    auto _ = utils::make_unique_lock(_lock);
+    LOCK(_lock);
 
     if (_handlers[number])
     {
@@ -190,11 +199,12 @@ void processor::register_handler(uint8_t number, _handler handler)
     }
 
     _handlers[number] = handler;
+    _contexts[number] = context;
 }
 
 void processor::unregister_handler(uint8_t number)
 {
-    auto _ = utils::make_unique_lock(_lock);
+    LOCK(_lock);
 
     if (!_handlers[number])
     {
@@ -202,4 +212,10 @@ void processor::unregister_handler(uint8_t number)
     }
 
     _handlers[number] = nullptr;
+    _contexts[number] = 0;
+}
+
+void processor::set_isa_irq_int_vector(uint8_t isa, uint8_t handler)
+{
+    processor::get_ioapic(processor::translate_isa(isa))->route_interrupt(isa, handler);
 }

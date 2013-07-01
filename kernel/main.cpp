@@ -58,7 +58,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
 */
     for (;;) ;
 
-/*    screen::print(tag::scheduler, "Initializing virtual memory manager server...");
+/*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);
     screen::done();
 
@@ -67,7 +67,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     supervisor.set_priority(10);
     screen::done();
 
-    screen::print(tag::scheduler, "Starting video server...");
+    screen::print(tag::scheduler, "Starting video service...");
     scheduler::process vsrv = scheduler::create_process(initrd["video.srv"]);
     screen::done();
 
@@ -75,11 +75,11 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::initialize_server(vsrv);
     screen::done();
 
-    screen::print(tag::scheduler, "Starting device manager server...");
+    screen::print(tag::scheduler, "Starting device manager...");
     scheduler::process device_mgr = scheduler::create_process(initrd["devicemgr.srv"]);
     screen::done();
 
-    screen::print(tag::scheduler, "Starting VIOLA server...");
+    screen::print(tag::scheduler, "Starting V(irtual)I(nput)O(utput)LA(yer) service...");
     scheduler::process viola = scheduler::create_process(initrd["viola.srv"]);
     screen::done();
 

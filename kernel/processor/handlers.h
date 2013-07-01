@@ -36,6 +36,7 @@ namespace processor
     uint8_t allocate_isr(uint8_t priority);
     uint8_t allocate_isr(uint8_t priority, uint8_t & count);
     void free_isr(uint8_t number);
-    void register_handler(uint8_t number, void (*)(idt::isr_context));
+    void register_handler(uint8_t number, void (*)(idt::isr_context, uint64_t), uint64_t context = 0);
     void unregister_handler(uint8_t number);
+    void set_isa_irq_int_vector(uint8_t isa, uint8_t handler);
 }

@@ -36,20 +36,6 @@ namespace processor
         void initialize();
         bool ready();
 
-        struct timer_description
-        {
-            timer_description * prev;
-            timer_description * next;
-            utils::spinlock lock;
-            uint64_t id;
-            timer_handler handler;
-            uint64_t handler_parameter;
-            uint64_t periodic:1;
-            uint64_t period;
-        };
-
-        static_assert(4096 % sizeof(timer_description) == 0, "Invalid size of timer description.");
-
         class timer;
 
         class comparator : public processor::timer

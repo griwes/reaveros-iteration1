@@ -65,7 +65,7 @@ namespace utils
 
             while (_owner != cpu)
             {
-                auto _ = utils::make_unique_lock(_inner_lock);
+                LOCK(_inner_lock);
 
                 if (_count != 0)
                 {

@@ -36,5 +36,9 @@ namespace processor
         static void initialize_timer();
 
         virtual ~lapic() {}
+
+        virtual void eoi() = 0;
     };
+
+    lapic * get_lapic();
 }

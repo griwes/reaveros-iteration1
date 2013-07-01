@@ -36,7 +36,7 @@ namespace processor
         xapic();
         virtual ~xapic() {}
 
-        bool x2apic_capable() const;
+        virtual void eoi();
 
     private:
         utils::mmio_helper<uint32_t> _register;

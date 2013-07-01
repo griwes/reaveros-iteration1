@@ -101,3 +101,8 @@ processor::xapic::xapic() : _register{ processor::get_lapic_base() }
     screen::debug("\nInitialized xAPIC. APIC version: ", _register(_apic_version) & 0xFF, ", number of LVTs: ",
         ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
 }
+
+void processor::xapic::eoi()
+{
+    _register(_eoi, 0);
+}

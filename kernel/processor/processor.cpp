@@ -33,6 +33,7 @@
 #include <processor/hpet.h>
 #include <processor/handlers.h>
 #include <processor/lapic.h>
+#include <processor/pit.h>
 
 namespace
 {
@@ -88,13 +89,14 @@ void processor::initialize()
     }
 
     lapic::initialize();
-
     hpet::initialize();
 
-/*    if (!hpet::ready())
+    if (!hpet::ready())
     {
         pit::initialize();
     }
+
+/*    time::initialize();
 
     lapic::initialize_timer();
     smp::boot(_cores + 1, _num_cores - 1);
@@ -102,4 +104,17 @@ void processor::initialize()
     memory::drop_bootloader_mapping();
 
     _ready = true;*/
+}
+
+processor::ioapic * processor::get_ioapic(uint8_t input)
+{
+    for (uint64_t i = 0; i < _num_ioapics; ++i)
+    {
+        if (_ioapics[i].begin() >= input && _ioapics[i].end() < input)
+        {
+            return _ioapics + i;
+        }
+    }
+
+    return nullptr;
 }

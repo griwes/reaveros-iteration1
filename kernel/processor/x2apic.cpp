@@ -98,3 +98,8 @@ processor::x2apic::x2apic()
     screen::debug("\nInitialized x2APIC. APIC version: ", _register(_apic_version) & 0xFF, ", number of LVTs: ",
         ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
 }
+
+void processor::x2apic::eoi()
+{
+    _register(_eoi, 0);
+}

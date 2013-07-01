@@ -35,6 +35,8 @@ namespace processor
         x2apic();
         virtual ~x2apic() {}
 
+        virtual void eoi();
+
     private:
         uint64_t _register(uint64_t reg)
         {

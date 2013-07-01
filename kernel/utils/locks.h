@@ -112,3 +112,8 @@ namespace utils
         return {};
     }
 }
+
+#define CONCATEX(x, y) x ## y
+#define CONCAT(x, y) CONCATEX(x, y)
+#define LOCK(x) auto CONCAT(_, __LINE__) = utils::make_unique_lock(x);
+#define INTL() auto CONCAT(_, __LINE__) = utils::cli();
