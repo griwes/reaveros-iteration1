@@ -50,17 +50,6 @@ namespace processor
         virtual void cancel(uint64_t) = 0;
     };
 
-    struct timer_event_handle
-    {
-        timer * device;
-        uint64_t id;
-
-        void cancel()
-        {
-            device->cancel(id);
-        }
-    };
-
     struct timer_description
     {
         timer_description * prev;
@@ -71,6 +60,53 @@ namespace processor
         uint64_t periodic:1;
         uint64_t time_left;
         uint64_t period;
+    };
+
+    class real_timer : public timer
+    {
+    public:
+        real_timer(bool);
+
+        virtual ~real_timer() {}
+
+        virtual timer_event_handle one_shot(uint64_t, timer_handler, uint64_t = 0);
+        virtual timer_event_handle periodic(uint64_t, timer_handler, uint64_t = 0);
+        virtual void cancel(uint64_t);
+
+        uint64_t usage()
+        {
+            return _usage;
+        }
+
+    protected:
+        virtual void _one_shot(uint64_t) = 0;
+        virtual void _periodic(uint64_t) = 0;
+
+        void _handle(idt::isr_context);
+
+        timer_description * _get();
+        void _add(timer_description *);
+
+        bool _is_periodic;
+        bool _can_periodic;
+
+        uint64_t _usage;
+
+        timer_description * _active;
+        timer_description * _available;
+
+        utils::spinlock _lock;
+    };
+
+    struct timer_event_handle
+    {
+        timer * device;
+        uint64_t id;
+
+        void cancel()
+        {
+            device->cancel(id);
+        }
     };
 
     static_assert(4096 % sizeof(timer_description) == 0, "Invalid size of timer description.");

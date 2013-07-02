@@ -38,7 +38,7 @@ namespace processor
 
         class timer;
 
-        class comparator : public processor::timer
+        class comparator : public real_timer
         {
         public:
             comparator();
@@ -46,30 +46,18 @@ namespace processor
 
             virtual ~comparator() {}
 
-            virtual timer_event_handle one_shot(uint64_t, timer_handler, uint64_t = 0);
-            virtual timer_event_handle periodic(uint64_t, timer_handler, uint64_t = 0);
-            virtual void cancel(uint64_t);
-
-            uint64_t get_usage() const
-            {
-                return _usage;
-            }
-
             bool valid() const
             {
                 return _parent;
             }
 
+        protected:
+            virtual void _one_shot(uint64_t);
+            virtual void _periodic(uint64_t);
+
         private:
             hpet::timer * _parent;
             uint8_t _index;
-
-            uint64_t _usage;
-
-            timer_description * _active_timers;
-            timer_description * _free_descriptors;
-
-            utils::spinlock _lock;
         };
 
         class timer : public processor::timer

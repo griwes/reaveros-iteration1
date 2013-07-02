@@ -44,31 +44,20 @@ namespace processor
         void initialize();
         bool ready();
 
-        class timer : public processor::timer
+        class timer : public processor::real_timer
         {
         public:
             timer();
 
             virtual ~timer() {}
 
-            virtual timer_event_handle one_shot(uint64_t, timer_handler, uint64_t = 0);
-            virtual timer_event_handle periodic(uint64_t, timer_handler, uint64_t = 0);
-            virtual void cancel(uint64_t);
-
         private:
             friend void _detail::_pit_handler(processor::idt::isr_context, uint64_t);
 
-            void _handle(processor::idt::isr_context);
-
-            bool _periodic;
-            uint64_t _usage;
+            virtual void _one_shot(uint64_t);
+            virtual void _periodic(uint64_t);
 
             uint8_t _int_vector;
-
-            timer_description * _active_timers;
-            timer_description * _free_descriptors;
-
-            utils::spinlock _lock;
         };
     }
 }

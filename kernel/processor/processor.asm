@@ -128,8 +128,6 @@ load_gdt:
 load_idt:
     lidt    [rdi]
 
-    int     0x80
-
     ret
 
 common_interrupt_stub:

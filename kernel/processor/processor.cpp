@@ -45,7 +45,7 @@ namespace
     uint64_t _num_cores;
     uint64_t _num_ioapics;
 
-    processor::interrupt_entry _sources[128];
+    processor::interrupt_entry _sources[128] = {};
 
     bool _ready = false;
 }

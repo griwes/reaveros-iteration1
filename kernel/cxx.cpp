@@ -38,6 +38,11 @@ extern "C" int __cxa_atexit(void (*)(void *), void *, void *)
     return 0;
 }
 
+extern "C" void __cxa_pure_virtual()
+{
+    PANIC("Pure virtual function called!");
+}
+
 void _panic(const char * message, const char * file, uint64_t line, const char * func, bool additional)
 {
 //    processor::broadcast(processor::broadcast_types::others, processor::ipis::panic);

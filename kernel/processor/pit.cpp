@@ -25,13 +25,13 @@
 
 #include <processor/pit.h>
 #include <processor/handlers.h>
+#include <screen/screen.h>
 
 namespace
 {
     processor::pit::timer * _pit = nullptr;
 
 }
-
 
 void processor::_detail::_pit_handler(processor::idt::isr_context isr, uint64_t context)
 {
@@ -50,66 +50,19 @@ bool processor::pit::ready()
     return _pit;
 }
 
-processor::pit::timer::timer() : _periodic{}, _usage{}, _int_vector{}, _active_timers{}, _free_descriptors{}
+processor::pit::timer::timer() : real_timer{ true }, _int_vector{}
 {
     _int_vector = allocate_isr(0);
     register_handler(_int_vector, _detail::_pit_handler, (uint64_t)this);
     set_isa_irq_int_vector(0, _int_vector);
 }
 
-processor::timer_event_handle processor::pit::timer::one_shot(uint64_t , processor::timer_handler , uint64_t )
-{
-    return {};
-}
-
-processor::timer_event_handle processor::pit::timer::periodic(uint64_t , processor::timer_handler , uint64_t )
-{
-    return {};
-}
-
-void processor::pit::timer::cancel(uint64_t )
+void processor::pit::timer::_one_shot(uint64_t time)
 {
 
 }
 
-void processor::pit::timer::_handle(processor::idt::isr_context isrc)
+void processor::pit::timer::_periodic(uint64_t period)
 {
-    LOCK(_lock);
 
-    _active_timers->handler(isrc, _active_timers->handler_parameter);
-
-    if (!_periodic)
-    {
-        if (_active_timers->periodic)
-        {
-            auto fired = _active_timers;
-            _active_timers = _active_timers->next;
-
-            fired->next = nullptr;
-            fired->prev = nullptr;
-            fired->time_left = fired->period;
-
-            _add(fired);
-        }
-
-        else
-        {
-            auto first_free = _free_descriptors;
-            _free_descriptors = _active_timers;
-            _active_timers = _active_timers->next;
-            _free_descriptors->next = first_free;
-            _free_descriptors->prev = nullptr;
-        }
-
-        if (_active_timers)
-        {
-            if (_active_timers->time_left < 200000)
-            {
-                _active_timers->next->time_left += 200000 - _active_timers->time_left;
-                _active_timers->time_left = 200000;
-            }
-
-            _one_shot(_active_timers->time_left);
-        }
-    }
 }

@@ -94,32 +94,32 @@ processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t 
 
 processor::timer_event_handle processor::hpet::timer::one_shot(uint64_t time, processor::timer_handler handler, uint64_t param)
 {
-    uint64_t min = _comparators[0].get_usage();
+    uint64_t min = _comparators[0].usage();
     uint64_t min_idx = 0;
 
     for (uint8_t i = 1; i < _comparator_count; ++i)
     {
-        if (_comparators[i].valid() && _comparators[i].get_usage() < min)
+        if (_comparators[i].valid() && _comparators[i].usage() < min)
         {
             min_idx = i;
-            min = _comparators[i].get_usage();
+            min = _comparators[i].usage();
         }
     }
 
-    return _comparators[min_idx].periodic(time, handler, param);
+    return _comparators[min_idx].one_shot(time, handler, param);
 }
 
 processor::timer_event_handle processor::hpet::timer::periodic(uint64_t period, processor::timer_handler handler, uint64_t param)
 {
-    uint64_t min = _comparators[0].get_usage();
+    uint64_t min = _comparators[0].usage();
     uint64_t min_idx = 0;
 
     for (uint8_t i = 1; i < _comparator_count; ++i)
     {
-        if (_comparators[i].valid() &&_comparators[i].get_usage() < min)
+        if (_comparators[i].valid() &&_comparators[i].usage() < min)
         {
             min_idx = i;
-            min = _comparators[i].get_usage();
+            min = _comparators[i].usage();
         }
     }
 
@@ -131,12 +131,12 @@ void processor::hpet::timer::cancel(uint64_t)
     NEVER;
 }
 
-processor::hpet::comparator::comparator() : _parent{}
+processor::hpet::comparator::comparator() : real_timer{ false }, _parent{}
 {
 }
 
-processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : _parent{ parent }, _index{ index },
-    _active_timers{}, _free_descriptors{}
+processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ true },
+    _parent{ parent }, _index{ index }
 {
     if (_parent->_register(_timer_configuration(_index)) & (1 << 15))
     {
@@ -159,31 +159,12 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
     TODO;
 }
 
-processor::timer_event_handle processor::hpet::comparator::one_shot(uint64_t time, processor::timer_handler handler, uint64_t param)
+void processor::hpet::comparator::_one_shot(uint64_t )
 {
-    INTL();
-    LOCK(_lock);
 
-    ++_usage;
-
-    TODO;
-
-    return {};
 }
 
-processor::timer_event_handle processor::hpet::comparator::periodic(uint64_t period, processor::timer_handler handler, uint64_t param)
+void processor::hpet::comparator::_periodic(uint64_t )
 {
-    INTL();
-    LOCK(_lock);
 
-    _usage += 100;
-
-    TODO;
-
-    return {};
-}
-
-void processor::hpet::comparator::cancel(uint64_t )
-{
-    TODO;
 }
