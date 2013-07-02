@@ -80,21 +80,36 @@ void processor::pit::timer::_handle(processor::idt::isr_context isrc)
 
     if (!_periodic)
     {
-        auto first_free = _free_descriptors;
-        _free_descriptors = _active_timers;
-        _active_timers = _active_timers->next;
-        _free_descriptors->next = first_free;
-        _free_descriptors->prev = nullptr;
+        if (_active_timers->periodic)
+        {
+            auto fired = _active_timers;
+            _active_timers = _active_timers->next;
+
+            fired->next = nullptr;
+            fired->prev = nullptr;
+            fired->time_left = fired->period;
+
+            _add(fired);
+        }
+
+        else
+        {
+            auto first_free = _free_descriptors;
+            _free_descriptors = _active_timers;
+            _active_timers = _active_timers->next;
+            _free_descriptors->next = first_free;
+            _free_descriptors->prev = nullptr;
+        }
 
         if (_active_timers)
         {
-            if (_active_timers->period < 200000)
+            if (_active_timers->time_left < 200000)
             {
-                _active_timers->next->period += 200000 - _active_timers->period;
-                _active_timers->period = 200000;
+                _active_timers->next->time_left += 200000 - _active_timers->time_left;
+                _active_timers->time_left = 200000;
             }
 
-//            _one_shot(_active_timers->period);
+            _one_shot(_active_timers->time_left);
         }
     }
 }
