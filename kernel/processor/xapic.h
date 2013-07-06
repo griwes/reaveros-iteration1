@@ -36,9 +36,11 @@ namespace processor
         xapic();
         virtual ~xapic() {}
 
-        virtual void eoi();
+        virtual void eoi(uint8_t);
 
     private:
         utils::mmio_helper<uint32_t> _register;
+        uint8_t _timer_irq;
+        uint8_t _spurious;
     };
 }

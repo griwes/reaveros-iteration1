@@ -27,6 +27,8 @@
 
 #include <memory/vm.h>
 #include <processor/interrupt_entry.h>
+#include <processor/processor.h>
+#include <screen/screen.h>
 
 namespace processor
 {
@@ -41,7 +43,6 @@ namespace processor
             uint64_t address = memory::vm::allocate_address_range(4096);
 
             memory::vm::map(address, _base_address);
-
             _base_address = address;
 
             _size = ((_read_register(1) >> 16) & (~(1 << 8) & 0xFF)) + 1;
@@ -60,10 +61,8 @@ namespace processor
             return _is_nmi_valid;
         }
 
-        void initialize(processor::interrupt_entry * sources)
+        void initialize()
         {
-            _sources = sources;
-
             for (uint32_t i = 0; i < _size; ++i)
             {
                 _write_register(0x10 + 2 * i, _read_register(0x10 + 2 * i) | (1 << 16));
@@ -85,16 +84,18 @@ namespace processor
             bool low = false;
             bool level = false;
 
-            if (_sources[input])
+            auto sources = processor::get_sources();
+
+            if (sources[input])
             {
-                if (!_sources[input].standard_polarity())
+                if (!sources[input].standard_polarity())
                 {
-                    low = _sources[input].low();
+                    low = sources[input].low();
                 }
 
-                if (!_sources[input].standard_trigger())
+                if (!sources[input].standard_trigger())
                 {
-                    level = _sources[input].level();
+                    level = sources[input].level();
                 }
             }
 
@@ -122,18 +123,16 @@ namespace processor
         bool _is_valid;
         bool _is_nmi_valid;
 
-        processor::interrupt_entry * _sources;
-
         uint32_t _read_register(uint8_t id)
         {
-            *(uint32_t volatile *)(_base_address) = id;
-            return *(uint32_t volatile *)(_base_address + 0x10);
+            *(volatile uint32_t *)_base_address = id;
+            return *(volatile uint32_t *)(_base_address + 0x10);
         }
 
         void _write_register(uint8_t id, uint32_t val)
         {
-            *(uint32_t volatile *)(_base_address) = id;
-            *(uint32_t volatile *)(_base_address + 0x10) = val;
+            *(volatile uint32_t *)_base_address = id;
+            *(volatile uint32_t *)(_base_address + 0x10) = val;
         }
     };
 }

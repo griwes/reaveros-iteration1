@@ -74,8 +74,8 @@ bool processor::hpet::ready()
 }
 
 processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size,
-    uint8_t comparators, uint16_t minimum_tick, uint8_t page_protection) : _number{ number }, _pci_vendor{ pci_vendor.vendor },
-    _size{ (uint8_t)(32 + 32 * counter_size) }, _comparator_count{ comparators }, _minimum_tick{ minimum_tick },
+    uint8_t comparators, uint16_t minimal_tick, uint8_t page_protection) : _number{ number }, _pci_vendor{ pci_vendor.vendor },
+    _size{ (uint8_t)(32 + 32 * counter_size) }, _comparator_count{ comparators }, _minimal_tick{ minimal_tick },
     _page_protection{ page_protection }, _register{ address }
 {
     _register(_general_configuration, _register(_general_configuration) | 1);
@@ -131,11 +131,11 @@ void processor::hpet::timer::cancel(uint64_t)
     NEVER;
 }
 
-processor::hpet::comparator::comparator() : real_timer{ false }, _parent{}
+processor::hpet::comparator::comparator() : real_timer{ false, 0 }, _parent{}
 {
 }
 
-processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ true },
+processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ true, parent->_minimal_tick },
     _parent{ parent }, _index{ index }
 {
     if (_parent->_register(_timer_configuration(_index)) & (1 << 15))

@@ -35,7 +35,7 @@ namespace processor
         x2apic();
         virtual ~x2apic() {}
 
-        virtual void eoi();
+        virtual void eoi(uint8_t);
 
     private:
         uint64_t _register(uint64_t reg)
@@ -47,5 +47,8 @@ namespace processor
         {
             wrmsr(reg, val);
         }
+
+        uint8_t _timer_irq;
+        uint8_t _spurious;
     };
 }

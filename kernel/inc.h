@@ -133,3 +133,23 @@ T * allocate_chained(uint64_t physical = 0)
 
     return address;
 }
+
+constexpr uint64_t operator "" _s(unsigned long long seconds)
+{
+    return seconds * 1000 * 1000 * 1000;
+}
+
+constexpr uint64_t operator "" _ms(unsigned long long milliseconds)
+{
+    return milliseconds * 1000 * 1000;
+}
+
+constexpr uint64_t operator "" _µs(unsigned long long microseconds)
+{
+    return microseconds * 1000;
+}
+
+constexpr uint64_t operator "" _ns(unsigned long long nanoseconds)
+{
+    return nanoseconds;
+}

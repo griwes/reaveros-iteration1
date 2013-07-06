@@ -66,7 +66,7 @@ namespace processor
             friend class comparator;
 
             timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size, uint8_t comparators,
-                uint16_t minimum_tick, uint8_t page_protection);
+                uint16_t minimal_tick, uint8_t page_protection);
 
             virtual ~timer() {}
 
@@ -79,7 +79,7 @@ namespace processor
             pci_vendor_t _pci_vendor;
             uint8_t _size;
             uint8_t _comparator_count;
-            uint16_t _minimum_tick;
+            uint16_t _minimal_tick;
             uint8_t _page_protection;
 
             uint64_t _frequency;

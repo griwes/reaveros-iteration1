@@ -148,7 +148,6 @@ namespace
             {
                 table = (acpi::description_table_header *)(_table_address + new_root->entries[i] % 4096);
 
-                screen::debug("\nACPI table at ", (void *)new_root->entries[i]);
                 memory::vm::map_multiple(_table_address, _table_address + 8 * 4096, new_root->entries[i]);
 
                 if (table->validate(sign))
@@ -165,8 +164,6 @@ namespace
             for (uint64_t i = 0; i < (root->length - 36) / 4; ++i)
             {
                 table = (acpi::description_table_header *)(_table_address + root->entries[i] % 4096);
-
-                screen::debug("\nACPI table at ", (void *)(uint64_t)root->entries[i]);
 
                 memory::vm::map_multiple(_table_address, _table_address + 8 * 4096, root->entries[i]);
 

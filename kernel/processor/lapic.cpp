@@ -27,6 +27,7 @@
 #include <processor/xapic.h>
 #include <processor/x2apic.h>
 #include <screen/screen.h>
+#include <processor/idt.h>
 
 namespace
 {
@@ -38,7 +39,7 @@ namespace
 
 void processor::lapic::initialize()
 {
-    if (x2apic_capable())
+    if (x2apic_capable() && false)
     {
         screen::debug("\nInitializing x2APIC...");
         _lapic = new (&_x2apic) x2apic;

@@ -69,9 +69,9 @@ void processor::initialize_exceptions()
 
 void processor::handle(processor::idt::isr_context context)
 {
-    if (context.number > 31)
+    if (context.number >= 32)
     {
-        get_lapic()->eoi();
+        get_lapic()->eoi(context.number);
     }
 
     uint64_t c = _contexts[context.number];
@@ -103,14 +103,17 @@ uint8_t processor::allocate_isr(uint8_t priority)
 
 uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
 {
+    screen::debug("\nTrying to allocate ", count, " interrupt vector", count != 1 ? "s" : "", " at priority ", priority);
+
     if (count == 0)
     {
         PANIC("Invalid request to allocate 0 interrupt numbers.");
     }
 
+    INTL();
     LOCK(_lock);
 
-    for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1);; ret -= count)
+    for (uint8_t ret = (priority * 16 + count - 1) & ~(count - 1);; ret -= count)
     {
         bool good = true;
 
@@ -130,7 +133,9 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
                 _vector_allocated[ret + i] = true;
             }
 
-            return ret;
+            screen::debug("\nAllocated ", count, " interrupt vector", count != 1 ? "s starting" : "", " at ", ret + 32);
+
+            return ret + 32;
         }
 
         if (ret == 0)
@@ -139,7 +144,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
         }
     }
 
-    for (uint8_t ret = (priority * 8 + count - 1) & ~(count - 1); ret < 224; ret += count)
+    for (uint8_t ret = (priority * 16 + count - 1) & ~(count - 1); ret < 224; ret += count)
     {
         bool good = true;
 
@@ -159,7 +164,9 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
                 _vector_allocated[ret + i] = true;
             }
 
-            return ret;
+            screen::debug("\nAllocated ", count, " interrupt vector", count != 1 ? "s starting" : "", " at ", ret + 32);
+
+            return ret + 32;
         }
     }
 
@@ -179,6 +186,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
 
 void processor::free_isr(uint8_t number)
 {
+    INTL();
     LOCK(_lock);
 
     if (!_vector_allocated[number - 32])
@@ -191,6 +199,7 @@ void processor::free_isr(uint8_t number)
 
 void processor::register_handler(uint8_t number, _handler handler, uint64_t context)
 {
+    INTL();
     LOCK(_lock);
 
     if (_handlers[number])
@@ -204,6 +213,7 @@ void processor::register_handler(uint8_t number, _handler handler, uint64_t cont
 
 void processor::unregister_handler(uint8_t number)
 {
+    INTL();
     LOCK(_lock);
 
     if (!_handlers[number])

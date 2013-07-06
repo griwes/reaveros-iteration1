@@ -85,7 +85,7 @@ void processor::initialize()
 
     for (uint64_t i = 0; i < _num_ioapics; ++i)
     {
-        _ioapics[i].initialize(_sources);
+        _ioapics[i].initialize();
     }
 
     lapic::initialize();
@@ -110,11 +110,16 @@ processor::ioapic * processor::get_ioapic(uint8_t input)
 {
     for (uint64_t i = 0; i < _num_ioapics; ++i)
     {
-        if (_ioapics[i].begin() >= input && _ioapics[i].end() < input)
+        if (input >= _ioapics[i].begin() && input < _ioapics[i].end())
         {
             return _ioapics + i;
         }
     }
 
     return nullptr;
+}
+
+processor::interrupt_entry * processor::get_sources()
+{
+    return _sources;
 }

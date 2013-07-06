@@ -25,6 +25,7 @@
 
 #include <processor/x2apic.h>
 #include <screen/screen.h>
+#include <processor/handlers.h>
 
 namespace
 {
@@ -95,11 +96,19 @@ processor::x2apic::x2apic()
     _register(_lvt_thermal_sensor, 0x10000);
     _register(_lvt_timer, 0x10000);
 
+    _timer_irq = allocate_isr(0);
+    _spurious = allocate_isr(13);
+
+    _register(_spurious_interrupt_vector, _spurious | 0x100);
+
     screen::debug("\nInitialized x2APIC. APIC version: ", _register(_apic_version) & 0xFF, ", number of LVTs: ",
         ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
 }
 
-void processor::x2apic::eoi()
+void processor::x2apic::eoi(uint8_t v)
 {
-    _register(_eoi, 0);
+    if (v != _spurious)
+    {
+        _register(_eoi, 0);
+    }
 }

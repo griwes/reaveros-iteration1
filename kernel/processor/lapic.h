@@ -27,6 +27,11 @@
 
 namespace processor
 {
+    namespace idt
+    {
+        struct isr_context;
+    }
+
     extern "C" bool x2apic_capable();
 
     class lapic
@@ -37,7 +42,7 @@ namespace processor
 
         virtual ~lapic() {}
 
-        virtual void eoi() = 0;
+        virtual void eoi(uint8_t) = 0;
     };
 
     lapic * get_lapic();

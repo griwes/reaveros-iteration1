@@ -28,6 +28,7 @@
 #include <memory/vm.h>
 #include <memory/x64paging.h>
 #include <processor/processor.h>
+#include <screen/screen.h>
 
 namespace
 {
@@ -47,7 +48,13 @@ void memory::vm::initialize()
 
 uint64_t memory::vm::allocate_address_range(uint64_t size)
 {
+    screen::debug("\nRequested ", size, " bytes of address space, allocating ");
     size += 4095;
     size &= ~(uint64_t)4095;
-    return _lowest.fetch_sub(size) - size;
+    screen::debug(size, " bytes at ");
+
+    auto ret = _lowest.fetch_sub(size) - size;
+    screen::debug((void *)ret);
+
+    return ret;
 }

@@ -30,6 +30,7 @@
 namespace processor
 {
     class ioapic;
+    class interrupt_entry;
 
     extern "C" memory::x64::pml4 * get_cr3();
     extern "C" void reload_cr3();
@@ -39,6 +40,7 @@ namespace processor
     uint8_t translate_isa(uint8_t irq);
 
     ioapic * get_ioapic(uint8_t input);
+    interrupt_entry * get_sources();
 
     void initialize();
     bool ready();

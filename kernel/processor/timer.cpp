@@ -62,8 +62,8 @@ processor::timer * processor::get_scheduling_timer()
     return _sched_timer;
 }
 
-processor::real_timer::real_timer(bool periodic_capable) : _is_periodic{}, _can_periodic{ periodic_capable }, _usage{},
-    _active{}, _available{}
+processor::real_timer::real_timer(bool periodic_capable, uint64_t minimal_tick) : _is_periodic{}, _can_periodic{ periodic_capable },
+    _usage{}, _minimal_tick{ minimal_tick }, _active{}, _available{}
 {
 }
 
@@ -180,6 +180,11 @@ processor::timer_description* processor::real_timer::_get()
 
 void processor::real_timer::_handle(processor::idt::isr_context isrc)
 {
+    if (!_active)
+    {
+        return;
+    }
+
     LOCK(_lock);
 
     _active->handler(isrc, _active->handler_parameter);
@@ -210,10 +215,10 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
 
         if (_active)
         {
-            if (_active->time_left < 200000)
+            if (_active->time_left < _minimal_tick)
             {
-                _active->next->time_left += 200000 - _active->time_left;
-                _active->time_left = 200000;
+                _active->next->time_left += _minimal_tick - _active->time_left;
+                _active->time_left = _minimal_tick;
             }
 
             _one_shot(_active->time_left);

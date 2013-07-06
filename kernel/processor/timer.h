@@ -65,7 +65,7 @@ namespace processor
     class real_timer : public timer
     {
     public:
-        real_timer(bool);
+        real_timer(bool, uint64_t);
 
         virtual ~real_timer() {}
 
@@ -91,6 +91,7 @@ namespace processor
         bool _can_periodic;
 
         uint64_t _usage;
+        uint64_t _minimal_tick;
 
         timer_description * _active;
         timer_description * _available;
