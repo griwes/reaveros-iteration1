@@ -71,7 +71,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     scheduler::process vsrv = scheduler::create_process(initrd["video.srv"]);
     screen::done();
 
-    screen::print(tag::screen, "Switching to video server output...");
+    screen::print(tag::screen, "Switching to video service for console output...");
     screen::initialize_server(vsrv);
     screen::done();
 
