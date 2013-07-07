@@ -28,6 +28,7 @@
 #include <screen/screen.h>
 #include <processor/ioapic.h>
 #include <processor/lapic.h>
+#include <devices/devices.h>
 
 namespace
 {
@@ -38,6 +39,7 @@ namespace
     uint64_t _contexts[256] = {};
 
     bool _vector_allocated[224] = {};
+    devices::device * _owners[224] = {};
 
     void _page_fault(processor::idt::isr_context context, uint64_t)
     {
@@ -69,22 +71,25 @@ void processor::initialize_exceptions()
 
 void processor::handle(processor::idt::isr_context context)
 {
-    if (context.number >= 32)
-    {
-        get_lapic()->eoi(context.number);
-    }
-
     uint64_t c = _contexts[context.number];
     _handler handler = _handlers[context.number];
 
     if (handler)
     {
         handler(context, _contexts[c]);
-
-        return;
     }
 
-    if (context.number < 32 && (context.cs & 3) == 0)
+    if (context.number >= 32)
+    {
+        if (_owners[context.number - 32])
+        {
+            _owners[context.number - 32]->mask_vector(context.number);
+        }
+
+        get_lapic()->eoi(context.number);
+    }
+
+    else if ((context.cs & 3) == 0 && !handler)
     {
         PANICEX("Unhandled CPU exception.", [&]
         {
@@ -95,13 +100,13 @@ void processor::handle(processor::idt::isr_context context)
     }
 }
 
-uint8_t processor::allocate_isr(uint8_t priority)
+uint8_t processor::allocate_isr(uint8_t priority, devices::device * owner)
 {
     uint8_t i = 1;
-    return allocate_isr(priority, i);
+    return allocate_isr(priority, i, owner);
 }
 
-uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
+uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count, devices::device * owner)
 {
     screen::debug("\nTrying to allocate ", count, " interrupt vector", count != 1 ? "s" : "", " at priority ", priority);
 
@@ -131,6 +136,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
             for (uint8_t i = 0; i < count; ++i)
             {
                 _vector_allocated[ret + i] = true;
+                _owners[ret + i] = owner;
             }
 
             screen::debug("\nAllocated ", count, " interrupt vector", count != 1 ? "s starting" : "", " at ", ret + 32);
@@ -162,6 +168,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count)
             for (uint8_t i = 0; i < count; ++i)
             {
                 _vector_allocated[ret + i] = true;
+                _owners[ret + i] = owner;
             }
 
             screen::debug("\nAllocated ", count, " interrupt vector", count != 1 ? "s starting" : "", " at ", ret + 32);
@@ -195,6 +202,7 @@ void processor::free_isr(uint8_t number)
     }
 
     _vector_allocated[number - 32] = false;
+    _owners[number - 32] = nullptr;
 }
 
 void processor::register_handler(uint8_t number, _handler handler, uint64_t context)
