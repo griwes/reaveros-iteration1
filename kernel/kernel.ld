@@ -14,6 +14,11 @@ SECTIONS
     {
         *(.rodata*)
         *(.gnu.linkonce.r*)
+
+        . = ALIGN(0x1000);
+        start_ctors = .;
+        *(SORT(.ctors*))
+        end_ctors = .;
     }
 
     .data ALIGN (0x1000) :

@@ -26,7 +26,32 @@ bits    64
 
 extern  kernel_main
 
+extern  start_ctors
+extern  end_ctors
+
 global  entry
 
 entry:
+    push    rax
+    push    rbx
+    push    rcx
+
+    mov     rbx, qword start_ctors
+    mov     rcx, qword end_ctors
+    jmp     .loop
+
+    .call:
+        xchg    bx, bx
+
+        call    [rbx]
+        add     rbx, 8
+
+    .loop:
+        cmp     rbx, rcx
+        jge     .call
+
+    pop     rcx
+    pop     rbx
+    pop     rax
+
     call    kernel_main
