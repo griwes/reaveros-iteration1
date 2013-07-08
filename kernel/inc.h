@@ -26,6 +26,8 @@
 #define dbg asm volatile ("xchg %bx, %bx")
 #define CLI asm volatile ("cli")
 #define STI asm volatile ("sti")
+#define likely(x) __builtin_expect((x), 1)
+#define unlikely(x) __builtin_expect((x), 0)
 
 #include <cstdint>
 #include <cstddef>
