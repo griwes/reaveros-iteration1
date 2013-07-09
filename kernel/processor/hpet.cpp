@@ -131,12 +131,12 @@ void processor::hpet::timer::cancel(uint64_t)
     NEVER;
 }
 
-processor::hpet::comparator::comparator() : real_timer{ false, 0 }, _parent{}
+processor::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0 }, _parent{}
 {
 }
 
-processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ true, parent->_minimal_tick },
-    _parent{ parent }, _index{ index }
+processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ capabilities::dynamic,
+    parent->_minimal_tick }, _parent{ parent }, _index{ index }
 {
     if (_parent->_register(_timer_configuration(_index)) & (1 << 15))
     {

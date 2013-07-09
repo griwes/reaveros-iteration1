@@ -26,8 +26,8 @@
 #define dbg asm volatile ("xchg %bx, %bx")
 #define CLI asm volatile ("cli")
 #define STI asm volatile ("sti")
-#define likely(x) __builtin_expect((x), 1)
-#define unlikely(x) __builtin_expect((x), 0)
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 #include <cstdint>
 #include <cstddef>
@@ -120,7 +120,7 @@ T * allocate_chained(uint64_t physical = 0)
             memory::vm::map_multiple(address, address + sizeof(T));
         }
 
-        return new ((void *)address) T{};
+        return ::new ((void *)address) T{};
     }
 
     T * address = (T *)memory::vm::allocate_address_range(4096);
@@ -128,7 +128,7 @@ T * allocate_chained(uint64_t physical = 0)
 
     for (uint64_t i = 0; i < 4096 / sizeof(T); ++i)
     {
-        new (address + i) T{};
+        ::new (address + i) T{};
         address[i].prev = (i != 0 ? address + i - 1 : nullptr);
         address[i].next = (i != 4096 / sizeof(T) - 1 ? address + i + 1 : nullptr);
     }

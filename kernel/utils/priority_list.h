@@ -96,7 +96,7 @@ namespace utils
             {
                 T * current = _first->next;
 
-                while (_comp(*n, current))
+                while (_comp(*n, *current))
                 {
                     current = current->next;
                 }
@@ -163,7 +163,7 @@ namespace utils
 
             T * current = _first;
 
-            while (current && !c(current))
+            while (current && !c(*current))
             {
                 current = current->next;
             }
@@ -187,13 +187,18 @@ namespace utils
             current->prev = nullptr;
 
             T ret = std::move(*current);
-            delete (_allocator) current;
+            T::operator delete(current, _allocator);
             return ret;
         }
 
         T remove(const T & r)
         {
             return remove([&](const T & ref){ return r == ref; });
+        }
+
+        const T * top()
+        {
+            return _first;
         }
 
         T pop()
@@ -220,7 +225,7 @@ namespace utils
             first->next = nullptr;
 
             T ret = std::move(*_first);
-            delete (_allocator) _first;
+            T::operator delete(_first, _allocator);
             return ret;
         }
 

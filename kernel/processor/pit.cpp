@@ -50,7 +50,7 @@ bool processor::pit::ready()
     return _pit;
 }
 
-processor::pit::timer::timer() : real_timer{ true, 200000 }, _int_vector{}
+processor::pit::timer::timer() : real_timer{ capabilities::dynamic, 200000 }, _int_vector{}
 {
     _int_vector = allocate_isr(0);
     register_handler(_int_vector, _detail::_pit_handler, (uint64_t)this);

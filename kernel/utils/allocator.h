@@ -43,6 +43,8 @@ namespace utils
             INTL();
             LOCK(_lock);
 
+            T * ret;
+
             if (unlikely(!_free_count))
             {
                 _free = allocate_chained<T>();
@@ -51,20 +53,22 @@ namespace utils
 
             if (unlikely(_free_count == 1))
             {
-                auto ret = _free;
+                ret = _free;
                 _free = nullptr;
                 _free_count = 0;
             }
 
             else
             {
-                auto ret = _free->next;
+                ret = _free->next;
 
                 if (likely(ret->next))
                 {
                     ret->next->prev = _free;
                 }
             }
+
+            return ret;
         }
 
         void free(T * ptr)
@@ -144,7 +148,7 @@ namespace utils
 
         void operator delete(void * ptr, allocator<T> & a)
         {
-            a.free(ptr);
+            a.free((T *)ptr);
         }
 
         void * operator new[](uint64_t) = delete;
