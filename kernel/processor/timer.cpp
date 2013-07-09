@@ -112,9 +112,15 @@ void processor::real_timer::cancel(uint64_t id)
     INTL();
     LOCK(_lock);
 
-    PANICEX("Tried to cancel a not active timer.", [&]{
-        screen::print("Timer id: ", id);
-    });
+    bool success = true;
+    _list.remove([&](const timer_description & desc){ return desc.id == id; });
+
+    if (!success)
+    {
+        PANICEX("Tried to cancel a not active timer.", [&]{
+            screen::print("Timer id: ", id);
+        });
+    }
 }
 
 void processor::real_timer::_handle(processor::idt::isr_context isrc)

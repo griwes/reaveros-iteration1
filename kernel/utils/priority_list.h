@@ -149,14 +149,15 @@ namespace utils
         }
 
         template<typename EqualCompare>
-        T remove(const EqualCompare & c)
+        T remove(const EqualCompare & c, bool & success)
         {
             INTL();
             LOCK(_lock);
 
             if (unlikely(!_size))
             {
-                PANIC("Tried to remove from empty priority list.");
+                success = false;
+                return {};
             }
 
             --_size;
@@ -170,7 +171,8 @@ namespace utils
 
             if (unlikely(!current))
             {
-                PANIC("Tried to remove non-existing element from priority list.");
+                success = false;
+                return {};
             }
 
             if (current->prev)
@@ -191,9 +193,61 @@ namespace utils
             return ret;
         }
 
+        template<typename EqualCompare>
+        T remove(const EqualCompare & c)
+        {
+            bool success = true;
+            auto ret = remove(c, success);
+
+            if (!success)
+            {
+                PANIC("Tried to remove non-existing element from priority list.");
+            }
+
+            return ret;
+        }
+
         T remove(const T & r)
         {
             return remove([&](const T & ref){ return r == ref; });
+        }
+
+        template<typename EqualCompare>
+        const T * find(const EqualCompare & c)
+        {
+            if (unlikely(!_size))
+            {
+                return nullptr;
+            }
+
+            if (unlikely(c(*_first)))
+            {
+                return _first;
+            }
+
+            if (unlikely(c(*_last)))
+            {
+                return _last;
+            }
+
+            if (unlikely(_size <= 1))
+            {
+                return nullptr;
+            }
+
+            T * current = _first->next;
+
+            while (current && !c(*current))
+            {
+                current = current->next;
+            }
+
+            return current;
+        }
+
+        const T * find(const T & r)
+        {
+            return find([&](const T & ref){ return r == ref; });
         }
 
         const T * top()
