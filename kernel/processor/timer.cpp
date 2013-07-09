@@ -113,7 +113,7 @@ void processor::real_timer::cancel(uint64_t id)
     LOCK(_lock);
 
     bool success = true;
-    _list.remove([&](const timer_description & desc){ return desc.id == id; });
+    _list.remove([&](const timer_description & desc){ return desc.id == id; }, success);
 
     if (!success)
     {
