@@ -5,7 +5,7 @@ CFLAGS=$(CFL) -c -Wall -Wextra -pedantic -Werror -nostdlib -fno-exceptions -fno-
 		-mcmodel=kernel -Wno-unused-variable -Wno-unused-parameter -MD -Wno-unused-private-field -ftemplate-depth-512 \
 		-target x86_64-none-elf -Wno-unused-function
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
-SOURCES=$(shell find . -name "*.cpp")
+SOURCES=$(shell find . -name "*.cpp" -and -not -name "main.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=builds/kernel.img
 
@@ -16,7 +16,8 @@ $(EXECUTABLE): $(OBJECTS)
 	yasm -f elf64 -o processor/asm.o processor/processor.asm
 	yasm -f elf64 -o processor/trampoline.o processor/trampoline.asm
 	yasm -f elf64 -o memory/stackmove.o memory/stackmove.asm
-	$(LD) $(LDFLAGS) entry.o processor/asm.o processor/trampoline.o memory/stackmove.o $(OBJECTS) -o $@
+	$(CC) $(CFLAGS) main.cpp -o main.o -I. -include inc.h
+	$(LD) $(LDFLAGS) entry.o processor/asm.o processor/trampoline.o memory/stackmove.o main.o $(OBJECTS) -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@ -I. -include inc.h
