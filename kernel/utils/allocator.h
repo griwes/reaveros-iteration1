@@ -29,10 +29,15 @@
 
 namespace utils
 {
+    template<typename>
+    class chained;
+
     template<typename T>
     class allocator
     {
     public:
+        static_assert(std::is_base_of<chained<T>, T>::value, "template parameter of utils::allocator must be chained.");
+
         T * allocate()
         {
             INTL();
