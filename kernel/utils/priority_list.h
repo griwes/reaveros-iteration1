@@ -73,17 +73,26 @@ namespace utils
 
             else
             {
-                T * current = _first->next;
+                T * current = _first;
 
-                while (_comp(*n, *current))
+                while (current->next && _comp(*n, *current))
                 {
                     current = current->next;
                 }
 
-                current->prev->next = n;
-                n->prev = current->prev->next;
-                current->prev = n;
-                n->next = current;
+                if (current->next)
+                {
+                    current->prev->next = n;
+                    n->prev = current->prev->next;
+                    current->prev = n;
+                    n->next = current;
+                }
+
+                else
+                {
+                    current->next = n;
+                    n->prev = current;
+                }
             }
         }
 
