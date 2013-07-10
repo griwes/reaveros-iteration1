@@ -26,6 +26,7 @@
 #pragma once
 
 #include <utils/allocator.h>
+#include <screen/screen.h>
 
 namespace utils
 {
@@ -75,24 +76,15 @@ namespace utils
             {
                 T * current = _first;
 
-                while (current->next && _comp(*n, *current))
+                while (_comp(*n, *current))
                 {
                     current = current->next;
                 }
 
-                if (current->next)
-                {
-                    current->prev->next = n;
-                    n->prev = current->prev->next;
-                    current->prev = n;
-                    n->next = current;
-                }
-
-                else
-                {
-                    current->next = n;
-                    n->prev = current;
-                }
+                n->prev = current;
+                n->next = current->next;
+                current->next->prev = n;
+                current->next = n;
             }
         }
 
@@ -109,7 +101,14 @@ namespace utils
         template<typename EqualCompare, typename Update>
         void update(const EqualCompare & c, const Update & u)
         {
-            T v = remove(c);
+            bool success = true;
+            T v = remove(c, success);
+
+            if (!success)
+            {
+                return;
+            }
+
             u(v);
             insert(v);
         }
@@ -168,9 +167,19 @@ namespace utils
                 current->prev->next = current->next;
             }
 
+            else
+            {
+                _first = current->next;
+            }
+
             if (current->next)
             {
                 current->next->prev = current->prev;
+            }
+
+            else
+            {
+                _last = current->prev;
             }
 
             current->next = nullptr;
@@ -263,11 +272,16 @@ namespace utils
                 _first->prev = nullptr;
             }
 
+            if (!_size)
+            {
+                _last = nullptr;
+            }
+
             first->prev = nullptr;
             first->next = nullptr;
 
-            T ret = std::move(*_first);
-            T::operator delete(_first, _allocator);
+            T ret = std::move(*first);
+            T::operator delete(first, _allocator);
             return ret;
         }
 

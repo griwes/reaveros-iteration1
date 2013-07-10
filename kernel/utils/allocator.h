@@ -51,22 +51,8 @@ namespace utils
                 _free_count = 4096 > sizeof(T) ? 4096 / sizeof(T) : 1;
             }
 
-            if (unlikely(_free_count == 1))
-            {
-                ret = _free;
-                _free = nullptr;
-                _free_count = 0;
-            }
-
-            else
-            {
-                ret = _free->next;
-
-                if (likely(ret->next))
-                {
-                    ret->next->prev = _free;
-                }
-            }
+            ret = _free;
+            _free = _free->next;
 
             return ret;
         }

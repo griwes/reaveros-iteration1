@@ -88,6 +88,8 @@ processor::timer_event_handle processor::real_timer::one_shot(uint64_t time, pro
         _is_periodic = false;
     }
 
+    _update_now();
+
     time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
 
@@ -121,6 +123,8 @@ processor::timer_event_handle processor::real_timer::periodic(uint64_t period, p
     _list.insert(desc);
 
     _usage += 100;
+
+    _update_now();
 
     uint64_t time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
@@ -164,6 +168,8 @@ void processor::real_timer::cancel(uint64_t id)
     {
         --_usage;
     }
+
+    _update_now();
 
     uint64_t time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
@@ -224,9 +230,7 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
         while (_list.top()->time_point <= _now)
         {
             _list.top()->handler(isrc, _list.top()->handler_parameter);
-            uint64_t id = _list.top()->id;
-            _list.update([=](timer_description & ref){ return ref.id == id; }, [](timer_description & desc)
-                { dbg; desc.time_point += desc.period; });
+            _list.update([=](timer_description & ref){ return true; }, [](timer_description & desc){ desc.time_point += desc.period; });
         }
 
         return;
@@ -247,6 +251,8 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
         {
             --_usage;
         }
+
+        _update_now();
     }
 
     if (_list.size() == 0)

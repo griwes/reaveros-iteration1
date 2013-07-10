@@ -54,6 +54,10 @@ namespace processor
 
     struct timer_description : public utils::chained<timer_description>
     {
+        timer_description() : prev{}, next{}, id{}, handler{}, handler_parameter{}, periodic{}, time_point{}, period{}
+        {
+        }
+
         timer_description * prev;
         timer_description * next;
         uint64_t id;
@@ -68,7 +72,7 @@ namespace processor
     {
         bool operator()(const timer_description & lhs, const timer_description & rhs)
         {
-            return lhs.time_point < rhs.time_point;
+            return lhs.time_point <= rhs.time_point;
         }
     };
 
@@ -99,6 +103,7 @@ namespace processor
     protected:
         virtual void _one_shot(uint64_t) = 0;
         virtual void _periodic(uint64_t) = 0;
+        virtual void _update_now() = 0;
 
         void _handle(idt::isr_context);
 

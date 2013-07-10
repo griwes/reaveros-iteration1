@@ -74,8 +74,8 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::done();
 */
     processor::get_high_precision_timer()->one_shot(10_s, foo);
-    processor::get_high_precision_timer()->one_shot(5_s, bar);
     processor::get_high_precision_timer()->periodic(2500_ms, baz);
+    processor::get_high_precision_timer()->one_shot(5_s, bar);
     STI;
 
     for (;;) ;
