@@ -74,9 +74,9 @@ bool processor::hpet::ready()
 }
 
 processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size,
-    uint8_t comparators, uint16_t minimal_tick, uint8_t page_protection) : _number{ number }, _pci_vendor{ pci_vendor.vendor },
-    _size{ (uint8_t)(32 + 32 * counter_size) }, _comparator_count{ comparators }, _minimal_tick{ minimal_tick },
-    _page_protection{ page_protection }, _register{ address }
+    uint8_t comparators, uint16_t minimal_tick, uint8_t page_protection) : _number{ number }, _size{ (uint8_t)(32 + 32 * counter_size) },
+    _comparator_count{ comparators }, _page_protection{ page_protection }, _pci_vendor{ pci_vendor.vendor }, _minimal_tick{
+    minimal_tick }, _register{ address }
 {
     _register(_general_configuration, _register(_general_configuration) | 1);
 

@@ -461,9 +461,11 @@ void acpi::parse_hpet(processor::hpet::timer *& timers, uint64_t & timers_num)
     uint64_t mmio = memory::vm::allocate_address_range(4096);
     memory::vm::map(mmio, table->address.address);
 
+    screen::debug("\n", sizeof(processor::hpet::timer));
+
     timers_num = 1;
     uint64_t address = memory::vm::allocate_address_range(sizeof(processor::hpet::timer));
-    memory::vm::map(address);
+    memory::vm::map_multiple(address, address + sizeof(processor::hpet::timer));
     timers = new ((void *)address) processor::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio,
         table->counter_size, (uint8_t)(table->comparator_count + 1), table->minimum_tick, table->page_protection };
 

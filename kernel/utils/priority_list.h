@@ -29,27 +29,6 @@
 
 namespace utils
 {
-    namespace _detail
-    {
-        template<typename T, typename Comparator>
-        class _equality_wrapper
-        {
-        public:
-            _equality_wrapper(const T & rhs) : _c{}, _rhs{ rhs }
-            {
-            }
-
-            bool operator()(const T & lhs)
-            {
-                return !_c(lhs, _rhs) && !_c(_rhs, lhs);
-            }
-
-        private:
-            Comparator _c;
-            const T & _rhs;
-        };
-    }
-
     template<typename T, typename Comparator>
     class priority_list
     {

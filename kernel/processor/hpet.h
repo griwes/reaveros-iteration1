@@ -76,11 +76,11 @@ namespace processor
 
         private:
             uint8_t _number;
-            pci_vendor_t _pci_vendor;
             uint8_t _size;
             uint8_t _comparator_count;
-            uint16_t _minimal_tick;
             uint8_t _page_protection;
+            pci_vendor_t _pci_vendor;
+            uint16_t _minimal_tick;
 
             uint64_t _frequency;
 
