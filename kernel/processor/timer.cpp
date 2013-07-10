@@ -130,10 +130,20 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
     if (unlikely(_cap == capabilities::fixed_frequency))
     {
         _now += _minimal_tick;
+
+        if (unlikely(!_list.size()))
+        {
+            return;
+        }
     }
 
     else
     {
+        if (unlikely(!_list.size()))
+        {
+            PANIC("Unexpected timer interrupt; timer list is empty.");
+        }
+
         _now += _list.top()->time_point;
     }
 

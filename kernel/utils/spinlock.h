@@ -34,6 +34,10 @@ namespace utils
     class spinlock
     {
     public:
+        spinlock() : _lock{ false }
+        {
+        }
+
         void lock()
         {
             while (_lock.exchange(true))
