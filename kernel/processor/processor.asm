@@ -61,6 +61,12 @@ x2apic_capable:
 
     mov     rax, 0
 
+    pop     rdx
+    pop     rcx
+    pop     rbx
+
+    ret
+
     .x2apic:
         mov     rax, 1
 
