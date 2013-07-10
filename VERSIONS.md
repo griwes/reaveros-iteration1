@@ -22,7 +22,7 @@ manager with inter-core balancing
 
 ## Release #2: Thornbirth
 
- * 0.4.x dev - Thornbirth early development, mostly unusable
+ * 0.4.x dev - Thornbirth early development
  * 0.5.x alpha - Thornbirth alpha
  * 0.6.x beta - Thornbirth beta
  * 0.7.x - Thornbirth stable

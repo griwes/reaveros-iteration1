@@ -35,24 +35,38 @@ namespace
     processor::x2apic _x2apic;
 
     processor::lapic * _lapic = nullptr;
+    bool _x2apic_enabled = false;
 }
 
 void processor::lapic::initialize()
 {
-    if (x2apic_capable() && false)
+    if (x2apic_capable() && (remapping::enabled() || initial_id() < 256))
     {
         screen::debug("\nInitializing x2APIC...");
         _lapic = new (&_x2apic) x2apic;
+
+        _x2apic_enabled = true;
+    }
+
+    else if (!x2apic_capable())
+    {
+        screen::debug("\nInitializing xAPIC...");
+        _lapic = new (&_xapic) xapic;
     }
 
     else
     {
-        screen::debug("\nInitializing xAPIC...");
-        _lapic = new (&_xapic) xapic;
+        PANIC("Interrupt remapping has not been enabled, but BSP APIC ID >= 256. Please file a bug report with full"
+            "specification of your machine.");
     }
 }
 
 processor::lapic * processor::get_lapic()
 {
     return _lapic;
+}
+
+bool processor::x2apic_enabled()
+{
+    return _x2apic_enabled;
 }

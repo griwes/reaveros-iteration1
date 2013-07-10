@@ -183,11 +183,6 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count, devices::devi
         return allocate_isr(priority, count);
     }
 
-//    if (!processor::spawned_per_processor_interupts())
-//    {
-//        processor::spawn_per_processor_interrupts();
-//    }
-
     PANIC("Interrupt allocation failed. TODO: implement and uncomment above functions.");
 }
 

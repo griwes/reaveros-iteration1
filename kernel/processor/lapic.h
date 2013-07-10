@@ -33,6 +33,15 @@ namespace processor
     }
 
     extern "C" bool x2apic_capable();
+    bool x2apic_enabled();
+
+    namespace remapping
+    {
+        inline bool enabled()
+        {
+            return false;
+        }
+    }
 
     class lapic
     {

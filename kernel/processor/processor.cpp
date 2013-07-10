@@ -81,14 +81,16 @@ void processor::initialize()
 
     acpi::initialize();
 
+//    remapping::initialize();
+
     acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
+    lapic::initialize();
 
     for (uint64_t i = 0; i < _num_ioapics; ++i)
     {
         _ioapics[i].initialize();
     }
 
-    lapic::initialize();
     hpet::initialize();
 
     if (!hpet::ready())

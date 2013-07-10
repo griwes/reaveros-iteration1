@@ -29,6 +29,7 @@
 #include <processor/interrupt_entry.h>
 #include <processor/processor.h>
 #include <screen/screen.h>
+#include <processor/lapic.h>
 
 namespace processor
 {
@@ -100,11 +101,31 @@ namespace processor
             }
 
             uint64_t ioreg = local_input;
-            ioreg |= 1 << 11;
             ioreg |= low << 13;
             ioreg |= level << 15;
-            ioreg |= 0xFFull << 56;
-            ioreg |= 1 << 8;
+
+            if (x2apic_enabled())
+            {
+                if (remapping::enabled())
+                {
+                    TODO;
+                }
+
+                else
+                {
+                    // uint64_t target_cpu = get_cpu_for_interrupt();
+                    uint64_t target_cpu = initial_id();
+
+                    ioreg |= target_cpu << 56;
+                }
+            }
+
+            else
+            {
+                ioreg |= 1 << 11;
+                ioreg |= 0xFFull << 56;
+                ioreg |= 1 << 8;
+            }
 
             _write_register(0x10 + processor::translate_isa(input) * 2, ioreg & 0xFFFFFFFF);
             _write_register(0x10 + processor::translate_isa(input) * 2 + 1, (ioreg >> 32) & 0xFFFFFFFF);
