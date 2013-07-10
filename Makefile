@@ -8,8 +8,7 @@ bochs:
 	cd builds && bochs -q
 
 qemu:
-	qemu-system-x86_64 -smp 4,cores=4 -monitor stdio -m 2048 -parallel file:/dev/stdout -hda builds/hdd.img
-
+	qemu-system-x86_64 -smp 4,cores=4 -monitor stdio -m 2048 -parallel file:/dev/stdout -hda builds/hdd.img -enable-kvm
 uefi-qemu:
 	cd builds/efi && qemu-system-x86_64 -L . -bios OVMF.fd -m 2048 -cpu kvm64 -hda efidisk.hdd -enable-kvm
 

@@ -26,6 +26,7 @@
 #define dbg asm volatile ("xchg %bx, %bx")
 #define CLI asm volatile ("cli" ::: "memory")
 #define STI asm volatile ("sti" ::: "memory")
+#define HLT asm volatile ("hlt" ::: "memory")
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 

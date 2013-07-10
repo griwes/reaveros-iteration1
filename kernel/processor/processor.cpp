@@ -91,7 +91,7 @@ void processor::initialize()
         _ioapics[i].initialize();
     }
 
-    hpet::initialize();
+//    hpet::initialize();
 
     if (!hpet::ready())
     {

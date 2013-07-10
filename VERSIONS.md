@@ -5,8 +5,8 @@
  * 0.0.x dev - Cotyledon early development, mostly unusable
   * 0.0.1 - AP booting mostly done; *finished on 14.02.2013*
   * 0.0.2 - **current work in progress** - rewriting some major parts of the code
-  * 0.0.3 - functioning timers using IOAPIC in xAPIC mode
-  * 0.0.4 - interrupt remapping, functioning timers using IOAPIC in x2APIC mode, functioning HPET in FSB mode
+  * 0.0.3 - functioning timers using IOAPIC
+  * 0.0.4 - interrupt remapping, functioning HPET in FSB mode
   * 0.0.5 - AP booting, working inter-core synchronizations and communications, including well tested physical memory
 manager with inter-core balancing
   * 0.0.6 - basic SMP scheduler with single scheduling policy
