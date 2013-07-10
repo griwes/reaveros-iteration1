@@ -83,6 +83,21 @@ processor::timer_event_handle processor::real_timer::one_shot(uint64_t time, pro
 
     ++_usage;
 
+    if (_is_periodic)
+    {
+        _is_periodic = false;
+    }
+
+    if (_cap == capabilities::dynamic || _cap == capabilities::one_shot_capable)
+    {
+        _one_shot(_list.top()->time_point - _now);
+    }
+
+    else if (_cap == capabilities::periodic_capable)
+    {
+        _periodic(_list.top()->time_point - _now);
+    }
+
     return { this, desc.id };
 }
 
@@ -104,6 +119,18 @@ processor::timer_event_handle processor::real_timer::periodic(uint64_t period, p
 
     _usage += 100;
 
+    if (_list.size() == 1 && (_cap == capabilities::dynamic || _cap == capabilities::periodic_capable))
+    {
+        _is_periodic = true;
+        _periodic(_list.top()->time_point - _now);
+    }
+
+    else
+    {
+        _is_periodic = false;
+        _one_shot(_list.top()->time_point - _now);
+    }
+
     return { this, desc.id };
 }
 
@@ -113,13 +140,37 @@ void processor::real_timer::cancel(uint64_t id)
     LOCK(_lock);
 
     bool success = true;
-    _list.remove([&](const timer_description & desc){ return desc.id == id; }, success);
+    auto t = _list.remove([&](const timer_description & desc){ return desc.id == id; }, success);
 
     if (!success)
     {
         PANICEX("Tried to cancel a not active timer.", [&]{
             screen::print("Timer id: ", id);
         });
+    }
+
+    if (t.periodic)
+    {
+        _usage -= 100;
+    }
+
+    else
+    {
+        --_usage;
+    }
+
+    if ((_cap == capabilities::dynamic || _cap == capabilities::periodic_capable) && _list.size() == 1 && _list.top()->periodic)
+    {
+        _is_periodic = true;
+        _periodic(_list.top()->time_point - _now);
+    }
+
+    if (!_is_periodic && (_cap == capabilities::dynamic || _cap == capabilities::one_shot_capable) && _list.size())
+    {
+        if (_list.top()->time_point > t.time_point)
+        {
+            _one_shot(_list.top()->time_point - _now);
+        }
     }
 }
 
@@ -170,6 +221,19 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
         {
             --_usage;
         }
+    }
+
+    if (_list.size() == 0)
+    {
+        return;
+    }
+
+    if ((_cap == capabilities::dynamic || _cap == capabilities::periodic_capable) && _list.size() == 1 && _list.top()->periodic)
+    {
+        _is_periodic = true;
+        _periodic(_list.top()->time_point - _now);
+
+        return;
     }
 
     switch (_cap)
