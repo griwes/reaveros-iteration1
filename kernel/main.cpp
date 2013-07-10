@@ -27,6 +27,23 @@
 #include <memory/vm.h>
 #include <memory/pmm.h>
 #include <screen/screen.h>
+#include "processor/timer.h"
+#include "processor/idt.h"
+
+void foo(processor::idt::isr_context, uint64_t)
+{
+    screen::print("\none shot 10s");
+}
+
+void bar(processor::idt::isr_context, uint64_t)
+{
+    screen::print("\none shot 5s");
+}
+
+void baz(processor::idt::isr_context, uint64_t)
+{
+    screen::print("\nperiodic 2.5s");
+}
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
@@ -56,6 +73,11 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     scheduler::initialize();
     screen::done();
 */
+    processor::get_high_precision_timer()->one_shot(10_s, foo);
+    processor::get_high_precision_timer()->one_shot(5_s, bar);
+    processor::get_high_precision_timer()->periodic(2500_ms, baz);
+    STI;
+
     for (;;) ;
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");

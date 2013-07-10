@@ -83,7 +83,7 @@ namespace processor
             dynamic
         };
 
-        real_timer(capabilities, uint64_t);
+        real_timer(capabilities, uint64_t, uint64_t);
 
         virtual ~real_timer() {}
 
@@ -107,6 +107,7 @@ namespace processor
         bool _is_periodic;
         uint64_t _usage;
         uint64_t _minimal_tick;
+        uint64_t _maximal_tick;
 
         uint64_t _now;
 
@@ -128,8 +129,8 @@ namespace processor
     static_assert(4096 % sizeof(timer_description) == 0, "Invalid size of timer description.");
 
     void set_high_precision_timer(timer *);
-    void set_scheduling_timer(timer *);
+    void set_preemption_timer(timer *);
 
     timer * get_high_precision_timer();
-    timer * get_scheduling_timer();
+    timer * get_preemption_timer();
 }

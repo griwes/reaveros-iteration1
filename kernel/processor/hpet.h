@@ -81,6 +81,7 @@ namespace processor
             uint8_t _page_protection;
             pci_vendor_t _pci_vendor;
             uint16_t _minimal_tick;
+            uint64_t _maximal_tick;
 
             uint64_t _frequency;
 

@@ -88,6 +88,16 @@ processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t 
     uint64_t period = _register(_general_capabilities) >> 32;
     _frequency = 1000000000000000ull / period;
 
+    if (_size == 32)
+    {
+        _maximal_tick = _size * period;
+    }
+
+    else
+    {
+        _maximal_tick = -1;
+    }
+
     screen::debug("\nDetected HPET counter period: ", period);
     screen::debug("\nDetected HPET counter frequency: ", _frequency);
 }
@@ -131,12 +141,12 @@ void processor::hpet::timer::cancel(uint64_t)
     NEVER;
 }
 
-processor::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0 }, _parent{}
+processor::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0, 0 }, _parent{}
 {
 }
 
 processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ capabilities::dynamic,
-    parent->_minimal_tick }, _parent{ parent }, _index{ index }
+    parent->_minimal_tick, parent->_maximal_tick }, _parent{ parent }, _index{ index }
 {
     if (_parent->_register(_timer_configuration(_index)) & (1 << 15))
     {

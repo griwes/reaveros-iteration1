@@ -49,12 +49,12 @@ bool processor::pit::ready()
     return _pit;
 }
 
-processor::pit::timer::timer() : real_timer{ capabilities::dynamic, 200000 }, _int_vector{}
+processor::pit::timer::timer() : real_timer{ capabilities::dynamic, 2_ms, 1_s / 19 }, _int_vector{}
 {
     _int_vector = allocate_isr(0);
     register_handler(_int_vector, _init_handler, (uint64_t)this);
 
-    _one_shot(200000);
+    _one_shot(2_ms);
     set_isa_irq_int_vector(0, _int_vector);
 
     STI;
@@ -64,7 +64,7 @@ processor::pit::timer::timer() : real_timer{ capabilities::dynamic, 200000 }, _i
     unregister_handler(_int_vector);
     register_handler(_int_vector, _detail::_pit_handler, (uint64_t)this);
 
-    screen::debug("\nPIT handler installed successfully, PIT state clean");
+    screen::debug("\nPIT handler installed successfully");
 }
 
 void processor::pit::timer::_init_handler(processor::idt::isr_context , uint64_t context)
@@ -73,22 +73,31 @@ void processor::pit::timer::_init_handler(processor::idt::isr_context , uint64_t
 
 void processor::pit::timer::_one_shot(uint64_t time)
 {
-    uint64_t hz = 1000000000 / time;
-    uint16_t divisor = 1193180 / hz;
+    if (time >= 1_s / 19)
+    {
+        time = 1_s / 19;
+    }
 
-    screen::debug("\nSetting PIT to one-shot; time = ", time, ", freq = ", hz, ", divisor = ", divisor);
+    uint64_t hz = 1000000000ull / time;
+    uint16_t divisor = 1193180 / hz;
 
     outb(0x43, 0x30);
 
     outb(0x40, (uint8_t)(divisor & 0xFF));
     outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
-
-    uint8_t tmp = inb(0x61) & 0xFE;
-    outb(0x61, tmp);
-    outb(0x61, tmp | 1);
 }
 
 void processor::pit::timer::_periodic(uint64_t period)
 {
-    TODO;
+    if (period >= 1_s / 19)
+    {
+        period = 1_s / 19;
+    }
+
+    uint64_t hz = 1000000000ull / period;
+    uint16_t divisor = 1193180 / hz;
+
+    outb(0x43, 0x34);
+    outb(0x40, (uint8_t)(divisor & 0xFF));
+    outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
 }
