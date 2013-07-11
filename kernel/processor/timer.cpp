@@ -251,14 +251,14 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
         {
             --_usage;
         }
-
-        _update_now();
     }
 
     if (_list.size() == 0)
     {
         return;
     }
+
+    _update_now();
 
     uint64_t time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;

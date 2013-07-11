@@ -49,12 +49,12 @@ bool processor::pit::ready()
     return _pit;
 }
 
-processor::pit::timer::timer() : real_timer{ capabilities::dynamic, 2_ms, 1_s / 19 }, _int_vector{}
+processor::pit::timer::timer() : real_timer{ capabilities::dynamic, 200_us, 1_s / 19 }, _int_vector{}
 {
     _int_vector = allocate_isr(0);
     register_handler(_int_vector, _init_handler, (uint64_t)this);
 
-    _one_shot(2_ms);
+    _one_shot(200_us);
     set_isa_irq_int_vector(0, _int_vector);
 
     STI;
@@ -100,4 +100,32 @@ void processor::pit::timer::_periodic(uint64_t period)
     outb(0x43, 0x34);
     outb(0x40, (uint8_t)(divisor & 0xFF));
     outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
+}
+
+void processor::pit::timer::_update_now()
+{
+    if (_list.size())
+    {
+        outb(0x43, 0);
+        uint16_t count = inb(0x40);
+        count |= inb(0x40) << 8;
+
+        uint64_t time = _list.top()->time_point - _now;
+
+        if (unlikely(time < 200_us))
+        {
+            time = 2_ms;
+        }
+
+        else if (unlikely(time > 1_s / 19))
+        {
+            time = 1_s / 19;
+        }
+
+        uint64_t hz = 1000000000ull / time;
+        uint16_t divisor = 1193180 / hz;
+        count = divisor - count;
+
+        _now += 838_ns * count;
+    }
 }

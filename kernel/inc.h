@@ -147,7 +147,7 @@ constexpr uint64_t operator "" _ms(unsigned long long milliseconds)
     return milliseconds * 1000 * 1000;
 }
 
-constexpr uint64_t operator "" _µs(unsigned long long microseconds)
+constexpr uint64_t operator "" _us(unsigned long long microseconds)
 {
     return microseconds * 1000;
 }

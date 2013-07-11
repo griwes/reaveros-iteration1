@@ -56,6 +56,7 @@ namespace processor
 
             virtual void _one_shot(uint64_t);
             virtual void _periodic(uint64_t);
+            virtual void _update_now();
 
             static void _init_handler(processor::idt::isr_context, uint64_t context);
 

@@ -54,6 +54,7 @@ namespace processor
         protected:
             virtual void _one_shot(uint64_t);
             virtual void _periodic(uint64_t);
+            virtual void _update_now();
 
         private:
             hpet::timer * _parent;

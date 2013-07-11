@@ -178,3 +178,8 @@ void processor::hpet::comparator::_periodic(uint64_t )
 {
 
 }
+
+void processor::hpet::comparator::_update_now()
+{
+
+}
