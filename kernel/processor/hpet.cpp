@@ -83,7 +83,7 @@ processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t 
     _comparator_count{ comparators }, _page_protection{ page_protection }, _pci_vendor{ pci_vendor.vendor }, _minimal_tick{
     minimal_tick }, _register{ address }
 {
-    _register(_general_configuration, _register(_general_configuration) | 1);
+    _register(_general_configuration, _register(_general_configuration) | 3);
 
     _period = _register(_general_capabilities) >> 32;
     _frequency = 1000000000000000ull / _period;
@@ -112,7 +112,11 @@ processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t 
     }
 
     _register(_main_counter, 0);
-    _register(_general_configuration, _register(_general_configuration) | 3);
+
+    _comparators[0].one_shot(1_us, [](idt::isr_context, uint64_t){});
+    STI;
+    HLT;
+    CLI;
 }
 
 processor::timer_event_handle processor::hpet::timer::one_shot(uint64_t time, processor::timer_handler handler, uint64_t param)
@@ -201,7 +205,7 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
         }
     }
 
-    for (uint8_t i = 16; i < 32 && i < max_ioapic_input() && possible_routes != ~(uint32_t)0; ++i)
+    for (uint8_t i = 0; i < 32 && i < max_ioapic_input() && possible_routes != ~(uint32_t)0; ++i)
     {
         if ((possible_routes & (1 << i)) && !(_used_interrupts & (1 << i)))
         {
@@ -225,13 +229,13 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
 
 void processor::hpet::comparator::_one_shot(uint64_t time)
 {
-    _parent->_register(_timer_configuration(_index), (_input << 9) | (1 << 2));
+    _parent->_register(_timer_configuration(_index), ((_input & 31) << 9) | (1 << 2));
     _parent->_register(_timer_comparator(_index), ((_now + time) * 1000000) / _parent->_period);
 }
 
 void processor::hpet::comparator::_periodic(uint64_t period)
 {
-    _parent->_register(_timer_configuration(_index), (_input << 9) | (1 << 2) | (1 << 3) | (1 << 6));
+    _parent->_register(_timer_configuration(_index), ((_input & 31) << 9) | (1 << 2) | (1 << 3) | (1 << 6));
     _parent->_register(_timer_comparator(_index), ((_now + period) * 1000000) / _parent->_period);
     _parent->_register(_timer_comparator(_index), (period * 1000000) / _parent->_period);
 }
