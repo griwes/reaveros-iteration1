@@ -92,6 +92,7 @@ processor::timer_event_handle processor::real_timer::one_shot(uint64_t time, pro
 
     time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
+    time = time < _maximal_tick ? time : _maximal_tick;
 
     if (_cap == capabilities::dynamic || _cap == capabilities::one_shot_capable)
     {
@@ -128,11 +129,11 @@ processor::timer_event_handle processor::real_timer::periodic(uint64_t period, p
 
     uint64_t time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
+    time = time < _maximal_tick ? time : _maximal_tick;
 
     if (_list.size() == 1 && (_cap == capabilities::dynamic || _cap == capabilities::periodic_capable))
     {
-        _is_periodic = true;
-        _periodic(time);
+        _one_shot(time);
     }
 
     else
@@ -260,17 +261,16 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
         return;
     }
 
+    if (!_is_periodic && _list.size() == 1 && _list.top()->periodic && (_cap == capabilities::dynamic || _cap
+        == capabilities::periodic_capable))
+    {
+        _is_periodic = true;
+        _periodic(_list.top()->period);
+    }
+
     uint64_t time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
     time = time < _maximal_tick ? time : _maximal_tick;
-
-    if ((_cap == capabilities::dynamic || _cap == capabilities::periodic_capable) && _list.size() == 1 && _list.top()->periodic)
-    {
-        _is_periodic = true;
-        _periodic(time);
-
-        return;
-    }
 
     switch (_cap)
     {

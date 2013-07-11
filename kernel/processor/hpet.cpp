@@ -205,14 +205,13 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
 void processor::hpet::comparator::_one_shot(uint64_t time)
 {
     _parent->_register(_timer_configuration(_index), 1 << 2);
-    _parent->_register(_timer_comparator(_index), (_now + time * 1000000) / _parent->_period);
+    _parent->_register(_timer_comparator(_index), ((_now + time) * 1000000) / _parent->_period);
 }
 
 void processor::hpet::comparator::_periodic(uint64_t period)
 {
-    _parent->_register(_timer_configuration(_index), (1 << 2) | (1 << 3));
-    _parent->_register(_timer_comparator(_index), (_now + period * 1000000) / _parent->_period);
     _parent->_register(_timer_configuration(_index), (1 << 2) | (1 << 3) | (1 << 6));
+    _parent->_register(_timer_comparator(_index), ((_now + period) * 1000000) / _parent->_period);
     _parent->_register(_timer_comparator(_index), (period * 1000000) / _parent->_period);
 }
 
