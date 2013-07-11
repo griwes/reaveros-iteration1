@@ -30,10 +30,10 @@
 #include <processor/idt.h>
 #include <acpi/acpi.h>
 #include <processor/ioapic.h>
-#include <processor/hpet.h>
+#include <time/hpet.h>
 #include <processor/handlers.h>
 #include <processor/lapic.h>
-#include <processor/pit.h>
+#include <time/pit.h>
 
 namespace
 {
@@ -98,16 +98,16 @@ void processor::initialize()
         }
     }
 
-    hpet::initialize();
+    time::hpet::initialize();
 
-    if (!hpet::ready())
+    if (!time::hpet::ready())
     {
-        pit::initialize();
+        time::pit::initialize();
     }
 
-/*    time::initialize();
+//    time::real::initialize();
 
-    lapic::initialize_timer();
+/*    lapic::initialize_timer();
     smp::boot(_cores + 1, _num_cores - 1);
 
     memory::drop_bootloader_mapping();

@@ -25,7 +25,7 @@
 
 #include <atomic>
 
-#include <processor/timer.h>
+#include <time/timer.h>
 #include <processor/idt.h>
 #include <screen/screen.h>
 
@@ -33,41 +33,41 @@ namespace
 {
     std::atomic<uint64_t> _id = { 0 };
 
-    processor::timer * _hp_timer = nullptr;
-    processor::timer * _preemption_timer = nullptr;
+    time::timer * _hp_timer = nullptr;
+    time::timer * _preemption_timer = nullptr;
 }
 
-uint64_t processor::allocate_timer_event_id()
+uint64_t time::allocate_timer_event_id()
 {
     return _id.fetch_add(1);
 }
 
-void processor::set_high_precision_timer(processor::timer * t)
+void time::set_high_precision_timer(time::timer * t)
 {
     _hp_timer = t;
 }
 
-void processor::set_preemption_timer(processor::timer * t)
+void time::set_preemption_timer(time::timer * t)
 {
     _preemption_timer = t;
 }
 
-processor::timer * processor::get_high_precision_timer()
+time::timer * time::get_high_precision_timer()
 {
     return _hp_timer;
 }
 
-processor::timer * processor::get_preemption_timer()
+time::timer * time::get_preemption_timer()
 {
     return _preemption_timer;
 }
 
-processor::real_timer::real_timer(capabilities caps, uint64_t minimal_tick, uint64_t maximal_tick) : _cap{ caps },
+time::real_timer::real_timer(capabilities caps, uint64_t minimal_tick, uint64_t maximal_tick) : _cap{ caps },
     _is_periodic{}, _usage{}, _minimal_tick{ minimal_tick }, _maximal_tick{ maximal_tick }, _now{}
 {
 }
 
-processor::timer_event_handle processor::real_timer::one_shot(uint64_t time, processor::timer_handler handler, uint64_t context)
+time::timer_event_handle time::real_timer::one_shot(uint64_t time, time::timer_handler handler, uint64_t context)
 {
     INTL();
     LOCK(_lock);
@@ -76,7 +76,7 @@ processor::timer_event_handle processor::real_timer::one_shot(uint64_t time, pro
 
     timer_description desc;
 
-    desc.id = processor::allocate_timer_event_id();
+    desc.id = time::allocate_timer_event_id();
     desc.handler = handler;
     desc.handler_parameter = context;
     desc.time_point = _now + time;
@@ -107,7 +107,7 @@ processor::timer_event_handle processor::real_timer::one_shot(uint64_t time, pro
     return { this, desc.id };
 }
 
-processor::timer_event_handle processor::real_timer::periodic(uint64_t period, processor::timer_handler handler, uint64_t context)
+time::timer_event_handle time::real_timer::periodic(uint64_t period, time::timer_handler handler, uint64_t context)
 {
     INTL();
     LOCK(_lock);
@@ -116,7 +116,7 @@ processor::timer_event_handle processor::real_timer::periodic(uint64_t period, p
 
     timer_description desc;
 
-    desc.id = processor::allocate_timer_event_id();
+    desc.id = time::allocate_timer_event_id();
     desc.handler = handler;
     desc.handler_parameter = context;
     desc.periodic = true;
@@ -145,7 +145,7 @@ processor::timer_event_handle processor::real_timer::periodic(uint64_t period, p
     return { this, desc.id };
 }
 
-void processor::real_timer::cancel(uint64_t id)
+void time::real_timer::cancel(uint64_t id)
 {
     INTL();
     LOCK(_lock);
@@ -195,7 +195,7 @@ void processor::real_timer::cancel(uint64_t id)
     }
 }
 
-void processor::real_timer::_handle(processor::idt::isr_context isrc)
+void time::real_timer::_handle(processor::idt::isr_context isrc)
 {
     LOCK(_lock);
 
@@ -294,7 +294,7 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
     };
 }
 
-void processor::real_timer::_stop()
+void time::real_timer::_stop()
 {
     if (_cap == capabilities::dynamic || _cap == capabilities::one_shot_capable)
     {

@@ -23,55 +23,48 @@
  *
  **/
 
-#include <processor/pit.h>
+#include <time/pit.h>
 #include <processor/handlers.h>
 #include <screen/screen.h>
 
 namespace
 {
-    processor::pit::timer * _pit = nullptr;
+    time::pit::timer * _pit = nullptr;
 }
 
-void processor::pit::timer::_pit_handler(processor::idt::isr_context isr, uint64_t context)
+void time::pit::timer::_pit_handler(processor::idt::isr_context isr, uint64_t context)
 {
-    ((processor::pit::timer *)context)->_handle(isr);
+    ((time::pit::timer *)context)->_handle(isr);
 }
 
-void processor::pit::initialize()
+void time::pit::initialize()
 {
-    new (_pit) processor::pit::timer();
+    new (_pit) time::pit::timer();
 
-    processor::set_high_precision_timer(_pit);
+    time::set_high_precision_timer(_pit);
 }
 
-bool processor::pit::ready()
+bool time::pit::ready()
 {
     return _pit;
 }
 
-processor::pit::timer::timer() : real_timer{ capabilities::dynamic, 200_us, 1_s / 19 }, _int_vector{}
+time::pit::timer::timer() : real_timer{ capabilities::dynamic, 200_us, 1_s / 19 }, _int_vector{}
 {
-    _int_vector = allocate_isr(0);
-    register_handler(_int_vector, _init_handler, (uint64_t)this);
+    _int_vector = processor::allocate_isr(0);
+    processor::register_handler(_int_vector, _pit_handler, (uint64_t)this);
 
     _one_shot(200_us);
-    set_isa_irq_int_vector(0, _int_vector);
+    processor::set_isa_irq_int_vector(0, _int_vector);
 
     STI;
     HLT;
     CLI;
 
-    unregister_handler(_int_vector);
-    register_handler(_int_vector, _pit_handler, (uint64_t)this);
-
     screen::debug("\nPIT handler installed successfully");
 }
 
-void processor::pit::timer::_init_handler(processor::idt::isr_context , uint64_t context)
-{
-}
-
-void processor::pit::timer::_one_shot(uint64_t time)
+void time::pit::timer::_one_shot(uint64_t time)
 {
     if (time >= 1_s / 19)
     {
@@ -87,7 +80,7 @@ void processor::pit::timer::_one_shot(uint64_t time)
     outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
 }
 
-void processor::pit::timer::_periodic(uint64_t period)
+void time::pit::timer::_periodic(uint64_t period)
 {
     if (period >= 1_s / 19)
     {
@@ -102,7 +95,7 @@ void processor::pit::timer::_periodic(uint64_t period)
     outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
 }
 
-void processor::pit::timer::_update_now()
+void time::pit::timer::_update_now()
 {
     if (_list.size())
     {

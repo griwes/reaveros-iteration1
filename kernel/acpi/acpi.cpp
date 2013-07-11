@@ -31,7 +31,7 @@
 #include <processor/core.h>
 #include <processor/ioapic.h>
 #include <processor/interrupt_entry.h>
-#include <processor/hpet.h>
+#include <time/hpet.h>
 
 namespace
 {
@@ -437,7 +437,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
     _free_table();
 }
 
-void acpi::parse_hpet(processor::hpet::timer *& timers, uint64_t & timers_num)
+void acpi::parse_hpet(time::hpet::timer *& timers, uint64_t & timers_num)
 {
     hpet * table = (hpet *)_find_table("HPET");
 
@@ -462,9 +462,9 @@ void acpi::parse_hpet(processor::hpet::timer *& timers, uint64_t & timers_num)
     memory::vm::map(mmio, table->address.address);
 
     timers_num = 1;
-    uint64_t address = memory::vm::allocate_address_range(sizeof(processor::hpet::timer));
-    memory::vm::map_multiple(address, address + sizeof(processor::hpet::timer));
-    timers = new ((void *)address) processor::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio,
+    uint64_t address = memory::vm::allocate_address_range(sizeof(time::hpet::timer));
+    memory::vm::map_multiple(address, address + sizeof(time::hpet::timer));
+    timers = new ((void *)address) time::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio,
         table->counter_size, (uint8_t)(table->comparator_count + 1), table->minimum_tick, table->page_protection };
 
     _free_table();

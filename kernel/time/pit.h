@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <processor/timer.h>
+#include <time/timer.h>
 
 namespace processor
 {
@@ -33,13 +33,16 @@ namespace processor
     {
         struct isr_context;
     }
+}
 
+namespace time
+{
     namespace pit
     {
         void initialize();
         bool ready();
 
-        class timer : public processor::real_timer
+        class timer : public time::real_timer
         {
         public:
             timer();
@@ -52,8 +55,6 @@ namespace processor
             virtual void _one_shot(uint64_t);
             virtual void _periodic(uint64_t);
             virtual void _update_now();
-
-            static void _init_handler(processor::idt::isr_context, uint64_t context);
 
             uint8_t _int_vector;
         };

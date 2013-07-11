@@ -27,8 +27,6 @@
 #include <memory/vm.h>
 #include <memory/pmm.h>
 #include <screen/screen.h>
-#include "processor/timer.h"
-#include "processor/idt.h"
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)

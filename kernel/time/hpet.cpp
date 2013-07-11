@@ -23,14 +23,14 @@
  *
  **/
 
-#include <processor/hpet.h>
+#include <time/hpet.h>
 #include <acpi/acpi.h>
 #include <screen/screen.h>
 #include <processor/handlers.h>
 
 namespace
 {
-    processor::hpet::timer * _timers = nullptr;
+    time::hpet::timer * _timers = nullptr;
     uint64_t _num_timers = 0;
 
     uint32_t _used_interrupts = 0;
@@ -59,26 +59,26 @@ namespace
     }
 }
 
-void processor::hpet::initialize()
+void time::hpet::initialize()
 {
     _used_interrupts |= 1;
-    _used_interrupts |= 1 << translate_isa(0);
-    _used_interrupts |= 1 << translate_isa(8);
+    _used_interrupts |= 1 << processor::translate_isa(0);
+    _used_interrupts |= 1 << processor::translate_isa(8);
 
     acpi::parse_hpet(_timers, _num_timers);
 
     if (_num_timers)
     {
-        processor::set_high_precision_timer(_timers);
+        time::set_high_precision_timer(_timers);
     }
 }
 
-bool processor::hpet::ready()
+bool time::hpet::ready()
 {
     return _num_timers;
 }
 
-processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size,
+time::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size,
     uint8_t comparators, uint16_t minimal_tick, uint8_t page_protection) : _number{ number }, _size{ (uint8_t)(32 + 32 * counter_size) },
     _comparator_count{ comparators }, _page_protection{ page_protection }, _pci_vendor{ pci_vendor.vendor }, _minimal_tick{
     minimal_tick }, _register{ address }
@@ -113,13 +113,13 @@ processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t 
 
     _register(_main_counter, 0);
 
-    _comparators[0].one_shot(1_us, [](idt::isr_context, uint64_t){});
+    _comparators[0].one_shot(1_us, [](processor::idt::isr_context, uint64_t){});
     STI;
     HLT;
     CLI;
 }
 
-processor::timer_event_handle processor::hpet::timer::one_shot(uint64_t time, processor::timer_handler handler, uint64_t param)
+time::timer_event_handle time::hpet::timer::one_shot(uint64_t time, time::timer_handler handler, uint64_t param)
 {
     uint64_t min = _comparators[0].usage();
     uint64_t min_idx = 0;
@@ -136,7 +136,7 @@ processor::timer_event_handle processor::hpet::timer::one_shot(uint64_t time, pr
     return _comparators[min_idx].one_shot(time, handler, param);
 }
 
-processor::timer_event_handle processor::hpet::timer::periodic(uint64_t period, processor::timer_handler handler, uint64_t param)
+time::timer_event_handle time::hpet::timer::periodic(uint64_t period, time::timer_handler handler, uint64_t param)
 {
     uint64_t min = _comparators[0].usage();
     uint64_t min_idx = 0;
@@ -153,21 +153,21 @@ processor::timer_event_handle processor::hpet::timer::periodic(uint64_t period, 
     return _comparators[min_idx].periodic(period, handler, param);
 }
 
-void processor::hpet::timer::cancel(uint64_t)
+void time::hpet::timer::cancel(uint64_t)
 {
     NEVER;
 }
 
-void processor::hpet::comparator::_hpet_handler(processor::idt::isr_context isrc, uint64_t context)
+void time::hpet::comparator::_hpet_handler(processor::idt::isr_context isrc, uint64_t context)
 {
-    ((processor::hpet::comparator *)context)->_handle(isrc);
+    ((time::hpet::comparator *)context)->_handle(isrc);
 }
 
-processor::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0, 0 }, _parent{}
+time::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0, 0 }, _parent{}
 {
 }
 
-processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ capabilities::dynamic,
+time::hpet::comparator::comparator(time::hpet::timer * parent, uint8_t index) : real_timer{ capabilities::dynamic,
     parent->_minimal_tick, parent->_maximal_tick }, _parent{ parent }, _index{ index }, _input{}
 {
     if (!(_parent->_register(_timer_configuration(_index)) & (1 << 4)))
@@ -177,12 +177,12 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
 
     if (_index < 2)
     {
-        _int_vector = allocate_isr(0);
-        register_handler(_int_vector, _hpet_handler, (uint64_t)this);
-        set_isa_irq_int_vector(_index * 8, _int_vector);
+        _int_vector = processor::allocate_isr(0);
+        processor::register_handler(_int_vector, _hpet_handler, (uint64_t)this);
+        processor::set_isa_irq_int_vector(_index * 8, _int_vector);
 
-        screen::debug("\nInstalled interrupt for HPET comparator #", _index, " at IOAPIC input #", translate_isa(_index * 8),
-            " routed to vector ", _int_vector);
+        screen::debug("\nInstalled interrupt for HPET comparator #", _index, " at IOAPIC input #",
+            processor::translate_isa(_index * 8), " routed to vector ", _int_vector);
 
         return;
     }
@@ -205,13 +205,13 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
         }
     }
 
-    for (uint8_t i = 0; i < 32 && i < max_ioapic_input() && possible_routes != ~(uint32_t)0; ++i)
+    for (uint8_t i = 0; i < 32 && i < processor::max_ioapic_input() && possible_routes != ~(uint32_t)0; ++i)
     {
         if ((possible_routes & (1 << i)) && !(_used_interrupts & (1 << i)))
         {
-            _int_vector = allocate_isr(0);
-            register_handler(_int_vector, _hpet_handler, (uint64_t)this);
-            set_isa_irq_int_vector(i, _int_vector);
+            _int_vector = processor::allocate_isr(0);
+            processor::register_handler(_int_vector, _hpet_handler, (uint64_t)this);
+            processor::set_isa_irq_int_vector(i, _int_vector);
 
             _used_interrupts |= 1 << i;
             _input = i;
@@ -227,25 +227,25 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
     screen::debug("\nCouldn't find interrupt routing for HPET comparator #", _index, "; disabling");
 }
 
-void processor::hpet::comparator::_one_shot(uint64_t time)
+void time::hpet::comparator::_one_shot(uint64_t time)
 {
     _parent->_register(_timer_configuration(_index), ((_input & 31) << 9) | (1 << 2));
     _parent->_register(_timer_comparator(_index), ((_now + time) * 1000000) / _parent->_period);
 }
 
-void processor::hpet::comparator::_periodic(uint64_t period)
+void time::hpet::comparator::_periodic(uint64_t period)
 {
     _parent->_register(_timer_configuration(_index), ((_input & 31) << 9) | (1 << 2) | (1 << 3) | (1 << 6));
     _parent->_register(_timer_comparator(_index), ((_now + period) * 1000000) / _parent->_period);
     _parent->_register(_timer_comparator(_index), (period * 1000000) / _parent->_period);
 }
 
-void processor::hpet::comparator::_update_now()
+void time::hpet::comparator::_update_now()
 {
     _now = (_parent->_register(_main_counter) * _parent->_period) / 1000000;
 }
 
-void processor::hpet::comparator::_stop()
+void time::hpet::comparator::_stop()
 {
     _parent->_register(_timer_configuration(_index), _parent->_register(_timer_configuration(_index)) & ~(1ull << 2));
 }

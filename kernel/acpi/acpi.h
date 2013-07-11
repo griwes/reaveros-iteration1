@@ -25,21 +25,24 @@
 
 #pragma once
 
-namespace processor
+namespace time
 {
-    class core;
-    class ioapic;
-    class interrupt_entry;
-
     namespace hpet
     {
         class timer;
     }
 }
 
+namespace processor
+{
+    class core;
+    class ioapic;
+    class interrupt_entry;
+}
+
 namespace acpi
 {
     void initialize();
     void parse_madt(processor::core *&, uint64_t &, processor::ioapic *&, uint64_t &, processor::interrupt_entry *);
-    void parse_hpet(processor::hpet::timer *&, uint64_t &);
+    void parse_hpet(time::hpet::timer *&, uint64_t &);
 }

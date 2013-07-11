@@ -31,14 +31,17 @@
 
 namespace processor
 {
-    uint64_t allocate_timer_event_id();
-
     namespace idt
     {
         struct isr_context;
     }
+}
 
-    using timer_handler = void (*)(idt::isr_context, uint64_t);
+namespace time
+{
+    uint64_t allocate_timer_event_id();
+
+    using timer_handler = void (*)(processor::idt::isr_context, uint64_t);
 
     struct timer_event_handle;
 
@@ -106,7 +109,7 @@ namespace processor
         virtual void _update_now() = 0;
         virtual void _stop();
 
-        void _handle(idt::isr_context);
+        void _handle(processor::idt::isr_context);
 
         capabilities _cap;
 

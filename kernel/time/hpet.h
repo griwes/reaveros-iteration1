@@ -25,11 +25,11 @@
 
 #pragma once
 
-#include <processor/timer.h>
+#include <time/timer.h>
 #include <utils/spinlock.h>
 #include <utils/mmio.h>
 
-namespace processor
+namespace time
 {
     namespace hpet
     {
@@ -58,7 +58,7 @@ namespace processor
             virtual void _stop();
 
         private:
-            static void _hpet_handler(idt::isr_context, uint64_t);
+            static void _hpet_handler(processor::idt::isr_context, uint64_t);
 
             hpet::timer * _parent;
             uint8_t _index;
@@ -66,7 +66,7 @@ namespace processor
             uint8_t _input;
         };
 
-        class timer : public processor::timer
+        class timer : public time::timer
         {
         public:
             friend class comparator;
