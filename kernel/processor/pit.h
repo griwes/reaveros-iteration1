@@ -34,11 +34,6 @@ namespace processor
         struct isr_context;
     }
 
-    namespace _detail
-    {
-        void _pit_handler(processor::idt::isr_context, uint64_t);
-    }
-
     namespace pit
     {
         void initialize();
@@ -52,7 +47,7 @@ namespace processor
             virtual ~timer() {}
 
         private:
-            friend void _detail::_pit_handler(processor::idt::isr_context, uint64_t);
+            static void _pit_handler(processor::idt::isr_context, uint64_t);
 
             virtual void _one_shot(uint64_t);
             virtual void _periodic(uint64_t);

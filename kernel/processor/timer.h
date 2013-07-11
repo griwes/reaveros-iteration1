@@ -104,6 +104,7 @@ namespace processor
         virtual void _one_shot(uint64_t) = 0;
         virtual void _periodic(uint64_t) = 0;
         virtual void _update_now() = 0;
+        virtual void _stop();
 
         void _handle(idt::isr_context);
 

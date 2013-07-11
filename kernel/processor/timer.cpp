@@ -72,6 +72,8 @@ processor::timer_event_handle processor::real_timer::one_shot(uint64_t time, pro
     INTL();
     LOCK(_lock);
 
+    _update_now();
+
     timer_description desc;
 
     desc.id = processor::allocate_timer_event_id();
@@ -87,8 +89,6 @@ processor::timer_event_handle processor::real_timer::one_shot(uint64_t time, pro
     {
         _is_periodic = false;
     }
-
-    _update_now();
 
     time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
@@ -111,6 +111,8 @@ processor::timer_event_handle processor::real_timer::periodic(uint64_t period, p
     INTL();
     LOCK(_lock);
 
+    _update_now();
+
     timer_description desc;
 
     desc.id = processor::allocate_timer_event_id();
@@ -123,8 +125,6 @@ processor::timer_event_handle processor::real_timer::periodic(uint64_t period, p
     _list.insert(desc);
 
     _usage += 100;
-
-    _update_now();
 
     uint64_t time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
@@ -169,6 +169,11 @@ void processor::real_timer::cancel(uint64_t id)
         --_usage;
     }
 
+    if (!_list.size())
+    {
+        _stop();
+    }
+
     _update_now();
 
     uint64_t time = _list.top()->time_point - _now;
@@ -193,24 +198,19 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
 {
     LOCK(_lock);
 
+    if (unlikely(!_list.size()))
+    {
+        return;
+    }
+
     if (unlikely(_cap == capabilities::fixed_frequency))
     {
         _now += _minimal_tick;
-
-        if (unlikely(!_list.size()))
-        {
-            return;
-        }
     }
 
     else
     {
-        if (unlikely(!_list.size()))
-        {
-            PANIC("Unexpected timer interrupt; timer list is empty.");
-        }
-
-        uint64_t tick = _list.top()->time_point - _now;;
+        uint64_t tick = _list.top()->time_point - _now;
 
         if (tick > _maximal_tick)
         {
@@ -251,6 +251,8 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
         {
             --_usage;
         }
+
+        _update_now();
     }
 
     if (_list.size() == 0)
@@ -258,10 +260,9 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
         return;
     }
 
-    _update_now();
-
     uint64_t time = _list.top()->time_point - _now;
     time = time > _minimal_tick ? time : _minimal_tick;
+    time = time < _maximal_tick ? time : _maximal_tick;
 
     if ((_cap == capabilities::dynamic || _cap == capabilities::periodic_capable) && _list.size() == 1 && _list.top()->periodic)
     {
@@ -291,4 +292,12 @@ void processor::real_timer::_handle(processor::idt::isr_context isrc)
         default:
             ;
     };
+}
+
+void processor::real_timer::_stop()
+{
+    if (_cap == capabilities::dynamic || _cap == capabilities::one_shot_capable)
+    {
+        _one_shot(_minimal_tick);
+    }
 }

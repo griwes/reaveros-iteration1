@@ -26,6 +26,7 @@
 #include <processor/hpet.h>
 #include <acpi/acpi.h>
 #include <screen/screen.h>
+#include <processor/handlers.h>
 
 namespace
 {
@@ -80,26 +81,34 @@ processor::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t 
 {
     _register(_general_configuration, _register(_general_configuration) | 1);
 
+    _period = _register(_general_capabilities) >> 32;
+    _frequency = 1000000000000000ull / _period;
+
+    if (_size == 32)
+    {
+        _maximal_tick = (~(uint32_t)0 / 1000000) * _period;
+
+        if (!_maximal_tick)
+        {
+            _maximal_tick = -1;
+        }
+    }
+
+    else
+    {
+        _maximal_tick = (~0ull / 1000000) * _period;
+    }
+
+    screen::debug("\nDetected HPET counter period in fs: ", _period);
+    screen::debug("\nDetected HPET counter frequency: ", _frequency);
+
     for (uint8_t i = 0; i < _comparator_count; ++i)
     {
         new (_comparators + i) comparator{ this, i };
     }
 
-    uint64_t period = _register(_general_capabilities) >> 32;
-    _frequency = 1000000000000000ull / period;
-
-    if (_size == 32)
-    {
-        _maximal_tick = _size * period;
-    }
-
-    else
-    {
-        _maximal_tick = -1;
-    }
-
-    screen::debug("\nDetected HPET counter period: ", period);
-    screen::debug("\nDetected HPET counter frequency: ", _frequency);
+    _register(_main_counter, 0);
+    _register(_general_configuration, _register(_general_configuration) | 3);
 }
 
 processor::timer_event_handle processor::hpet::timer::one_shot(uint64_t time, processor::timer_handler handler, uint64_t param)
@@ -126,7 +135,7 @@ processor::timer_event_handle processor::hpet::timer::periodic(uint64_t period, 
 
     for (uint8_t i = 1; i < _comparator_count; ++i)
     {
-        if (_comparators[i].valid() &&_comparators[i].usage() < min)
+        if (_comparators[i].valid() && _comparators[i].usage() < min)
         {
             min_idx = i;
             min = _comparators[i].usage();
@@ -141,6 +150,11 @@ void processor::hpet::timer::cancel(uint64_t)
     NEVER;
 }
 
+void processor::hpet::comparator::_hpet_handler(processor::idt::isr_context isrc, uint64_t context)
+{
+    ((processor::hpet::comparator *)context)->_handle(isrc);
+}
+
 processor::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0, 0 }, _parent{}
 {
 }
@@ -148,6 +162,20 @@ processor::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0
 processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ capabilities::dynamic,
     parent->_minimal_tick, parent->_maximal_tick }, _parent{ parent }, _index{ index }
 {
+    if (!(_parent->_register(_timer_configuration(_index)) & (1 << 4)))
+    {
+        _cap = capabilities::one_shot_capable;
+    }
+
+    if (_index < 2)
+    {
+        _int_vector = allocate_isr(0);
+        register_handler(_int_vector, _hpet_handler, (uint64_t)this);
+        set_isa_irq_int_vector(_index * 8, _int_vector);
+
+        return;
+    }
+
     if (_parent->_register(_timer_configuration(_index)) & (1 << 15))
     {
         screen::debug("\nHPET comparator #", _index, " is FSB capable; better implement FSB interrupt routing.");
@@ -166,20 +194,34 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
         }
     }
 
-    TODO;
+    if (true)
+    {
+        _parent = nullptr;
+
+        screen::debug("\nCouldn't find interrupt routing for HPET comparator #", _index, "; disabling");
+    }
 }
 
-void processor::hpet::comparator::_one_shot(uint64_t )
+void processor::hpet::comparator::_one_shot(uint64_t time)
 {
-
+    _parent->_register(_timer_configuration(_index), 1 << 2);
+    _parent->_register(_timer_comparator(_index), (_now + time * 1000000) / _parent->_period);
 }
 
-void processor::hpet::comparator::_periodic(uint64_t )
+void processor::hpet::comparator::_periodic(uint64_t period)
 {
-
+    _parent->_register(_timer_configuration(_index), (1 << 2) | (1 << 3));
+    _parent->_register(_timer_comparator(_index), (_now + period * 1000000) / _parent->_period);
+    _parent->_register(_timer_configuration(_index), (1 << 2) | (1 << 3) | (1 << 6));
+    _parent->_register(_timer_comparator(_index), (period * 1000000) / _parent->_period);
 }
 
 void processor::hpet::comparator::_update_now()
 {
+    _now = (_parent->_register(_main_counter) * _parent->_period) / 1000000;
+}
 
+void processor::hpet::comparator::_stop()
+{
+    _parent->_register(_timer_configuration(_index), _parent->_register(_timer_configuration(_index)) & ~(1ull << 2));
 }

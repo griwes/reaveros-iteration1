@@ -55,10 +55,14 @@ namespace processor
             virtual void _one_shot(uint64_t);
             virtual void _periodic(uint64_t);
             virtual void _update_now();
+            virtual void _stop();
 
         private:
+            static void _hpet_handler(idt::isr_context, uint64_t);
+
             hpet::timer * _parent;
             uint8_t _index;
+            uint8_t _int_vector;
         };
 
         class timer : public processor::timer
@@ -84,6 +88,7 @@ namespace processor
             uint16_t _minimal_tick;
             uint64_t _maximal_tick;
 
+            uint64_t _period;
             uint64_t _frequency;
 
             utils::mmio_helper<uint64_t> _register;

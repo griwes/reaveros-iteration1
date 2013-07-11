@@ -76,7 +76,7 @@ void processor::handle(processor::idt::isr_context context)
 
     if (handler)
     {
-        handler(context, _contexts[c]);
+        handler(context, c);
     }
 
     if (context.number >= 32)

@@ -32,7 +32,7 @@ namespace
     processor::pit::timer * _pit = nullptr;
 }
 
-void processor::_detail::_pit_handler(processor::idt::isr_context isr, uint64_t context)
+void processor::pit::timer::_pit_handler(processor::idt::isr_context isr, uint64_t context)
 {
     ((processor::pit::timer *)context)->_handle(isr);
 }
@@ -62,7 +62,7 @@ processor::pit::timer::timer() : real_timer{ capabilities::dynamic, 200_us, 1_s 
     CLI;
 
     unregister_handler(_int_vector);
-    register_handler(_int_vector, _detail::_pit_handler, (uint64_t)this);
+    register_handler(_int_vector, _pit_handler, (uint64_t)this);
 
     screen::debug("\nPIT handler installed successfully");
 }
