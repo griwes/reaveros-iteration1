@@ -63,6 +63,7 @@ namespace processor
             hpet::timer * _parent;
             uint8_t _index;
             uint8_t _int_vector;
+            uint8_t _input;
         };
 
         class timer : public processor::timer

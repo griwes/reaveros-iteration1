@@ -45,6 +45,8 @@ namespace
     uint64_t _num_cores;
     uint64_t _num_ioapics;
 
+    uint8_t _max_ioapic_input = 0;
+
     processor::interrupt_entry _sources[128] = {};
 
     bool _ready = false;
@@ -89,6 +91,11 @@ void processor::initialize()
     for (uint64_t i = 0; i < _num_ioapics; ++i)
     {
         _ioapics[i].initialize();
+
+        if (_ioapics[i].end() > _max_ioapic_input)
+        {
+            _max_ioapic_input = _ioapics->end() - 1;
+        }
     }
 
     hpet::initialize();
@@ -124,4 +131,9 @@ processor::ioapic * processor::get_ioapic(uint8_t input)
 processor::interrupt_entry * processor::get_sources()
 {
     return _sources;
+}
+
+uint8_t processor::max_ioapic_input()
+{
+    return _max_ioapic_input;
 }

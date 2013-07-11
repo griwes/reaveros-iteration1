@@ -40,6 +40,7 @@ namespace processor
     uint8_t translate_isa(uint8_t irq);
 
     ioapic * get_ioapic(uint8_t input);
+    uint8_t max_ioapic_input();
     interrupt_entry * get_sources();
 
     void initialize();

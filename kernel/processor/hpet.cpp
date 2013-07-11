@@ -61,6 +61,10 @@ namespace
 
 void processor::hpet::initialize()
 {
+    _used_interrupts |= 1;
+    _used_interrupts |= 1 << translate_isa(0);
+    _used_interrupts |= 1 << translate_isa(8);
+
     acpi::parse_hpet(_timers, _num_timers);
 
     if (_num_timers)
@@ -160,7 +164,7 @@ processor::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0
 }
 
 processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t index) : real_timer{ capabilities::dynamic,
-    parent->_minimal_tick, parent->_maximal_tick }, _parent{ parent }, _index{ index }
+    parent->_minimal_tick, parent->_maximal_tick }, _parent{ parent }, _index{ index }, _input{}
 {
     if (!(_parent->_register(_timer_configuration(_index)) & (1 << 4)))
     {
@@ -172,6 +176,9 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
         _int_vector = allocate_isr(0);
         register_handler(_int_vector, _hpet_handler, (uint64_t)this);
         set_isa_irq_int_vector(_index * 8, _int_vector);
+
+        screen::debug("\nInstalled interrupt for HPET comparator #", _index, " at IOAPIC input #", translate_isa(_index * 8),
+            " routed to vector ", _int_vector);
 
         return;
     }
@@ -194,23 +201,37 @@ processor::hpet::comparator::comparator(processor::hpet::timer * parent, uint8_t
         }
     }
 
-    if (true)
+    for (uint8_t i = 16; i < 32 && i < max_ioapic_input() && possible_routes != ~(uint32_t)0; ++i)
     {
-        _parent = nullptr;
+        if ((possible_routes & (1 << i)) && !(_used_interrupts & (1 << i)))
+        {
+            _int_vector = allocate_isr(0);
+            register_handler(_int_vector, _hpet_handler, (uint64_t)this);
+            set_isa_irq_int_vector(i, _int_vector);
 
-        screen::debug("\nCouldn't find interrupt routing for HPET comparator #", _index, "; disabling");
+            _used_interrupts |= 1 << i;
+            _input = i;
+
+            screen::debug("\nInstalled interrupt for HPET comparator #", _index, " at IOAPIC input #", i, " routed to vector ",
+                _int_vector);
+
+            return;
+        }
     }
+
+    _parent = nullptr;
+    screen::debug("\nCouldn't find interrupt routing for HPET comparator #", _index, "; disabling");
 }
 
 void processor::hpet::comparator::_one_shot(uint64_t time)
 {
-    _parent->_register(_timer_configuration(_index), 1 << 2);
+    _parent->_register(_timer_configuration(_index), (_input << 9) | (1 << 2));
     _parent->_register(_timer_comparator(_index), ((_now + time) * 1000000) / _parent->_period);
 }
 
 void processor::hpet::comparator::_periodic(uint64_t period)
 {
-    _parent->_register(_timer_configuration(_index), (1 << 2) | (1 << 3) | (1 << 6));
+    _parent->_register(_timer_configuration(_index), (_input << 9) | (1 << 2) | (1 << 3) | (1 << 6));
     _parent->_register(_timer_comparator(_index), ((_now + period) * 1000000) / _parent->_period);
     _parent->_register(_timer_comparator(_index), (period * 1000000) / _parent->_period);
 }
