@@ -1,6 +1,6 @@
 CC=clang++
 LD=../../utils/tools/bin/i686-elf-ld
-CFLAGS=-m32 -c -Wall -Wextra -pedantic -Werror -nostdlib -fno-exceptions -fno-rtti -fno-stack-protector -std=c++0x \
+CFLAGS=-m32 -c -Wall -Wextra -pedantic -Werror -nostdlib -fno-exceptions -fno-rtti -fno-stack-protector -std=c++1y \
 		-mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-avx -ffreestanding -Os -stdlib=libc++ -fno-builtin -MD \
 		-target i686-none-elf
 LDFLAGS=-T booter.ld --oformat binary -nostdlib

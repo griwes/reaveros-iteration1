@@ -112,3 +112,55 @@ void processor::x2apic::eoi(uint8_t v)
         _register(_eoi, 0);
     }
 }
+
+uint32_t processor::x2apic::current_count()
+{
+    return _register(_current_count);
+}
+
+uint8_t processor::x2apic::divisor()
+{
+    uint32_t divide_register = _register(_divide_configuration) & 0xb;
+    divide_register = 1 << (((divide_register & 0b11) | ((divide_register & 0b1000) >> 1)) + 1);
+    return divide_register == 256 ? divide_register : 1;
+}
+
+void processor::x2apic::divisor(uint8_t div)
+{
+    if (div == 1)
+    {
+        div = 0b1011;
+    }
+
+    else if (div == 16)
+    {
+        div = 0b1000;
+    }
+
+    else if (div == 32)
+    {
+        div = 0b1000;
+    }
+
+    else
+    {
+        div = ((div >> (2 + div / 64)) | (div >> 6));
+    }
+
+    _register(_divide_configuration, div);
+}
+
+uint32_t processor::x2apic::initial_count()
+{
+    return _register(_initial_count);
+}
+
+void processor::x2apic::initial_count(uint32_t count)
+{
+    _register(_initial_count, count);
+}
+
+void processor::x2apic::set_timer(bool periodic)
+{
+    _register(_lvt_timer, _timer_irq | (periodic << 17));
+}

@@ -115,3 +115,55 @@ void processor::xapic::eoi(uint8_t v)
         _register(_eoi, 0);
     }
 }
+
+uint32_t processor::xapic::current_count()
+{
+    return _register(_current_count);
+}
+
+uint8_t processor::xapic::divisor()
+{
+    uint32_t divide_register = _register(_divide_configuration) & 0xb;
+    divide_register = 1 << (((divide_register & 0b11) | ((divide_register & 0b1000) >> 1)) + 1);
+    return divide_register == 256 ? divide_register : 1;
+}
+
+void processor::xapic::divisor(uint8_t div)
+{
+    if (div == 1)
+    {
+        div = 0b1011;
+    }
+
+    else if (div == 16)
+    {
+        div = 0b1000;
+    }
+
+    else if (div == 32)
+    {
+        div = 0b1000;
+    }
+
+    else
+    {
+        div = ((div >> (2 + div / 64)) | (div >> 6));
+    }
+
+    _register(_divide_configuration, div);
+}
+
+uint32_t processor::xapic::initial_count()
+{
+    return _register(_initial_count);
+}
+
+void processor::xapic::initial_count(uint32_t count)
+{
+    _register(_initial_count, count);
+}
+
+void processor::xapic::set_timer(bool periodic)
+{
+    _register(_lvt_timer, _timer_irq | (periodic << 17));
+}

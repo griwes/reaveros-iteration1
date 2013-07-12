@@ -100,17 +100,14 @@ void processor::initialize()
     }
 
     time::hpet::initialize();
-
     if (!time::hpet::ready())
     {
         time::pit::initialize();
     }
-
     time::real::initialize();
+    time::lapic::initialize();
 
-/*    lapic::initialize_timer();
-    smp::boot(_cores + 1, _num_cores - 1);
-
+/*    smp::boot(_cores + 1, _num_cores - 1);
     memory::drop_bootloader_mapping();
 
     _ready = true;*/

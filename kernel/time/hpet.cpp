@@ -103,7 +103,7 @@ time::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t addre
         _maximal_tick = (~0ull / 1000000) * _period;
     }
 
-    screen::debug("\nDetected HPET counter period in fs: ", _period);
+    screen::debug("\nDetected HPET counter period: ", _period, "fs");
     screen::debug("\nDetected HPET counter frequency: ", _frequency);
 
     for (uint8_t i = 0; i < _comparator_count; ++i)

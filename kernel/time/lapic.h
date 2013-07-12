@@ -25,48 +25,36 @@
 
 #pragma once
 
-#include <time/lapic.h>
+#include <time/timer.h>
 
 namespace processor
 {
-    namespace idt
-    {
-        struct isr_context;
-    }
+    class lapic;
+}
 
-    extern "C" bool x2apic_capable();
-    bool x2apic_enabled();
-
-    namespace remapping
+namespace time
+{
+    namespace lapic
     {
-        inline bool enabled()
+        void initialize();
+
+        class timer : public time::real_timer
         {
-            return false;
-        }
+        public:
+            timer();
+            virtual ~timer() {}
+
+        protected:
+            virtual void _one_shot(uint64_t);
+            virtual void _periodic(uint64_t);
+            virtual void _update_now();
+            virtual void _stop();
+
+        private:
+            static void _lapic_handler(processor::idt::isr_context, uint64_t);
+
+            uint64_t _period;
+            processor::lapic * _lapic;
+        };
     }
-
-    class lapic
-    {
-    public:
-        friend class time::lapic::timer;
-
-        static void initialize();
-
-        virtual ~lapic() {}
-
-        virtual void eoi(uint8_t) = 0;
-
-        virtual uint32_t current_count() = 0;
-        virtual uint32_t initial_count() = 0;
-        virtual void initial_count(uint32_t) = 0;
-        virtual uint8_t divisor() = 0;
-        virtual void divisor(uint8_t) = 0;
-        virtual void set_timer(bool) = 0;
-
-    protected:
-        uint8_t _timer_irq;
-        uint8_t _spurious;
-    };
-
-    lapic * get_lapic();
 }

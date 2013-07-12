@@ -60,7 +60,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     scheduler::initialize();
     screen::done();
 */
-    time::get_high_precision_timer()->periodic(1_s, [](processor::idt::isr_context, uint64_t)
+    time::get_preemption_timer()->periodic(1_s, [](processor::idt::isr_context, uint64_t)
     {
         auto p = time::real::now();
         screen::debug("\n", (p.seconds / (60 * 60)) % 24, ":", (p.seconds / 60) % 60, ":", p.seconds % 60);

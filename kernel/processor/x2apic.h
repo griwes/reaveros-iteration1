@@ -37,6 +37,13 @@ namespace processor
 
         virtual void eoi(uint8_t);
 
+        virtual uint32_t current_count();
+        virtual uint32_t initial_count();
+        virtual void initial_count(uint32_t);
+        virtual uint8_t divisor();
+        virtual void divisor(uint8_t);
+        virtual void set_timer(bool);
+
     private:
         uint64_t _register(uint64_t reg)
         {
@@ -47,8 +54,5 @@ namespace processor
         {
             wrmsr(reg, val);
         }
-
-        uint8_t _timer_irq;
-        uint8_t _spurious;
     };
 }
