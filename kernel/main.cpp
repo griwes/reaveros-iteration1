@@ -28,10 +28,6 @@
 #include <memory/pmm.h>
 #include <screen/screen.h>
 
-#include "time/timer.h"
-#include "time/real.h"
-#include "processor/idt.h"
-
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
 {
@@ -46,7 +42,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::initialize_terminal(video, memory_map, memory_map_size);
 
     screen::print("ReaverOS: Reaver Project Operating System, \"Rose\"\n");
-    screen::print("Version: 0.0.2 dev, Codename \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
+    screen::print("Version: 0.0.2 dev; Release #1 \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
     screen::print("Copyright (C) 2012-2013 Reaver Project Team\n\n");
 
     screen::print(tag::memory, "Reporting memory manager status...\n");
@@ -60,13 +56,6 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     scheduler::initialize();
     screen::done();
 */
-    time::get_preemption_timer()->periodic(1_s, [](processor::idt::isr_context, uint64_t)
-    {
-        auto p = time::real::now();
-        screen::debug("\n", (p.seconds / (60 * 60)) % 24, ":", (p.seconds / 60) % 60, ":", p.seconds % 60);
-        screen::debug(" ", p.seconds / (60 * 60 * 24), " days since 01.01.2001");
-    }, 0);
-
     for (;;) ;
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
