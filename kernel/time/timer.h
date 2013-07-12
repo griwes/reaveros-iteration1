@@ -110,7 +110,7 @@ namespace time
         virtual void _stop();
 
         void _handle(processor::idt::isr_context);
-        void _schedule_next();
+        const timer_description * _schedule_next();
 
         capabilities _cap;
 

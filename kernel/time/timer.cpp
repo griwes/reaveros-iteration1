@@ -237,7 +237,7 @@ void time::real_timer::_handle(processor::idt::isr_context isrc)
         return;
     }
 
-    _schedule_next();
+    auto scheduled = _schedule_next();
 
     while (_list.size() && _list.top()->time_point <= _now)
     {
@@ -256,7 +256,10 @@ void time::real_timer::_handle(processor::idt::isr_context isrc)
         }
     }
 
-    _schedule_next();
+    if (!scheduled || scheduled != _list.top())
+    {
+        _schedule_next();
+    }
 }
 
 void time::real_timer::_stop()
@@ -267,7 +270,7 @@ void time::real_timer::_stop()
     }
 }
 
-void time::real_timer::_schedule_next()
+const time::timer_description * time::real_timer::_schedule_next()
 {
     auto next = _list.top();
 
@@ -310,4 +313,6 @@ void time::real_timer::_schedule_next()
                 ;
         };
     }
+
+    return next;
 }

@@ -27,16 +27,16 @@
 
 namespace time
 {
+    struct point
+    {
+        int64_t seconds;
+        uint64_t nanoseconds;
+    };
+
     namespace real
     {
         void initialize();
 
-        struct time_point
-        {
-            int64_t seconds;
-            uint64_t nanoseconds;
-        };
-
-        time_point now();
+        point now();
     }
 }

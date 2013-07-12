@@ -74,7 +74,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::done();
 
     screen::print(tag::scheduler, "Starting process manager...");
-    scheduler::process supervisor = scheduler::create_process(initrd["superv.srv"]);
+    scheduler::process supervisor = scheduler::create_process(initrd["procmgr.srv"]);
     supervisor.set_priority(10);
     screen::done();
 

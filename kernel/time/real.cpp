@@ -31,8 +31,8 @@
 namespace
 {
     utils::spinlock _lock;
-    time::real::time_point _boot_time = { 0, 0 };
-    time::real::time_point _time = { 0, 0 };
+    time::point _boot_time = { 0, 0 };
+    time::point _time = { 0, 0 };
     uint64_t _hpet_last_ns = 0;
 
     bool _rtc_in_update()
@@ -154,7 +154,7 @@ void time::real::initialize()
     }
 }
 
-time::real::time_point time::real::now()
+time::point time::real::now()
 {
     INTL();
     LOCK(_lock);

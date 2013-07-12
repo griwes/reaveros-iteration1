@@ -26,24 +26,34 @@
 #include <time/lapic.h>
 #include <processor/lapic.h>
 #include <processor/idt.h>
+#include <processor/handlers.h>
 
 namespace
 {
     time::lapic::timer _timer;
+
+    bool _fired = false;
 }
 
 void time::lapic::initialize()
 {
     new (&_timer) time::lapic::timer{};
+    set_preemption_timer(&_timer);
 }
 
 time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period{ 0 }, _lapic{ processor::get_lapic() }
 {
     _lapic->divisor(1);
     _lapic->initial_count(~(uint32_t)0);
-    get_high_precision_timer()->one_shot(1_ms, [](processor::idt::isr_context, uint64_t){}, 0);
+    get_high_precision_timer()->one_shot(1_ms, [](processor::idt::isr_context, uint64_t)
+    {
+        _fired = true;
+    }, 0);
 
-    HLT;
+    while (!_fired)
+    {
+        HLT;
+    }
 
     uint64_t ticks = ~(uint32_t)0 - _lapic->current_count();
     _stop();
@@ -54,6 +64,8 @@ time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period
     _minimal_tick = _period / 1000000;
 
     screen::debug("\nLAPIC timer tick period: ", _period, "fs, ticks in 1ms: ", ticks);
+
+    processor::register_handler(_lapic->_timer_irq, _lapic_handler, (uint64_t)this);
 }
 
 void time::lapic::timer::_lapic_handler(processor::idt::isr_context isrc, uint64_t context)
@@ -62,7 +74,7 @@ void time::lapic::timer::_lapic_handler(processor::idt::isr_context isrc, uint64
 
     static uint8_t i = 0;
 
-    if (++i == 0)
+    if (!(++i % 32))
     {
         ((time::lapic::timer *)context)->_update_now();
     }
@@ -83,8 +95,8 @@ void time::lapic::timer::_one_shot(uint64_t time)
     }
 
     _lapic->divisor(divisor);
-    _lapic->set_timer(false);
     _lapic->initial_count(time);
+    _lapic->set_timer(false);
 }
 
 void time::lapic::timer::_periodic(uint64_t period)
@@ -102,8 +114,8 @@ void time::lapic::timer::_periodic(uint64_t period)
     }
 
     _lapic->divisor(divisor);
-    _lapic->set_timer(true);
     _lapic->initial_count(period);
+    _lapic->set_timer(true);
 }
 
 void time::lapic::timer::_update_now()

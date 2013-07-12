@@ -122,7 +122,7 @@ uint8_t processor::x2apic::divisor()
 {
     uint32_t divide_register = _register(_divide_configuration) & 0xb;
     divide_register = 1 << (((divide_register & 0b11) | ((divide_register & 0b1000) >> 1)) + 1);
-    return divide_register == 256 ? divide_register : 1;
+    return divide_register == 256 ? 1 : divide_register;
 }
 
 void processor::x2apic::divisor(uint8_t div)
