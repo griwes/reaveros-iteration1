@@ -4,9 +4,9 @@
 
  * 0.0.x dev - Cotyledon early development, mostly unusable
   * 0.0.1 - AP booting mostly done; *finished on 14.02.2013*
-  * 0.0.2 - **current work in progress** - rewriting some major parts of the code; functioning timers using IOAPIC
-  * 0.0.3 - AP booting, working inter-core synchronizations and communications, including well tested physical memory
-manager with inter-core balancing
+  * 0.0.2 - rewriting some major parts of the code; functioning timers using IOAPIC; *finished on 12.07.2013*
+  * 0.0.3 - **current work in progress** - AP booting, working inter-core synchronizations and communications, including
+well tested physical memory manager with inter-core balancing
   * 0.0.4 - basic SMP scheduler with single scheduling policy
   * 0.0.5 - working user space
   * 0.0.6 - IPC
