@@ -3,7 +3,7 @@ LD=../utils/tools/bin/x86_64-elf-ld
 CFLAGS=$(CFL) -c -Wall -Wextra -pedantic -Werror -nostdlib -fno-exceptions -fno-rtti -fno-stack-protector -std=c++1y \
 		-mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-avx -ffreestanding -Os -stdlib=libc++ -fno-builtin \
 		-mcmodel=kernel -Wno-unused-variable -Wno-unused-parameter -MD -Wno-unused-private-field -ftemplate-depth-512 \
-		-target x86_64-none-elf -Wno-unused-function
+		-target x86_64-none-elf -Wno-unused-function -integrated-as
 LDFLAGS=-T kernel.ld --oformat binary -nostdlib
 SOURCES=$(shell find . -name "*.cpp" -and -not -name "main.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)

@@ -62,6 +62,7 @@ prepare:
 	mkdir -p loader/booter/builds
 	mkdir -p kernel/builds
 	cd builds && dd if=/dev/zero of=a.img bs=1G count=1
+	cp doc/bochsrc builds/
 	cd builds && clang++ -std=c++11 ../utils/mkrfloppy/main.cpp -o mkrfloppy
 
 tools:

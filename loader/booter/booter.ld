@@ -20,7 +20,7 @@ SECTIONS
     {
         *(.data)
         *(.gnu.linkonce.d*)
-        
+
         *(COMMON)
         *(.bss)
         *(.gnu.linkonce.b*)
