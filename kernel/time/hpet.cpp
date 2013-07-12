@@ -158,9 +158,21 @@ void time::hpet::timer::cancel(uint64_t)
     NEVER;
 }
 
+uint64_t time::hpet::timer::now()
+{
+    return (_register(_main_counter) * _period) / 1000000;
+}
+
 void time::hpet::comparator::_hpet_handler(processor::idt::isr_context isrc, uint64_t context)
 {
     ((time::hpet::comparator *)context)->_handle(isrc);
+
+    static uint8_t i = 0;
+
+    if (++i == 0)
+    {
+        ((time::hpet::comparator *)context)->_update_now();
+    }
 }
 
 time::hpet::comparator::comparator() : real_timer{ capabilities::dynamic, 0, 0 }, _parent{}

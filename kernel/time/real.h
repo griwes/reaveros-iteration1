@@ -36,5 +36,7 @@ namespace time
             int64_t seconds;
             uint64_t nanoseconds;
         };
+
+        time_point now();
     }
 }

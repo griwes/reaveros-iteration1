@@ -80,6 +80,8 @@ namespace time
             virtual timer_event_handle periodic(uint64_t, timer_handler, uint64_t = 0);
             virtual void cancel(uint64_t);
 
+            uint64_t now();
+
         private:
             uint8_t _number;
             uint8_t _size;

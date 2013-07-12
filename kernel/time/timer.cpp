@@ -237,6 +237,8 @@ void time::real_timer::_handle(processor::idt::isr_context isrc)
         return;
     }
 
+    _schedule_next();
+
     while (_list.size() && _list.top()->time_point <= _now)
     {
         timer_description desc = _list.pop();
@@ -252,46 +254,9 @@ void time::real_timer::_handle(processor::idt::isr_context isrc)
         {
             --_usage;
         }
-
-        _update_now();
     }
 
-    if (_list.size() == 0)
-    {
-        return;
-    }
-
-    if (!_is_periodic && _list.size() == 1 && _list.top()->periodic && (_cap == capabilities::dynamic || _cap
-        == capabilities::periodic_capable))
-    {
-        _is_periodic = true;
-        _periodic(_list.top()->period);
-    }
-
-    uint64_t time = _list.top()->time_point - _now;
-    time = time > _minimal_tick ? time : _minimal_tick;
-    time = time < _maximal_tick ? time : _maximal_tick;
-
-    switch (_cap)
-    {
-        case capabilities::periodic_capable:
-            _periodic(time);
-            break;
-
-        case capabilities::dynamic:
-            if (_is_periodic)
-            {
-                _periodic(_list.top()->period > _minimal_tick ? _list.top()->period : _minimal_tick);
-
-                break;
-            }
-
-        case capabilities::one_shot_capable:
-            _one_shot(time);
-
-        default:
-            ;
-    };
+    _schedule_next();
 }
 
 void time::real_timer::_stop()
@@ -299,5 +264,50 @@ void time::real_timer::_stop()
     if (_cap == capabilities::dynamic || _cap == capabilities::one_shot_capable)
     {
         _one_shot(_minimal_tick);
+    }
+}
+
+void time::real_timer::_schedule_next()
+{
+    auto next = _list.top();
+
+    while (next->time_point <= _now && next->next)
+    {
+        next = next->next;
+    }
+
+    if (next != nullptr)
+    {
+        if (!_is_periodic && next->next == nullptr && next->periodic && (_cap == capabilities::dynamic || _cap
+            == capabilities::periodic_capable))
+        {
+            _is_periodic = true;
+            _periodic(next->period);
+        }
+
+        uint64_t time = next->time_point - _now;
+        time = time > _minimal_tick ? time : _minimal_tick;
+        time = time < _maximal_tick ? time : _maximal_tick;
+
+        switch (_cap)
+        {
+            case capabilities::periodic_capable:
+                _periodic(time);
+                break;
+
+            case capabilities::dynamic:
+                if (_is_periodic)
+                {
+                    _periodic(next->period > _minimal_tick ? next->period : _minimal_tick);
+
+                    break;
+                }
+
+            case capabilities::one_shot_capable:
+                _one_shot(time);
+
+            default:
+                ;
+        };
     }
 }

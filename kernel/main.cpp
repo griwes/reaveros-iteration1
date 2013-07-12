@@ -28,6 +28,10 @@
 #include <memory/pmm.h>
 #include <screen/screen.h>
 
+#include "time/timer.h"
+#include "time/real.h"
+#include "processor/idt.h"
+
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
 {
@@ -56,6 +60,12 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     scheduler::initialize();
     screen::done();
 */
+    time::get_high_precision_timer()->periodic(1_s, [](processor::idt::isr_context, uint64_t)
+    {
+        auto p = time::real::now();
+        screen::debug("\n", (p.seconds / (60 * 60)) % 24, ":", (p.seconds / 60) % 60, ":", p.seconds % 60);
+        screen::debug(" ", p.seconds / (60 * 60 * 24), " days since 01.01.2001");
+    }, 0);
 
     for (;;) ;
 

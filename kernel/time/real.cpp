@@ -26,12 +26,14 @@
 #include <time/real.h>
 #include <time/timer.h>
 #include <processor/idt.h>
+#include <time/hpet.h>
 
 namespace
 {
     utils::spinlock _lock;
     time::real::time_point _boot_time = { 0, 0 };
     time::real::time_point _time = { 0, 0 };
+    uint64_t _hpet_last_ns = 0;
 
     bool _rtc_in_update()
     {
@@ -57,8 +59,6 @@ namespace
         {
             _time.nanoseconds -= 1_s;
             ++_time.seconds;
-            screen::debug("\n", (_time.seconds / (60 * 60)) % 24, ":", (_time.seconds / 60) % 60, ":", _time.seconds % 60);
-            screen::debug(" ", _time.seconds / (60 * 60 * 24), " days since 01.01.2001");
         }
     }
 
@@ -105,19 +105,19 @@ void time::real::initialize()
         day = _register(0x7);
         month = _register(0x8);
         year = _register(0x9);
-    } while (second != last_second);
+    } while (second != last_second || minute != last_minute || hour != last_hour || day != last_day || month != last_month
+        || year != last_year);
 
-    do
+    if (!hpet::ready())
     {
-        while (_rtc_in_update())
-        {
-            asm volatile ("pause");
-        }
+        get_high_precision_timer()->periodic(2_ms, _update, 0);
+    }
 
-        last_second = _register(0x0);
-    } while (second == last_second);
+    else
+    {
+        _hpet_last_ns = ((hpet::timer *)get_high_precision_timer())->now();
+    }
 
-    get_high_precision_timer()->periodic(2_ms, _update, 0);
     STI;
 
     regb = _register(0xb);
@@ -152,4 +152,27 @@ void time::real::initialize()
         _time.seconds += seconds;
         _boot_time.seconds = seconds;
     }
+}
+
+time::real::time_point time::real::now()
+{
+    INTL();
+    LOCK(_lock);
+
+    if (hpet::ready())
+    {
+        uint64_t hpet_now = ((hpet::timer *)get_high_precision_timer())->now();
+        uint64_t nanoseconds = hpet_now - _hpet_last_ns;
+        _hpet_last_ns = hpet_now;
+        _time.seconds += nanoseconds / 1000000000;
+        _time.nanoseconds += nanoseconds % 1000000000;
+
+        if (_time.nanoseconds >= 1_s)
+        {
+            _time.nanoseconds -= 1_s;
+            ++_time.seconds;
+        }
+    }
+
+    return _time;
 }
