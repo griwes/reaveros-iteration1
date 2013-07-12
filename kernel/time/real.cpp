@@ -143,7 +143,7 @@ void time::real::initialize()
     uint64_t days = years * 365 + years / 4 - years / 100 + years / 400;
     days += (month > 1) * 31 + (month > 2) * 28 + (month > 3) * 31 + (month > 4) * 30 + (month > 5) * 31 + (month > 6) * 30
         + (month > 7) * 31 + (month > 8) * 31 + (month > 9) * 30 + (month > 10) * 31 + (month > 11) * 30;
-    days += day - 1;
+    days += day;
     uint64_t seconds = ((days * 24 + hour) * 60 + minute) * 60 + second;
 
     {
