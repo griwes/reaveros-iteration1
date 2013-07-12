@@ -34,6 +34,7 @@
 #include <processor/handlers.h>
 #include <processor/lapic.h>
 #include <time/pit.h>
+#include <time/real.h>
 
 namespace
 {
@@ -105,7 +106,7 @@ void processor::initialize()
         time::pit::initialize();
     }
 
-//    time::real::initialize();
+    time::real::initialize();
 
 /*    lapic::initialize_timer();
     smp::boot(_cores + 1, _num_cores - 1);
