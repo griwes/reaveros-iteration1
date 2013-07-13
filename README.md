@@ -42,10 +42,6 @@ of releases, along with links to download their source code tarballs, visit http
 (see warning below before choosing release to build). You should still invoke both `make prepare` and `make hdd` before
 using following instructions to run the OS.**
 
-_WARNING: The above note doesn't apply to releases 0.0.1 and 0.0.2, which had insane build system with more dependencies.
-Until 0.0.3 is released, you are asked to ignore the above notice and always build HEAD, unless commit message states something
-like "still broken"._
-
 To run ReaverOS, you'll need one of the following:
 
   * Bochs - to invoke Bochs, use plain `make` after or instead `make hdd`. `make prepare` will create 1GiB image and bochsrc

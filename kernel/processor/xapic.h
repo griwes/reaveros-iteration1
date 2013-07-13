@@ -45,6 +45,8 @@ namespace processor
         virtual void divisor(uint8_t);
         virtual void set_timer(bool);
 
+        virtual void ipi(uint64_t, ipis, uint8_t = 0);
+
     private:
         utils::mmio_helper<uint32_t> _register;
     };

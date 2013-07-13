@@ -228,7 +228,7 @@ void time::real_timer::_handle(processor::idt::isr_context isrc)
 
     if (_is_periodic)
     {
-        while (_list.top()->time_point <= _now)
+        while (_list.size() && _list.top()->time_point <= _now)
         {
             _list.top()->handler(isrc, _list.top()->handler_parameter);
             _list.update([=](timer_description & ref){ return true; }, [](timer_description & desc){ desc.time_point += desc.period; });
@@ -256,7 +256,7 @@ void time::real_timer::_handle(processor::idt::isr_context isrc)
         }
     }
 
-    if (!scheduled || scheduled != _list.top())
+    if (_list.size() && (!scheduled || scheduled != _list.top()))
     {
         _schedule_next();
     }
@@ -272,6 +272,11 @@ void time::real_timer::_stop()
 
 const time::timer_description * time::real_timer::_schedule_next()
 {
+    if (!_list.size())
+    {
+        return nullptr;
+    }
+
     auto next = _list.top();
 
     while (next->time_point <= _now && next->next)

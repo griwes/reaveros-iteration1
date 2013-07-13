@@ -35,6 +35,8 @@
 #include <processor/lapic.h>
 #include <time/pit.h>
 #include <time/real.h>
+#include <processor/smp.h>
+#include <processor/core.h>
 
 namespace
 {
@@ -107,10 +109,10 @@ void processor::initialize()
     time::real::initialize();
     time::lapic::initialize();
 
-/*    smp::boot(_cores + 1, _num_cores - 1);
+    smp::boot(_cores + 1, _num_cores - 1);
     memory::drop_bootloader_mapping();
 
-    _ready = true;*/
+    _ready = true;
 }
 
 processor::ioapic * processor::get_ioapic(uint8_t input)

@@ -25,36 +25,12 @@
 
 #pragma once
 
-#include <processor/lapic.h>
-
 namespace processor
 {
-    class x2apic : public lapic
+    class core;
+
+    namespace smp
     {
-    public:
-        x2apic();
-        virtual ~x2apic() {}
-
-        virtual void eoi(uint8_t);
-
-        virtual uint32_t current_count();
-        virtual uint32_t initial_count();
-        virtual void initial_count(uint32_t);
-        virtual uint8_t divisor();
-        virtual void divisor(uint8_t);
-        virtual void set_timer(bool);
-
-        virtual void ipi(uint64_t, ipis, uint8_t = 0);
-
-    private:
-        uint64_t _register(uint64_t reg)
-        {
-            return rdmsr(reg);
-        }
-
-        void _register(uint64_t reg, uint64_t val)
-        {
-            wrmsr(reg, val);
-        }
-    };
+        void boot(core *, uint64_t);
+    }
 }

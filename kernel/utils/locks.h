@@ -61,7 +61,7 @@ namespace utils
     public:
         bit_lock(uint64_t * address, uint8_t bit) : _address{ address }, _bit{ bit }
         {
-            while (__sync_fetch_and_or(address, 1 << (_bit - 1)) & (1 << (_bit - 1)))
+            while (__sync_fetch_and_or(address, 1 << _bit) & (1 << _bit))
             {
                 asm volatile ("pause" ::: "memory");
             }
@@ -69,7 +69,7 @@ namespace utils
 
         ~bit_lock()
         {
-            __sync_fetch_and_and(_address, ~static_cast<uint64_t>(1 << (_bit - 1)));
+            *_address &= ~static_cast<uint64_t>(1 << _bit);
         }
 
         bit_lock(const bit_lock &) = delete;

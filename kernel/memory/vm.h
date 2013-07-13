@@ -60,14 +60,54 @@ namespace memory
             x64::map(base, end, physical);
         }
 
-        inline void unmap(uint64_t base, uint64_t end, bool push_frames = true)
+        inline void map_foreign(uint64_t address)
         {
-            x64::unmap(base, end, push_frames);
+            x64::map(address, address + 4096, memory::pmm::pop(), true);
+        }
+
+        inline void map_foreign(uint64_t address, uint64_t physical)
+        {
+            x64::map(address, address + 4096, physical, true);
+        }
+
+        inline void map_multiple_foreign(uint64_t base, uint64_t end)
+        {
+            while (base < end)
+            {
+                x64::map(base, base + 4096, memory::pmm::pop(), true);
+
+                base += 4096;
+            }
+        }
+
+        inline void map_multiple_foreign(uint64_t base, uint64_t end, uint64_t physical)
+        {
+            x64::map(base, end, physical, true);
+        }
+
+        inline void unmap(uint64_t base, uint64_t end, bool push_frames = true, bool foreign = false)
+        {
+            x64::unmap(base, end, push_frames, foreign);
         }
 
         inline uint64_t get_physical_address(uint64_t virtual_address)
         {
             return x64::get_physical_address(virtual_address);
+        }
+
+        inline uint64_t clone_kernel()
+        {
+            return x64::clone_kernel();
+        }
+
+        inline void set_foreign(uint64_t foreign)
+        {
+            x64::set_foreign(foreign);
+        }
+
+        inline void release_foreign()
+        {
+            x64::release_foreign();
         }
     }
 }

@@ -77,7 +77,7 @@ void memory::x64::invlpg(uint64_t addr)
 void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start, bool foreign)
 {
     screen::debug("\nMapping ", (void *)virtual_start, "-", (void *)virtual_end, " to ", (void *)physical_start,
-        foreign ? "for foreign VAS" : "");
+        foreign ? " for foreign VAS" : "");
 
     address_generator gen{ foreign ? 257u : 256u };
 
@@ -231,6 +231,8 @@ uint64_t memory::x64::get_physical_address(uint64_t addr, bool foreign)
 
 void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push, bool foreign)
 {
+    screen::debug("\nUnmapping ", (void *)virtual_start, "-", (void *)virtual_end, foreign ? " from foreign VAS" : "");
+
     address_generator gen{ foreign ? 257u : 256u };
 
     virtual_start &= ~(uint64_t)4095;
@@ -358,15 +360,17 @@ uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging 
         gen.pml4()->entries[startpml4e] = current.pml4()->entries[startpml4e];
     }
 
-    release_foreign();
-
     return pml4_frame;
 }
 
 void memory::x64::set_foreign(uint64_t frame)
 {
     address_generator current{ 256 };
-    auto _ = current.pml4()->entries[257].lock();
+
+    while (__sync_fetch_and_or((uint64_t *)&current.pml4()->entries[257], 1) & 1)
+    {
+        asm volatile ("pause");
+    }
 
 //    scheduler::disable();
 
@@ -378,6 +382,11 @@ void memory::x64::set_foreign(uint64_t frame)
 
 void memory::x64::release_foreign()
 {
+    address_generator current{ 256 };
+
+    current.pml4()->entries[257] = 0;
+    current.pml4()->entries[257].present = 0;
+
 //    scheduler::enable();
 }
 

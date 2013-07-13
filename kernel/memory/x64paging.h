@@ -221,6 +221,7 @@ namespace memory
                 return *this;
             }
 
+            // "standard" lock on 9th bit for modification
             utils::bit_lock lock()
             {
                 return { (uint64_t *)this, 9 };

@@ -32,6 +32,13 @@ namespace processor
 {
 //    extern "C" void ap_initialize();
 
+    class core;
+
+    namespace smp
+    {
+        void boot(core *, uint64_t);
+    }
+
     class core
     {
     public:
@@ -68,6 +75,7 @@ namespace processor
         }
 
 //        friend void processor::ap_initialize();
+        friend void processor::smp::boot(core *, uint64_t);
 
     private:
         uint32_t _acpi_id;
@@ -83,5 +91,7 @@ namespace processor
         processor::gdt::gdt_entry _gdt[7];
         processor::gdt::tss _tss;
         processor::gdt::gdtr _gdtr;
+
+        uint8_t * _started;
     };
 }

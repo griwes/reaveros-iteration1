@@ -167,3 +167,25 @@ void processor::xapic::set_timer(bool periodic)
 {
     _register(_lvt_timer, _timer_irq | (periodic << 17));
 }
+
+void processor::xapic::ipi(uint64_t apic_id, processor::ipis ipi_type, uint8_t data)
+{
+    _register(_interrupt_command_32, apic_id << 24);
+
+    switch (ipi_type)
+    {
+    case ipis::init:
+        _register(_interrupt_command_0, 5 << 8);
+        break;
+
+    case ipis::sipi:
+        _register(_interrupt_command_0, (6 << 8) | data);
+        break;
+
+    default:
+        PANICEX("Issued unimplemented IPI.", [&]()
+        {
+            screen::print("\nIPI type: ", (uint64_t)ipi_type);
+        });
+    }
+}

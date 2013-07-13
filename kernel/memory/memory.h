@@ -89,5 +89,5 @@ namespace memory
     }
 
     void copy_bootloader_data(screen::mode *&, map_entry *&, uint64_t);
-    void drop_bootloader_mapping(bool);
+    void drop_bootloader_mapping(bool = true);
 }

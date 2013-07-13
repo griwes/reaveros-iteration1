@@ -29,6 +29,12 @@
 
 namespace processor
 {
+    enum class ipis
+    {
+        init,
+        sipi
+    };
+
     namespace idt
     {
         struct isr_context;
@@ -62,6 +68,8 @@ namespace processor
         virtual uint8_t divisor() = 0;
         virtual void divisor(uint8_t) = 0;
         virtual void set_timer(bool) = 0;
+
+        virtual void ipi(uint64_t, ipis, uint8_t = 0) = 0;
 
     protected:
         uint8_t _timer_irq;
