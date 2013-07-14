@@ -29,7 +29,8 @@
 
 namespace
 {
-    time::pit::timer * _pit = nullptr;
+    time::pit::timer _pit;
+    bool _ready = false;
 }
 
 void time::pit::timer::_pit_handler(processor::idt::isr_context isr, uint64_t context)
@@ -39,14 +40,15 @@ void time::pit::timer::_pit_handler(processor::idt::isr_context isr, uint64_t co
 
 void time::pit::initialize()
 {
-    new (_pit) time::pit::timer();
+    new (&_pit) time::pit::timer();
+    _ready = true;
 
-    time::set_high_precision_timer(_pit);
+    time::set_high_precision_timer(&_pit);
 }
 
 bool time::pit::ready()
 {
-    return _pit;
+    return _ready;
 }
 
 time::pit::timer::timer() : real_timer{ capabilities::dynamic, 200_us, 1_s / 19 }, _int_vector{}
