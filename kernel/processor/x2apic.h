@@ -35,6 +35,8 @@ namespace processor
         x2apic();
         virtual ~x2apic() {}
 
+        virtual void ap_initialize();
+
         virtual void eoi(uint8_t);
 
         virtual uint32_t current_count();

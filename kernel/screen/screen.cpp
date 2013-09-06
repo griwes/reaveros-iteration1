@@ -42,6 +42,8 @@ void screen::initialize_terminal(screen::mode * video_mode, memory::map_entry * 
 
 void screen::print(tag::tags t)
 {
+    auto _ = console.lock();
+
     screen::print(color::white);
 
     switch (t)

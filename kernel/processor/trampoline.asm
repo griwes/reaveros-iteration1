@@ -160,10 +160,8 @@ pmode:
 bits    64
 
 lmode:
-;    mov     rax, qword ap_initialize
-;    jmp     rax
-    cli
-    hlt
+    mov     rax, qword ap_initialize
+    jmp     rax
 
     times   8192 - ($ - $$)  db  0
 stack_top:

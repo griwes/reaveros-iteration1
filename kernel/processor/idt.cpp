@@ -134,3 +134,8 @@ void processor::idt::initialize()
 
     load_idt(&_idtr);
 }
+
+void processor::idt::ap_initialize()
+{
+    load_idt(&_idtr);
+}

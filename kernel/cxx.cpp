@@ -53,8 +53,7 @@ void _panic(const char * message, const char * file, uint64_t line, const char *
     screen::clear();
 #endif
 
-    screen::print(color::red, "Kernel panic: ", color::gray, message);
-    screen::print("\n", file, ":", line, ": ", func);
+    screen::print(color::red, "Kernel panic: ", color::gray, message, "\n", file, ":", line, ": ", func);
 
     if (additional)
     {

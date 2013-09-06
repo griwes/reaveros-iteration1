@@ -115,6 +115,19 @@ void processor::initialize()
     _ready = true;
 }
 
+void processor::ap_initialize()
+{
+    idt::ap_initialize();
+    gdt::ap_initialize();
+
+    STI;
+
+    for (;;)
+    {
+        HLT;
+    }
+}
+
 processor::ioapic * processor::get_ioapic(uint8_t input)
 {
     for (uint64_t i = 0; i < _num_ioapics; ++i)
@@ -136,4 +149,17 @@ processor::interrupt_entry * processor::get_sources()
 uint8_t processor::max_ioapic_input()
 {
     return _max_ioapic_input;
+}
+
+processor::core * processor::get_core(uint64_t apic_id)
+{
+    for (uint64_t i = 0; i < _num_cores; ++i)
+    {
+        if (_cores[i].apic_id() == apic_id)
+        {
+            return _cores + i;
+        }
+    }
+
+    PANIC("requested core with unknown APIC ID!");
 }

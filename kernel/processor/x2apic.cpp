@@ -105,6 +105,28 @@ processor::x2apic::x2apic()
         ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
 }
 
+void processor::x2apic::ap_initialize()
+{
+    wrmsr(_apic_base_msr, rdmsr(_apic_base_msr) | (1 << 10));
+
+    if (((_register(_apic_version) >> 16) & 0xFF) == 6)
+    {
+        _register(_lvt_cmci, 0x10000);
+    }
+
+    _register(_lvt_error, 0x10000);
+    _register(_lvt_lint0, 0x10000);
+    _register(_lvt_lint1, 0x10000);
+    _register(_lvt_performance_monitor, 0x10000);
+    _register(_lvt_thermal_sensor, 0x10000);
+    _register(_lvt_timer, 0x10000);
+
+    _register(_spurious_interrupt_vector, _spurious | 0x100);
+
+    screen::debug("\nInitialized x2APIC. APIC version: ", _register(_apic_version) & 0xFF, ", number of LVTs: ",
+        ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
+}
+
 void processor::x2apic::eoi(uint8_t v)
 {
     if (v != _spurious)

@@ -31,23 +31,32 @@ namespace utils
     class unique_lock
     {
     public:
-        unique_lock(T & lock) : _lock{ lock }
+        unique_lock(T & lock) : _lock{ &lock }
         {
-            _lock.lock();
+            _lock->lock();
         }
 
         ~unique_lock()
         {
-            _lock.unlock();
+            if (_lock)
+            {
+                _lock->unlock();
+            }
         }
 
         unique_lock(const unique_lock<T> &) = delete;
-        unique_lock(unique_lock<T> &&) = default;
+
+        unique_lock(unique_lock<T> && rhs) : _lock{ rhs._lock }
+        {
+            dbg;
+            rhs._lock = nullptr;
+        }
+
         unique_lock<T> & operator=(const unique_lock<T> &) = delete;
         unique_lock<T> & operator=(unique_lock<T> &&) = delete;
 
     private:
-        T & _lock;
+        T * _lock;
     };
 
     template<typename T>
@@ -69,11 +78,19 @@ namespace utils
 
         ~bit_lock()
         {
-            *_address &= ~static_cast<uint64_t>(1 << _bit);
+            if (_address)
+            {
+                *_address &= ~static_cast<uint64_t>(1 << _bit);
+            }
         }
 
         bit_lock(const bit_lock &) = delete;
-        bit_lock(bit_lock &&) = default;
+
+        bit_lock(bit_lock && rhs) : _address{ rhs._address }, _bit{ rhs._bit }
+        {
+            rhs._address = nullptr;
+        }
+
         bit_lock & operator=(const bit_lock &) = delete;
         bit_lock & operator=(bit_lock &&) = delete;
 

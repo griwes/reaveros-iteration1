@@ -74,5 +74,6 @@ namespace processor
         } __attribute__((packed));
 
         void initialize();
+        void ap_initialize();
     }
 }

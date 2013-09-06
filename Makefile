@@ -70,3 +70,23 @@ tools:
 
 build-bochs:
 	cd utils && ./build-bochs.sh
+
+analyze:
+	cd loader/booter; \
+	make CFL="--analyze -Xanalyzer -analyzer-output=text"
+	cd kernel; \
+	make CFL="--analyze -Xanalyzer -analyzer-output=text"
+
+debug:
+	cd loader/booter; \
+	make CFL="-DROSEDEBUG" -j12
+	cd kernel; \
+	make CFL="-DROSEDEBUG" -j12
+
+bd:
+	make debug
+	make bochs
+
+qd:
+	make debug
+	make qemu

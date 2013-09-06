@@ -126,7 +126,7 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
 
                 for (uint64_t j = i; j < num_cores - 1; ++j)
                 {
-                    screen::print("\nMoving CPU #", cores[j + 1].apic_id(), " into place of CPU#", cores[j].apic_id());
+                    screen::print("\nMoving CPU #", cores[j + 1].apic_id(), " into place of CPU #", cores[j].apic_id());
                     cores[j] = cores[j + 1];
                 }
 

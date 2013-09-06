@@ -63,26 +63,29 @@ namespace utils
     class recursive_spinlock
     {
     public:
+        recursive_spinlock() : _count{ 0 }, _owner{ 0 }
+        {
+        }
+
         void lock()
         {
             uint64_t cpu = processor::initial_id();
 
-            while (_owner != cpu)
+            while (true)
             {
-                LOCK(_inner_lock);
-
-                if (_count != 0)
                 {
-                    while (_count != 0)
-                    {
-                        asm volatile ("pause");
-                    }
+                    LOCK(_inner_lock);
 
-                    continue;
+                    if (!_count || _owner == cpu)
+                    {
+                        _owner = cpu;
+                        ++_count;
+
+                        return;
+                    }
                 }
 
-                _owner = cpu;
-                ++_count;
+                asm volatile ("pause" ::: "memory");
             }
         }
 
@@ -90,11 +93,12 @@ namespace utils
         {
             uint64_t cpu = processor::initial_id();
 
-            if (_count != 0 && _owner != cpu)
+            if (_count == 0 || _owner != cpu)
             {
                 PANIC("invalid unlock on recursive spinlock!");
             }
 
+            LOCK(_inner_lock);
             --_count;
         }
 

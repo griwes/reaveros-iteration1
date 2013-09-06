@@ -30,7 +30,12 @@
 
 namespace processor
 {
-//    extern "C" void ap_initialize();
+    extern "C" void ap_initialize();
+
+    namespace gdt
+    {
+        void ap_initialize();
+    }
 
     class core;
 
@@ -74,7 +79,8 @@ namespace processor
             _is_nmi_valid = true;
         }
 
-//        friend void processor::ap_initialize();
+        friend void processor::ap_initialize();
+        friend void processor::gdt::ap_initialize();
         friend void processor::smp::boot(core *, uint64_t);
 
     private:

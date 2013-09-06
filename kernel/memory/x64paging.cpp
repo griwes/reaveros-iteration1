@@ -348,10 +348,22 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
 
 uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging structures
 {
+    static uint8_t * temp;
+
+    if (!temp)
+    {
+        temp = (uint8_t *)vm::allocate_address_range(4096);
+    }
+
     address_generator current{ 256 };
     address_generator gen{ 257 };
 
     uint64_t pml4_frame = memory::pmm::pop();
+
+    vm::map((uint64_t)temp, pml4_frame);
+    memory::zero(temp, 4096);
+    vm::unmap((uint64_t)temp, (uint64_t)temp + 4096, false);
+
     set_foreign(pml4_frame);
 
     // 256 + 2 for recursive entries
@@ -375,9 +387,10 @@ void memory::x64::set_foreign(uint64_t frame)
 //    scheduler::disable();
 
     current.pml4()->entries[257] = frame;
-    current.pdpt(257)->entries[256] = frame;
 
     processor::reload_cr3();
+
+    current.pdpt(257)->entries[256] = frame;
 }
 
 void memory::x64::release_foreign()
@@ -386,6 +399,8 @@ void memory::x64::release_foreign()
 
     current.pml4()->entries[257] = 0;
     current.pml4()->entries[257].present = 0;
+
+    processor::reload_cr3();
 
 //    scheduler::enable();
 }

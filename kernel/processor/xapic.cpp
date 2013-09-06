@@ -108,6 +108,29 @@ processor::xapic::xapic() : _register{ processor::get_lapic_base() }
         ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
 }
 
+void processor::xapic::ap_initialize()
+{
+    _register(_destination_format, _register(_destination_format) & 0xF0000000);
+    _register(_logical_destination, 0xFF000000);
+
+    if (((_register(_apic_version) >> 16) & 0xFF) == 6)
+    {
+        _register(_lvt_cmci, 0x10000);
+    }
+
+    _register(_lvt_error, 0x10000);
+    _register(_lvt_lint0, 0x10000);
+    _register(_lvt_lint1, 0x10000);
+    _register(_lvt_performance_monitor, 0x10000);
+    _register(_lvt_thermal_sensor, 0x10000);
+    _register(_lvt_timer, 0x10000);
+
+    _register(_spurious_interrupt_vector, _spurious | 0x100);
+
+    screen::debug("\nInitialized xAPIC. APIC version: ", _register(_apic_version) & 0xFF, ", number of LVTs: ",
+        ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
+}
+
 void processor::xapic::eoi(uint8_t v)
 {
     if (v != _spurious)

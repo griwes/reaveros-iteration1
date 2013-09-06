@@ -27,6 +27,10 @@
 #include <memory/memory.h>
 #include <memory/vm.h>
 #include <memory/pmm.h>
+#include <processor/processor.h>
+#include <processor/core.h>
+
+#include <screen/screen.h>
 
 namespace
 {
@@ -47,7 +51,7 @@ namespace
 
     void _setup_tss(uint64_t id, processor::gdt::gdt_entry * start = _gdt, processor::gdt::tss * tss = &_tss)
     {
-        memory::zero(&tss);
+        memory::zero(tss);
 
         tss->iomap = sizeof(processor::gdt::tss);
 
@@ -90,4 +94,27 @@ void processor::gdt::initialize()
     _setup_tss(5);
 
     load_gdt(&_gdtr);
+}
+
+void processor::gdt::ap_initialize()
+{
+    auto core = processor::get_core(processor::initial_id());
+    auto gdt = core->_gdt;
+    auto & gdtr = core->_gdtr;
+    auto & tss = core->_tss;
+
+    memory::zero(gdt, 7);
+
+    gdtr.address = gdt;
+    gdtr.limit = sizeof(gdt_entry) * 7 - 1;
+
+    screen::print("\n", gdt, "\n", gdtr.address);
+
+    _setup_gdte(1, true, false, gdt);
+    _setup_gdte(2, false, false, gdt);
+    _setup_gdte(3, true, true, gdt);
+    _setup_gdte(4, false, true, gdt);
+    _setup_tss(5, gdt, &tss);
+
+    load_gdt(&gdtr);
 }

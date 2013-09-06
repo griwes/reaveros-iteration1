@@ -102,8 +102,6 @@ uint64_t memory::pmm::frame_stack::pop()
         }
     }
 
-    screen::debug("\nframe_stack::pop(): returning ", (void *)ret);
-
     --_size;
 
     return ret;
@@ -159,7 +157,6 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
             if (_last->size == frame_stack_chunk::max)
             {
-                screen::debug("\nframe_stack::push(): set _last to _next");
                 _last = _last->next;
             }
         }
