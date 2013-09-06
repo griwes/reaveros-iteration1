@@ -28,9 +28,7 @@
 #include <memory/pmm.h>
 #include <screen/screen.h>
 
-#include "time/timer.h"
-#include "time/real.h"
-#include "processor/idt.h"
+#include "processor/ipi.h"
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
@@ -60,14 +58,6 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     scheduler::initialize();
     screen::done();
 */
-    time::get_high_precision_timer()->periodic(1_s, [](processor::idt::isr_context, uint64_t)
-    {
-//        auto p = time::real::now();
-//        screen::print("\n", (p.seconds / (60 * 60)) % 24, ":", (p.seconds / 60) % 60, ":", p.seconds % 60);
-//        screen::print(" ", p.seconds / (60 * 60 * 24), " days since 01.01.2001");
-    }, 0);
-    for (;;) ;
-
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);
     screen::done();
@@ -104,4 +94,6 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print(tag::scheduler, "Running /boot/init.srv...");
     scheduler::process init = scheduler::create_process("/boot/init.srv");
     screen::done();*/
+
+    for (;;) ;
 }

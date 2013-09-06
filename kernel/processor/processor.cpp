@@ -37,6 +37,7 @@
 #include <time/real.h>
 #include <processor/smp.h>
 #include <processor/core.h>
+#include <memory/vm.h>
 
 namespace
 {
@@ -83,6 +84,7 @@ void processor::initialize()
     idt::initialize();
 
     initialize_exceptions();
+    initialize_panic();
 
     acpi::initialize();
 
@@ -119,8 +121,18 @@ void processor::ap_initialize()
 {
     get_lapic()->ap_initialize();
 
-    idt::ap_initialize();
     gdt::ap_initialize();
+    idt::ap_initialize();
+
+    uint64_t stack = memory::vm::allocate_address_range(8096);
+    memory::vm::map(stack + 4096);
+
+    asm volatile (
+        R"(
+            mov     $0, %%rbp
+            mov     %0, %%rsp
+        )" :: "r"(stack + 8096)
+    );
 
     STI;
 
@@ -174,4 +186,9 @@ uint64_t processor::id()
     }
 
     return initial_id();
+}
+
+uint64_t processor::get_core_count()
+{
+    return _num_cores;
 }

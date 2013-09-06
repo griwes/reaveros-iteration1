@@ -32,7 +32,15 @@ namespace processor
     enum class ipis
     {
         init,
-        sipi
+        sipi,
+        generic
+    };
+
+    enum class broadcasts
+    {
+        self = 1,
+        all,
+        others
     };
 
     namespace idt
@@ -73,6 +81,7 @@ namespace processor
         virtual void set_timer(bool) = 0;
 
         virtual void ipi(uint64_t, ipis, uint8_t = 0) = 0;
+        virtual void broadcast(broadcasts, ipis, uint8_t = 0) = 0;
 
     protected:
         uint8_t _timer_irq;

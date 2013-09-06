@@ -109,45 +109,46 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
     {
         auto _ = gen.pml4()->entries[startpml4e].lock();
 
+        pdpt * table = gen.pdpt(startpml4e);
+
         if (!gen.pml4()->entries[startpml4e].present)
         {
             gen.pml4()->entries[startpml4e] = memory::pmm::pop();
-
             new (gen.pdpt(startpml4e)) pdpt{};
+
+            invlpg((uint64_t)table);
         }
 
-        pdpt * table = gen.pdpt(startpml4e);
-        invlpg((uint64_t)table);
 
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
         {
             auto _ = (*table)[startpdpte].lock();
 
+            page_directory * pd = gen.pd(startpml4e, startpdpte);
+
             if (!(*table)[startpdpte].present)
             {
                 (*table)[startpdpte] = memory::pmm::pop();
-
                 new (gen.pd(startpml4e, startpdpte)) page_directory{};
-            }
 
-            page_directory * pd = gen.pd(startpml4e, startpdpte);
-            invlpg((uint64_t)pd);
+                invlpg((uint64_t)pd);
+            }
 
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
             {
                 auto _ = (*pd)[startpde].lock();
 
+                page_table * pt = gen.pt(startpml4e, startpdpte, startpde);
+
                 if (!(*pd)[startpde].present)
                 {
                     (*pd)[startpde] = memory::pmm::pop();
-
                     new (gen.pt(startpml4e, startpdpte, startpde)) page_table{};
-                }
 
-                page_table * pt = gen.pt(startpml4e, startpdpte, startpde);
-                invlpg((uint64_t)pt);
+                    invlpg((uint64_t)pt);
+                }
 
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)

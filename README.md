@@ -11,6 +11,7 @@ to be as legacy free as possible, while implementing modern, µkernel design.
 
   * kernel timer API using HPET (or PIT, if HPET is not available) for high precision timer and local APIC timer for
 preemption timer
+  * AP booting
 
 ## Build instructions
 

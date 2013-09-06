@@ -15,9 +15,8 @@ $(EXECUTABLE): $(OBJECTS)
 	yasm -f elf64 -o entry.o entry.asm
 	yasm -f elf64 -o processor/asm.o processor/processor.asm
 	yasm -f elf64 -o processor/trampoline.o processor/trampoline.asm
-	yasm -f elf64 -o memory/stackmove.o memory/stackmove.asm
 	$(CC) $(CFLAGS) main.cpp -o main.o -I. -include inc.h
-	$(LD) $(LDFLAGS) entry.o processor/asm.o processor/trampoline.o memory/stackmove.o main.o $(OBJECTS) -o $@
+	$(LD) $(LDFLAGS) entry.o processor/asm.o processor/trampoline.o main.o $(OBJECTS) -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@ -I. -include inc.h

@@ -25,29 +25,19 @@
 
 #pragma once
 
-#include <memory/x64paging.h>
+#include <processor/lapic.h>
 
 namespace processor
 {
-    class ioapic;
-    class interrupt_entry;
-    class core;
+    inline void ipi(uint64_t target, ipis ipi, uint8_t data = 0)
+    {
+        get_lapic()->ipi(target, ipi, data);
+    }
 
-    extern "C" memory::x64::pml4 * get_cr3();
-    extern "C" void reload_cr3();
+    inline void broadcast(broadcasts target, ipis ipi, uint8_t data = 0)
+    {
+        get_lapic()->broadcast(target, ipi, data);
+    }
 
-    uint64_t id();
-    extern "C" uint64_t initial_id();
-    uint64_t get_lapic_base();
-    uint8_t translate_isa(uint8_t irq);
-
-    ioapic * get_ioapic(uint8_t input);
-    uint8_t max_ioapic_input();
-    interrupt_entry * get_sources();
-    core * get_core(uint64_t apic_id);
-    uint64_t get_core_count();
-
-    void initialize();
-    extern "C" void ap_initialize();
-    bool ready();
+    void parallel_execute(void (*)(uint64_t), uint64_t = 0);
 }

@@ -23,31 +23,47 @@
  *
  **/
 
-#pragma once
+#include <processor/ipi.h>
+#include <processor/handlers.h>
 
-#include <memory/x64paging.h>
-
-namespace processor
+namespace
 {
-    class ioapic;
-    class interrupt_entry;
-    class core;
+    uint8_t _int_vector = 0;
 
-    extern "C" memory::x64::pml4 * get_cr3();
-    extern "C" void reload_cr3();
+    utils::spinlock _lock;
+    void (*_fptr)(uint64_t) = nullptr;
+    uint64_t _data = 0;
 
-    uint64_t id();
-    extern "C" uint64_t initial_id();
-    uint64_t get_lapic_base();
-    uint8_t translate_isa(uint8_t irq);
+    uint64_t _num_cores_finished = 0;
 
-    ioapic * get_ioapic(uint8_t input);
-    uint8_t max_ioapic_input();
-    interrupt_entry * get_sources();
-    core * get_core(uint64_t apic_id);
-    uint64_t get_core_count();
+    void _interrupt_handler(processor::idt::isr_context, uint64_t)
+    {
+        _fptr(_data);
+        ++_num_cores_finished;
+    }
+}
 
-    void initialize();
-    extern "C" void ap_initialize();
-    bool ready();
+void processor::parallel_execute(void (*fptr)(uint64_t), uint64_t data)
+{
+    LOCK(_lock);
+
+    if (!_int_vector)
+    {
+        _int_vector = allocate_isr(0);
+        register_handler(_int_vector, _interrupt_handler);
+    }
+
+    _fptr = fptr;
+    broadcast(broadcasts::others, ipis::generic, _int_vector);
+    fptr(data);
+    ++_num_cores_finished;
+
+    while (_num_cores_finished < get_core_count())
+    {
+        asm volatile ("pause");
+    }
+
+    _fptr = nullptr;
+    _data = 0;
+    _num_cores_finished = 0;
 }

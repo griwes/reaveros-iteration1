@@ -195,22 +195,42 @@ void processor::x2apic::ipi(uint64_t apic_id, processor::ipis ipi_type, uint8_t 
 
     switch (ipi_type)
     {
-    case ipis::init:
-        interrupt_command |= 5 << 8;
-        break;
+        case ipis::init:
+            interrupt_command |= 5 << 8;
+            break;
 
-    case ipis::sipi:
-        interrupt_command |= (6 << 8) | data;
-        break;
+        case ipis::sipi:
+            interrupt_command |= (6 << 8) | data;
+            break;
 
-    default:
-        PANICEX("Issued unimplemented IPI.", [&]()
-        {
-            screen::print("\nIPI type: ", (uint64_t)ipi_type);
-        });
+        case ipis::generic:
+            interrupt_command |= data;
+            break;
+
+        default:
+            PANICEX("Issued unimplemented IPI.", [&]()
+            {
+                screen::print("\nIPI type: ", (uint64_t)ipi_type);
+            });
     }
 
     _register(_interrupt_command, interrupt_command);
+}
+
+void processor::x2apic::broadcast(processor::broadcasts btype, processor::ipis ipi_type, uint8_t data)
+{
+    switch (ipi_type)
+    {
+        case ipis::generic:
+            _register(_interrupt_command, ((uint64_t)btype << 18) | data);
+            break;
+
+        default:
+            PANICEX("Issued unimplemented broadcast.", [&]()
+            {
+                screen::print("\nIPI type: ", (uint64_t)ipi_type);
+            });
+    }
 }
 
 uint64_t processor::x2apic::id()

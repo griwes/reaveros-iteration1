@@ -156,3 +156,5 @@ constexpr uint64_t operator "" _ns(unsigned long long nanoseconds)
 {
     return nanoseconds;
 }
+
+void initialize_panic();

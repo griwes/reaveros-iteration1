@@ -48,6 +48,7 @@ namespace processor
         virtual void set_timer(bool);
 
         virtual void ipi(uint64_t, ipis, uint8_t = 0);
+        virtual void broadcast(broadcasts, ipis, uint8_t = 0);
 
     private:
         uint64_t _register(uint64_t reg)

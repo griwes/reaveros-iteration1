@@ -26,8 +26,20 @@
 #include <screen/screen.h>
 #include <memory/memory.h>
 #include <processor/processor.h>
+#include <processor/ipi.h>
+#include <processor/handlers.h>
 
 void * __dso_handle = 0;
+
+namespace
+{
+    uint64_t _ipi_int = 0;
+    void _interrupt_handler(processor::idt::isr_context, uint64_t)
+    {
+        CLI;
+        HLT;
+    }
+}
 
 void operator delete(void *)
 {
@@ -43,9 +55,15 @@ extern "C" void __cxa_pure_virtual()
     PANIC("Pure virtual function called!");
 }
 
+void initialize_panic()
+{
+    _ipi_int = processor::allocate_isr(0);
+    processor::register_handler(_ipi_int, _interrupt_handler);
+}
+
 void _panic(const char * message, const char * file, uint64_t line, const char * func, bool additional)
 {
-//    processor::broadcast(processor::broadcast_types::others, processor::ipis::panic);
+    processor::broadcast(processor::broadcasts::others, processor::ipis::generic, _ipi_int);
 
 #ifdef ROSEDEBUG
     screen::print("\n");
