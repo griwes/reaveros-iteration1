@@ -98,7 +98,7 @@ void processor::gdt::initialize()
 
 void processor::gdt::ap_initialize()
 {
-    auto core = processor::get_core(processor::initial_id());
+    auto core = processor::get_core(processor::id());
     auto gdt = core->_gdt;
     auto & gdtr = core->_gdtr;
     auto & tss = core->_tss;
@@ -107,8 +107,6 @@ void processor::gdt::ap_initialize()
 
     gdtr.address = gdt;
     gdtr.limit = sizeof(gdt_entry) * 7 - 1;
-
-    screen::print("\n", gdt, "\n", gdtr.address);
 
     _setup_gdte(1, true, false, gdt);
     _setup_gdte(2, false, false, gdt);

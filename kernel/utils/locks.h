@@ -48,7 +48,6 @@ namespace utils
 
         unique_lock(unique_lock<T> && rhs) : _lock{ rhs._lock }
         {
-            dbg;
             rhs._lock = nullptr;
         }
 
@@ -132,5 +131,5 @@ namespace utils
 
 #define CONCATEX(x, y) x ## y
 #define CONCAT(x, y) CONCATEX(x, y)
-#define LOCK(x) auto CONCAT(_, __LINE__) = utils::make_unique_lock(x);
-#define INTL() auto CONCAT(_, __LINE__) = utils::cli();
+#define LOCK(x) auto CONCAT(_, __LINE__) = utils::make_unique_lock(x)
+#define INTL() auto CONCAT(_, __LINE__) = utils::cli()

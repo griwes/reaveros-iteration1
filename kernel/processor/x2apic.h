@@ -36,6 +36,7 @@ namespace processor
         virtual ~x2apic() {}
 
         virtual void ap_initialize();
+        virtual uint64_t id();
 
         virtual void eoi(uint8_t);
 

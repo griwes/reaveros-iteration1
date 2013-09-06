@@ -114,7 +114,8 @@ namespace processor
                 else
                 {
                     // uint64_t target_cpu = get_cpu_for_interrupt();
-                    uint64_t target_cpu = initial_id();
+                    // TODO: THIS IS BROKEN!!!
+                    uint64_t target_cpu = id();
 
                     ioreg |= target_cpu << 56;
                 }

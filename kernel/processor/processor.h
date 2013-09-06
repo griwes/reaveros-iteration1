@@ -36,7 +36,8 @@ namespace processor
     extern "C" memory::x64::pml4 * get_cr3();
     extern "C" void reload_cr3();
 
-    extern "C" uint32_t initial_id();
+    uint64_t id();
+    extern "C" uint64_t initial_id();
     uint64_t get_lapic_base();
     uint8_t translate_isa(uint8_t irq);
 

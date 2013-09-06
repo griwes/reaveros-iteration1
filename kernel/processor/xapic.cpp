@@ -212,3 +212,8 @@ void processor::xapic::ipi(uint64_t apic_id, processor::ipis ipi_type, uint8_t d
         });
     }
 }
+
+uint64_t processor::xapic::id()
+{
+    return _register(_apic_id);
+}

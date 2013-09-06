@@ -117,6 +117,8 @@ void processor::initialize()
 
 void processor::ap_initialize()
 {
+    get_lapic()->ap_initialize();
+
     idt::ap_initialize();
     gdt::ap_initialize();
 
@@ -162,4 +164,14 @@ processor::core * processor::get_core(uint64_t apic_id)
     }
 
     PANIC("requested core with unknown APIC ID!");
+}
+
+uint64_t processor::id()
+{
+    if (get_lapic())
+    {
+        return get_lapic()->id();
+    }
+
+    return initial_id();
 }

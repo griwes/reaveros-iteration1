@@ -61,6 +61,7 @@ namespace processor
         virtual ~lapic() {}
 
         virtual void ap_initialize() = 0;
+        virtual uint64_t id() = 0;
 
         virtual void eoi(uint8_t) = 0;
 

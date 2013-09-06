@@ -212,3 +212,8 @@ void processor::x2apic::ipi(uint64_t apic_id, processor::ipis ipi_type, uint8_t 
 
     _register(_interrupt_command, interrupt_command);
 }
+
+uint64_t processor::x2apic::id()
+{
+    return _register(_apic_id);
+}

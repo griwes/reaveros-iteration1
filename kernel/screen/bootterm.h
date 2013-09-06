@@ -62,5 +62,7 @@ namespace screen
         uint32_t _x, _y;
 
         uint8_t _red, _green, _blue;
+
+        utils::spinlock _lock;
     } term;
 }

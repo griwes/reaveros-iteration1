@@ -66,6 +66,8 @@ screen::boot_terminal::~boot_terminal()
 
 void screen::boot_terminal::clear()
 {
+    LOCK(_lock);
+
     if (_backbuffer)
     {
         memory::zero((uint8_t *)_backbuffer, _mode->resolution_y * _mode->bytes_per_line);
@@ -79,6 +81,8 @@ void screen::boot_terminal::clear()
 
 void screen::boot_terminal::put_char(char c)
 {
+    LOCK(_lock);
+
     if (c == '\n')
     {
         ++_y;
@@ -206,6 +210,8 @@ void screen::boot_terminal::_scroll()
 
 void screen::boot_terminal::set_color(color::colors c)
 {
+    LOCK(_lock);
+
     uint32_t hex = c;
 
     _red = (hex >> 16) & 0xff;

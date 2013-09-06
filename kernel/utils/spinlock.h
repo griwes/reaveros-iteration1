@@ -69,37 +69,43 @@ namespace utils
 
         void lock()
         {
-            uint64_t cpu = processor::initial_id();
+            uint64_t cpu = processor::id();
 
             while (true)
             {
                 {
                     LOCK(_inner_lock);
 
-                    if (!_count || _owner == cpu)
+                    if (_count == 0)
                     {
                         _owner = cpu;
                         ++_count;
 
-                        return;
+                        break;
+                    }
+
+                    if (_owner == cpu)
+                    {
+                        ++_count;
+
+                        break;
                     }
                 }
 
-                asm volatile ("pause" ::: "memory");
+                asm volatile ("pause");
             }
         }
 
         void unlock()
         {
-            uint64_t cpu = processor::initial_id();
+            uint64_t cpu = processor::id();
 
-            if (_count == 0 || _owner != cpu)
+            LOCK(_inner_lock);
+
+            if (_count-- == 0 || _owner != cpu)
             {
                 PANIC("invalid unlock on recursive spinlock!");
             }
-
-            LOCK(_inner_lock);
-            --_count;
         }
 
     private:
