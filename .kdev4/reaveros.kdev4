@@ -2,7 +2,32 @@
 BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x10\x00r\x00e\x00a\x00v\x00e\x00r\x00o\x00s)
 
 [Filters]
-Excludes=*.d,*.o,*/.*,*/*~
+size=5
+
+[Filters][0]
+inclusive=0
+pattern=*~
+targets=3
+
+[Filters][1]
+inclusive=0
+pattern=.*
+targets=3
+
+[Filters][2]
+inclusive=0
+pattern=*.d
+targets=3
+
+[Filters][3]
+inclusive=0
+pattern=*.o
+targets=3
+
+[Filters][4]
+inclusive=0
+pattern=*.kate-swp
+targets=3
 
 [Launch]
 Launch Configurations=Launch Configuration 0

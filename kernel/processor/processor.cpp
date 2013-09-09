@@ -111,18 +111,18 @@ void processor::initialize()
     time::real::initialize();
     time::lapic::initialize();
 
-    memory::pmm::ap_initialize();
-
     smp::boot(_cores + 1, _num_cores - 1);
     smp::initialize_parallel();
     memory::drop_bootloader_mapping();
+
+    memory::pmm::ap_initialize();
 
     _ready = true;
 }
 
 void processor::ap_initialize()
 {
-    while (!_ready)
+    while (!smp::ready())
     {
         asm volatile ("pause");
     }

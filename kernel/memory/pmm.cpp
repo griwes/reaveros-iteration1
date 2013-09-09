@@ -54,13 +54,11 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 
 void memory::pmm::ap_initialize()
 {
-    screen::print("\npmm::ap_initialize #", processor::id());
-
-    uint64_t amount = _global_stack.size();
+    uint64_t amount = _global_stack.size() / 2;
     amount /= processor::get_core_count();
     amount /= frame_stack_chunk::max;
 
-    auto & core = *processor::get_core(processor::id());
+    auto & core = *processor::get_current_core();
     while (amount--)
     {
         core.frame_stack().push_chunk(_global_stack.pop_chunk());

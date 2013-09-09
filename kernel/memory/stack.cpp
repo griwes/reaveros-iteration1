@@ -109,15 +109,13 @@ memory::pmm::frame_stack_chunk * memory::pmm::frame_stack::pop_chunk()
 {
     if (_first == _last)
     {
-        return nullptr;
+        PANIC("tried to pop chunk from empty frame stack!");
     }
 
     LOCK(_first->lock);
 
     if (_first->next)
     {
-        LOCK(_first->next->lock);
-
         _first->next->prev = nullptr;
     }
 
@@ -136,18 +134,19 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
         if (!_first)
         {
-            if (!_first)
-            {
-                _last = _first = allocate_chained<frame_stack_chunk>();
-            }
+            _last = _first = allocate_chained<frame_stack_chunk>(frame);
+
+            return;
         }
 
         if (_last->size == frame_stack_chunk::max - 100 && !_last->next)
         {
             LOCK(_last->lock);
 
-            _last->next = allocate_chained<frame_stack_chunk>();
+            _last->next = allocate_chained<frame_stack_chunk>(frame);
             _last->next->prev = _last;
+
+            return;
         }
 
         {
@@ -168,32 +167,39 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
 void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk)
 {
+    LOCK(chunk->lock);
+
+    {
+        LOCK(_lock);
+
+        if (!_first)
+        {
+            _first = _last = chunk;
+            _size = chunk->size;
+
+            return;
+        }
+    }
+
     if (chunk->size == frame_stack_chunk::max)
     {
         LOCK(_first->lock);
 
         chunk->prev = nullptr;
         chunk->next = _first;
+        _first->prev = chunk;
         _first = chunk;
-
-        return;
     }
 
-    LOCK(_last->lock);
-    LOCK(chunk->lock);
-
-    auto last = _last;
-
-    while (last->next)
+    else
     {
-        last = last->next;
+        LOCK(_last->lock);
+
+        chunk->prev = _last;
+        chunk->next = _last->next;
+        _last->next = chunk;
+        _last = chunk;
     }
-
-    LOCK(last->lock);
-
-    last->next = chunk;
-    chunk->prev = last;
-    chunk->next = nullptr;
 
     _size += chunk->size;
 }
