@@ -62,6 +62,7 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
     {
         case policies::all:
             slot.unfinished_cores = get_core_count();
+            broadcast(broadcasts::others, ipis::generic, slot.int_vector);
             fptr(data);
             --slot.unfinished_cores;
             break;

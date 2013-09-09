@@ -54,7 +54,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     processor::initialize();
     screen::done();
 
-    processor::smp::parallel_execute([](uint64_t){ screen::print((void *)memory::pmm::pop()); });
+    processor::smp::parallel_execute([](uint64_t){ screen::print("\n", (void *)memory::pmm::pop()); });
 
 /*    screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
