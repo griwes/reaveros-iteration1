@@ -53,23 +53,21 @@ uint64_t memory::pmm::frame_stack::pop()
 {
     if (!_size)
     {
-        PANIC("TODO: _size = 0");
-
-        if (_first)
+        if (_global)
         {
-            // dealocate chunk
+            push_chunk(_global->pop_chunk());
         }
 
         else
         {
-            if (_global)
+            if (_first)
             {
-                push_chunk(_global->pop_chunk());
+                PANIC("TODO: deallocate available chunk");
             }
 
             else
             {
-                // free caches etc.
+                PANIC("TODO: ultimate OOM case");
             }
         }
     }

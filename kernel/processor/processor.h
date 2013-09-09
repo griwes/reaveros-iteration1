@@ -45,6 +45,17 @@ namespace processor
     uint8_t max_ioapic_input();
     interrupt_entry * get_sources();
     core * get_core(uint64_t apic_id);
+
+    inline core * get_current_core()
+    {
+        // if (unlikely(!scheduler::ready()))
+        {
+            return get_core(id());
+        }
+
+        // return scheduler::current_thread()->core();
+    }
+
     uint64_t get_core_count();
 
     void initialize();

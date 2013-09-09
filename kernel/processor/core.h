@@ -27,6 +27,8 @@
 
 #include <memory/vm.h>
 #include <processor/gdt.h>
+#include <memory/stack.h>
+#include <time/lapic.h>
 
 namespace processor
 {
@@ -54,7 +56,18 @@ namespace processor
         {
         }
 
-        core & operator=(const core &) = default;
+        core & operator=(const core & rhs)
+        {
+            _acpi_id = rhs._acpi_id;
+            _apic_id = rhs._apic_id;
+            _is_local_apic = rhs._is_local_apic;
+            _nmi_vector = rhs._nmi_vector;
+            _nmi_flags = rhs._nmi_flags;
+            _is_valid = rhs._is_valid;
+            _is_nmi_valid = rhs._is_nmi_valid;
+
+            return *this;
+        }
 
         uint32_t acpi_id()
         {
@@ -79,6 +92,16 @@ namespace processor
             _is_nmi_valid = true;
         }
 
+        memory::pmm::frame_stack & frame_stack()
+        {
+            return _frame_stack;
+        }
+
+        time::lapic::timer & get_preemption_timer()
+        {
+            return _timer;
+        }
+
         friend void processor::ap_initialize();
         friend void processor::gdt::ap_initialize();
         friend void processor::smp::boot(core *, uint64_t);
@@ -99,5 +122,8 @@ namespace processor
         processor::gdt::gdtr _gdtr;
 
         uint8_t * _started;
+
+        memory::pmm::frame_stack _frame_stack;
+        time::lapic::timer _timer = nullptr;
     };
 }

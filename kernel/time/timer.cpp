@@ -28,13 +28,13 @@
 #include <time/timer.h>
 #include <processor/idt.h>
 #include <screen/screen.h>
+#include <processor/core.h>
 
 namespace
 {
     std::atomic<uint64_t> _id = { 0 };
 
     time::timer * _hp_timer = nullptr;
-    time::timer * _preemption_timer = nullptr;
 }
 
 uint64_t time::allocate_timer_event_id()
@@ -47,11 +47,6 @@ void time::set_high_precision_timer(time::timer * t)
     _hp_timer = t;
 }
 
-void time::set_preemption_timer(time::timer * t)
-{
-    _preemption_timer = t;
-}
-
 time::timer * time::get_high_precision_timer()
 {
     return _hp_timer;
@@ -59,7 +54,7 @@ time::timer * time::get_high_precision_timer()
 
 time::timer * time::get_preemption_timer()
 {
-    return _preemption_timer;
+    return &processor::get_current_core()->get_preemption_timer();
 }
 
 time::real_timer::real_timer(capabilities caps, uint64_t minimal_tick, uint64_t maximal_tick) : _cap{ caps },

@@ -102,6 +102,7 @@ namespace screen
         }
 
         utils::unique_lock<utils::recursive_spinlock> lock();
+        void drop_locking();
 
     private:
         terminal * _terminal;

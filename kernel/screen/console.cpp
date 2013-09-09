@@ -194,3 +194,9 @@ utils::unique_lock<utils::recursive_spinlock> screen::kernel_console::lock()
 {
     return { _semaphore };
 }
+
+void screen::kernel_console::drop_locking()
+{
+    // terrible, terrible hack
+    new (&_semaphore) utils::recursive_spinlock{};
+}

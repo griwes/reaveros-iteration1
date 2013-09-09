@@ -40,6 +40,8 @@ namespace
     {
         _timer = true;
     }
+
+    bool _ready = false;
 }
 
 void processor::smp::boot(processor::core * cores, uint64_t num_cores)
@@ -136,4 +138,11 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
             }
         }
     }
+
+    _ready = true;
+}
+
+bool processor::smp::ready()
+{
+    return _ready;
 }

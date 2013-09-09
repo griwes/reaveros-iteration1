@@ -38,6 +38,7 @@
 #include <processor/smp.h>
 #include <processor/core.h>
 #include <memory/vm.h>
+#include <processor/ipi.h>
 
 namespace
 {
@@ -53,7 +54,7 @@ namespace
 
     processor::interrupt_entry _sources[128] = {};
 
-    bool _ready = false;
+    std::atomic<bool> _ready{ false };
 }
 
 bool processor::ready()
@@ -84,7 +85,6 @@ void processor::initialize()
     idt::initialize();
 
     initialize_exceptions();
-    initialize_panic();
 
     acpi::initialize();
 
@@ -111,7 +111,10 @@ void processor::initialize()
     time::real::initialize();
     time::lapic::initialize();
 
+    memory::pmm::ap_initialize();
+
     smp::boot(_cores + 1, _num_cores - 1);
+    smp::initialize_parallel();
     memory::drop_bootloader_mapping();
 
     _ready = true;
@@ -119,10 +122,17 @@ void processor::initialize()
 
 void processor::ap_initialize()
 {
+    while (!_ready)
+    {
+        asm volatile ("pause");
+    }
+
     get_lapic()->ap_initialize();
 
     gdt::ap_initialize();
     idt::ap_initialize();
+    memory::pmm::ap_initialize();
+    time::lapic::ap_initialize();
 
     uint64_t stack = memory::vm::allocate_address_range(8096);
     memory::vm::map(stack + 4096);

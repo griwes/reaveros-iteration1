@@ -39,5 +39,26 @@ namespace processor
         get_lapic()->broadcast(target, ipi, data);
     }
 
-    void parallel_execute(void (*)(uint64_t), uint64_t = 0);
+    namespace smp
+    {
+        enum class policies
+        {
+            all,
+            others,
+            specific,
+            // TODO:
+            // all_domain,
+            // others_domain,
+            // per_core,
+            // per_chip,
+            // per_domain
+        };
+
+        void initialize_parallel();
+        void parallel_execute(policies, void (*)(uint64_t), uint64_t = 0, uint64_t = 0);
+        inline void parallel_execute(void (*fptr)(uint64_t), uint64_t data = 0)
+        {
+            parallel_execute(policies::all, fptr, data);
+        }
+    }
 }

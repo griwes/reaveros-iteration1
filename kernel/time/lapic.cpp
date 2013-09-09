@@ -27,18 +27,23 @@
 #include <processor/lapic.h>
 #include <processor/idt.h>
 #include <processor/handlers.h>
+#include <processor/core.h>
 
 namespace
 {
-    time::lapic::timer _timer;
+    time::lapic::timer * _bsp_timer = nullptr;
 
     bool _fired = false;
 }
 
 void time::lapic::initialize()
 {
-    new (&_timer) time::lapic::timer{};
-    set_preemption_timer(&_timer);
+    _bsp_timer = new (&processor::get_core(processor::id())->get_preemption_timer()) time::lapic::timer{};
+}
+
+void time::lapic::ap_initialize()
+{
+    new (&processor::get_core(processor::id())->get_preemption_timer()) time::lapic::timer{ *_bsp_timer };
 }
 
 time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period{ 0 }, _lapic{ processor::get_lapic() }
@@ -66,6 +71,15 @@ time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period
     screen::debug("\nLAPIC timer tick period: ", _period, "fs, ticks in 1ms: ", ticks);
 
     processor::register_handler(_lapic->_timer_irq, _lapic_handler, (uint64_t)this);
+}
+
+time::lapic::timer::timer(const time::lapic::timer & rhs): real_timer{ capabilities::dynamic, rhs._minimal_tick,
+    rhs._maximal_tick }, _period{ 0 }, _lapic{ processor::get_lapic() }
+{
+}
+
+time::lapic::timer::timer(decltype(nullptr)): real_timer{ capabilities::dynamic, 0, 0 }
+{
 }
 
 void time::lapic::timer::_lapic_handler(processor::idt::isr_context isrc, uint64_t context)

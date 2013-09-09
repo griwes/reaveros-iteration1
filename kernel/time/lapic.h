@@ -37,11 +37,14 @@ namespace time
     namespace lapic
     {
         void initialize();
+        void ap_initialize();
 
         class timer : public time::real_timer
         {
         public:
             timer();
+            timer(const timer &);
+            timer(decltype(nullptr));
             virtual ~timer() {}
 
         protected:

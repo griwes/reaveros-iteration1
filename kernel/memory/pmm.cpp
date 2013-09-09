@@ -28,6 +28,7 @@
 #include <memory/stack.h>
 #include <memory/vm.h>
 #include <screen/screen.h>
+#include <processor/core.h>
 
 memory::pmm::frame_stack _global_stack;
 
@@ -51,6 +52,21 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
     _map_size = map_size;
 }
 
+void memory::pmm::ap_initialize()
+{
+    screen::print("\npmm::ap_initialize #", processor::id());
+
+    uint64_t amount = _global_stack.size();
+    amount /= processor::get_core_count();
+    amount /= frame_stack_chunk::max;
+
+    auto & core = *processor::get_core(processor::id());
+    while (amount--)
+    {
+        core.frame_stack().push_chunk(_global_stack.pop_chunk());
+    }
+}
+
 uint64_t memory::pmm::pop()
 {
     if (_boot_frames_available)
@@ -59,18 +75,23 @@ uint64_t memory::pmm::pop()
         return _boot_frames_start + (8 - _boot_frames_available--) * 4096;
     }
 
-//    memory::pmm::frame_stack & stack = processor::smp_ready() ? processor::get_core().frame_stack : _global_stack;
-    memory::pmm::frame_stack & stack = _global_stack;
+    if (unlikely(!processor::ready()))
+    {
+        return _global_stack.pop();
+    }
 
-    auto foo = _global_stack.pop();
-    screen::debug("\nPopped frame: ", (void *)foo);
-    return foo;
+    return processor::get_current_core()->frame_stack().pop();
 }
 
 void memory::pmm::push(uint64_t frame)
 {
-//    (processor::smp_ready() ? processor::get_core().frame_stack : _global_stack).push(frame);
-    _global_stack.push(frame);
+    if (unlikely(!processor::ready()))
+    {
+        _global_stack.push(frame);
+        return;
+    }
+
+    processor::get_current_core()->frame_stack().push(frame);
 }
 
 void memory::pmm::boot_report()

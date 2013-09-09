@@ -32,6 +32,7 @@ namespace memory
     namespace pmm
     {
         void initialize(map_entry *, uint64_t);
+        void ap_initialize();
 
         uint64_t pop();
         void push(uint64_t address);

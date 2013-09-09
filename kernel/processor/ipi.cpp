@@ -23,47 +23,82 @@
  *
  **/
 
+#include <atomic>
+
 #include <processor/ipi.h>
 #include <processor/handlers.h>
 
 namespace
 {
-    uint8_t _int_vector = 0;
-
-    utils::spinlock _lock;
-    void (*_fptr)(uint64_t) = nullptr;
-    uint64_t _data = 0;
-
-    uint64_t _num_cores_finished = 0;
-
-    void _interrupt_handler(processor::idt::isr_context, uint64_t)
+    struct _parallel_slot
     {
-        _fptr(_data);
-        ++_num_cores_finished;
+        uint8_t int_vector = 0;
+        utils::spinlock lock;
+        void (*fptr)(uint64_t) = nullptr;
+        uint64_t data = 0;
+        std::atomic<uint64_t> unfinished_cores{ 0 };
+    } _slots[8];
+
+    std::atomic<uint64_t> _next_slot{ 0 };
+
+    void _interrupt_handler(processor::idt::isr_context, uint64_t i)
+    {
+        _parallel_slot & slot = _slots[i];
+
+        slot.fptr(slot.data);
+        --slot.unfinished_cores;
     }
 }
 
-void processor::parallel_execute(void (*fptr)(uint64_t), uint64_t data)
+void processor::smp::parallel_execute(processor::smp::policies policy, void (*fptr)(uint64_t), uint64_t data, uint64_t target)
 {
-    LOCK(_lock);
+    _parallel_slot & slot = _slots[_next_slot++ % 8];
 
-    if (!_int_vector)
+    LOCK(slot.lock);
+
+    slot.fptr = fptr;
+
+    switch (policy)
     {
-        _int_vector = allocate_isr(0);
-        register_handler(_int_vector, _interrupt_handler);
+        case policies::all:
+            slot.unfinished_cores = get_core_count();
+            fptr(data);
+            --slot.unfinished_cores;
+            break;
+
+        case policies::others:
+            slot.unfinished_cores = get_core_count() - 1;
+            broadcast(broadcasts::others, ipis::generic, slot.int_vector);
+            break;
+
+        case policies::specific:
+            slot.unfinished_cores = 1;
+            ipi(target, ipis::generic, slot.int_vector);
+            break;
     }
 
-    _fptr = fptr;
-    broadcast(broadcasts::others, ipis::generic, _int_vector);
-    fptr(data);
-    ++_num_cores_finished;
+    if (policy == policies::all || policy == policies::others)
+    {
+    }
 
-    while (_num_cores_finished < get_core_count())
+    if (policy == policies::all)
+    {
+    }
+
+    while (slot.unfinished_cores)
     {
         asm volatile ("pause");
     }
 
-    _fptr = nullptr;
-    _data = 0;
-    _num_cores_finished = 0;
+    slot.fptr = nullptr;
+    slot.data = 0;
+}
+
+void processor::smp::initialize_parallel()
+{
+    for (uint8_t i = 0; i < 8; ++i)
+    {
+        _slots[i].int_vector = allocate_isr(0);
+        register_handler(_slots[i].int_vector, _interrupt_handler, i);
+    }
 }

@@ -55,15 +55,10 @@ extern "C" void __cxa_pure_virtual()
     PANIC("Pure virtual function called!");
 }
 
-void initialize_panic()
-{
-    _ipi_int = processor::allocate_isr(0);
-    processor::register_handler(_ipi_int, _interrupt_handler);
-}
-
 void _panic(const char * message, const char * file, uint64_t line, const char * func, bool additional)
 {
-    processor::broadcast(processor::broadcasts::others, processor::ipis::generic, _ipi_int);
+    processor::smp::parallel_execute([](uint64_t){ asm volatile ("cli; hlt"); });
+    screen::console.drop_locking();
 
 #ifdef ROSEDEBUG
     screen::print("\n");
