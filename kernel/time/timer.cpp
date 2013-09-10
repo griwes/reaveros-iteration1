@@ -194,14 +194,14 @@ void time::real_timer::_handle(processor::idt::isr_context isrc)
 {
     LOCK(_lock);
 
-    if (unlikely(!_list.size()))
-    {
-        return;
-    }
-
     if (unlikely(_cap == capabilities::fixed_frequency))
     {
         _now += _minimal_tick;
+    }
+
+    if (unlikely(!_list.size()))
+    {
+        return;
     }
 
     else
