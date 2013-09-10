@@ -63,12 +63,18 @@ namespace memory
                 return _size;
             }
 
+            void set_balancing(uint64_t balance)
+            {
+                _balance = balance * frame_stack_chunk::max;
+            }
+
         private:
             frame_stack_chunk * _first;
             frame_stack_chunk * _last;
             std::atomic<uint64_t> _size;
             frame_stack * _global;
             utils::spinlock _lock;
+            uint64_t _balance;
         };
     }
 }

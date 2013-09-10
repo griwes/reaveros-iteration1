@@ -29,6 +29,7 @@
 #include <memory/vm.h>
 #include <screen/screen.h>
 #include <processor/core.h>
+#include <processor/smp.h>
 
 memory::pmm::frame_stack _global_stack;
 
@@ -40,6 +41,8 @@ namespace
 
     memory::map_entry * _map;
     uint64_t _map_size;
+
+    std::atomic<uint64_t> _amount{ 0 };
 }
 
 void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
@@ -54,11 +57,17 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 
 void memory::pmm::ap_initialize()
 {
-    uint64_t amount = _global_stack.size() / 2;
-    amount /= processor::get_core_count();
-    amount /= frame_stack_chunk::max;
+    screen::debug("\nInitializing local frame stack for core #", processor::id());
 
+    if (!_amount)
+    {
+        _amount = _global_stack.size() / (2 * processor::get_core_count() * frame_stack_chunk::max);
+    }
+
+    uint64_t amount = _amount;
     auto & core = *processor::get_current_core();
+    core.frame_stack().set_balancing(amount * 3 / 2);
+
     while (amount--)
     {
         core.frame_stack().push_chunk(_global_stack.pop_chunk());
@@ -73,7 +82,7 @@ uint64_t memory::pmm::pop()
         return _boot_frames_start + (8 - _boot_frames_available--) * 4096;
     }
 
-    if (unlikely(!processor::ready()))
+    if (unlikely(!processor::smp::ready()))
     {
         return _global_stack.pop();
     }
@@ -83,13 +92,15 @@ uint64_t memory::pmm::pop()
 
 void memory::pmm::push(uint64_t frame)
 {
-    if (unlikely(!processor::ready()))
+    if (unlikely(!processor::smp::ready()))
     {
         _global_stack.push(frame);
+        screen::debug("\nPushed ", (void *)frame, " to global frame stack on #", processor::id());
         return;
     }
 
     processor::get_current_core()->frame_stack().push(frame);
+    screen::debug("\nPushed ", (void *)frame, " to local frame stack on #", processor::id());
 }
 
 void memory::pmm::boot_report()

@@ -25,8 +25,8 @@
 
 #include <memory/stack.h>
 #include <memory/map.h>
-
-#include <screen/screen.h>
+#include <processor/ipi.h>
+#include <processor/core.h>
 
 extern memory::pmm::frame_stack _global_stack;
 
@@ -55,7 +55,23 @@ uint64_t memory::pmm::frame_stack::pop()
     {
         if (_global)
         {
-            push_chunk(_global->pop_chunk());
+            if (_global->size() <= frame_stack_chunk::max)
+            {
+                processor::smp::parallel_execute(processor::smp::policies::others, [](uint64_t){
+                    for (uint64_t i = 0; i < 16 && processor::get_current_core()->frame_stack().size() > frame_stack_chunk::max * 128;
+                        ++i)
+                    {
+                        screen::debug("\nRebalancing: pushing frame stack chunk to global from #", processor::id());
+                        _global_stack.push_chunk(processor::get_current_core()->frame_stack().pop_chunk());
+                    }
+                });
+            }
+
+            for (uint64_t i = 0; i < 8 && _global->size() > frame_stack_chunk::max; ++i)
+            {
+                screen::debug("\nRebalancing: pushing frame stack chunk from global to #", processor::id());
+                push_chunk(_global->pop_chunk());
+            }
         }
 
         else
@@ -75,19 +91,7 @@ uint64_t memory::pmm::frame_stack::pop()
     LOCK(_last->lock);
 
     uint64_t ret = _last->stack[--_last->size];
-
-    if (_last->size == 0)
-    {
-        if (_first != _last)
-        {
-            _last = _last->prev;
-        }
-
-        else
-        {
-            PANIC("TODO: frame stack exhausted");
-        }
-    }
+    --_size;
 
     if (_last != _first && _last->size == frame_stack_chunk::max - 50)
     {
@@ -100,7 +104,7 @@ uint64_t memory::pmm::frame_stack::pop()
         }
     }
 
-    --_size;
+    screen::debug("\nPopped ", (void *)ret, " from ", (_global ? "local" : "global"), " frame stack on #", processor::id());
 
     return ret;
 }
@@ -163,6 +167,14 @@ void memory::pmm::frame_stack::push(uint64_t frame)
 
     _last->stack[_last->size++] = frame;
     ++_size;
+
+    LOCK(_lock);
+
+    if (_global && _size > _balance)
+    {
+        screen::debug("\nRebalancing: pushing frame stack chunk to global from #", processor::id());
+        _global_stack.push_chunk(pop_chunk());
+    }
 }
 
 void memory::pmm::frame_stack::push_chunk(memory::pmm::frame_stack_chunk * chunk)

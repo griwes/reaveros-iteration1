@@ -72,18 +72,15 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
             broadcast(broadcasts::others, ipis::generic, slot.int_vector);
             break;
 
+        case policies::others_no_wait:
+            slot.unfinished_cores = 0;
+            broadcast(broadcasts::others, ipis::generic, slot.int_vector);
+            break;
+
         case policies::specific:
             slot.unfinished_cores = 1;
             ipi(target, ipis::generic, slot.int_vector);
             break;
-    }
-
-    if (policy == policies::all || policy == policies::others)
-    {
-    }
-
-    if (policy == policies::all)
-    {
     }
 
     while (slot.unfinished_cores)
@@ -91,15 +88,18 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
         asm volatile ("pause");
     }
 
-    slot.fptr = nullptr;
-    slot.data = 0;
+    if (policy != policies::others_no_wait)
+    {
+        slot.fptr = nullptr;
+        slot.data = 0;
+    }
 }
 
 void processor::smp::initialize_parallel()
 {
     for (uint8_t i = 0; i < 8; ++i)
     {
-        _slots[i].int_vector = allocate_isr(0);
+        _slots[i].int_vector = allocate_isr(1);
         register_handler(_slots[i].int_vector, _interrupt_handler, i);
     }
 }

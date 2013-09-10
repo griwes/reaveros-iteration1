@@ -111,27 +111,27 @@ void processor::initialize()
     time::real::initialize();
     time::lapic::initialize();
 
+    memory::pmm::ap_initialize();
+
     smp::boot(_cores + 1, _num_cores - 1);
     smp::initialize_parallel();
     memory::drop_bootloader_mapping();
-
-    memory::pmm::ap_initialize();
 
     _ready = true;
 }
 
 void processor::ap_initialize()
 {
-    while (!smp::ready())
+    while (!_ready)
     {
         asm volatile ("pause");
     }
 
     get_lapic()->ap_initialize();
 
+    memory::pmm::ap_initialize();
     gdt::ap_initialize();
     idt::ap_initialize();
-    memory::pmm::ap_initialize();
     time::lapic::ap_initialize();
 
     uint64_t stack = memory::vm::allocate_address_range(8096);

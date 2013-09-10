@@ -45,6 +45,7 @@ namespace processor
         {
             all,
             others,
+            others_no_wait,
             specific,
             // TODO:
             // all_domain,

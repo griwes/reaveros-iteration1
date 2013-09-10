@@ -48,13 +48,12 @@ void memory::vm::initialize()
 
 uint64_t memory::vm::allocate_address_range(uint64_t size)
 {
-    screen::debug("\nRequested ", size, " bytes of address space, allocating ");
-    size += 4095;
-    size &= ~(uint64_t)4095;
-    screen::debug(size, " bytes at ");
+    auto real_size = size + 4095;
+    real_size &= ~(uint64_t)4095;
 
-    auto ret = _lowest.fetch_sub(size) - size;
-    screen::debug((void *)ret);
+    auto ret = _lowest.fetch_sub(real_size) - real_size;
+
+    screen::debug("\nRequested ", size, " bytes of address space, allocating ", real_size, " bytes at ", (void *)ret);
 
     return ret;
 }
