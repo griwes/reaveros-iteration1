@@ -44,7 +44,7 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::initialize_terminal(video, memory_map, memory_map_size);
 
     screen::print("ReaverOS: Reaver Project Operating System, \"Rose\"\n");
-    screen::print("Version: 0.0.2 dev; Release #1 \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
+    screen::print("Version: 0.0.3 dev; Release #1 \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
     screen::print("Copyright (C) 2012-2013 Reaver Project Team\n\n");
 
     screen::print(tag::memory, "Reporting memory manager status...\n");
@@ -59,8 +59,6 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
         screen::print("\n", (void *)address);
         memory::pmm::push(address);
     });
-
-    PANIC("TEST");
 
 /*    screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
