@@ -26,3 +26,10 @@ only when needed
  * 0.5.x alpha - Thornbirth alpha
  * 0.6.x beta - Thornbirth beta
  * 0.7.x - Thornbirth stable
+
+## Release #3: Flowerbud
+
+ * 0.8.x dev - Flowerbud early development
+ * 0.9.x alpha - Flowerbud alpha
+ * 0.10.x beta - Flowerbud beta
+ * 1.0.x - Flowerbud stable
