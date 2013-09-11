@@ -70,8 +70,6 @@ namespace scheduler
             _last = _first;
             _first_free = _first;
             _max_id = manager_chunk::max;
-
-            screen::debug("\n", _first_free->addresses[_first_free->free_index % manager_chunk::max]);
         }
 
         T * allocate()
@@ -85,8 +83,6 @@ namespace scheduler
                 _first_free = _last = _last->next;
 
                 _max_id += manager_chunk::max;
-
-                screen::debug("\n", _first_free->addresses[_first_free->free_index % manager_chunk::max]);
             }
 
             T * ret = new T{};
