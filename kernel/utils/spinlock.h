@@ -40,9 +40,13 @@ namespace utils
 
         void lock()
         {
+            CLI;
+
             while (_lock.exchange(true))
             {
+                STI;
                 asm volatile ("pause");
+                CLI;
             }
         }
 
@@ -54,6 +58,8 @@ namespace utils
             }
 
             _lock = false;
+
+            STI;
         }
 
     private:

@@ -23,42 +23,28 @@
  *
  **/
 
-#include <atomic>
-
-#include <memory/vm.h>
-#include <memory/x64paging.h>
-#include <processor/processor.h>
-#include <screen/screen.h>
+#include <scheduler/scheduler.h>
+#include <processor/ipi.h>
+#include <scheduler/process.h>
+#include <scheduler/thread.h>
+#include <scheduler/manager.h>
 
 namespace
 {
-    std::atomic<uint64_t> _lowest;
+    scheduler::manager<scheduler::process> _pcb_manager{ nullptr };
+    scheduler::manager<scheduler::thread> _tcb_manager{ nullptr };
 }
 
-void memory::vm::initialize()
+void scheduler::initialize()
 {
-    x64::pml4 * boot_vas = processor::get_cr3();
+    screen::debug("\nInitializing PCB manager at ", &_pcb_manager);
+    new (&_pcb_manager) manager<process>{};
+    screen::debug("\nInitializing TCB manager at ", &_tcb_manager);
+    new (&_tcb_manager) manager<thread>{};
 
-    (*boot_vas)[256] = (uint64_t)boot_vas;
-
-    processor::reload_cr3();
-
-    new (&_lowest) std::atomic<uint64_t>{ 0xFFFFFFFF80000000 };
+    processor::smp::parallel_execute([](uint64_t){ ap_initialize(); });
 }
 
-uint64_t memory::vm::allocate_address_range(uint64_t size)
+void scheduler::ap_initialize()
 {
-    auto real_size = size + 4095;
-    real_size &= ~(uint64_t)4095;
-
-    auto ret = _lowest.fetch_sub(real_size) - real_size;
-
-    if (ret < 0xFFFF800000000000)
-    {
-        PANIC("virtual memory exhausted!");
-    }
-
-    screen::debug("\nRequested ", size, " bytes of address space, allocating ", real_size, " bytes at ", (void *)ret);
-
-    return ret;
 }

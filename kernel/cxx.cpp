@@ -58,7 +58,6 @@ extern "C" void __cxa_pure_virtual()
 void _panic(const char * message, const char * file, uint64_t line, const char * func, bool additional)
 {
     processor::smp::parallel_execute(processor::smp::policies::others_no_wait, [](uint64_t){ asm volatile ("cli; hlt"); });
-    screen::console.drop_locking();
 
 #ifdef ROSEDEBUG
     screen::print("\n");

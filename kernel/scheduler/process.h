@@ -23,42 +23,42 @@
  *
  **/
 
-#include <atomic>
+#pragma once
 
-#include <memory/vm.h>
-#include <memory/x64paging.h>
-#include <processor/processor.h>
-#include <screen/screen.h>
+#include <utils/allocator.h>
 
-namespace
+namespace user
 {
-    std::atomic<uint64_t> _lowest;
+    class user;
 }
 
-void memory::vm::initialize()
+namespace scheduler
 {
-    x64::pml4 * boot_vas = processor::get_cr3();
+    struct thread;
+    class mailbox;
 
-    (*boot_vas)[256] = (uint64_t)boot_vas;
-
-    processor::reload_cr3();
-
-    new (&_lowest) std::atomic<uint64_t>{ 0xFFFFFFFF80000000 };
-}
-
-uint64_t memory::vm::allocate_address_range(uint64_t size)
-{
-    auto real_size = size + 4095;
-    real_size &= ~(uint64_t)4095;
-
-    auto ret = _lowest.fetch_sub(real_size) - real_size;
-
-    if (ret < 0xFFFF800000000000)
+    struct process : public utils::chained<process>
     {
-        PANIC("virtual memory exhausted!");
-    }
+        utils::spinlock lock;
 
-    screen::debug("\nRequested ", size, " bytes of address space, allocating ", real_size, " bytes at ", (void *)ret);
+        uint64_t id;
 
-    return ret;
+        user::user * owner;
+        process * parent;
+        process * child;
+
+        process * prev;
+        process * next;
+        thread * main_thread;
+
+        mailbox * box;
+
+        uint64_t address_space;
+        uint64_t per_thread_foreign:1;
+        uint64_t zombie:1;
+
+        uint64_t exit_value;
+
+        uint64_t fill[4];
+    };
 }

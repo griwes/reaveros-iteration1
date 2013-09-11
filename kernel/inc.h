@@ -102,10 +102,15 @@ struct pci_vendor_t
 
 #include <memory/vm.h>
 
-template<typename T>
-T * allocate_chained(uint64_t physical = 0)
+constexpr bool is_power_of_two(uint64_t size)
 {
-    static_assert(4096 % sizeof(T) == 0 || sizeof(T) % 4096 == 0, "wrong chained type requested");
+    return (size == 2 ? true : size % 2 == 0 && is_power_of_two(size / 2));
+}
+
+template<typename T, typename... Args>
+T * allocate_chained(uint64_t physical = 0, const Args &... args = {})
+{
+    static_assert(is_power_of_two(sizeof(T)), "wrong chained type requested");
 
     if (sizeof(T) >= 4096)
     {
@@ -121,15 +126,15 @@ T * allocate_chained(uint64_t physical = 0)
             memory::vm::map_multiple(address, address + sizeof(T));
         }
 
-        return ::new ((void *)address) T{};
+        return ::new ((void *)address) T{ args... };
     }
 
     T * address = (T *)memory::vm::allocate_address_range(4096);
     memory::vm::map((uint64_t)address, physical ? physical : memory::pmm::pop());
 
-    for (uint64_t i = 0; i < 4096 / sizeof(T); ++i)
+    for (uint64_t i = 0; i < 4096 / (sizeof(T) > 4096 ? 1 : sizeof(T)); ++i)
     {
-        ::new (address + i) T{};
+        ::new (address + i) T{ args... };
         address[i].prev = (i != 0 ? address + i - 1 : nullptr);
         address[i].next = (i != 4096 / sizeof(T) - 1 ? address + i + 1 : nullptr);
     }

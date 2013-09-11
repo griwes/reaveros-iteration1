@@ -27,8 +27,7 @@
 #include <memory/vm.h>
 #include <memory/pmm.h>
 #include <screen/screen.h>
-
-#include "processor/ipi.h"
+#include <scheduler/scheduler.h>
 
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
@@ -54,16 +53,10 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     processor::initialize();
     screen::done();
 
-    processor::smp::parallel_execute([](uint64_t){
-        uint64_t address = memory::pmm::pop();
-        screen::print("\n", (void *)address);
-        memory::pmm::push(address);
-    });
-
-/*    screen::print(tag::scheduler, "Initializing scheduler...");
+    screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     screen::done();
-*/
+
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);
     screen::done();

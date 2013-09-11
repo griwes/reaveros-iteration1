@@ -43,6 +43,8 @@ namespace
 
     void _interrupt_handler(processor::idt::isr_context, uint64_t i)
     {
+        STI;
+
         _parallel_slot & slot = _slots[i];
 
         slot.fptr(slot.data);

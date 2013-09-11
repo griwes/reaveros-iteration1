@@ -23,42 +23,10 @@
  *
  **/
 
-#include <atomic>
+#pragma once
 
-#include <memory/vm.h>
-#include <memory/x64paging.h>
-#include <processor/processor.h>
-#include <screen/screen.h>
-
-namespace
+namespace scheduler
 {
-    std::atomic<uint64_t> _lowest;
-}
-
-void memory::vm::initialize()
-{
-    x64::pml4 * boot_vas = processor::get_cr3();
-
-    (*boot_vas)[256] = (uint64_t)boot_vas;
-
-    processor::reload_cr3();
-
-    new (&_lowest) std::atomic<uint64_t>{ 0xFFFFFFFF80000000 };
-}
-
-uint64_t memory::vm::allocate_address_range(uint64_t size)
-{
-    auto real_size = size + 4095;
-    real_size &= ~(uint64_t)4095;
-
-    auto ret = _lowest.fetch_sub(real_size) - real_size;
-
-    if (ret < 0xFFFF800000000000)
-    {
-        PANIC("virtual memory exhausted!");
-    }
-
-    screen::debug("\nRequested ", size, " bytes of address space, allocating ", real_size, " bytes at ", (void *)ret);
-
-    return ret;
+    void initialize();
+    void ap_initialize();
 }
