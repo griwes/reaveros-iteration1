@@ -25,42 +25,26 @@
 
 #pragma once
 
-#include <type_traits>
+#include <processor/idt.h>
+#include <utils/allocator.h>
 
 namespace processor
 {
-    namespace idt
+    struct context : public utils::chained<context>
     {
-        struct idt_entry
-        {
-            uint16_t offset_low;
-            uint16_t selector;
-            uint8_t ist:3;
-            uint8_t zero:5;
-            uint8_t type:4;
-            uint8_t zero1:1;
-            uint8_t dpl:2;
-            uint8_t present:1;
-            uint16_t offset_middle;
-            uint32_t offset_high;
-            uint32_t zero2;
-        } __attribute__((packed));
+        context * prev;
+        context * next;
 
-        struct idtr
-        {
-            uint16_t limit;
-            idt_entry * address;
-        } __attribute__((packed));
+        uint64_t rax, rbx, rcx, rdx;
+        uint64_t rsi, rdi, rsp, rbp;
+        uint64_t r8, r9, r10, r11;
+        uint64_t r12, r13, r14, r15;
+        uint64_t cs, ss;
+        uint64_t rip, rflags;
 
-        struct isr_context
-        {
-            uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
-            uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;
-            uint64_t number, error;
-            uint64_t rip, cs, rflags, rsp, ss;
-        } __attribute__((packed));
+        uint64_t fill[10];
 
-        void initialize();
-        void ap_initialize();
-    }
+        void load(idt::isr_context &);
+        void save(idt::isr_context &);
+    };
 }

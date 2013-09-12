@@ -27,11 +27,15 @@
 
 #include <utils/allocator.h>
 
+namespace processor
+{
+    struct context;
+    struct extended_context;
+}
+
 namespace scheduler
 {
     struct process;
-    struct processor_context;
-    struct extended_context;
 
     enum class thread_status : uint64_t
     {
@@ -62,8 +66,8 @@ namespace scheduler
 
         uint64_t address_space;
 
-        processor_context * context;
-        extended_context * ext_context;
+        processor::context * context;
+        processor::extended_context * ext_context;
 
         thread_status status;
 

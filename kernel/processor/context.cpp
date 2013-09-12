@@ -23,44 +23,52 @@
  *
  **/
 
-#pragma once
+#include <processor/context.h>
 
-#include <type_traits>
-
-namespace processor
+void processor::context::save(processor::idt::isr_context & ctx)
 {
-    namespace idt
-    {
-        struct idt_entry
-        {
-            uint16_t offset_low;
-            uint16_t selector;
-            uint8_t ist:3;
-            uint8_t zero:5;
-            uint8_t type:4;
-            uint8_t zero1:1;
-            uint8_t dpl:2;
-            uint8_t present:1;
-            uint16_t offset_middle;
-            uint32_t offset_high;
-            uint32_t zero2;
-        } __attribute__((packed));
+    rax = ctx.rax;
+    rbx = ctx.rbx;
+    rcx = ctx.rcx;
+    rdx = ctx.rdx;
+    rsi = ctx.rsi;
+    rdi = ctx.rdi;
+    rsp = ctx.rsp;
+    rbp = ctx.rbp;
+    r8 = ctx.r8;
+    r9 = ctx.r9;
+    r10 = ctx.r10;
+    r11 = ctx.r11;
+    r12 = ctx.r12;
+    r13 = ctx.r13;
+    r14 = ctx.r14;
+    r15 = ctx.r15;
+    cs = ctx.cs;
+    ss = ctx.ss;
+    rip = ctx.rip;
+    rflags = ctx.rflags;
+}
 
-        struct idtr
-        {
-            uint16_t limit;
-            idt_entry * address;
-        } __attribute__((packed));
-
-        struct isr_context
-        {
-            uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
-            uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;
-            uint64_t number, error;
-            uint64_t rip, cs, rflags, rsp, ss;
-        } __attribute__((packed));
-
-        void initialize();
-        void ap_initialize();
-    }
+void processor::context::load(processor::idt::isr_context & ctx)
+{
+    ctx.rax = rax;
+    ctx.rbx = rbx;
+    ctx.rcx = rcx;
+    ctx.rdx = rdx;
+    ctx.rsi = rsi;
+    ctx.rdi = rdi;
+    ctx.rsp = rsp;
+    ctx.rbp = rbp;
+    ctx.r8 = r8;
+    ctx.r9 = r9;
+    ctx.r10 = r10;
+    ctx.r11 = r11;
+    ctx.r12 = r12;
+    ctx.r13 = r13;
+    ctx.r14 = r14;
+    ctx.r15 = r15;
+    ctx.cs = cs;
+    ctx.ss = ss;
+    ctx.rip = rip;
+    ctx.rflags = rflags;
 }
