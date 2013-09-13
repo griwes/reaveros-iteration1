@@ -50,7 +50,7 @@ time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period
 {
     _lapic->divisor(1);
     _lapic->initial_count(~(uint32_t)0);
-    get_high_precision_timer()->one_shot(1_ms, [](processor::idt::isr_context, uint64_t)
+    get_high_precision_timer()->one_shot(1_ms, [](processor::idt::isr_context &, uint64_t)
     {
         _fired = true;
     }, 0);
@@ -82,7 +82,7 @@ time::lapic::timer::timer(decltype(nullptr)): real_timer{ capabilities::dynamic,
 {
 }
 
-void time::lapic::timer::_lapic_handler(processor::idt::isr_context isrc, uint64_t context)
+void time::lapic::timer::_lapic_handler(processor::idt::isr_context & isrc, uint64_t context)
 {
     ((time::lapic::timer *)context)->_handle(isrc);
 

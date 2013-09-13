@@ -190,7 +190,7 @@ void time::real_timer::cancel(uint64_t id)
     }
 }
 
-void time::real_timer::_handle(processor::idt::isr_context isrc)
+void time::real_timer::_handle(processor::idt::isr_context & isrc)
 {
     LOCK(_lock);
 

@@ -23,40 +23,52 @@
  *
  **/
 
-#pragma once
+#include <processor/context.h>
 
-#include <time/timer.h>
-
-namespace processor
+void processor::context::save(processor::idt::isr_context & ctx)
 {
-    namespace idt
-    {
-        struct isr_context;
-    }
+    rax = ctx.rax;
+    rbx = ctx.rbx;
+    rcx = ctx.rcx;
+    rdx = ctx.rdx;
+    rsi = ctx.rsi;
+    rdi = ctx.rdi;
+    rsp = ctx.rsp;
+    rbp = ctx.rbp;
+    r8 = ctx.r8;
+    r9 = ctx.r9;
+    r10 = ctx.r10;
+    r11 = ctx.r11;
+    r12 = ctx.r12;
+    r13 = ctx.r13;
+    r14 = ctx.r14;
+    r15 = ctx.r15;
+    cs = ctx.cs;
+    ss = ctx.ss;
+    rip = ctx.rip;
+    rflags = ctx.rflags;
 }
 
-namespace time
+void processor::context::load(processor::idt::isr_context & ctx)
 {
-    namespace pit
-    {
-        void initialize();
-        bool ready();
-
-        class timer : public time::real_timer
-        {
-        public:
-            timer();
-
-            virtual ~timer() {}
-
-        private:
-            static void _pit_handler(processor::idt::isr_context &, uint64_t);
-
-            virtual void _one_shot(uint64_t);
-            virtual void _periodic(uint64_t);
-            virtual void _update_now();
-
-            uint8_t _int_vector;
-        };
-    }
+    ctx.rax = rax;
+    ctx.rbx = rbx;
+    ctx.rcx = rcx;
+    ctx.rdx = rdx;
+    ctx.rsi = rsi;
+    ctx.rdi = rdi;
+    ctx.rsp = rsp;
+    ctx.rbp = rbp;
+    ctx.r8 = r8;
+    ctx.r9 = r9;
+    ctx.r10 = r10;
+    ctx.r11 = r11;
+    ctx.r12 = r12;
+    ctx.r13 = r13;
+    ctx.r14 = r14;
+    ctx.r15 = r15;
+    ctx.cs = cs;
+    ctx.ss = ss;
+    ctx.rip = rip;
+    ctx.rflags = rflags;
 }

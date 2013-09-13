@@ -25,38 +25,26 @@
 
 #pragma once
 
-#include <time/timer.h>
+#include <processor/idt.h>
+#include <utils/allocator.h>
 
 namespace processor
 {
-    namespace idt
+    struct context : public utils::chained<context>
     {
-        struct isr_context;
-    }
-}
+        context * prev;
+        context * next;
 
-namespace time
-{
-    namespace pit
-    {
-        void initialize();
-        bool ready();
+        uint64_t rax, rbx, rcx, rdx;
+        uint64_t rsi, rdi, rsp, rbp;
+        uint64_t r8, r9, r10, r11;
+        uint64_t r12, r13, r14, r15;
+        uint64_t cs = 0x8, ss = 0x10;
+        uint64_t rip, rflags = 1 << 9;
 
-        class timer : public time::real_timer
-        {
-        public:
-            timer();
+        uint64_t fill[10];
 
-            virtual ~timer() {}
-
-        private:
-            static void _pit_handler(processor::idt::isr_context &, uint64_t);
-
-            virtual void _one_shot(uint64_t);
-            virtual void _periodic(uint64_t);
-            virtual void _update_now();
-
-            uint8_t _int_vector;
-        };
-    }
+        void load(idt::isr_context &);
+        void save(idt::isr_context &);
+    };
 }

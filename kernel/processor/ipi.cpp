@@ -41,7 +41,7 @@ namespace
 
     std::atomic<uint64_t> _next_slot{ 0 };
 
-    void _interrupt_handler(processor::idt::isr_context, uint64_t i)
+    void _interrupt_handler(processor::idt::isr_context &, uint64_t i)
     {
         STI;
 

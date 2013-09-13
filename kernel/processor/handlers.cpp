@@ -34,14 +34,14 @@ namespace
 {
     utils::spinlock _lock;
 
-    using _handler = void (*)(processor::idt::isr_context, uint64_t);
+    using _handler = void (*)(processor::idt::isr_context &, uint64_t);
     _handler _handlers[256] = {};
     uint64_t _contexts[256] = {};
 
     bool _vector_allocated[224] = {};
     devices::device * _owners[224] = {};
 
-    void _page_fault(processor::idt::isr_context context, uint64_t)
+    void _page_fault(processor::idt::isr_context & context, uint64_t)
     {
         if ((context.cs & 3) != 0)
         {
@@ -69,7 +69,7 @@ void processor::initialize_exceptions()
     _handlers[14] = _page_fault;
 }
 
-void processor::handle(processor::idt::isr_context context)
+void processor::handle(processor::idt::isr_context & context)
 {
     uint64_t c = _contexts[context.number];
     _handler handler = _handlers[context.number];

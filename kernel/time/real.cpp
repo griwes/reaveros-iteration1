@@ -49,7 +49,7 @@ namespace
 
     constexpr uint64_t _current_century = 20;
 
-    void _update(processor::idt::isr_context, uint64_t)
+    void _update(processor::idt::isr_context &, uint64_t)
     {
         LOCK(_lock);
 

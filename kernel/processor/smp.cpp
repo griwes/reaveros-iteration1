@@ -36,7 +36,7 @@ namespace
 {
     bool _timer = false;
 
-    void _handler(processor::idt::isr_context, uint64_t)
+    void _handler(processor::idt::isr_context &, uint64_t)
     {
         _timer = true;
     }
