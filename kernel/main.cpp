@@ -68,15 +68,6 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     current = new processor::context{};
     next = new processor::context{};
 
-    time::get_high_precision_timer()->periodic(3_s, [](processor::idt::isr_context & ctx, uint64_t){
-        current->save(ctx);
-        next->load(ctx);
-        auto tmp = current;
-        current = next;
-        next = tmp;
-        screen::print("\n", (void *)ctx.rip, ", ", (void *)ctx.rsp);
-    });
-
     void (*another)() = [](){
         for (uint64_t i = 0; i < 10000000; ++i)
         {
@@ -88,10 +79,22 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
             screen::print("\n#2: ", now, ", ", i);
         }
     };
+    asm volatile ("pushfq; pop %%rax" : "=a"(next->rflags) :: "rax");
+    next->cs = 0x8;
+    next->ss = 0x10;
     next->rip = (uint64_t)another;
     next->rbp = 0;
     next->rsp = memory::vm::allocate_address_range(4096);
     memory::vm::map(next->rsp);
+    next->rsp += 4096;
+
+    time::get_high_precision_timer()->periodic(3_s, [](processor::idt::isr_context & ctx, uint64_t){
+        current->save(ctx);
+        next->load(ctx);
+        auto tmp = current;
+        current = next;
+        next = tmp;
+    });
 
     for (uint64_t i = 10000000; i < 20000000; ++i)
     {
