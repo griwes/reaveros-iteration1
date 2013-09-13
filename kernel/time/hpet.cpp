@@ -113,7 +113,7 @@ time::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t addre
 
     _register(_main_counter, 0);
 
-    _comparators[0].one_shot(1_us, [](processor::idt::isr_context, uint64_t){});
+    _comparators[0].one_shot(1_us, [](processor::idt::isr_context &, uint64_t){});
     STI;
     HLT;
     CLI;
@@ -163,7 +163,7 @@ uint64_t time::hpet::timer::now()
     return (_register(_main_counter) * _period) / 1000000;
 }
 
-void time::hpet::comparator::_hpet_handler(processor::idt::isr_context isrc, uint64_t context)
+void time::hpet::comparator::_hpet_handler(processor::idt::isr_context & isrc, uint64_t context)
 {
     ((time::hpet::comparator *)context)->_handle(isrc);
 

@@ -58,7 +58,7 @@ namespace time
             virtual void _stop();
 
         private:
-            static void _hpet_handler(processor::idt::isr_context, uint64_t);
+            static void _hpet_handler(processor::idt::isr_context &, uint64_t);
 
             hpet::timer * _parent;
             uint8_t _index;

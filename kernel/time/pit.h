@@ -50,7 +50,7 @@ namespace time
             virtual ~timer() {}
 
         private:
-            static void _pit_handler(processor::idt::isr_context, uint64_t);
+            static void _pit_handler(processor::idt::isr_context &, uint64_t);
 
             virtual void _one_shot(uint64_t);
             virtual void _periodic(uint64_t);
