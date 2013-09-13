@@ -79,11 +79,8 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
             screen::print("\n#2: ", now, ", ", i);
         }
     };
-    asm volatile ("pushfq; pop %%rax" : "=a"(next->rflags) :: "rax");
-    next->cs = 0x8;
-    next->ss = 0x10;
+
     next->rip = (uint64_t)another;
-    next->rbp = 0;
     next->rsp = memory::vm::allocate_address_range(4096);
     memory::vm::map(next->rsp);
     next->rsp += 4096;

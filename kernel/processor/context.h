@@ -39,8 +39,8 @@ namespace processor
         uint64_t rsi, rdi, rsp, rbp;
         uint64_t r8, r9, r10, r11;
         uint64_t r12, r13, r14, r15;
-        uint64_t cs, ss;
-        uint64_t rip, rflags;
+        uint64_t cs = 0x8, ss = 0x10;
+        uint64_t rip, rflags = 1 << 9;
 
         uint64_t fill[10];
 
