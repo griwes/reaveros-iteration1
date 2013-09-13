@@ -29,14 +29,6 @@
 #include <screen/screen.h>
 #include <scheduler/scheduler.h>
 
-#include "processor/context.h"
-#include "processor/handlers.h"
-#include "time/timer.h"
-#include "time/real.h"
-
-processor::context * current;
-processor::context * next;
-
 extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
     memory::map_entry * memory_map, uint64_t memory_map_size)
 {
@@ -64,44 +56,6 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     screen::done();
-
-    current = new processor::context{};
-    next = new processor::context{};
-
-    void (*another)() = [](){
-        for (uint64_t i = 0; i < 10000000; ++i)
-        {
-            int64_t now = time::real::now().seconds;
-            while (time::real::now().seconds == now)
-            {
-                asm volatile ("pause");
-            }
-            screen::print("\n#2: ", now, ", ", i);
-        }
-    };
-
-    next->rip = (uint64_t)another;
-    next->rsp = memory::vm::allocate_address_range(4096);
-    memory::vm::map(next->rsp);
-    next->rsp += 4096;
-
-    time::get_high_precision_timer()->periodic(3_s, [](processor::idt::isr_context & ctx, uint64_t){
-        current->save(ctx);
-        next->load(ctx);
-        auto tmp = current;
-        current = next;
-        next = tmp;
-    });
-
-    for (uint64_t i = 10000000; i < 20000000; ++i)
-    {
-        int64_t now = time::real::now().seconds;
-        while (time::real::now().seconds == now)
-        {
-            asm volatile ("pause");
-        }
-        screen::print("\n#1: ", now, ", ", i);
-    };
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);
