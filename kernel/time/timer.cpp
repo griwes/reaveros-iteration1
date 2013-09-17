@@ -42,19 +42,19 @@ uint64_t time::allocate_timer_event_id()
     return _id.fetch_add(1);
 }
 
-void time::set_high_precision_timer(time::timer * t)
+void time::high_precision_timer(time::timer * t)
 {
     _hp_timer = t;
 }
 
-time::timer * time::get_high_precision_timer()
+time::timer * time::high_precision_timer()
 {
     return _hp_timer;
 }
 
-time::timer * time::get_preemption_timer()
+time::timer * time::preemption_timer()
 {
-    return &processor::get_current_core()->get_preemption_timer();
+    return &processor::get_current_core()->preemption_timer();
 }
 
 time::real_timer::real_timer(capabilities caps, uint64_t minimal_tick, uint64_t maximal_tick) : _cap{ caps },

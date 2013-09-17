@@ -43,7 +43,7 @@ void time::pit::initialize()
     new (&_pit) time::pit::timer();
     _ready = true;
 
-    time::set_high_precision_timer(&_pit);
+    time::high_precision_timer(&_pit);
 }
 
 bool time::pit::ready()

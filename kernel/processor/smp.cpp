@@ -59,7 +59,7 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
         get_lapic()->ipi(cores[i].apic_id(), ipis::init);
     }
 
-    time::get_high_precision_timer()->one_shot(10_ms, _handler);
+    time::high_precision_timer()->one_shot(10_ms, _handler);
 
     while (!_timer)
     {
@@ -88,7 +88,7 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
             get_lapic()->ipi(cores[i].apic_id(), ipis::sipi, (0x1000 + trampoline_size * (i - booted)) >> 12);
         }
 
-        time::get_high_precision_timer()->one_shot(500_us, _handler);
+        time::high_precision_timer()->one_shot(500_us, _handler);
 
         while (!_timer)
         {
@@ -106,7 +106,7 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
             }
         }
 
-        time::get_high_precision_timer()->one_shot(500_us, _handler);
+        time::high_precision_timer()->one_shot(500_us, _handler);
 
         while (!_timer)
         {

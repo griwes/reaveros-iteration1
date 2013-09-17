@@ -69,7 +69,7 @@ void time::hpet::initialize()
 
     if (_num_timers)
     {
-        time::set_high_precision_timer(_timers);
+        time::high_precision_timer(_timers);
     }
 }
 

@@ -97,7 +97,7 @@ namespace processor
             return _frame_stack;
         }
 
-        time::lapic::timer & get_preemption_timer()
+        time::lapic::timer & preemption_timer()
         {
             return _timer;
         }

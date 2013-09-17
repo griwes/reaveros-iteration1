@@ -38,19 +38,19 @@ namespace
 
 void time::lapic::initialize()
 {
-    _bsp_timer = new (&processor::get_core(processor::id())->get_preemption_timer()) time::lapic::timer{};
+    _bsp_timer = new (&processor::get_core(processor::id())->preemption_timer()) time::lapic::timer{};
 }
 
 void time::lapic::ap_initialize()
 {
-    new (&processor::get_core(processor::id())->get_preemption_timer()) time::lapic::timer{ *_bsp_timer };
+    new (&processor::get_core(processor::id())->preemption_timer()) time::lapic::timer{ *_bsp_timer };
 }
 
 time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period{ 0 }, _lapic{ processor::get_lapic() }
 {
     _lapic->divisor(1);
     _lapic->initial_count(~(uint32_t)0);
-    get_high_precision_timer()->one_shot(1_ms, [](processor::idt::isr_context &, uint64_t)
+    high_precision_timer()->one_shot(1_ms, [](processor::idt::isr_context &, uint64_t)
     {
         _fired = true;
     }, 0);

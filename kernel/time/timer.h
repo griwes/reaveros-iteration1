@@ -138,7 +138,7 @@ namespace time
 
     static_assert(4096 % sizeof(timer_description) == 0, "Invalid size of timer description.");
 
-    void set_high_precision_timer(timer *);
-    timer * get_high_precision_timer();
-    timer * get_preemption_timer();
+    void high_precision_timer(timer *);
+    timer * high_precision_timer();
+    timer * preemption_timer();
 }
