@@ -101,6 +101,7 @@ struct pci_vendor_t
 } __attribute__((packed));
 
 #include <memory/vm.h>
+#include <utils/aligner.h>
 
 constexpr bool is_power_of_two(uint64_t size)
 {
@@ -108,11 +109,9 @@ constexpr bool is_power_of_two(uint64_t size)
 }
 
 template<typename T, typename... Args>
-T * allocate_chained(uint64_t physical = 0, const Args &... args = {})
+typename utils::aligner<T>::type * allocate_chained(uint64_t physical = 0, const Args &... args = {})
 {
-    static_assert(is_power_of_two(sizeof(T)), "wrong chained type requested");
-
-    if (sizeof(T) >= 4096)
+    if (sizeof(typename utils::aligner<T>::type) >= 4096)
     {
         auto address = memory::vm::allocate_address_range(sizeof(T));
 
@@ -126,15 +125,16 @@ T * allocate_chained(uint64_t physical = 0, const Args &... args = {})
             memory::vm::map_multiple(address, address + sizeof(T));
         }
 
-        return ::new ((void *)address) T{ args... };
+        return ::new ((void *)address) typename utils::aligner<T>::type{ args... };
     }
 
-    T * address = (T *)memory::vm::allocate_address_range(4096);
+    typename utils::aligner<T>::type * address = (typename utils::aligner<T>::type *)memory::vm::allocate_address_range(4096);
     memory::vm::map((uint64_t)address, physical ? physical : memory::pmm::pop());
 
-    for (uint64_t i = 0; i < 4096 / (sizeof(T) > 4096 ? 1 : sizeof(T)); ++i)
+    for (uint64_t i = 0; i < 4096 / (sizeof(typename utils::aligner<T>::type) > 4096 ? 1 : sizeof(typename utils::aligner<T>
+        ::type)); ++i)
     {
-        ::new (address + i) T{ args... };
+        ::new (address + i) typename utils::aligner<T>::type{ args... };
         address[i].prev = (i != 0 ? address + i - 1 : nullptr);
         address[i].next = (i != 4096 / sizeof(T) - 1 ? address + i + 1 : nullptr);
     }

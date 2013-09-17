@@ -29,8 +29,8 @@
 #include <screen/screen.h>
 #include <scheduler/scheduler.h>
 
-extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
-    memory::map_entry * memory_map, uint64_t memory_map_size)
+extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video, memory::map_entry *
+    memory_map, uint64_t memory_map_size)
 {
     screen::initialize_console();
 

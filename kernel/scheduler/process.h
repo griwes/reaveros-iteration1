@@ -58,7 +58,5 @@ namespace scheduler
         uint64_t zombie:1;
 
         uint64_t exit_value;
-
-        uint64_t fill[4];
     };
 }

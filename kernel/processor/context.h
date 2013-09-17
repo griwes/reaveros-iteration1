@@ -42,8 +42,6 @@ namespace processor
         uint64_t cs = 0x8, ss = 0x10;
         uint64_t rip, rflags = 1 << 9;
 
-        uint64_t fill[10];
-
         void load(idt::isr_context &);
         void save(idt::isr_context &);
     };

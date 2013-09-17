@@ -25,50 +25,38 @@
 
 #pragma once
 
-#include <utils/allocator.h>
-
-namespace processor
+namespace utils
 {
-    struct context;
-    struct extended_context;
-}
-
-namespace scheduler
-{
-    struct process;
-
-    enum class thread_status : uint64_t
+    namespace _detail
     {
-        invalid,
-        init,
-        running,
-        ready,
-        sleeping,
-        waiting_ipc,
-        waiting_mutex,
-        waiting_semaphore,
-        zombie,
-        dead
-    };
+        constexpr uint64_t _is_power_of_two(uint64_t number)
+        {
+            return (number & (number - 1)) == 0;
+        }
 
-    struct thread : public utils::chained<thread>
+        constexpr uint64_t _empty_leading_bits(uint64_t number, uint64_t count = 0)
+        {
+            return !number ? 64 - count : _empty_leading_bits(number >> 1, count + 1);
+        }
+
+        constexpr uint64_t _next_power(uint64_t number)
+        {
+            return 1ull << (64 - _empty_leading_bits(number));
+        }
+
+        constexpr uint64_t _up_to_power(uint64_t number)
+        {
+            return _is_power_of_two(number) ? number : _next_power(number);
+        }
+    }
+
+    template<typename T>
+    struct aligner
     {
-        utils::spinlock lock;
+        constexpr static uint64_t size = _detail::_up_to_power(sizeof(T));
 
-        uint64_t id;
-
-        process * parent;
-
-        thread * prev;
-        thread * next;
-        thread * sched_prev;
-        thread * sched_next;
-
-        uint64_t address_space;
-
-        processor::context * context;
-        processor::extended_context * ext_context;
-
-        thread_status status;
+        class alignas(size) type : public T
+        {
+        };
     };
 }
