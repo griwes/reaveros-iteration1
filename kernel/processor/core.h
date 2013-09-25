@@ -29,6 +29,7 @@
 #include <processor/gdt.h>
 #include <memory/stack.h>
 #include <time/lapic.h>
+#include <scheduler/local.h>
 
 namespace processor
 {
@@ -102,6 +103,11 @@ namespace processor
             return _timer;
         }
 
+        ::scheduler::local & scheduler()
+        {
+            return _scheduler;
+        }
+
         friend void processor::ap_initialize();
         friend void processor::gdt::ap_initialize();
         friend void processor::smp::boot(core *, uint64_t);
@@ -124,6 +130,8 @@ namespace processor
         uint8_t * _started;
 
         memory::pmm::frame_stack _frame_stack;
-        time::lapic::timer _timer = nullptr;
+        time::lapic::timer _timer{ nullptr };
+
+        ::scheduler::local _scheduler{ nullptr };
     };
 }

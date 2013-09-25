@@ -25,6 +25,7 @@
 
 #include <scheduler/scheduler.h>
 #include <processor/ipi.h>
+#include <processor/core.h>
 #include <scheduler/process.h>
 #include <scheduler/thread.h>
 #include <scheduler/manager.h>
@@ -33,6 +34,41 @@ namespace
 {
     scheduler::manager<scheduler::process> _pcb_manager{ nullptr };
     scheduler::manager<scheduler::thread> _tcb_manager{ nullptr };
+
+    int64_t _score(scheduler::thread * t, processor::core * c)
+    {
+        int64_t score = 1024;
+
+        if (t->last_core == c)
+        {
+            score += 1024;
+        }
+
+        score -= c->scheduler().load();
+
+        return score;
+    }
+
+    void _schedule(scheduler::thread * t)
+    {
+        processor::core * best_core = processor::get_cores();
+        int64_t best_score = _score(t, best_core);
+
+        for (uint64_t i = 1; i < processor::get_core_count(); ++i)
+        {
+            int64_t score = _score(t, processor::get_cores() + i);
+
+            if (score > best_score)
+            {
+                best_core = processor::get_cores() + i;
+                best_score = score;
+            }
+        }
+
+        best_core->scheduler().push(t);
+    }
+
+    bool _ready = false;
 }
 
 void scheduler::initialize()
@@ -43,8 +79,21 @@ void scheduler::initialize()
     new (&_tcb_manager) manager<thread>{};
 
     processor::smp::parallel_execute([](uint64_t){ ap_initialize(); });
+
+    _ready = true;
 }
 
 void scheduler::ap_initialize()
 {
+    screen::debug("\nInitializing local thread scheduler on core #", processor::id());
+    new (&processor::get_current_core()->scheduler()) local{};
+
+    thread * kernel_thread = new thread{};
+    kernel_thread->last_core = processor::get_current_core();
+    processor::get_current_core()->scheduler().push(kernel_thread);
+}
+
+bool scheduler::ready()
+{
+    return _ready;
 }

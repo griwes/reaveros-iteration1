@@ -25,42 +25,45 @@
 
 #pragma once
 
-#include <utils/allocator.h>
+#include <scheduler/thread.h>
+#include <utils/vfq.h>
 #include <scheduler/scheduler.h>
-
-namespace user
-{
-    class user;
-}
+#include <time/timer.h>
 
 namespace scheduler
 {
-    struct thread;
-    class mailbox;
-
-    struct process : public utils::chained<process>
+    class local
     {
-        utils::spinlock lock;
+    public:
+        local(decltype(nullptr))
+        {
+        }
 
-        uint64_t id;
+        local() : _core{ processor::id() }
+        {
+        }
 
-        user::user * owner;
-        process * parent;
-        process * child;
+        void push(thread *);
+        void remove(thread *);
 
-        process * prev;
-        process * next;
-        thread * main_thread;
+        void do_switch();
 
-        mailbox * box;
+        uint64_t load()
+        {
+            return 4 * _top.load() + 2 * _normal.load() + _background.load();
+        }
 
-        uint64_t address_space;
-        uint64_t per_thread_foreign:1;
-        uint64_t zombie:1;
+    private:
+        thread * _pop();
 
-        uint64_t exit_value;
+        uint64_t _core;
 
-        scheduling_policy policy;
-        uint8_t priority = 128;
+        utils::variable_frequency_queue<thread, 256> _top;
+        utils::variable_frequency_queue<thread, 256> _normal;
+        utils::variable_frequency_queue<thread, 256> _background;
+
+        time::timer_event_handle _timer;
+
+        utils::spinlock _lock;
     };
 }

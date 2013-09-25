@@ -26,6 +26,8 @@
 #pragma once
 
 #include <utils/allocator.h>
+#include <scheduler/scheduler.h>
+#include <processor/context.h>
 
 namespace processor
 {
@@ -36,8 +38,9 @@ namespace processor
 namespace scheduler
 {
     struct process;
+    class local;
 
-    enum class thread_status : uint64_t
+    enum class thread_status : uint8_t
     {
         invalid,
         init,
@@ -53,6 +56,26 @@ namespace scheduler
 
     struct thread : public utils::chained<thread>
     {
+        void save(processor::isr_context & ctx)
+        {
+            if (!context)
+            {
+                context = new processor::context{};
+            }
+
+            context->save(ctx);
+        }
+
+        void load(processor::isr_context & ctx)
+        {
+            if (!context)
+            {
+                PANIC("tried to load non existent context!");
+            }
+
+            context->load(ctx);
+        }
+
         utils::spinlock lock;
 
         uint64_t id;
@@ -61,8 +84,8 @@ namespace scheduler
 
         thread * prev;
         thread * next;
-        thread * sched_prev;
-        thread * sched_next;
+        thread * prev_sibling;
+        thread * next_sibling;
 
         uint64_t address_space;
 
@@ -70,5 +93,9 @@ namespace scheduler
         processor::extended_context * ext_context;
 
         thread_status status;
+        processor::core * last_core;
+
+        scheduling_policy policy;
+        uint8_t priority = 128;
     };
 }

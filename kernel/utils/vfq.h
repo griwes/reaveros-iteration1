@@ -25,42 +25,17 @@
 
 #pragma once
 
-#include <utils/allocator.h>
-#include <scheduler/scheduler.h>
-
-namespace user
+namespace utils
 {
-    class user;
-}
-
-namespace scheduler
-{
-    struct thread;
-    class mailbox;
-
-    struct process : public utils::chained<process>
+    template<typename T, uint64_t Levels>
+    class variable_frequency_queue
     {
-        utils::spinlock lock;
+    public:
+        uint64_t size();
+        uint64_t load();
 
-        uint64_t id;
-
-        user::user * owner;
-        process * parent;
-        process * child;
-
-        process * prev;
-        process * next;
-        thread * main_thread;
-
-        mailbox * box;
-
-        uint64_t address_space;
-        uint64_t per_thread_foreign:1;
-        uint64_t zombie:1;
-
-        uint64_t exit_value;
-
-        scheduling_policy policy;
-        uint8_t priority = 128;
+        T * pop();
+        void push(uint64_t, T *);
+        void remove(uint64_t, T *);
     };
 }

@@ -25,8 +25,23 @@
 
 #pragma once
 
+#include <atomic>
+
 namespace scheduler
 {
+    struct thread;
+
     void initialize();
     void ap_initialize();
+
+    bool ready();
+
+    thread * current_thread();
+
+    enum class scheduling_policy : uint8_t
+    {
+        normal,
+        top,
+        background
+    };
 }
