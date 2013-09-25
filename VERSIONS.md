@@ -8,8 +8,7 @@
   * 0.0.3 - AP booting, working inter-core synchronizations and communications, including at least a bit tested
 physical memory manager with inter-core balancing; *finished on 10.09.2013*
   * 0.0.4 - **current work in progress** - context switching, supporting saving FPU, SSE, AMX and similar state saving
-only when needed
-  * 0.0.5 - basic SMP scheduler with single scheduling policy
+only when needed, basic SMP scheduler
   * 0.0.6 - working user space
   * 0.0.7 - IPC
   * 0.0.8 - functioning virtual memory manager
