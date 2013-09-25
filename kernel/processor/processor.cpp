@@ -202,3 +202,8 @@ uint64_t processor::get_core_count()
 {
     return _num_cores;
 }
+
+processor::core * processor::get_cores()
+{
+    return _cores;
+}

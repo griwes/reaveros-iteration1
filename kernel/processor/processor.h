@@ -45,6 +45,7 @@ namespace processor
     uint8_t max_ioapic_input();
     interrupt_entry * get_sources();
     core * get_core(uint64_t apic_id);
+    core * get_cores();
 
     inline core * get_current_core()
     {
