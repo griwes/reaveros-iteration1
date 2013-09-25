@@ -43,10 +43,7 @@ namespace processor
         others
     };
 
-    namespace idt
-    {
-        struct isr_context;
-    }
+    struct isr_context;
 
     extern "C" bool x2apic_capable();
     bool x2apic_enabled();

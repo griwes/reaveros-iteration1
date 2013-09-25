@@ -28,20 +28,13 @@
 #include <utils/spinlock.h>
 #include <utils/allocator.h>
 #include <utils/priority_list.h>
-
-namespace processor
-{
-    namespace idt
-    {
-        struct isr_context;
-    }
-}
+#include <processor/context.h>
 
 namespace time
 {
     uint64_t allocate_timer_event_id();
 
-    using timer_handler = void (*)(processor::idt::isr_context &, uint64_t);
+    using timer_handler = void (*)(uint64_t);
 
     struct timer_event_handle;
 
@@ -109,7 +102,7 @@ namespace time
         virtual void _update_now() = 0;
         virtual void _stop();
 
-        void _handle(processor::idt::isr_context &);
+        void _handle();
         const timer_description * _schedule_next();
 
         capabilities _cap;
@@ -133,10 +126,9 @@ namespace time
         void cancel()
         {
             device->cancel(id);
+            device = nullptr;
         }
     };
-
-    static_assert(4096 % sizeof(timer_description) == 0, "Invalid size of timer description.");
 
     void high_precision_timer(timer *);
     timer * high_precision_timer();

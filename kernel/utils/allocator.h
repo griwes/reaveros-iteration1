@@ -29,6 +29,13 @@
 
 namespace utils
 {
+    template<typename T>
+    uint64_t allocate_id()
+    {
+        static std::atomic<uint64_t> id{ 0 };
+        return id++;
+    }
+
     template<typename>
     class chained;
 

@@ -34,7 +34,7 @@ namespace
     processor::idt::idt_entry _idt[256];
     processor::idt::idtr _idtr;
 
-    extern "C" void _common_interrupt_handler(processor::idt::isr_context context)
+    extern "C" void _common_interrupt_handler(processor::isr_context context)
     {
         processor::handle(context);
     }

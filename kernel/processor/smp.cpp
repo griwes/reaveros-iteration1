@@ -26,7 +26,7 @@
 #include <processor/smp.h>
 #include <processor/core.h>
 #include <processor/lapic.h>
-#include <processor/idt.h>
+#include <processor/context.h>
 #include <memory/memory.h>
 
 extern "C" uint8_t _trampoline_start[];
@@ -36,7 +36,7 @@ namespace
 {
     bool _timer = false;
 
-    void _handler(processor::idt::isr_context &, uint64_t)
+    void _handler(uint64_t)
     {
         _timer = true;
     }

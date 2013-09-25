@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <processor/idt.h>
+#include <processor/context.h>
 
 namespace devices
 {
@@ -36,12 +36,12 @@ namespace processor
 {
     void initialize_exceptions();
 
-    void handle(idt::isr_context &);
+    void handle(isr_context &);
 
     uint8_t allocate_isr(uint8_t priority, devices::device * owner = nullptr);
     uint8_t allocate_isr(uint8_t priority, uint8_t & count, devices::device * owner = nullptr);
     void free_isr(uint8_t number);
-    void register_handler(uint8_t number, void (*)(idt::isr_context &, uint64_t), uint64_t context = 0);
+    void register_handler(uint8_t number, void (*)(isr_context &, uint64_t), uint64_t context = 0);
     void unregister_handler(uint8_t number);
     void set_isa_irq_int_vector(uint8_t isa, uint8_t handler);
 }

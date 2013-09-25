@@ -33,9 +33,9 @@ namespace
     bool _ready = false;
 }
 
-void time::pit::timer::_pit_handler(processor::idt::isr_context & isr, uint64_t context)
+void time::pit::timer::_pit_handler(processor::isr_context & isr, uint64_t context)
 {
-    ((time::pit::timer *)context)->_handle(isr);
+    ((time::pit::timer *)context)->_handle();
 }
 
 void time::pit::initialize()

@@ -27,6 +27,7 @@
 
 #include <processor/ipi.h>
 #include <processor/handlers.h>
+#include <scheduler/thread.h>
 
 namespace
 {
@@ -41,14 +42,22 @@ namespace
 
     std::atomic<uint64_t> _next_slot{ 0 };
 
-    void _interrupt_handler(processor::idt::isr_context &, uint64_t i)
+    void _interrupt_handler(processor::isr_context & isrc, uint64_t i)
     {
-        STI;
+        if (likely(scheduler::ready()))
+        {
+            scheduler::current_thread()->save(isrc);
+        }
 
         _parallel_slot & slot = _slots[i];
 
         slot.fptr(slot.data);
         --slot.unfinished_cores;
+
+        if (likely(scheduler::ready()))
+        {
+            scheduler::current_thread()->load(isrc);
+        }
     }
 }
 

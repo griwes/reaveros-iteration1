@@ -190,7 +190,7 @@ void time::real_timer::cancel(uint64_t id)
     }
 }
 
-void time::real_timer::_handle(processor::idt::isr_context & isrc)
+void time::real_timer::_handle()
 {
     LOCK(_lock);
 
@@ -225,7 +225,7 @@ void time::real_timer::_handle(processor::idt::isr_context & isrc)
     {
         while (_list.size() && _list.top()->time_point <= _now)
         {
-            _list.top()->handler(isrc, _list.top()->handler_parameter);
+            _list.top()->handler(_list.top()->handler_parameter);
             _list.update([=](timer_description & ref){ return true; }, [](timer_description & desc){ desc.time_point += desc.period; });
         }
 
@@ -237,7 +237,7 @@ void time::real_timer::_handle(processor::idt::isr_context & isrc)
     while (_list.size() && _list.top()->time_point <= _now)
     {
         timer_description desc = _list.pop();
-        desc.handler(isrc, desc.handler_parameter);
+        desc.handler(desc.handler_parameter);
 
         if (desc.periodic)
         {

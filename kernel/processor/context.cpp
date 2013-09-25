@@ -25,7 +25,7 @@
 
 #include <processor/context.h>
 
-void processor::context::save(processor::idt::isr_context & ctx)
+void processor::context::save(processor::isr_context & ctx)
 {
     rax = ctx.rax;
     rbx = ctx.rbx;
@@ -49,7 +49,7 @@ void processor::context::save(processor::idt::isr_context & ctx)
     rflags = ctx.rflags;
 }
 
-void processor::context::load(processor::idt::isr_context & ctx)
+void processor::context::load(processor::isr_context & ctx)
 {
     ctx.rax = rax;
     ctx.rbx = rbx;

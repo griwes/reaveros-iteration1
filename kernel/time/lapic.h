@@ -54,7 +54,7 @@ namespace time
             virtual void _stop();
 
         private:
-            static void _lapic_handler(processor::idt::isr_context &, uint64_t);
+            static void _lapic_handler(processor::isr_context &, uint64_t);
 
             uint64_t _period;
             processor::lapic * _lapic;

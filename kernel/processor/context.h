@@ -25,11 +25,18 @@
 
 #pragma once
 
-#include <processor/idt.h>
 #include <utils/allocator.h>
 
 namespace processor
 {
+    struct isr_context
+    {
+        uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
+        uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;
+        uint64_t number, error;
+        uint64_t rip, cs, rflags, rsp, ss;
+    } __attribute__((packed));
+
     struct context : public utils::chained<context>
     {
         context * prev;
@@ -42,7 +49,7 @@ namespace processor
         uint64_t cs = 0x8, ss = 0x10;
         uint64_t rip, rflags = 1 << 9;
 
-        void load(idt::isr_context &);
-        void save(idt::isr_context &);
+        void load(isr_context &);
+        void save(isr_context &);
     };
 }
