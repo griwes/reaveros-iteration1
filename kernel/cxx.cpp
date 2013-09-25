@@ -31,16 +31,6 @@
 
 void * __dso_handle = 0;
 
-namespace
-{
-    uint64_t _ipi_int = 0;
-    void _interrupt_handler(processor::idt::isr_context, uint64_t)
-    {
-        CLI;
-        HLT;
-    }
-}
-
 void operator delete(void *)
 {
 }
