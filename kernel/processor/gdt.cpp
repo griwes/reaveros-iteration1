@@ -67,14 +67,17 @@ namespace
         start[id].present = 1;
         start[id].dpl = 3;
 
-        auto stacks = memory::vm::allocate_address_range(3 * 4096);
-        memory::vm::map(stacks, memory::pmm::pop());
-        memory::vm::map(stacks + 4096, memory::pmm::pop());
-        memory::vm::map(stacks + 2 * 4096, memory::pmm::pop());
+        auto stacks = memory::vm::allocate_address_range(6 * 4096);
+        memory::vm::map(stacks + 4096);
+        memory::vm::map(stacks + 3 * 4096);
+        memory::vm::map(stacks + 5 * 4096);
 
-        tss->ist1 = stacks;
-        tss->ist2 = stacks + 4096;
-        tss->ist3 = stacks + 2 * 4096;
+        tss->ist1 = stacks + 4096;
+        tss->ist2 = stacks + 3 * 4096;
+        tss->ist3 = stacks + 5 * 4096;
+
+        tss->rsp0 = memory::vm::allocate_address_range(2 * 4096);
+        memory::vm::map(tss->rsp0);
     }
 }
 
