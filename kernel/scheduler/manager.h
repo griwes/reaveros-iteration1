@@ -28,7 +28,6 @@
 #include <type_traits>
 
 #include <utils/allocator.h>
-#include <utils/binary_tree.h>
 #include <scheduler/scheduler.h>
 
 namespace scheduler
@@ -50,24 +49,24 @@ namespace scheduler
         T * allocate()
         {
             T * ptr = new T{};
-            ptr->id = utils::allocate_id<T>();
-            _tree.insert(ptr);
+//            ptr->id = utils::allocate_id<T>();
+//            _tree.insert(ptr);
             return ptr;
         }
 
         void free(uint64_t id)
         {
-            T * ptr = _tree[id];
-            _tree.remove(id);
-            delete ptr;
+//            T * ptr = _tree[id];
+//            _tree.remove(id);
+//            delete ptr;
         }
 
         T * operator[](uint64_t id)
         {
-            return _tree[id];
+            return nullptr;
+//            return _tree[id];
         }
 
     private:
-        utils::binary_ptr_tree<T> _tree;
     };
 }

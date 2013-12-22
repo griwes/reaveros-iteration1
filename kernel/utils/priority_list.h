@@ -186,8 +186,8 @@ namespace utils
             current->prev = nullptr;
 
             T ret = std::move(*current);
-            ret->~T();
-            _allocator.free(first, _allocator);
+            current->~T();
+            _allocator.free(current);
 
             return ret;
         }
@@ -283,9 +283,9 @@ namespace utils
             first->next = nullptr;
 
             T ret = std::move(*first);
-            ret->~T();
-            _allocator.free(first, _allocator);
-            
+            first->~T();
+            _allocator.free(first);
+
             return ret;
         }
 

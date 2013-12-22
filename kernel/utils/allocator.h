@@ -124,6 +124,9 @@ namespace utils
     class chained
     {
     public:
+        T * next;
+        T * prev;
+
         void * operator new(uint64_t)
         {
             return _detail::_default_allocator<T>::allocate();
