@@ -28,6 +28,7 @@
 #include <utils/allocator.h>
 #include <scheduler/scheduler.h>
 #include <processor/context.h>
+#include <utils/vfq.h>
 
 namespace processor
 {

@@ -95,15 +95,15 @@ void scheduler::local::remove(scheduler::thread * t)
     switch (t->policy)
     {
         case scheduling_policy::top:
-            _top.remove(t->priority, t);
+            _top.remove(t);
             return;
 
         case scheduling_policy::normal:
-            _normal.remove(t->priority, t);
+            _normal.remove(t);
             return;
 
         case scheduling_policy::background:
-            _background.remove(t->priority, t);
+            _background.remove(t);
             return;
     }
 

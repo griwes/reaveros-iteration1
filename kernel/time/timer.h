@@ -68,7 +68,7 @@ namespace time
     {
         bool operator()(const timer_description & lhs, const timer_description & rhs)
         {
-            return lhs.time_point <= rhs.time_point;
+            return lhs.time_point < rhs.time_point;
         }
     };
 

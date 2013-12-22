@@ -25,17 +25,102 @@
 
 #pragma once
 
+#include <type_traits>
+
+#include <utils/priority_list.h>
+
 namespace utils
 {
+    namespace _detail
+    {
+        template<class T>
+        struct _vfq_element : public utils::chained<_vfq_element<T>>
+        {
+            uint64_t vfq_priority = 0;
+            uint64_t vfq_internal_data = 0;
+            T value{};
+
+            _vfq_element<T> * prev;
+            _vfq_element<T> * next;
+        };
+
+        template<typename T>
+        struct _vfq_comparator
+        {
+            bool operator()(const _vfq_element<T> & lhs, const _vfq_element<T> & rhs)
+            {
+                return lhs.vfq_internal_data < rhs.vfq_internal_data;
+            }
+        };
+    }
+
     template<typename T, uint64_t Levels>
     class variable_frequency_queue
     {
     public:
-        uint64_t size();
-        uint64_t load();
+        uint64_t size()
+        {
+            LOCK(_lock);
+            return _list.size();
+        }
 
-        T * pop();
-        void push(uint64_t, T *);
-        void remove(uint64_t, T *);
+        uint64_t load()
+        {
+            LOCK(_lock);
+            return _load;
+        }
+
+        T pop()
+        {
+            LOCK(_lock);
+
+            if (!_load)
+            {
+                PANIC("called `pop()` on empty variable frequency queue");
+            }
+
+            if (_valid_current)
+            {
+                _list.insert(std::move(_current));
+            }
+
+            _current = _list.pop();
+            _current.vfq_internal_data += Levels - _current.vfq_priority;
+            return _current.value;
+        }
+
+        void push(uint64_t priority, T element)
+        {
+            LOCK(_lock);
+
+            _detail::_vfq_element<T> e;
+            e.vfq_priority = priority;
+            e.vfq_internal_data = _list.top()->vfq_internal_data;
+            e.value = std::move(element);
+
+            _list.insert(e);
+            _load += priority;
+        }
+
+        void remove(T elem)
+        {
+            LOCK(_lock);
+
+            bool success = false;
+            _list.remove([&](const _detail::_vfq_element<T> & rhs){ return rhs.value == elem; }, success);
+
+            if (!success && _current.value == elem)
+            {
+                _current = {};
+                _valid_current = false;
+            }
+        }
+
+    private:
+        utils::spinlock _lock;
+        utils::priority_list<_detail::_vfq_element<T>, _detail::_vfq_comparator<T>> _list;
+        _detail::_vfq_element<T> _current;
+        bool _valid_current = false;
+        uint64_t _load = 0;
     };
 }

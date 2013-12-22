@@ -58,9 +58,9 @@ namespace scheduler
 
         uint64_t _core;
 
-        utils::variable_frequency_queue<thread, 256> _top;
-        utils::variable_frequency_queue<thread, 256> _normal;
-        utils::variable_frequency_queue<thread, 256> _background;
+        utils::variable_frequency_queue<thread *, 256> _top;
+        utils::variable_frequency_queue<thread *, 256> _normal;
+        utils::variable_frequency_queue<thread *, 256> _background;
 
         time::timer_event_handle _timer;
 

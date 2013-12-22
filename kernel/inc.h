@@ -161,3 +161,9 @@ constexpr uint64_t operator "" _ns(unsigned long long nanoseconds)
 {
     return nanoseconds;
 }
+
+template<typename T>
+T max(T a, T b)
+{
+    return a > b ? a : b;
+}
