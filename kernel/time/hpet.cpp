@@ -61,9 +61,14 @@ namespace
 
 void time::hpet::initialize()
 {
-    _used_interrupts |= 1;
+    _used_interrupts |= 1 | (1 << 9) | (1 << 10) | (1 << 11) | (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15);
     _used_interrupts |= 1 << processor::translate_isa(0);
     _used_interrupts |= 1 << processor::translate_isa(8);
+
+    for (uint8_t i = 0; i < 32; ++i)
+    {
+        _used_interrupts |= (!processor::get_ioapic(i)) << (i);
+    }
 
     acpi::parse_hpet(_timers, _num_timers);
 
