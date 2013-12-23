@@ -29,6 +29,7 @@
 
 #include <utils/allocator.h>
 #include <scheduler/scheduler.h>
+#include <utils/hash_map.h>
 
 namespace scheduler
 {
@@ -49,24 +50,34 @@ namespace scheduler
         T * allocate()
         {
             T * ptr = new T{};
-//            ptr->id = utils::allocate_id<T>();
-//            _tree.insert(ptr);
+            ptr->id = utils::allocate_id<T>();
+            _map.insert(ptr->id, ptr);
             return ptr;
         }
 
         void free(uint64_t id)
         {
-//            T * ptr = _tree[id];
-//            _tree.remove(id);
-//            delete ptr;
+            if (!_map.contains())
+            {
+                return;
+            }
+
+            T * ptr = _map[id];
+            _map.remove(id);
+            delete ptr;
         }
 
         T * operator[](uint64_t id)
         {
-            return nullptr;
-//            return _tree[id];
+            if (!_map.contains(id))
+            {
+                return nullptr;
+            }
+
+            return _map[id];
         }
 
     private:
+        utils::hash_map<uint64_t, T *> _map;
     };
 }
