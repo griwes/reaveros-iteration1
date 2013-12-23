@@ -73,9 +73,13 @@ void processor::initialize_exceptions()
 
 void processor::handle(processor::isr_context & context)
 {
+    uint64_t tid;
+    scheduler::thread * interrupted_thread;
+
     if (likely(scheduler::ready()))
     {
-        scheduler::current_thread()->save(context);
+        interrupted_thread = scheduler::current_thread();
+        tid = interrupted_thread->id;
     }
 
     uint64_t c = _contexts[context.number];
@@ -106,8 +110,9 @@ void processor::handle(processor::isr_context & context)
         });
     }
 
-    if (likely(scheduler::ready()))
+    if (likely(scheduler::ready()) && scheduler::current_thread()->id != tid && scheduler::valid(interrupted_thread->status))
     {
+        interrupted_thread->save(context);
         scheduler::current_thread()->load(context);
     }
 }

@@ -44,20 +44,10 @@ namespace
 
     void _interrupt_handler(processor::isr_context & isrc, uint64_t i)
     {
-        if (likely(scheduler::ready()))
-        {
-            scheduler::current_thread()->save(isrc);
-        }
-
         _parallel_slot & slot = _slots[i];
 
         slot.fptr(slot.data);
         --slot.unfinished_cores;
-
-        if (likely(scheduler::ready()))
-        {
-            scheduler::current_thread()->load(isrc);
-        }
     }
 }
 

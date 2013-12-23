@@ -124,8 +124,8 @@ namespace utils
     class chained
     {
     public:
-        T * next;
-        T * prev;
+        T * next = nullptr;
+        T * prev = nullptr;
 
         void * operator new(uint64_t)
         {

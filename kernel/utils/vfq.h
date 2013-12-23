@@ -39,9 +39,6 @@ namespace utils
             uint64_t vfq_priority = 0;
             uint64_t vfq_internal_data = 0;
             T value{};
-
-            _vfq_element<T> * prev;
-            _vfq_element<T> * next;
         };
 
         template<typename T>

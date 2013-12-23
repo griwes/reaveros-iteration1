@@ -50,12 +50,10 @@ namespace time
 
     struct timer_description : public utils::chained<timer_description>
     {
-        timer_description() : prev{}, next{}, id{}, handler{}, handler_parameter{}, periodic{}, time_point{}, period{}
+        timer_description() : id{}, handler{}, handler_parameter{}, periodic{}, time_point{}, period{}
         {
         }
 
-        timer_description * prev;
-        timer_description * next;
         uint64_t id;
         timer_handler handler;
         uint64_t handler_parameter;

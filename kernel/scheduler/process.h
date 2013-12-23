@@ -48,8 +48,6 @@ namespace scheduler
         process * parent;
         process * child;
 
-        process * prev;
-        process * next;
         thread * main_thread;
 
         mailbox * box;

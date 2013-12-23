@@ -39,9 +39,6 @@ namespace processor
 
     struct context : public utils::chained<context>
     {
-        context * prev;
-        context * next;
-
         uint64_t rax, rbx, rcx, rdx;
         uint64_t rsi, rdi, rsp, rbp;
         uint64_t r8, r9, r10, r11;

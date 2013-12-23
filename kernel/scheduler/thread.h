@@ -55,8 +55,19 @@ namespace scheduler
         dead
     };
 
+    inline bool valid(thread_status status)
+    {
+        return status != thread_status::invalid && status != thread_status::zombie && status != thread_status::dead;
+    }
+
     struct thread : public utils::chained<thread>
     {
+        ~thread()
+        {
+            status = thread_status::invalid;
+            delete context;
+        }
+
         void save(processor::isr_context & ctx)
         {
             if (!context)
@@ -83,8 +94,6 @@ namespace scheduler
 
         process * parent;
 
-        thread * prev;
-        thread * next;
         thread * prev_sibling;
         thread * next_sibling;
 
