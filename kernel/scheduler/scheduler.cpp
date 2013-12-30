@@ -29,6 +29,7 @@
 #include <scheduler/process.h>
 #include <scheduler/thread.h>
 #include <scheduler/manager.h>
+#include <processor/thread.h>
 
 namespace
 {
@@ -85,15 +86,26 @@ void scheduler::initialize()
 
 void scheduler::ap_initialize()
 {
+    INTL();
+
     screen::debug("\nInitializing local thread scheduler on core #", processor::id());
     new (&processor::get_current_core()->scheduler()) local{};
 
-    thread * kernel_thread = new thread{};
+    thread * kernel_thread = _tcb_manager.allocate();
     kernel_thread->last_core = processor::get_current_core();
+    kernel_thread->address_space = processor::get_asid();
     processor::get_current_core()->scheduler().push(kernel_thread);
+    processor::set_current_thread(kernel_thread);
+
+    screen::debug("\nLocal kernel thread ID on core #", processor::id(), ": ", kernel_thread->id);
 }
 
 bool scheduler::ready()
 {
     return _ready;
+}
+
+scheduler::thread * scheduler::current_thread()
+{
+    return processor::current_thread();
 }

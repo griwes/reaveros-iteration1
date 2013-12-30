@@ -23,40 +23,34 @@
  *
  **/
 
-#pragma once
+#include <processor/thread.h>
+#include <processor/core.h>
+#include <scheduler/thread.h>
 
-namespace utils
+void processor::set_current_thread(scheduler::thread * thread)
 {
-    namespace _detail
+    auto previous = processor::current_thread();
+    processor::core * core;
+
+    if (previous)
     {
-        constexpr uint64_t _is_power_of_two(uint64_t number)
-        {
-            return (number & (number - 1)) == 0;
-        }
-
-        constexpr uint64_t _empty_leading_bits(uint64_t number, uint64_t count = 0)
-        {
-            return !number ? 64 - count : _empty_leading_bits(number >> 1, count + 1);
-        }
-
-        constexpr uint64_t _next_power(uint64_t number)
-        {
-            return 1ull << (64 - _empty_leading_bits(number));
-        }
-
-        constexpr uint64_t _up_to_power(uint64_t number)
-        {
-            return _is_power_of_two(number) ? number : _next_power(number);
-        }
+        core = previous->current_core;
+        previous->current_core = nullptr;
+        previous->last_core = core;
     }
 
-    template<typename T>
-    struct aligner
+    else
     {
-        constexpr static uint64_t size = _detail::_up_to_power(sizeof(T));
+        core = processor::get_current_core();
+    }
 
-        struct alignas(size) type : public T
-        {
-        };
-    };
+    processor::set_asid(thread->address_space);
+    core->thread = thread;
+}
+
+scheduler::thread * processor::current_thread()
+{
+    scheduler::thread * ret = nullptr;
+    asm volatile("mov %%gs:0, %0" : "=r"(ret));
+    return ret;
 }

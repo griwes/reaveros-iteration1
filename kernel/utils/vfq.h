@@ -57,18 +57,21 @@ namespace utils
     public:
         uint64_t size()
         {
+            INTL();
             LOCK(_lock);
             return _list.size();
         }
 
         uint64_t load()
         {
+            INTL();
             LOCK(_lock);
             return _load;
         }
 
         T pop()
         {
+            INTL();
             LOCK(_lock);
 
             if (!_load)
@@ -88,12 +91,22 @@ namespace utils
 
         void push(uint64_t priority, T element)
         {
+            INTL();
             LOCK(_lock);
 
             _detail::_vfq_element<T> e;
             e.vfq_priority = priority;
-            e.vfq_internal_data = _list.top()->vfq_internal_data;
             e.value = std::move(element);
+
+            if (_list.size())
+            {
+                e.vfq_internal_data = _list.top()->vfq_internal_data;
+            }
+
+            else
+            {
+                e.vfq_internal_data = 0;
+            }
 
             _list.insert(e);
             _load += priority;
@@ -101,6 +114,7 @@ namespace utils
 
         void remove(T elem)
         {
+            INTL();
             LOCK(_lock);
 
             bool success = false;

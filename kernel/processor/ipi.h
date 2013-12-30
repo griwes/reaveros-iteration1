@@ -44,9 +44,11 @@ namespace processor
         enum class policies
         {
             all,
+            all_no_wait,
             others,
             others_no_wait,
             specific,
+            specific_no_wait,
             // TODO:
             // all_domain,
             // others_domain,

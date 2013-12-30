@@ -26,23 +26,16 @@
 #include <scheduler/local.h>
 #include <processor/ipi.h>
 #include <processor/core.h>
-
-namespace
-{
-    void _set_thread()
-    {
-
-    }
-}
+#include <processor/thread.h>
 
 scheduler::thread * scheduler::local::_pop()
 {
-    if (_top.load())
+    if (_top.size())
     {
         return _top.pop();
     }
 
-    if (_normal.load())
+    if (_normal.size())
     {
         return _normal.pop();
     }
@@ -52,26 +45,23 @@ scheduler::thread * scheduler::local::_pop()
 
 void scheduler::local::push(scheduler::thread * t)
 {
+    INTL();
     LOCK(_lock);
 
     switch (t->policy)
     {
         case scheduling_policy::top:
             _top.push(t->priority, t);
-
-            if (_top.size() < 3)
-            {
-                do_switch();
-            }
+            _do_switch();
 
             return;
 
         case scheduling_policy::normal:
             _normal.push(t->priority, t);
 
-            if (!_top.size() && _normal.size() < 3)
+            if (!_top.size())
             {
-                do_switch();
+                _do_switch();
             }
 
             return;
@@ -79,9 +69,9 @@ void scheduler::local::push(scheduler::thread * t)
         case scheduling_policy::background:
             _background.push(t->priority, t);
 
-            if (!_top.size() && !_normal.size() && _background.size() < 3)
+            if (!_top.size() && !_normal.size())
             {
-                do_switch();
+                _do_switch();
             }
 
             return;
@@ -90,6 +80,7 @@ void scheduler::local::push(scheduler::thread * t)
 
 void scheduler::local::remove(scheduler::thread * t)
 {
+    INTL();
     LOCK(_lock);
 
     switch (t->policy)
@@ -115,7 +106,18 @@ void scheduler::local::remove(scheduler::thread * t)
 
 void scheduler::local::do_switch()
 {
+    INTL();
     LOCK(_lock);
+
+    _do_switch();
+}
+
+void scheduler::local::_do_switch()
+{
+    if (unlikely(!scheduler::ready()))
+    {
+        return;
+    }
 
     if (_core == processor::id())
     {
@@ -126,7 +128,7 @@ void scheduler::local::do_switch()
 
         screen::debug("\nRescheduling on core #", _core);
 
-        if (_top.size() > 1 || _normal.size() > 1 || _background.size() > 1)
+        if (_top.size() > 1 || (!_top.size() && _normal.size() > 1) || (!_top.size() && !_normal.size() && _background.size() > 1))
         {
             _timer = time::preemption_timer()->one_shot(5_ms, [](uint64_t scheduler)
             {
@@ -135,12 +137,12 @@ void scheduler::local::do_switch()
             }, (uint64_t)this);
         }
 
-//        processor::do_switch(_pop());
+        processor::set_current_thread(_pop());
     }
 
     else
     {
-        processor::smp::parallel_execute(processor::smp::policies::specific, [](uint64_t scheduler)
+        processor::smp::parallel_execute(processor::smp::policies::specific_no_wait, [](uint64_t scheduler)
         {
             ((local *)scheduler)->do_switch();
         }, (uint64_t)this, _core);

@@ -25,38 +25,13 @@
 
 #pragma once
 
-namespace utils
+namespace scheduler
 {
-    namespace _detail
-    {
-        constexpr uint64_t _is_power_of_two(uint64_t number)
-        {
-            return (number & (number - 1)) == 0;
-        }
+    struct thread;
+}
 
-        constexpr uint64_t _empty_leading_bits(uint64_t number, uint64_t count = 0)
-        {
-            return !number ? 64 - count : _empty_leading_bits(number >> 1, count + 1);
-        }
-
-        constexpr uint64_t _next_power(uint64_t number)
-        {
-            return 1ull << (64 - _empty_leading_bits(number));
-        }
-
-        constexpr uint64_t _up_to_power(uint64_t number)
-        {
-            return _is_power_of_two(number) ? number : _next_power(number);
-        }
-    }
-
-    template<typename T>
-    struct aligner
-    {
-        constexpr static uint64_t size = _detail::_up_to_power(sizeof(T));
-
-        struct alignas(size) type : public T
-        {
-        };
-    };
+namespace processor
+{
+    void set_current_thread(scheduler::thread *);
+    scheduler::thread * current_thread();
 }

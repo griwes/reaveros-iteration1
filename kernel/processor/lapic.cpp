@@ -57,8 +57,10 @@ void processor::lapic::initialize()
     else
     {
         PANIC("Interrupt remapping has not been enabled, but BSP APIC ID >= 256. Please file a bug report with full"
-            "specification of your machine.");
+            " specification of your machine.");
     }
+
+    wrmsr(0xc0000101, (uint64_t)processor::get_current_core());
 }
 
 processor::lapic * processor::get_lapic()

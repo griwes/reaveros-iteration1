@@ -132,6 +132,7 @@ void processor::ap_initialize()
     memory::pmm::ap_initialize();
     gdt::ap_initialize();
     idt::ap_initialize();
+    wrmsr(0xc0000101, (uint64_t)processor::get_current_core());
     time::lapic::ap_initialize();
 
     uint64_t stack = memory::vm::allocate_address_range(8096);

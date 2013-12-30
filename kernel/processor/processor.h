@@ -35,6 +35,17 @@ namespace processor
 
     extern "C" memory::x64::pml4 * get_cr3();
     extern "C" void reload_cr3();
+    extern "C" void set_cr3(uint64_t asid);
+
+    inline uint64_t get_asid()
+    {
+        return (uint64_t)get_cr3();
+    }
+
+    inline void set_asid(uint64_t asid)
+    {
+        set_cr3(asid);
+    }
 
     uint64_t id();
     extern "C" uint64_t initial_id();

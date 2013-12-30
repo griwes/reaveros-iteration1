@@ -25,6 +25,7 @@
 bits    64
 
 global  get_cr3
+global  set_cr3
 global  reload_cr3
 global  initial_id
 global  load_gdt
@@ -36,6 +37,10 @@ extern  _common_interrupt_handler
 
 get_cr3:
     mov     rax, cr3
+    ret
+
+set_cr3:
+    mov     cr3, rdi
     ret
 
 reload_cr3:

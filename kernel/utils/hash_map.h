@@ -28,6 +28,7 @@
 #include <utils/allocator.h>
 #include <utils/locks.h>
 #include <memory/vm.h>
+#include <memory/memory.h>
 
 namespace utils
 {
@@ -48,6 +49,10 @@ namespace utils
             Key key;
             Value value;
             hash_map * parent;
+
+            _element() : key{}, value{}, parent{}
+            {
+            }
 
             _element(Key k, Value v, hash_map * p) : key{ std::move(k) }, value{ std::move(v) }, parent{ p }
             {
@@ -71,6 +76,7 @@ namespace utils
 
         void insert(const Key & k, const Value & v)
         {
+            INTL();
             LOCK(_lock);
 
             _insert(k, v);
@@ -78,6 +84,7 @@ namespace utils
 
         Value & operator[](const Key & k)
         {
+            INTL();
             LOCK(_lock);
 
             auto elem = _find(k);
@@ -93,6 +100,7 @@ namespace utils
 
         bool contains(const Key & k)
         {
+            INTL();
             LOCK(_lock);
 
             return _find(k);
@@ -100,6 +108,7 @@ namespace utils
 
         void remove(const Key & k)
         {
+            INTL();
             LOCK(_lock);
 
             auto elem = _find(k);
@@ -138,6 +147,7 @@ namespace utils
             auto table = memory::vm::allocate_address_range(sizeof(_element *) * HashTableSize);
             memory::vm::map_multiple(table, table + sizeof(_element *) * HashTableSize);
             _hash_table = (_element **)table;
+            memory::zero(_hash_table, HashTableSize);
         }
 
         void _insert(const Key & k, const Value & v)
@@ -165,6 +175,7 @@ namespace utils
 
             auto n = new (_allocator) _element{ k, v, this };
             n->next = _hash_table[hash];
+
             _hash_table[hash]->prev = n;
             _hash_table[hash] = n;
 
@@ -188,7 +199,7 @@ namespace utils
 
         HashType _hasher;
         _element ** _hash_table = nullptr;
-        uint64_t _size = 0;
+        std::atomic<uint64_t> _size{};
         allocator<_element> _allocator;
         spinlock _lock;
     };

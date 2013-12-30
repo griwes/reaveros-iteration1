@@ -32,7 +32,7 @@ namespace utils
     template<typename T>
     uint64_t allocate_id()
     {
-        static std::atomic<uint64_t> id{ 0 };
+        static std::atomic<uint64_t> id{ 1 };
         return id++;
     }
 

@@ -66,6 +66,7 @@ screen::boot_terminal::~boot_terminal()
 
 void screen::boot_terminal::clear()
 {
+    INTL();
     LOCK(_lock);
 
     if (_backbuffer)
@@ -81,6 +82,7 @@ void screen::boot_terminal::clear()
 
 void screen::boot_terminal::put_char(char c)
 {
+    INTL();
     LOCK(_lock);
 
     if (c == '\n')
@@ -210,6 +212,7 @@ void screen::boot_terminal::_scroll()
 
 void screen::boot_terminal::set_color(color::colors c)
 {
+    INTL();
     LOCK(_lock);
 
     uint32_t hex = c;

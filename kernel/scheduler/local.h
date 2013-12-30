@@ -55,6 +55,7 @@ namespace scheduler
 
     private:
         thread * _pop();
+        void _do_switch();
 
         uint64_t _core;
 

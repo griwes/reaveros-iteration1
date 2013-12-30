@@ -55,11 +55,6 @@ namespace scheduler
         dead
     };
 
-    inline bool valid(thread_status status)
-    {
-        return status != thread_status::invalid && status != thread_status::zombie && status != thread_status::dead;
-    }
-
     struct thread : public utils::chained<thread>
     {
         ~thread()
@@ -104,8 +99,14 @@ namespace scheduler
 
         thread_status status;
         processor::core * last_core;
+        processor::core * current_core;
 
         scheduling_policy policy;
         uint8_t priority = 128;
     };
+
+    inline bool valid(thread * t)
+    {
+        return t && t->status != thread_status::invalid && t->status != thread_status::zombie && t->status != thread_status::dead;
+    }
 }

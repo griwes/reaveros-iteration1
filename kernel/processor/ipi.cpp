@@ -61,6 +61,12 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
 
     switch (policy)
     {
+        case policies::all_no_wait:
+            slot.unfinished_cores = 0;
+            broadcast(broadcasts::others, ipis::generic, slot.int_vector);
+            fptr(data);
+            return;
+
         case policies::all:
             slot.unfinished_cores = get_core_count();
             broadcast(broadcasts::others, ipis::generic, slot.int_vector);
@@ -76,12 +82,17 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
         case policies::others_no_wait:
             slot.unfinished_cores = 0;
             broadcast(broadcasts::others, ipis::generic, slot.int_vector);
-            break;
+            return;
 
         case policies::specific:
             slot.unfinished_cores = 1;
             ipi(target, ipis::generic, slot.int_vector);
             break;
+
+        case policies::specific_no_wait:
+            slot.unfinished_cores = 0;
+            ipi(target, ipis::generic, slot.int_vector);
+            return;
     }
 
     while (slot.unfinished_cores)
@@ -89,11 +100,8 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
         asm volatile ("pause");
     }
 
-    if (policy != policies::others_no_wait)
-    {
-        slot.fptr = nullptr;
-        slot.data = 0;
-    }
+    slot.fptr = nullptr;
+    slot.data = 0;
 }
 
 void processor::smp::initialize_parallel()

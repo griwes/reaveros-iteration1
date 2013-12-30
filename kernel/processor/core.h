@@ -112,6 +112,13 @@ namespace processor
         friend void processor::gdt::ap_initialize();
         friend void processor::smp::boot(core *, uint64_t);
 
+        // DO NOT MOVE THIS AROUND
+        // this member must be the first member of core, memory wise
+        // it's used in kernel-side thread-local storage
+        // (GS_BASE points to current core's `core`, so [gs:0] is used to get the pointer to the current thread,
+        // hence the offset of this member must be 0)
+        ::scheduler::thread * thread = nullptr;
+
     private:
         uint32_t _acpi_id;
         uint32_t _apic_id;
