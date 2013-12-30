@@ -33,5 +33,11 @@ namespace scheduler
 namespace processor
 {
     void set_current_thread(scheduler::thread *);
-    scheduler::thread * current_thread();
+
+    inline scheduler::thread * current_thread()
+    {
+        scheduler::thread * ret = nullptr;
+        asm volatile("mov %%gs:0, %0" : "=r"(ret));
+        return ret;
+    }
 }

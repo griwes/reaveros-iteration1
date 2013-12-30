@@ -47,10 +47,3 @@ void processor::set_current_thread(scheduler::thread * thread)
     processor::set_asid(thread->address_space);
     core->thread = thread;
 }
-
-scheduler::thread * processor::current_thread()
-{
-    scheduler::thread * ret = nullptr;
-    asm volatile("mov %%gs:0, %0" : "=r"(ret));
-    return ret;
-}
