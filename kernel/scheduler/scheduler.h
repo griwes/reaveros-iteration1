@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -29,10 +29,19 @@
 
 namespace scheduler
 {
+    struct process;
     struct thread;
 
     void initialize();
     void ap_initialize();
+
+    void schedule(thread *);
+    thread * create_thread(void *, uint64_t, process * = nullptr);
+
+    inline thread * create_thread(void * start, process * parent = nullptr)
+    {
+        return create_thread(start, 0, parent);
+    }
 
     bool ready();
 

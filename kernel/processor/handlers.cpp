@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -110,9 +110,13 @@ void processor::handle(processor::isr_context & context)
         });
     }
 
-    if (false && likely(scheduler::ready()) && scheduler::current_thread()->id != tid && scheduler::valid(interrupted_thread))
+    if (tid && scheduler::current_thread()->id != tid)
     {
-        interrupted_thread->save(context);
+        if (scheduler::valid(interrupted_thread))
+        {
+            interrupted_thread->save(context);
+        }
+
         scheduler::current_thread()->load(context);
     }
 }

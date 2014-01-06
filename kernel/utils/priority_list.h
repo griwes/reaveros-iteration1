@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -65,7 +65,7 @@ namespace utils
                 _first = n;
             }
 
-            else if (unlikely(_comp(*_last, *n)))
+            else if (unlikely(_comp(*_last, *n) || !_comp(*n,  *_last)))
             {
                 _last->next = n;
                 n->prev = _last;
@@ -83,6 +83,7 @@ namespace utils
 
                 n->prev = current;
                 n->next = current->next;
+
                 current->next->prev = n;
                 current->next = n;
             }

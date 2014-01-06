@@ -39,12 +39,12 @@ namespace processor
 
     struct context : public utils::chained<context>
     {
-        uint64_t rax, rbx, rcx, rdx;
-        uint64_t rsi, rdi, rsp, rbp;
-        uint64_t r8, r9, r10, r11;
-        uint64_t r12, r13, r14, r15;
+        uint64_t rax = 0, rbx = 0, rcx = 0, rdx = 0;
+        uint64_t rsi = 0, rdi = 0, rsp = 0, rbp = 0;
+        uint64_t r8 = 0, r9 = 0, r10 = 0, r11 = 0;
+        uint64_t r12 = 0, r13 = 0, r14 = 0, r15 = 0;
         uint64_t cs = 0x8, ss = 0x10;
-        uint64_t rip, rflags = 1 << 9;
+        uint64_t rip = 0, rflags = 1 << 9;
 
         void load(isr_context &);
         void save(isr_context &);

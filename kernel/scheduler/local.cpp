@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -27,6 +27,7 @@
 #include <processor/ipi.h>
 #include <processor/core.h>
 #include <processor/thread.h>
+#include <processor/processor.h>
 
 scheduler::thread * scheduler::local::_pop()
 {

@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -26,6 +26,8 @@
 #pragma once
 
 #include <memory/x64paging.h>
+#include <scheduler/scheduler.h>
+#include <processor/thread.h>
 
 namespace processor
 {
@@ -58,15 +60,7 @@ namespace processor
     core * get_core(uint64_t apic_id);
     core * get_cores();
 
-    inline core * get_current_core()
-    {
-        // if (unlikely(!scheduler::ready()))
-        {
-            return get_core(id());
-        }
-
-        // return scheduler::current_thread()->core();
-    }
+    core * get_current_core();
 
     uint64_t get_core_count();
 

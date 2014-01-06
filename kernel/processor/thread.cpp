@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -26,6 +26,7 @@
 #include <processor/thread.h>
 #include <processor/core.h>
 #include <scheduler/thread.h>
+#include <processor/processor.h>
 
 void processor::set_current_thread(scheduler::thread * thread)
 {
@@ -44,6 +45,17 @@ void processor::set_current_thread(scheduler::thread * thread)
         core = processor::get_current_core();
     }
 
-    processor::set_asid(thread->address_space);
+    if (thread->address_space != processor::get_asid())
+    {
+        processor::set_asid(thread->address_space);
+    }
+
     core->thread = thread;
+
+    if (unlikely(thread->status == scheduler::thread_status::init))
+    {
+        thread->context->rsp = core->_tss.rsp0;
+    }
+
+    thread->status = scheduler::thread_status::running;
 }

@@ -28,6 +28,7 @@
 #include <memory/pmm.h>
 #include <screen/screen.h>
 #include <scheduler/scheduler.h>
+#include <processor/processor.h>
 
 extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video, memory::map_entry *
     memory_map, uint64_t memory_map_size)
@@ -56,6 +57,39 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
     screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     screen::done();
+
+    std::atomic<uint64_t> i{ 0 };
+
+    auto t1 = scheduler::create_thread((void *)+[](uint64_t i)
+    {
+        auto ptr = (std::atomic<uint64_t> *)i;
+
+        while (true)
+        {
+            if (*ptr % 2)
+            {
+                screen::print("1");
+                ++*ptr;
+            }
+        }
+    }, (uint64_t)&i);
+
+    auto t2 = scheduler::create_thread((void *)+[](uint64_t i)
+    {
+        auto ptr = (std::atomic<uint64_t> *)i;
+
+        while (true)
+        {
+            if (!(*ptr % 2))
+            {
+                screen::print("2");
+                ++*ptr;
+            }
+        }
+    }, (uint64_t)&i);
+
+    scheduler::schedule(t1);
+    scheduler::schedule(t2);
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);

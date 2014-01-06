@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
+ * Copyright (C) 2011-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -34,6 +34,7 @@
 namespace processor
 {
     extern "C" void ap_initialize();
+    void set_current_thread(scheduler::thread *);
 
     namespace gdt
     {
@@ -111,6 +112,7 @@ namespace processor
         friend void processor::ap_initialize();
         friend void processor::gdt::ap_initialize();
         friend void processor::smp::boot(core *, uint64_t);
+        friend void processor::set_current_thread(scheduler::thread *);
 
         // DO NOT MOVE THIS AROUND
         // this member must be the first member of core, memory wise

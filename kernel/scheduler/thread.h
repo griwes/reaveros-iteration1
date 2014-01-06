@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -77,7 +77,10 @@ namespace scheduler
         {
             if (!context)
             {
-                PANIC("tried to load non existent context!");
+                PANICEX("tried to load non existent context!", [&]
+                {
+                    screen::print("Thread ID: ",  id);
+                });
             }
 
             context->load(ctx);
@@ -87,21 +90,21 @@ namespace scheduler
 
         uint64_t id;
 
-        process * parent;
+        process * parent = nullptr;
 
-        thread * prev_sibling;
-        thread * next_sibling;
+        thread * prev_sibling = nullptr;
+        thread * next_sibling = nullptr;
 
         uint64_t address_space;
 
-        processor::context * context;
-        processor::extended_context * ext_context;
+        processor::context * context = nullptr;
+        processor::extended_context * ext_context = nullptr;
 
-        thread_status status;
-        processor::core * last_core;
-        processor::core * current_core;
+        thread_status status = thread_status::init;
+        processor::core * last_core = nullptr;
+        processor::core * current_core = nullptr;
 
-        scheduling_policy policy;
+        scheduling_policy policy = scheduling_policy::normal;
         uint8_t priority = 128;
     };
 

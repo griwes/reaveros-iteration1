@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <type_traits>
+#include <atomic>
 
 #include <utils/priority_list.h>
 
@@ -132,6 +132,6 @@ namespace utils
         utils::priority_list<_detail::_vfq_element<T>, _detail::_vfq_comparator<T>> _list;
         _detail::_vfq_element<T> _current;
         bool _valid_current = false;
-        uint64_t _load = 0;
+        std::atomic<uint64_t> _load{};
     };
 }

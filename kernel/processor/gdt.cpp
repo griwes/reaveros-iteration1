@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -72,12 +72,12 @@ namespace
         memory::vm::map(stacks + 3 * 4096);
         memory::vm::map(stacks + 5 * 4096);
 
-        tss->ist1 = stacks + 4096;
-        tss->ist2 = stacks + 3 * 4096;
-        tss->ist3 = stacks + 5 * 4096;
+        tss->ist1 = stacks + 2 * 4096;
+        tss->ist2 = stacks + 4 * 4096;
+        tss->ist3 = stacks + 6 * 4096;
 
         tss->rsp0 = memory::vm::allocate_address_range(2 * 4096);
-        memory::vm::map(tss->rsp0);
+        memory::vm::map(tss->rsp0 + 4096);
     }
 }
 

@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
+ * Copyright (C) 2013-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -207,4 +207,14 @@ uint64_t processor::get_core_count()
 processor::core * processor::get_cores()
 {
     return _cores;
+}
+
+processor::core * processor::get_current_core()
+{
+    if (unlikely(!scheduler::ready()))
+    {
+        return get_core(id());
+    }
+
+    return processor::current_thread()->current_core;
 }
