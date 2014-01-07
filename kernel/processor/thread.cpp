@@ -31,7 +31,7 @@
 void processor::set_current_thread(scheduler::thread * thread)
 {
     auto previous = processor::current_thread();
-    processor::core * core;
+    processor::core * core = nullptr;
 
     if (previous)
     {
@@ -45,12 +45,15 @@ void processor::set_current_thread(scheduler::thread * thread)
         core = processor::get_current_core();
     }
 
+    if (!core)
+    {
+        PANIC("core = nullptr");
+    }
+
     if (thread->address_space != processor::get_asid())
     {
         processor::set_asid(thread->address_space);
     }
-
-    core->thread = thread;
 
     if (unlikely(thread->status == scheduler::thread_status::init))
     {
@@ -58,4 +61,6 @@ void processor::set_current_thread(scheduler::thread * thread)
     }
 
     thread->status = scheduler::thread_status::running;
+    thread->current_core = core;
+    core->thread = thread;
 }

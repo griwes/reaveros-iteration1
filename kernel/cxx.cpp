@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
+ * Copyright (C) 2011-2014 Reaver Project Team:
  * 1. Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
@@ -56,6 +56,7 @@ void _panic(const char * message, const char * file, uint64_t line, const char *
 #endif
 
     screen::print(color::red, "Kernel panic: ", color::gray, message, "\n", file, ":", line, ": ", func);
+    screen::print("\nCore: #", processor::id());
 
     if (additional)
     {
