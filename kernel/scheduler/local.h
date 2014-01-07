@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -62,6 +59,7 @@ namespace scheduler
         utils::variable_frequency_queue<thread *, 256> _top;
         utils::variable_frequency_queue<thread *, 256> _normal;
         utils::variable_frequency_queue<thread *, 256> _background;
+        thread * _idle;
 
         time::timer_event_handle _timer;
 

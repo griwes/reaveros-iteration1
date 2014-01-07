@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013-2014 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -52,6 +49,7 @@ void processor::set_current_thread(scheduler::thread * thread)
 
     if (thread->address_space != processor::get_asid())
     {
+        screen::print((void *)thread->address_space, ", ", (void *)processor::get_asid());
         processor::set_asid(thread->address_space);
     }
 
@@ -63,4 +61,6 @@ void processor::set_current_thread(scheduler::thread * thread)
     thread->status = scheduler::thread_status::running;
     thread->current_core = core;
     core->thread = thread;
+
+    screen::print("\nCurrent thread: ",  thread->id);
 }

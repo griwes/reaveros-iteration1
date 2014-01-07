@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013-2014 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -41,7 +38,12 @@ scheduler::thread * scheduler::local::_pop()
         return _normal.pop();
     }
 
-    return _background.pop();
+    if (_background.size())
+    {
+        return _background.pop();
+    }
+
+    return _idle;
 }
 
 void scheduler::local::push(scheduler::thread * t)
@@ -76,6 +78,9 @@ void scheduler::local::push(scheduler::thread * t)
             }
 
             return;
+
+        default:
+            ;
     }
 }
 
@@ -97,6 +102,9 @@ void scheduler::local::remove(scheduler::thread * t)
         case scheduling_policy::background:
             _background.remove(t);
             return;
+
+        default:
+            ;
     }
 
     if (t == current_thread())
@@ -122,10 +130,7 @@ void scheduler::local::_do_switch()
 
     if (_core == processor::id())
     {
-        if (_timer.device)
-        {
-            _timer.cancel();
-        }
+        _timer.cancel();
 
         screen::debug("\nRescheduling on core #", _core);
 
@@ -145,7 +150,7 @@ void scheduler::local::_do_switch()
     {
         processor::smp::parallel_execute(processor::smp::policies::specific_no_wait, [](uint64_t scheduler)
         {
-            ((local *)scheduler)->do_switch();
+            ((local *)scheduler)->_do_switch();
         }, (uint64_t)this, _core);
     }
 }

@@ -1,8 +1,7 @@
 ;
 ; Reaver Project OS, Rose License
 ;
-; Copyright (C) 2011-2013 Reaver Project Team:
-; 1. Michał "Griwes" Dominiak
+; Copyright © 2011-2013 Michał "Griwes" Dominiak
 ;
 ; This software is provided 'as-is', without any express or implied
 ; warranty. In no event will the authors be held liable for any damages

@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,8 +18,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #include <atomic>
@@ -28,6 +25,7 @@
 #include <processor/ipi.h>
 #include <processor/handlers.h>
 #include <scheduler/thread.h>
+#include <processor/processor.h>
 
 namespace
 {
@@ -58,6 +56,7 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
     LOCK(slot.lock);
 
     slot.fptr = fptr;
+    slot.data = data;
 
     switch (policy)
     {

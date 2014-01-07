@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -74,7 +71,7 @@ time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period
 }
 
 time::lapic::timer::timer(const time::lapic::timer & rhs) : real_timer{ capabilities::dynamic, rhs._minimal_tick,
-    rhs._maximal_tick }, _period{ 0 }, _lapic{ processor::get_lapic() }
+    rhs._maximal_tick }, _period{ rhs._period }, _lapic{ processor::get_lapic() }
 {
 }
 
