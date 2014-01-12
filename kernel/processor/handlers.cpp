@@ -61,6 +61,19 @@ namespace
             screen::print(context.error & (1 << 4) ? ", instruction fetch\n" : "\n");
         });
     }
+
+    void _print_registers(processor::isr_context & ctx)
+    {
+        screen::print("Registers:\n");
+        screen::print("rax: ", (void *)ctx.rax, ", rbx: ", (void *)ctx.rbx, "\n");
+        screen::print("rcx: ", (void *)ctx.rcx, ", rdx: ", (void *)ctx.rdx, "\n");
+        screen::print("rsi: ", (void *)ctx.rsi, ", rdi: ", (void *)ctx.rdi, "\n");
+        screen::print("rsp: ", (void *)ctx.rsp, ", rbp: ", (void *)ctx.rbp, "\n");
+        screen::print("r8:  ", (void *)ctx.r8, ", r9:  ", (void *)ctx.r9, "\n");
+        screen::print("r10: ", (void *)ctx.r10, ", r11: ", (void *)ctx.r11, "\n");
+        screen::print("r12: ", (void *)ctx.r12, ", r13: ", (void *)ctx.r13, "\n");
+        screen::print("r14: ", (void *)ctx.r14, ", r15: ", (void *)ctx.r15, "\n");
+    }
 }
 
 void processor::initialize_exceptions()
@@ -104,6 +117,7 @@ void processor::handle(processor::isr_context & context)
             screen::print("Exception vector: ", context.number, "\n");
             screen::print("Error code: ", context.error, "\n");
             screen::print("Instruction pointer: ", (void *)context.rip, "\n");
+            _print_registers(context);
         });
     }
 

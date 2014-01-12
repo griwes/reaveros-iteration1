@@ -81,13 +81,13 @@ time::lapic::timer::timer(decltype(nullptr)) : real_timer{ capabilities::dynamic
 
 void time::lapic::timer::_lapic_handler(processor::isr_context & isrc, uint64_t context)
 {
-    ((timer *)preemption_timer())->_handle();
+    static_cast<timer *>(preemption_timer())->_handle();
 
     static uint8_t i = 0;
 
-    if (!(++i % 32))
+    if (!(++i % 64))
     {
-        ((timer *)preemption_timer)->_update_now();
+        static_cast<timer *>(preemption_timer())->_update_now();
     }
 }
 

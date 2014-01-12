@@ -26,6 +26,7 @@
 #include <screen/screen.h>
 #include <scheduler/scheduler.h>
 #include <processor/processor.h>
+
 #include "processor/core.h"
 
 extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video, memory::map_entry *
@@ -56,11 +57,11 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
     scheduler::initialize();
     screen::done();
 
-    std::atomic<uint64_t> i{ 0 };
+    uint64_t i{ 0 };
 
     auto t1 = scheduler::create_thread((void *)+[](uint64_t i)
     {
-        auto ptr = (std::atomic<uint64_t> *)i;
+        auto ptr = (volatile uint64_t *)i;
 
         while (true)
         {
@@ -68,14 +69,18 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
             {
                 screen::print("1");
                 ++*ptr;
-//                processor::get_current_core()->scheduler().do_switch();
+            }
+
+            else
+            {
+                asm volatile ("pause");
             }
         }
     }, (uint64_t)&i);
 
     auto t2 = scheduler::create_thread((void *)+[](uint64_t i)
     {
-        auto ptr = (std::atomic<uint64_t> *)i;
+        auto ptr = (volatile uint64_t *)i;
 
         while (true)
         {
@@ -83,7 +88,11 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
             {
                 screen::print("2");
                 ++*ptr;
-//                processor::get_current_core()->scheduler().do_switch();
+            }
+
+            else
+            {
+                asm volatile ("pause");
             }
         }
     }, (uint64_t)&i);

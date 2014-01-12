@@ -132,7 +132,7 @@ void scheduler::local::_do_switch()
     {
         _timer.cancel();
 
-        screen::print("\nRescheduling on core #", _core);
+        screen::debug("\nRescheduling on core #", _core);
 
         if (_top.size() > 1 || (!_top.size() && _normal.size() > 1) || (!_top.size() && !_normal.size() && _background.size() > 1))
         {
@@ -150,7 +150,7 @@ void scheduler::local::_do_switch()
     {
         processor::smp::parallel_execute(processor::smp::policies::specific_no_wait, [](uint64_t scheduler)
         {
-            ((local *)scheduler)->_do_switch();
+            ((local *)scheduler)->do_switch();
         }, (uint64_t)this, _core);
     }
 }

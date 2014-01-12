@@ -109,7 +109,7 @@ namespace time
 
         uint64_t _now;
 
-        utils::spinlock _lock;
+        utils::recursive_spinlock _lock;
         utils::priority_list<timer_description, timer_description_comparator> _list;
     };
 
@@ -124,7 +124,7 @@ namespace time
             {
                 device->cancel(id);
             }
-            
+
             device = nullptr;
         }
     };

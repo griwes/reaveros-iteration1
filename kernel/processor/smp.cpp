@@ -141,8 +141,6 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
                 --booted;
             }
         }
-
-        dbg;
     }
 
     _ready = true;
