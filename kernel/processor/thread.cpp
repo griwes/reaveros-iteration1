@@ -62,5 +62,5 @@ void processor::set_current_thread(scheduler::thread * thread)
     thread->current_core = core;
     core->thread = thread;
 
-    screen::debug("\nCurrent thread: ",  thread->id);
+    screen::debug("\nCurrent thread on core #", processor::id(), ": ", thread->id);
 }

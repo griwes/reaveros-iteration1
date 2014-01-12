@@ -43,7 +43,7 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
     screen::initialize_terminal(video, memory_map, memory_map_size);
 
     screen::print("ReaverOS: Reaver Project Operating System, \"Rose\"\n");
-    screen::print("Version: 0.0.3 dev; Release #1 \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
+    screen::print("Version: 0.0.4 dev; Release #1 \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
     screen::print("Copyright © 2012-2013 Reaver Project Team\n\n");
 
     screen::print(tag::memory, "Reporting memory manager status...\n");
@@ -97,10 +97,12 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
         }
     }, (uint64_t)&i);
 
-//    scheduler::schedule(t1);
-//    scheduler::schedule(t2);
-    processor::get_core(1)->scheduler().push(t1);
-    processor::get_core(1)->scheduler().push(t2);
+    t1->policy = scheduler::scheduling_policy::top;
+
+    scheduler::schedule(t1);
+    scheduler::schedule(t2);
+//    processor::get_core(1)->scheduler().push(t1);
+//    processor::get_core(1)->scheduler().push(t2);
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);

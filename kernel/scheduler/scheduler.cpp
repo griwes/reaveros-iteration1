@@ -50,6 +50,11 @@ namespace
             score -= 128;
         }
 
+        if (c->thread->address_space == t->address_space)
+        {
+            score += 256;
+        }
+
         return score;
     }
 
