@@ -132,7 +132,7 @@ void scheduler::local::_do_switch()
     {
         _timer.cancel();
 
-        screen::debug("\nRescheduling on core #", _core);
+        screen::print("\nRescheduling on core #", _core);
 
         if (_top.size() > 1 || (!_top.size() && _normal.size() > 1) || (!_top.size() && !_normal.size() && _background.size() > 1))
         {

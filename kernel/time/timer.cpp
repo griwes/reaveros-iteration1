@@ -147,7 +147,8 @@ void time::real_timer::cancel(uint64_t id)
 
     if (!success)
     {
-        PANICEX("Tried to cancel a not active timer.", [&]{
+        PANICEX("Tried to cancel a not active timer.", [&]
+        {
             screen::print("Timer id: ", id);
         });
     }

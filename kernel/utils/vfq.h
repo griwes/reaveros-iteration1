@@ -83,6 +83,7 @@ namespace utils
 
             _current = _list.pop();
             _current.vfq_internal_data += Levels - _current.vfq_priority;
+            _list.insert(_current);
             return _current.value;
         }
 
