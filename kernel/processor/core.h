@@ -133,7 +133,7 @@ namespace processor
         processor::gdt::tss _tss;
         processor::gdt::gdtr _gdtr;
 
-        uint8_t * _started;
+        volatile uint8_t * _started;
 
         memory::pmm::frame_stack _frame_stack;
         time::lapic::timer _timer{ nullptr };

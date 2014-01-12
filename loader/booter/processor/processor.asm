@@ -243,10 +243,7 @@ call_kernel:
 
     ; now on call stack are only arguments
 
-    push    dword 0x8
-    push    long_mode
-
-    retf
+    jmp     0x8:long_mode
 
 bits    64
 

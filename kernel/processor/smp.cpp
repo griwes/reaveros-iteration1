@@ -71,12 +71,14 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
         {
             memory::copy(_trampoline_start, (uint8_t *)0x1000 + trampoline_size * (i - booted), trampoline_size);
 
-            uint64_t foreign = memory::vm::clone_kernel();
-            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 16) = foreign;
-            memory::vm::map_multiple_foreign(0, 1024 * 1024, 0);
-            memory::vm::release_foreign();
+            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 12) = processor::get_asid();
 
-            cores[i]._started = (uint8_t *)(0x1000 + trampoline_size * (i - booted));
+            cores[i]._started = (uint8_t *)(0x1000 + trampoline_size * (i - booted) + 11);
+
+            uint64_t stack = memory::vm::allocate_address_range(8192);
+            memory::vm::map(stack + 4096);
+
+            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 20) = stack + 8192;
         }
 
         // SIPI
@@ -116,7 +118,12 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
         {
             if (*(cores[i]._started))
             {
-                screen::debug("\nCPU #", cores[i].apic_id(), " booted");
+                screen::print("\nCPU #", cores[i].apic_id(), " booted");
+
+                while (!cores[i]._started[trampoline_size - 12])
+                {
+                    asm volatile ("pause");
+                }
             }
 
             else
@@ -134,6 +141,8 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
                 --booted;
             }
         }
+
+        dbg;
     }
 
     _ready = true;
