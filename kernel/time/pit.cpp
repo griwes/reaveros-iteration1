@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,8 +18,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #include <time/pit.h>
@@ -33,9 +30,9 @@ namespace
     bool _ready = false;
 }
 
-void time::pit::timer::_pit_handler(processor::idt::isr_context isr, uint64_t context)
+void time::pit::timer::_pit_handler(processor::isr_context & isr, uint64_t context)
 {
-    ((time::pit::timer *)context)->_handle(isr);
+    ((time::pit::timer *)context)->_handle();
 }
 
 void time::pit::initialize()
@@ -43,7 +40,7 @@ void time::pit::initialize()
     new (&_pit) time::pit::timer();
     _ready = true;
 
-    time::set_high_precision_timer(&_pit);
+    time::high_precision_timer(&_pit);
 }
 
 bool time::pit::ready()

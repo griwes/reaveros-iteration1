@@ -25,6 +25,7 @@ not)
   * git
   * clang++, libc++ for building the kernel, binutils and other tools (I have **no plans** of supporting GCC at any point
 in the future)
+  * [ReaverLib](http://github.com/griwes/ReaverLib)
 
 If any of those required tools doesn't cooperate during build, feel free to contact me (Griwes @ #reaver on Freenode,
 @Guriwesu on Twitter), but be prepared to get an answer saying "upgrade your tools". I usually Clang's HEAD every month

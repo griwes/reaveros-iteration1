@@ -1,8 +1,7 @@
 ;
 ; Reaver Project OS, Rose License
 ;
-; Copyright (C) 2013 Reaver Project Team:
-; 1. Michał "Griwes" Dominiak
+; Copyright © 2013 Michał "Griwes" Dominiak
 ;
 ; This software is provided 'as-is', without any express or implied
 ; warranty. In no event will the authors be held liable for any damages
@@ -30,16 +29,17 @@ extern  ap_initialize
 bits    16
 
 _trampoline_start:
-    inc     byte [cs:24]
+    inc     byte [cs:11] ; 0th
 
     cli
 
     jmp     over
 
-    times   16 - ($ - $$)   db  0
+    times   11 - ($ - $$)   db  0
 
-pml4:   dq 0
-flag:   db 0
+flag:   db 0    ; 11th
+pml4:   dq 0    ; 12th
+stack:  dq 0    ; 20th
 
     times   32 - ($ - $$)   db  0
 
@@ -131,7 +131,7 @@ pmode:
     mov     gs, ax
     mov     ss, ax
 
-    lea     esp, [esi + 4096]
+    lea     esp, [esi + 8184]
 
     mov     eax, cr4
     or      eax, 1 << 5
@@ -142,7 +142,7 @@ pmode:
     or      eax, 1 << 8
     wrmsr
 
-    mov     eax, [esi + 16]
+    mov     eax, [esi + 12]
     mov     cr3, eax
 
     mov     eax, cr0
@@ -160,6 +160,11 @@ pmode:
 bits    64
 
 lmode:
+    mov     rbp, 0
+    mov     rsp, [esi + 20]
+
+    mov     byte [esi + 8191], 1
+
     mov     rax, qword ap_initialize
     jmp     rax
 

@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,8 +18,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #include <processor/handlers.h>
@@ -29,19 +26,21 @@
 #include <processor/ioapic.h>
 #include <processor/lapic.h>
 #include <devices/devices.h>
+#include <scheduler/scheduler.h>
+#include <scheduler/thread.h>
 
 namespace
 {
     utils::spinlock _lock;
 
-    using _handler = void (*)(processor::idt::isr_context, uint64_t);
+    using _handler = void (*)(processor::isr_context &, uint64_t);
     _handler _handlers[256] = {};
     uint64_t _contexts[256] = {};
 
     bool _vector_allocated[224] = {};
     devices::device * _owners[224] = {};
 
-    void _page_fault(processor::idt::isr_context context, uint64_t)
+    void _page_fault(processor::isr_context & context, uint64_t)
     {
         if ((context.cs & 3) != 0)
         {
@@ -62,6 +61,19 @@ namespace
             screen::print(context.error & (1 << 4) ? ", instruction fetch\n" : "\n");
         });
     }
+
+    void _print_registers(processor::isr_context & ctx)
+    {
+        screen::print("Registers:\n");
+        screen::print("rax: ", (void *)ctx.rax, ", rbx: ", (void *)ctx.rbx, "\n");
+        screen::print("rcx: ", (void *)ctx.rcx, ", rdx: ", (void *)ctx.rdx, "\n");
+        screen::print("rsi: ", (void *)ctx.rsi, ", rdi: ", (void *)ctx.rdi, "\n");
+        screen::print("rsp: ", (void *)ctx.rsp, ", rbp: ", (void *)ctx.rbp, "\n");
+        screen::print("r8:  ", (void *)ctx.r8, ", r9:  ", (void *)ctx.r9, "\n");
+        screen::print("r10: ", (void *)ctx.r10, ", r11: ", (void *)ctx.r11, "\n");
+        screen::print("r12: ", (void *)ctx.r12, ", r13: ", (void *)ctx.r13, "\n");
+        screen::print("r14: ", (void *)ctx.r14, ", r15: ", (void *)ctx.r15, "\n");
+    }
 }
 
 void processor::initialize_exceptions()
@@ -69,8 +81,17 @@ void processor::initialize_exceptions()
     _handlers[14] = _page_fault;
 }
 
-void processor::handle(processor::idt::isr_context context)
+void processor::handle(processor::isr_context & context)
 {
+    uint64_t tid = 0;
+    scheduler::thread * interrupted_thread = nullptr;
+
+    if (likely(scheduler::ready()))
+    {
+        interrupted_thread = scheduler::current_thread();
+        tid = interrupted_thread->id;
+    }
+
     uint64_t c = _contexts[context.number];
     _handler handler = _handlers[context.number];
 
@@ -96,7 +117,18 @@ void processor::handle(processor::idt::isr_context context)
             screen::print("Exception vector: ", context.number, "\n");
             screen::print("Error code: ", context.error, "\n");
             screen::print("Instruction pointer: ", (void *)context.rip, "\n");
+            _print_registers(context);
         });
+    }
+
+    if (tid && scheduler::current_thread()->id != tid)
+    {
+        if (scheduler::valid(interrupted_thread))
+        {
+            interrupted_thread->save(context);
+        }
+
+        scheduler::current_thread()->load(context);
     }
 }
 
@@ -183,7 +215,7 @@ uint8_t processor::allocate_isr(uint8_t priority, uint8_t & count, devices::devi
         return allocate_isr(priority, count);
     }
 
-    PANIC("Interrupt allocation failed. TODO: implement and uncomment above functions.");
+    PANIC("Interrupt allocation failed.");
 }
 
 void processor::free_isr(uint8_t number)

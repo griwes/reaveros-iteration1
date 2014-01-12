@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2011-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,8 +18,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #include <screen/screen.h>
@@ -30,16 +27,6 @@
 #include <processor/handlers.h>
 
 void * __dso_handle = 0;
-
-namespace
-{
-    uint64_t _ipi_int = 0;
-    void _interrupt_handler(processor::idt::isr_context, uint64_t)
-    {
-        CLI;
-        HLT;
-    }
-}
 
 void operator delete(void *)
 {
@@ -66,6 +53,7 @@ void _panic(const char * message, const char * file, uint64_t line, const char *
 #endif
 
     screen::print(color::red, "Kernel panic: ", color::gray, message, "\n", file, ":", line, ": ", func);
+    screen::print("\nCore: #", processor::id());
 
     if (additional)
     {

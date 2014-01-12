@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,8 +18,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #pragma once
@@ -28,20 +25,13 @@
 #include <utils/spinlock.h>
 #include <utils/allocator.h>
 #include <utils/priority_list.h>
-
-namespace processor
-{
-    namespace idt
-    {
-        struct isr_context;
-    }
-}
+#include <processor/context.h>
 
 namespace time
 {
     uint64_t allocate_timer_event_id();
 
-    using timer_handler = void (*)(processor::idt::isr_context, uint64_t);
+    using timer_handler = void (*)(uint64_t);
 
     struct timer_event_handle;
 
@@ -57,12 +47,10 @@ namespace time
 
     struct timer_description : public utils::chained<timer_description>
     {
-        timer_description() : prev{}, next{}, id{}, handler{}, handler_parameter{}, periodic{}, time_point{}, period{}
+        timer_description() : id{}, handler{}, handler_parameter{}, periodic{}, time_point{}, period{}
         {
         }
 
-        timer_description * prev;
-        timer_description * next;
         uint64_t id;
         timer_handler handler;
         uint64_t handler_parameter;
@@ -75,7 +63,7 @@ namespace time
     {
         bool operator()(const timer_description & lhs, const timer_description & rhs)
         {
-            return lhs.time_point <= rhs.time_point;
+            return lhs.time_point < rhs.time_point;
         }
     };
 
@@ -109,7 +97,7 @@ namespace time
         virtual void _update_now() = 0;
         virtual void _stop();
 
-        void _handle(processor::idt::isr_context);
+        void _handle();
         const timer_description * _schedule_next();
 
         capabilities _cap;
@@ -121,7 +109,7 @@ namespace time
 
         uint64_t _now;
 
-        utils::spinlock _lock;
+        utils::recursive_spinlock _lock;
         utils::priority_list<timer_description, timer_description_comparator> _list;
     };
 
@@ -132,13 +120,16 @@ namespace time
 
         void cancel()
         {
-            device->cancel(id);
+            if (device)
+            {
+                device->cancel(id);
+            }
+
+            device = nullptr;
         }
     };
 
-    static_assert(4096 % sizeof(timer_description) == 0, "Invalid size of timer description.");
-
-    void set_high_precision_timer(timer *);
-    timer * get_high_precision_timer();
-    timer * get_preemption_timer();
+    void high_precision_timer(timer *);
+    timer * high_precision_timer();
+    timer * preemption_timer();
 }

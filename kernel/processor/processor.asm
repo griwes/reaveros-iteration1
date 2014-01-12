@@ -1,8 +1,7 @@
 ;
 ; Reaver Project OS, Rose License
 ;
-; Copyright (C) 2011-2013 Reaver Project Team:
-; 1. Michał "Griwes" Dominiak
+; Copyright © 2011-2013 Michał "Griwes" Dominiak
 ;
 ; This software is provided 'as-is', without any express or implied
 ; warranty. In no event will the authors be held liable for any damages
@@ -25,6 +24,7 @@
 bits    64
 
 global  get_cr3
+global  set_cr3
 global  reload_cr3
 global  initial_id
 global  load_gdt
@@ -36,6 +36,10 @@ extern  _common_interrupt_handler
 
 get_cr3:
     mov     rax, cr3
+    ret
+
+set_cr3:
+    mov     cr3, rdi
     ret
 
 reload_cr3:
@@ -143,6 +147,7 @@ common_interrupt_stub:
     push    rdx
     push    rsi
     push    rdi
+    push    rbp
     push    r8
     push    r9
     push    r10
@@ -162,6 +167,7 @@ common_interrupt_stub:
     pop     r10
     pop     r9
     pop     r8
+    pop     rbp
     pop     rdi
     pop     rsi
     pop     rdx

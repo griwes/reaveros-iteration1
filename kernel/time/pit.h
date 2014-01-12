@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,21 +18,11 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #pragma once
 
 #include <time/timer.h>
-
-namespace processor
-{
-    namespace idt
-    {
-        struct isr_context;
-    }
-}
 
 namespace time
 {
@@ -50,7 +39,7 @@ namespace time
             virtual ~timer() {}
 
         private:
-            static void _pit_handler(processor::idt::isr_context, uint64_t);
+            static void _pit_handler(processor::isr_context &, uint64_t);
 
             virtual void _one_shot(uint64_t);
             virtual void _periodic(uint64_t);

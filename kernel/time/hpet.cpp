@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -61,15 +58,20 @@ namespace
 
 void time::hpet::initialize()
 {
-    _used_interrupts |= 1;
+    _used_interrupts |= 1 | (1 << 9) | (1 << 10) | (1 << 11) | (1 << 12) | (1 << 13) | (1 << 14) | (1 << 15);
     _used_interrupts |= 1 << processor::translate_isa(0);
     _used_interrupts |= 1 << processor::translate_isa(8);
+
+    for (uint8_t i = 0; i < 32; ++i)
+    {
+        _used_interrupts |= (!processor::get_ioapic(i)) << (i);
+    }
 
     acpi::parse_hpet(_timers, _num_timers);
 
     if (_num_timers)
     {
-        time::set_high_precision_timer(_timers);
+        time::high_precision_timer(_timers);
     }
 }
 
@@ -113,7 +115,7 @@ time::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t addre
 
     _register(_main_counter, 0);
 
-    _comparators[0].one_shot(1_us, [](processor::idt::isr_context, uint64_t){});
+    _comparators[0].one_shot(1_us, [](uint64_t){});
     STI;
     HLT;
     CLI;
@@ -163,9 +165,9 @@ uint64_t time::hpet::timer::now()
     return (_register(_main_counter) * _period) / 1000000;
 }
 
-void time::hpet::comparator::_hpet_handler(processor::idt::isr_context isrc, uint64_t context)
+void time::hpet::comparator::_hpet_handler(processor::isr_context & isrc, uint64_t context)
 {
-    ((time::hpet::comparator *)context)->_handle(isrc);
+    ((time::hpet::comparator *)context)->_handle();
 
     static uint8_t i = 0;
 

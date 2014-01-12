@@ -7,14 +7,13 @@
   * 0.0.2 - rewriting some major parts of the code; functioning timers using IOAPIC; *finished on 12.07.2013*
   * 0.0.3 - AP booting, working inter-core synchronizations and communications, including at least a bit tested
 physical memory manager with inter-core balancing; *finished on 10.09.2013*
-  * 0.0.4 - **current work in progress** - context switching, supporting saving FPU, SSE, AMX and similar state saving
-only when needed
-  * 0.0.5 - basic SMP scheduler with single scheduling policy
+  * 0.0.4 - context switching, basic SMP scheduler; *finished on 12.01.2013*
   * 0.0.6 - working user space
   * 0.0.7 - IPC
   * 0.0.8 - functioning virtual memory manager
   * 0.0.9 - functioning process manager
   * 0.0.10 - video service in userspace
+  * some unspecified version: supporting FPU, SSE, AMX and similar with on-demand saving and restoring
  * 0.1.x alpha - Cotyledon alpha
   * 0.1.0 - real time displaying application, some visible IPC and scheduler tests
  * 0.2.x beta - Cotyledon beta

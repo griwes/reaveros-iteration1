@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,8 +18,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #pragma once
@@ -29,6 +26,13 @@
 
 namespace utils
 {
+    template<typename T>
+    uint64_t allocate_id()
+    {
+        static std::atomic<uint64_t> id{ 1 };
+        return id++;
+    }
+
     template<typename>
     class chained;
 
@@ -117,6 +121,9 @@ namespace utils
     class chained
     {
     public:
+        T * next = nullptr;
+        T * prev = nullptr;
+
         void * operator new(uint64_t)
         {
             return _detail::_default_allocator<T>::allocate();

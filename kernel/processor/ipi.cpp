@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,14 +18,14 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #include <atomic>
 
 #include <processor/ipi.h>
 #include <processor/handlers.h>
+#include <scheduler/thread.h>
+#include <processor/processor.h>
 
 namespace
 {
@@ -41,10 +40,8 @@ namespace
 
     std::atomic<uint64_t> _next_slot{ 0 };
 
-    void _interrupt_handler(processor::idt::isr_context, uint64_t i)
+    void _interrupt_handler(processor::isr_context & isrc, uint64_t i)
     {
-        STI;
-
         _parallel_slot & slot = _slots[i];
 
         slot.fptr(slot.data);
@@ -59,9 +56,16 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
     LOCK(slot.lock);
 
     slot.fptr = fptr;
+    slot.data = data;
 
     switch (policy)
     {
+        case policies::all_no_wait:
+            slot.unfinished_cores = 0;
+            broadcast(broadcasts::others, ipis::generic, slot.int_vector);
+            fptr(data);
+            return;
+
         case policies::all:
             slot.unfinished_cores = get_core_count();
             broadcast(broadcasts::others, ipis::generic, slot.int_vector);
@@ -77,12 +81,17 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
         case policies::others_no_wait:
             slot.unfinished_cores = 0;
             broadcast(broadcasts::others, ipis::generic, slot.int_vector);
-            break;
+            return;
 
         case policies::specific:
             slot.unfinished_cores = 1;
             ipi(target, ipis::generic, slot.int_vector);
             break;
+
+        case policies::specific_no_wait:
+            slot.unfinished_cores = 0;
+            ipi(target, ipis::generic, slot.int_vector);
+            return;
     }
 
     while (slot.unfinished_cores)
@@ -90,11 +99,8 @@ void processor::smp::parallel_execute(processor::smp::policies policy, void (*fp
         asm volatile ("pause");
     }
 
-    if (policy != policies::others_no_wait)
-    {
-        slot.fptr = nullptr;
-        slot.data = 0;
-    }
+    slot.fptr = nullptr;
+    slot.data = 0;
 }
 
 void processor::smp::initialize_parallel()

@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2011-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,8 +18,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #pragma once
@@ -29,10 +26,12 @@
 #include <processor/gdt.h>
 #include <memory/stack.h>
 #include <time/lapic.h>
+#include <scheduler/local.h>
 
 namespace processor
 {
     extern "C" void ap_initialize();
+    void set_current_thread(scheduler::thread *);
 
     namespace gdt
     {
@@ -97,14 +96,27 @@ namespace processor
             return _frame_stack;
         }
 
-        time::lapic::timer & get_preemption_timer()
+        time::lapic::timer & preemption_timer()
         {
             return _timer;
+        }
+
+        ::scheduler::local & scheduler()
+        {
+            return _scheduler;
         }
 
         friend void processor::ap_initialize();
         friend void processor::gdt::ap_initialize();
         friend void processor::smp::boot(core *, uint64_t);
+        friend void processor::set_current_thread(scheduler::thread *);
+
+        // DO NOT MOVE THIS AROUND
+        // this member must be the first member of core, memory wise
+        // it's used in kernel-side thread-local storage
+        // (GS_BASE points to current core's `core`, so [gs:0] is used to get the pointer to the current thread,
+        // hence the offset of this member must be 0)
+        ::scheduler::thread * thread = nullptr;
 
     private:
         uint32_t _acpi_id;
@@ -121,9 +133,11 @@ namespace processor
         processor::gdt::tss _tss;
         processor::gdt::gdtr _gdtr;
 
-        uint8_t * _started;
+        volatile uint8_t * _started;
 
         memory::pmm::frame_stack _frame_stack;
-        time::lapic::timer _timer = nullptr;
+        time::lapic::timer _timer{ nullptr };
+
+        ::scheduler::local _scheduler{ nullptr };
     };
 }
