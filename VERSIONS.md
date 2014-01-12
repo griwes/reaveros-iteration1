@@ -14,6 +14,7 @@ physical memory manager with inter-core balancing; *finished on 10.09.2013*
   * 0.0.9 - functioning process manager
   * 0.0.10 - video service in userspace
   * some unspecified version: supporting FPU, SSE, AMX and similar with on-demand saving and restoring
+  * some unspecified version: fix the design bug disallowing single core CPUs
  * 0.1.x alpha - Cotyledon alpha
   * 0.1.0 - real time displaying application, some visible IPC and scheduler tests
  * 0.2.x beta - Cotyledon beta
