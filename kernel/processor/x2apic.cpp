@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -102,7 +99,7 @@ processor::x2apic::x2apic()
     _register(_spurious_interrupt_vector, _spurious | 0x100);
 
     screen::debug("\nInitialized x2APIC. APIC version: ", _register(_apic_version) & 0xFF, ", number of LVTs: ",
-        ((_register(_apic_version) >> 16 ) & 0xFF) + 1);
+        ((_register(_apic_version) >> 16 ) & 0xFF) + 1, ", timer IRQ: ", _timer_irq);
 }
 
 void processor::x2apic::ap_initialize()

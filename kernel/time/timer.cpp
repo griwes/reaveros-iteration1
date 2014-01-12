@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -42,19 +39,19 @@ uint64_t time::allocate_timer_event_id()
     return _id.fetch_add(1);
 }
 
-void time::set_high_precision_timer(time::timer * t)
+void time::high_precision_timer(time::timer * t)
 {
     _hp_timer = t;
 }
 
-time::timer * time::get_high_precision_timer()
+time::timer * time::high_precision_timer()
 {
     return _hp_timer;
 }
 
-time::timer * time::get_preemption_timer()
+time::timer * time::preemption_timer()
 {
-    return &processor::get_current_core()->get_preemption_timer();
+    return &processor::get_current_core()->preemption_timer();
 }
 
 time::real_timer::real_timer(capabilities caps, uint64_t minimal_tick, uint64_t maximal_tick) : _cap{ caps },
@@ -150,7 +147,8 @@ void time::real_timer::cancel(uint64_t id)
 
     if (!success)
     {
-        PANICEX("Tried to cancel a not active timer.", [&]{
+        PANICEX("Tried to cancel a not active timer.", [&]
+        {
             screen::print("Timer id: ", id);
         });
     }
@@ -168,6 +166,7 @@ void time::real_timer::cancel(uint64_t id)
     if (!_list.size())
     {
         _stop();
+        return;
     }
 
     _update_now();
@@ -190,7 +189,7 @@ void time::real_timer::cancel(uint64_t id)
     }
 }
 
-void time::real_timer::_handle(processor::idt::isr_context & isrc)
+void time::real_timer::_handle()
 {
     LOCK(_lock);
 
@@ -225,7 +224,7 @@ void time::real_timer::_handle(processor::idt::isr_context & isrc)
     {
         while (_list.size() && _list.top()->time_point <= _now)
         {
-            _list.top()->handler(isrc, _list.top()->handler_parameter);
+            _list.top()->handler(_list.top()->handler_parameter);
             _list.update([=](timer_description & ref){ return true; }, [](timer_description & desc){ desc.time_point += desc.period; });
         }
 
@@ -237,7 +236,7 @@ void time::real_timer::_handle(processor::idt::isr_context & isrc)
     while (_list.size() && _list.top()->time_point <= _now)
     {
         timer_description desc = _list.pop();
-        desc.handler(isrc, desc.handler_parameter);
+        desc.handler(desc.handler_parameter);
 
         if (desc.periodic)
         {

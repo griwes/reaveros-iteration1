@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,14 +18,12 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #include <processor/smp.h>
 #include <processor/core.h>
 #include <processor/lapic.h>
-#include <processor/idt.h>
+#include <processor/context.h>
 #include <memory/memory.h>
 
 extern "C" uint8_t _trampoline_start[];
@@ -36,7 +33,7 @@ namespace
 {
     bool _timer = false;
 
-    void _handler(processor::idt::isr_context &, uint64_t)
+    void _handler(uint64_t)
     {
         _timer = true;
     }
@@ -59,7 +56,7 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
         get_lapic()->ipi(cores[i].apic_id(), ipis::init);
     }
 
-    time::get_high_precision_timer()->one_shot(10_ms, _handler);
+    time::high_precision_timer()->one_shot(10_ms, _handler);
 
     while (!_timer)
     {
@@ -74,12 +71,14 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
         {
             memory::copy(_trampoline_start, (uint8_t *)0x1000 + trampoline_size * (i - booted), trampoline_size);
 
-            uint64_t foreign = memory::vm::clone_kernel();
-            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 16) = foreign;
-            memory::vm::map_multiple_foreign(0, 1024 * 1024, 0);
-            memory::vm::release_foreign();
+            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 12) = processor::get_asid();
 
-            cores[i]._started = (uint8_t *)(0x1000 + trampoline_size * (i - booted));
+            cores[i]._started = (uint8_t *)(0x1000 + trampoline_size * (i - booted) + 11);
+
+            uint64_t stack = memory::vm::allocate_address_range(8192);
+            memory::vm::map(stack + 4096);
+
+            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 20) = stack + 8192;
         }
 
         // SIPI
@@ -88,7 +87,7 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
             get_lapic()->ipi(cores[i].apic_id(), ipis::sipi, (0x1000 + trampoline_size * (i - booted)) >> 12);
         }
 
-        time::get_high_precision_timer()->one_shot(500_us, _handler);
+        time::high_precision_timer()->one_shot(500_us, _handler);
 
         while (!_timer)
         {
@@ -106,7 +105,7 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
             }
         }
 
-        time::get_high_precision_timer()->one_shot(500_us, _handler);
+        time::high_precision_timer()->one_shot(500_us, _handler);
 
         while (!_timer)
         {
@@ -119,7 +118,12 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
         {
             if (*(cores[i]._started))
             {
-                screen::debug("\nCPU #", cores[i].apic_id(), " booted");
+                screen::print("\nCPU #", cores[i].apic_id(), " booted");
+
+                while (!cores[i]._started[trampoline_size - 12])
+                {
+                    asm volatile ("pause");
+                }
             }
 
             else

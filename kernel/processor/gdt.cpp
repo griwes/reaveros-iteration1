@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -67,14 +64,17 @@ namespace
         start[id].present = 1;
         start[id].dpl = 3;
 
-        auto stacks = memory::vm::allocate_address_range(3 * 4096);
-        memory::vm::map(stacks, memory::pmm::pop());
-        memory::vm::map(stacks + 4096, memory::pmm::pop());
-        memory::vm::map(stacks + 2 * 4096, memory::pmm::pop());
+        auto stacks = memory::vm::allocate_address_range(6 * 4096);
+        memory::vm::map(stacks + 4096);
+        memory::vm::map(stacks + 3 * 4096);
+        memory::vm::map(stacks + 5 * 4096);
 
-        tss->ist1 = stacks;
-        tss->ist2 = stacks + 4096;
-        tss->ist3 = stacks + 2 * 4096;
+        tss->ist1 = stacks + 2 * 4096;
+        tss->ist2 = stacks + 4 * 4096;
+        tss->ist3 = stacks + 6 * 4096;
+
+        tss->rsp0 = memory::vm::allocate_address_range(2 * 4096);
+        memory::vm::map(tss->rsp0 + 4096);
     }
 }
 

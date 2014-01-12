@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -38,19 +35,19 @@ namespace
 
 void time::lapic::initialize()
 {
-    _bsp_timer = new (&processor::get_core(processor::id())->get_preemption_timer()) time::lapic::timer{};
+    _bsp_timer = new (&processor::get_current_core()->preemption_timer()) time::lapic::timer{};
 }
 
 void time::lapic::ap_initialize()
 {
-    new (&processor::get_core(processor::id())->get_preemption_timer()) time::lapic::timer{ *_bsp_timer };
+    new (&processor::get_current_core()->preemption_timer()) time::lapic::timer{ *_bsp_timer };
 }
 
 time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period{ 0 }, _lapic{ processor::get_lapic() }
 {
     _lapic->divisor(1);
     _lapic->initial_count(~(uint32_t)0);
-    get_high_precision_timer()->one_shot(1_ms, [](processor::idt::isr_context &, uint64_t)
+    high_precision_timer()->one_shot(1_ms, [](uint64_t)
     {
         _fired = true;
     }, 0);
@@ -70,27 +67,27 @@ time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period
 
     screen::debug("\nLAPIC timer tick period: ", _period, "fs, ticks in 1ms: ", ticks);
 
-    processor::register_handler(_lapic->_timer_irq, _lapic_handler, (uint64_t)this);
+    processor::register_handler(_lapic->_timer_irq, _lapic_handler);
 }
 
-time::lapic::timer::timer(const time::lapic::timer & rhs): real_timer{ capabilities::dynamic, rhs._minimal_tick,
-    rhs._maximal_tick }, _period{ 0 }, _lapic{ processor::get_lapic() }
+time::lapic::timer::timer(const time::lapic::timer & rhs) : real_timer{ capabilities::dynamic, rhs._minimal_tick,
+    rhs._maximal_tick }, _period{ rhs._period }, _lapic{ processor::get_lapic() }
 {
 }
 
-time::lapic::timer::timer(decltype(nullptr)): real_timer{ capabilities::dynamic, 0, 0 }
+time::lapic::timer::timer(decltype(nullptr)) : real_timer{ capabilities::dynamic, 0, 0 }
 {
 }
 
-void time::lapic::timer::_lapic_handler(processor::idt::isr_context & isrc, uint64_t context)
+void time::lapic::timer::_lapic_handler(processor::isr_context & isrc, uint64_t context)
 {
-    ((time::lapic::timer *)context)->_handle(isrc);
+    static_cast<timer *>(preemption_timer())->_handle();
 
     static uint8_t i = 0;
 
-    if (!(++i % 32))
+    if (!(++i % 64))
     {
-        ((time::lapic::timer *)context)->_update_now();
+        static_cast<timer *>(preemption_timer())->_update_now();
     }
 }
 

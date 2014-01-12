@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -49,7 +46,7 @@ namespace
 
     constexpr uint64_t _current_century = 20;
 
-    void _update(processor::idt::isr_context &, uint64_t)
+    void _update(uint64_t)
     {
         LOCK(_lock);
 
@@ -110,12 +107,12 @@ void time::real::initialize()
 
     if (!hpet::ready())
     {
-        get_high_precision_timer()->periodic(2_ms, _update, 0);
+        high_precision_timer()->periodic(2_ms, _update, 0);
     }
 
     else
     {
-        _hpet_last_ns = ((hpet::timer *)get_high_precision_timer())->now();
+        _hpet_last_ns = ((hpet::timer *)high_precision_timer())->now();
     }
 
     STI;
@@ -161,7 +158,7 @@ time::point time::real::now()
 
     if (hpet::ready())
     {
-        uint64_t hpet_now = ((hpet::timer *)get_high_precision_timer())->now();
+        uint64_t hpet_now = ((hpet::timer *)high_precision_timer())->now();
         uint64_t nanoseconds = hpet_now - _hpet_last_ns;
         _hpet_last_ns = hpet_now;
         _time.seconds += nanoseconds / 1000000000;

@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright © 2011-2012 Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -22,23 +22,38 @@
 
 #pragma once
 
-namespace screen
+namespace utils
 {
-    struct mode
+    namespace _detail
     {
-        uint32_t short_addr;
-        uint16_t resolution_x;
-        uint16_t resolution_y;
-        uint16_t bytes_per_line;
+        constexpr uint64_t _is_power_of_two(uint64_t number)
+        {
+            return (number & (number - 1)) == 0;
+        }
 
-        uint8_t bpp;
-        uint8_t red_size, red_pos;
-        uint8_t green_size, green_pos;
-        uint8_t blue_size, blue_pos;
-        uint8_t rsvd_size, rsvd_pos;
+        constexpr uint64_t _empty_leading_bits(uint64_t number, uint64_t count = 0)
+        {
+            return !number ? 64 - count : _empty_leading_bits(number >> 1, count + 1);
+        }
 
-        uint8_t * font;
+        constexpr uint64_t _next_power(uint64_t number)
+        {
+            return 1ull << (64 - _empty_leading_bits(number));
+        }
 
-        uint64_t addr;
-    } __attribute__((packed));
+        constexpr uint64_t _up_to_power(uint64_t number)
+        {
+            return _is_power_of_two(number) ? number : _next_power(number);
+        }
+    }
+
+    template<typename T>
+    struct aligner
+    {
+        constexpr static uint64_t size = _detail::_up_to_power(sizeof(T));
+
+        struct alignas(size) type : public T
+        {
+        };
+    };
 }

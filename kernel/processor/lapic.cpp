@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -57,8 +54,10 @@ void processor::lapic::initialize()
     else
     {
         PANIC("Interrupt remapping has not been enabled, but BSP APIC ID >= 256. Please file a bug report with full"
-            "specification of your machine.");
+            " specification of your machine.");
     }
+
+    wrmsr(0xc0000101, (uint64_t)processor::get_current_core());
 }
 
 processor::lapic * processor::get_lapic()

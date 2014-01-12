@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2012 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2011-2012 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -37,7 +34,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     screen::initialize(video_mode, font);
 
     screen::printl("Booter, Reaver Project Bootloader 0.0.4");
-    screen::printl("Copyright (C) 2012 Reaver Project Team");
+    screen::printl("Copyright © 2012 Reaver Project Team");
     screen::line();
 
     if (kernel < 0x100000)

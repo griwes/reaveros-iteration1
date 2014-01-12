@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2011-2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2011-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,8 +18,6 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #include <memory/memory.h>
@@ -28,9 +25,12 @@
 #include <memory/pmm.h>
 #include <screen/screen.h>
 #include <scheduler/scheduler.h>
+#include <processor/processor.h>
 
-extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video,
-    memory::map_entry * memory_map, uint64_t memory_map_size)
+#include "processor/core.h"
+
+extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video, memory::map_entry *
+    memory_map, uint64_t memory_map_size)
 {
     screen::initialize_console();
 
@@ -43,8 +43,8 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::initialize_terminal(video, memory_map, memory_map_size);
 
     screen::print("ReaverOS: Reaver Project Operating System, \"Rose\"\n");
-    screen::print("Version: 0.0.3 dev; Release #1 \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
-    screen::print("Copyright (C) 2012-2013 Reaver Project Team\n\n");
+    screen::print("Version: 0.0.4 dev; Release #1 \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
+    screen::print("Copyright © 2012-2013 Reaver Project Team\n\n");
 
     screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();
@@ -56,6 +56,53 @@ extern "C" void __attribute__((cdecl)) kernel_main(uint64_t /*initrd_start*/, ui
     screen::print(tag::scheduler, "Initializing scheduler...");
     scheduler::initialize();
     screen::done();
+
+    uint64_t i{ 0 };
+
+    auto t1 = scheduler::create_thread((void *)+[](uint64_t i)
+    {
+        auto ptr = (volatile uint64_t *)i;
+
+        while (true)
+        {
+            if (*ptr % 2)
+            {
+                screen::print("1");
+                ++*ptr;
+            }
+
+            else
+            {
+                asm volatile ("pause");
+            }
+        }
+    }, (uint64_t)&i);
+
+    auto t2 = scheduler::create_thread((void *)+[](uint64_t i)
+    {
+        auto ptr = (volatile uint64_t *)i;
+
+        while (true)
+        {
+            if (!(*ptr % 2))
+            {
+                screen::print("2");
+                ++*ptr;
+            }
+
+            else
+            {
+                asm volatile ("pause");
+            }
+        }
+    }, (uint64_t)&i);
+
+    t1->policy = scheduler::scheduling_policy::top;
+
+    scheduler::schedule(t1);
+    scheduler::schedule(t2);
+//    processor::get_core(1)->scheduler().push(t1);
+//    processor::get_core(1)->scheduler().push(t2);
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);

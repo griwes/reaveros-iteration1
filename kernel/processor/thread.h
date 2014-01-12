@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright © 2011-2012 Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -22,23 +22,19 @@
 
 #pragma once
 
-namespace screen
+namespace scheduler
 {
-    struct mode
+    struct thread;
+}
+
+namespace processor
+{
+    void set_current_thread(scheduler::thread *);
+
+    inline scheduler::thread * current_thread()
     {
-        uint32_t short_addr;
-        uint16_t resolution_x;
-        uint16_t resolution_y;
-        uint16_t bytes_per_line;
-
-        uint8_t bpp;
-        uint8_t red_size, red_pos;
-        uint8_t green_size, green_pos;
-        uint8_t blue_size, blue_pos;
-        uint8_t rsvd_size, rsvd_pos;
-
-        uint8_t * font;
-
-        uint64_t addr;
-    } __attribute__((packed));
+        scheduler::thread * ret = nullptr;
+        asm volatile("mov %%gs:0, %0" : "=r"(ret));
+        return ret;
+    }
 }

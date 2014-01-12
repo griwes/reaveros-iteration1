@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright © 2013-2014 Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -22,46 +22,47 @@
 
 #pragma once
 
-#include <memory/x64paging.h>
+#include <scheduler/thread.h>
+#include <utils/vfq.h>
 #include <scheduler/scheduler.h>
-#include <processor/thread.h>
+#include <time/timer.h>
 
-namespace processor
+namespace scheduler
 {
-    class ioapic;
-    class interrupt_entry;
-    class core;
-
-    extern "C" memory::x64::pml4 * get_cr3();
-    extern "C" void reload_cr3();
-    extern "C" void set_cr3(uint64_t asid);
-
-    inline uint64_t get_asid()
+    class local
     {
-        return (uint64_t)get_cr3();
-    }
+    public:
+        local(decltype(nullptr))
+        {
+        }
 
-    inline void set_asid(uint64_t asid)
-    {
-        set_cr3(asid);
-    }
+        local() : _core{ processor::id() }
+        {
+        }
 
-    uint64_t id();
-    extern "C" uint64_t initial_id();
-    uint64_t get_lapic_base();
-    uint8_t translate_isa(uint8_t irq);
+        void push(thread *);
+        void remove(thread *);
 
-    ioapic * get_ioapic(uint8_t input);
-    uint8_t max_ioapic_input();
-    interrupt_entry * get_sources();
-    core * get_core(uint64_t apic_id);
-    core * get_cores();
+        void do_switch();
 
-    core * get_current_core();
+        uint64_t load()
+        {
+            return 4 * _top.load() + 2 * _normal.load() + _background.load();
+        }
 
-    uint64_t get_core_count();
+    private:
+        thread * _pop();
+        void _do_switch();
 
-    void initialize();
-    extern "C" void ap_initialize();
-    bool ready();
+        uint64_t _core;
+
+        utils::variable_frequency_queue<thread *, 256> _top;
+        utils::variable_frequency_queue<thread *, 256> _normal;
+        utils::variable_frequency_queue<thread *, 256> _background;
+        thread * _idle;
+
+        time::timer_event_handle _timer;
+
+        utils::spinlock _lock;
+    };
 }

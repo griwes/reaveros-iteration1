@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,13 +18,11 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #pragma once
 
-#include <processor/idt.h>
+#include <processor/context.h>
 
 namespace devices
 {
@@ -36,12 +33,12 @@ namespace processor
 {
     void initialize_exceptions();
 
-    void handle(idt::isr_context &);
+    void handle(isr_context &);
 
     uint8_t allocate_isr(uint8_t priority, devices::device * owner = nullptr);
     uint8_t allocate_isr(uint8_t priority, uint8_t & count, devices::device * owner = nullptr);
     void free_isr(uint8_t number);
-    void register_handler(uint8_t number, void (*)(idt::isr_context &, uint64_t), uint64_t context = 0);
+    void register_handler(uint8_t number, void (*)(isr_context &, uint64_t), uint64_t context = 0);
     void unregister_handler(uint8_t number);
     void set_isa_irq_int_vector(uint8_t isa, uint8_t handler);
 }

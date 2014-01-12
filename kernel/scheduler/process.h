@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -19,13 +18,12 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * Michał "Griwes" Dominiak
- *
  **/
 
 #pragma once
 
 #include <utils/allocator.h>
+#include <scheduler/scheduler.h>
 
 namespace user
 {
@@ -43,22 +41,21 @@ namespace scheduler
 
         uint64_t id;
 
-        user::user * owner;
-        process * parent;
-        process * child;
+        user::user * owner = nullptr;
+        process * parent = nullptr;
+        process * child = nullptr;
 
-        process * prev;
-        process * next;
-        thread * main_thread;
+        thread * main_thread = nullptr;
 
-        mailbox * box;
+        mailbox * box = nullptr;
 
-        uint64_t address_space;
+        uint64_t address_space = 0;
         uint64_t per_thread_foreign:1;
         uint64_t zombie:1;
 
         uint64_t exit_value;
 
-        uint64_t fill[4];
+        scheduling_policy policy = scheduling_policy::normal;
+        uint8_t priority = 128;
     };
 }

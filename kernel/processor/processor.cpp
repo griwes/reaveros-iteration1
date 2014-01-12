@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -111,9 +108,8 @@ void processor::initialize()
     time::real::initialize();
     time::lapic::initialize();
 
-    memory::pmm::ap_initialize();
-
     smp::boot(_cores + 1, _num_cores - 1);
+    memory::pmm::ap_initialize();
     smp::initialize_parallel();
     memory::drop_bootloader_mapping();
 
@@ -132,17 +128,8 @@ void processor::ap_initialize()
     memory::pmm::ap_initialize();
     gdt::ap_initialize();
     idt::ap_initialize();
+    wrmsr(0xc0000101, (uint64_t)processor::get_current_core());
     time::lapic::ap_initialize();
-
-    uint64_t stack = memory::vm::allocate_address_range(8096);
-    memory::vm::map(stack + 4096);
-
-    asm volatile (
-        R"(
-            mov     $0, %%rbp
-            mov     %0, %%rsp
-        )" :: "r"(stack + 8096)
-    );
 
     STI;
 
@@ -201,4 +188,19 @@ uint64_t processor::id()
 uint64_t processor::get_core_count()
 {
     return _num_cores;
+}
+
+processor::core * processor::get_cores()
+{
+    return _cores;
+}
+
+processor::core * processor::get_current_core()
+{
+    if (unlikely(!scheduler::ready()))
+    {
+        return get_core(id());
+    }
+
+    return processor::current_thread()->current_core;
 }

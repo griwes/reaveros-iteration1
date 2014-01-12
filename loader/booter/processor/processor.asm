@@ -1,8 +1,7 @@
 ;
 ; Reaver Project OS, Rose License
 ;
-; Copyright (C) 2011-2012 Reaver Project Team:
-; 1. Michał "Griwes" Dominiak
+; Copyright © 2011-2012 Michał "Griwes" Dominiak
 ;
 ; This software is provided 'as-is', without any express or implied
 ; warranty. In no event will the authors be held liable for any damages
@@ -244,10 +243,7 @@ call_kernel:
 
     ; now on call stack are only arguments
 
-    push    dword 0x8
-    push    long_mode
-
-    retf
+    jmp     0x8:long_mode
 
 bits    64
 

@@ -1,8 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright (C) 2013 Reaver Project Team:
- * 1. Michał "Griwes" Dominiak
+ * Copyright © 2013-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -18,8 +17,6 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * Michał "Griwes" Dominiak
  *
  **/
 
@@ -65,7 +62,7 @@ namespace utils
                 _first = n;
             }
 
-            else if (unlikely(_comp(*_last, *n)))
+            else if (unlikely(_comp(*_last, *n) || !_comp(*n,  *_last)))
             {
                 _last->next = n;
                 n->prev = _last;
@@ -83,6 +80,7 @@ namespace utils
 
                 n->prev = current;
                 n->next = current->next;
+
                 current->next->prev = n;
                 current->next = n;
             }
@@ -186,7 +184,9 @@ namespace utils
             current->prev = nullptr;
 
             T ret = std::move(*current);
-            T::operator delete(current, _allocator);
+            current->~T();
+            _allocator.free(current);
+
             return ret;
         }
 
@@ -281,7 +281,9 @@ namespace utils
             first->next = nullptr;
 
             T ret = std::move(*first);
-            T::operator delete(first, _allocator);
+            first->~T();
+            _allocator.free(first);
+
             return ret;
         }
 
