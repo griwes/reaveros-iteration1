@@ -52,6 +52,13 @@ namespace
     processor::interrupt_entry _sources[128] = {};
 
     std::atomic<bool> _ready{ false };
+
+    uint64_t _bsp = 0;
+}
+
+uint64_t processor::bsp()
+{
+    return _bsp;
 }
 
 bool processor::ready()
@@ -76,6 +83,8 @@ uint8_t processor::translate_isa(uint8_t irq)
 
 void processor::initialize()
 {
+    _bsp = processor::id();
+
     _lapic_base = memory::vm::allocate_address_range(4096);
 
     gdt::initialize();
@@ -89,6 +98,8 @@ void processor::initialize()
 
     acpi::parse_madt(_cores, _num_cores, _ioapics, _num_ioapics, _sources);
     lapic::initialize();
+
+    gdt::ap_initialize();
 
     for (uint64_t i = 0; i < _num_ioapics; ++i)
     {

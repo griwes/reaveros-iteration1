@@ -25,6 +25,7 @@
 #include <screen/screen.h>
 #include <processor/ioapic.h>
 #include <processor/lapic.h>
+#include <processor/core.h>
 #include <devices/devices.h>
 #include <scheduler/scheduler.h>
 #include <scheduler/thread.h>
@@ -40,11 +41,24 @@ namespace
     bool _vector_allocated[224] = {};
     devices::device * _owners[224] = {};
 
+    void _print_registers(processor::isr_context & ctx)
+    {
+        screen::print("Registers:\n");
+        screen::print("rax: ", (void *)ctx.rax, ", rbx: ", (void *)ctx.rbx, "\n");
+        screen::print("rcx: ", (void *)ctx.rcx, ", rdx: ", (void *)ctx.rdx, "\n");
+        screen::print("rsi: ", (void *)ctx.rsi, ", rdi: ", (void *)ctx.rdi, "\n");
+        screen::print("rsp: ", (void *)ctx.rsp, ", rbp: ", (void *)ctx.rbp, "\n");
+        screen::print("r8:  ", (void *)ctx.r8, ", r9:  ", (void *)ctx.r9, "\n");
+        screen::print("r10: ", (void *)ctx.r10, ", r11: ", (void *)ctx.r11, "\n");
+        screen::print("r12: ", (void *)ctx.r12, ", r13: ", (void *)ctx.r13, "\n");
+        screen::print("r14: ", (void *)ctx.r14, ", r15: ", (void *)ctx.r15, "\n");
+    }
+
     void _page_fault(processor::isr_context & context, uint64_t)
     {
         if ((context.cs & 3) != 0)
         {
-            return;
+            TODO; // sigsegv, i.e. stub signals
         }
 
         uint64_t cr2 = 0;
@@ -59,20 +73,8 @@ namespace
             screen::print(context.error & 2 ? "write" : "read", "");
             screen::print(context.error & (1 << 3) ? ", reserved bit violation" : "");
             screen::print(context.error & (1 << 4) ? ", instruction fetch\n" : "\n");
+            _print_registers(context);
         });
-    }
-
-    void _print_registers(processor::isr_context & ctx)
-    {
-        screen::print("Registers:\n");
-        screen::print("rax: ", (void *)ctx.rax, ", rbx: ", (void *)ctx.rbx, "\n");
-        screen::print("rcx: ", (void *)ctx.rcx, ", rdx: ", (void *)ctx.rdx, "\n");
-        screen::print("rsi: ", (void *)ctx.rsi, ", rdi: ", (void *)ctx.rdi, "\n");
-        screen::print("rsp: ", (void *)ctx.rsp, ", rbp: ", (void *)ctx.rbp, "\n");
-        screen::print("r8:  ", (void *)ctx.r8, ", r9:  ", (void *)ctx.r9, "\n");
-        screen::print("r10: ", (void *)ctx.r10, ", r11: ", (void *)ctx.r11, "\n");
-        screen::print("r12: ", (void *)ctx.r12, ", r13: ", (void *)ctx.r13, "\n");
-        screen::print("r14: ", (void *)ctx.r14, ", r15: ", (void *)ctx.r15, "\n");
     }
 }
 
@@ -83,6 +85,8 @@ void processor::initialize_exceptions()
 
 void processor::handle(processor::isr_context & context)
 {
+    processor::get_current_core()->_is_in_interrupt = true;
+
     uint64_t tid = 0;
     scheduler::thread * interrupted_thread = nullptr;
 
@@ -130,6 +134,8 @@ void processor::handle(processor::isr_context & context)
 
         scheduler::current_thread()->load(context);
     }
+
+    processor::get_current_core()->_is_in_interrupt = false;
 }
 
 uint8_t processor::allocate_isr(uint8_t priority, devices::device * owner)

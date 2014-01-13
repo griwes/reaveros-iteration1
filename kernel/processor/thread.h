@@ -37,4 +37,6 @@ namespace processor
         asm volatile("mov %%gs:0, %0" : "=r"(ret));
         return ret;
     }
+
+    void enter_userspace();
 }

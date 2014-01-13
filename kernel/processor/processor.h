@@ -58,6 +58,7 @@ namespace processor
     core * get_cores();
 
     core * get_current_core();
+    uint64_t bsp();
 
     uint64_t get_core_count();
 

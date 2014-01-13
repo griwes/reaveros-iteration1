@@ -31,6 +31,7 @@ global  load_gdt
 global  load_idt
 global  common_interrupt_stub
 global  x2apic_capable
+global  isr_context_return
 
 extern  _common_interrupt_handler
 
@@ -159,6 +160,7 @@ common_interrupt_stub:
 
     call    _common_interrupt_handler
 
+isr_context_return:
     pop     r15
     pop     r14
     pop     r13

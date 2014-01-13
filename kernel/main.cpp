@@ -25,9 +25,8 @@
 #include <memory/pmm.h>
 #include <screen/screen.h>
 #include <scheduler/scheduler.h>
+#include "scheduler/thread.h"
 #include <processor/processor.h>
-
-#include "processor/core.h"
 
 extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video, memory::map_entry *
     memory_map, uint64_t memory_map_size)
@@ -57,52 +56,20 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
     scheduler::initialize();
     screen::done();
 
-    uint64_t i{ 0 };
-
-    auto t1 = scheduler::create_thread((void *)+[](uint64_t i)
+    auto t = scheduler::create_thread((void *)+[](uint64_t)
     {
-        auto ptr = (volatile uint64_t *)i;
+        screen::print("here\n");
+        processor::enter_userspace();
+        *(uint64_t volatile *)0xffffffff80000000 = 0;
 
-        while (true)
-        {
-            if (*ptr % 2)
-            {
-                screen::print("1");
-                ++*ptr;
-            }
+        for (;;);
+    });
 
-            else
-            {
-                asm volatile ("pause");
-            }
-        }
-    }, (uint64_t)&i);
+    scheduler::schedule(t);
 
-    auto t2 = scheduler::create_thread((void *)+[](uint64_t i)
-    {
-        auto ptr = (volatile uint64_t *)i;
-
-        while (true)
-        {
-            if (!(*ptr % 2))
-            {
-                screen::print("2");
-                ++*ptr;
-            }
-
-            else
-            {
-                asm volatile ("pause");
-            }
-        }
-    }, (uint64_t)&i);
-
-    t1->policy = scheduler::scheduling_policy::top;
-
-    scheduler::schedule(t1);
-    scheduler::schedule(t2);
-//    processor::get_core(1)->scheduler().push(t1);
-//    processor::get_core(1)->scheduler().push(t2);
+/*    screen::print(tag::scheduler, "Starting init process...");
+    scheduler::create_process(initrd["init.srv"]);
+    screen::done();*/
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);

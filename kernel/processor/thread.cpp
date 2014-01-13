@@ -63,4 +63,42 @@ void processor::set_current_thread(scheduler::thread * thread)
     core->thread = thread;
 
     screen::debug("\nCurrent thread on core #", processor::id(), ": ", thread->id);
+
+    if (thread->id > processor::get_core_count() && !processor::get_current_core()->in_interrupt_handler())
+    {
+        isr_context ctx{};
+
+        asm volatile (R"(
+            mov     %%rbp, %0
+            mov     %%rsp, %1
+            mov     %%cs, %%ax
+            mov     %%rax, %2
+            mov     %%ss, %%ax
+            mov     %%rax, %3
+            pushf
+            pop     %4
+            movq    $1f, %5
+        )" : "=m"(ctx.rbp), "=m"(ctx.rsp), "=m"(ctx.cs), "=m"(ctx.ss), "=m"(ctx.rflags), "=m"(ctx.rip) :: "rax");
+
+        previous->save(ctx);
+        thread->load(ctx);
+
+        dbg;
+
+        asm volatile ("jmp isr_context_return; 1:");
+    }
+}
+
+void processor::enter_userspace()
+{
+    asm volatile(R"(
+        push    $0x23
+        push    %rsp
+        push    $0x200
+        push    $0x1b
+        push    $1f
+
+        iretq
+    1:
+    )");
 }

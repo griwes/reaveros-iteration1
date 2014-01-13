@@ -32,6 +32,7 @@ namespace processor
 {
     extern "C" void ap_initialize();
     void set_current_thread(scheduler::thread *);
+    void handle(processor::isr_context &);
 
     namespace gdt
     {
@@ -106,10 +107,16 @@ namespace processor
             return _scheduler;
         }
 
+        bool in_interrupt_handler()
+        {
+            return _is_in_interrupt;
+        }
+
         friend void processor::ap_initialize();
         friend void processor::gdt::ap_initialize();
         friend void processor::smp::boot(core *, uint64_t);
         friend void processor::set_current_thread(scheduler::thread *);
+        friend void processor::handle(processor::isr_context &);
 
         // DO NOT MOVE THIS AROUND
         // this member must be the first member of core, memory wise
@@ -128,6 +135,8 @@ namespace processor
 
         bool _is_valid;
         bool _is_nmi_valid;
+
+        bool _is_in_interrupt = false;
 
         processor::gdt::gdt_entry _gdt[7];
         processor::gdt::tss _tss;

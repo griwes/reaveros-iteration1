@@ -57,9 +57,6 @@ directory; use that image as boot image of virtual machine created by you in Vir
 If you really want to run ReaverOS on real hardware (this is possibly a bad idea; in the current state of the OS, it shouldn't
 be capable of doing any harm, but it is extremely untested), use `builds/a.img` as a raw image of an USB stick and boot it.
 
-**Note**: as of current version, ReaverOS is only capable of having a working scheduler on multiple core processors. It will
-be eliminated one day, but today is not such a day.
-
 ## Debug build
 
 If you encounter any bug and want to report it, please attach entire (or as much as you can grab, in case of VirtualBox

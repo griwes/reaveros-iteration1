@@ -33,6 +33,8 @@ namespace processor
         uint64_t number, error;
         uint64_t rip, cs, rflags, rsp, ss;
     } __attribute__((packed));
+    
+    extern "C" void isr_context_return(isr_context &);
 
     struct context : public utils::chained<context>
     {

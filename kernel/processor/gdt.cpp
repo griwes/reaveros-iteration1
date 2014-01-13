@@ -87,10 +87,10 @@ void processor::gdt::initialize()
     _gdtr.address = _gdt;
     _gdtr.limit = sizeof(gdt_entry) * 7 - 1;
 
-    _setup_gdte(1, true, false);
-    _setup_gdte(2, false, false);
-    _setup_gdte(3, true, true);
-    _setup_gdte(4, false, true);
+    _setup_gdte(1, true, false);                                // 0x8 kernel code
+    _setup_gdte(2, false, false);                               // 0x10 kernel data
+    _setup_gdte(3, true, true);                                 // 0x18 userspace code
+    _setup_gdte(4, false, true);                                // 0x20 userspace data
     _setup_tss(5);
 
     load_gdt(&_gdtr);
@@ -102,6 +102,15 @@ void processor::gdt::ap_initialize()
     auto gdt = core->_gdt;
     auto & gdtr = core->_gdtr;
     auto & tss = core->_tss;
+
+    if (processor::id() == processor::bsp())
+    {
+        tss.rsp0 = _tss.rsp0;
+        gdtr.address = _gdt;
+        gdtr.limit = sizeof(gdt_entry) * 7 - 1;
+
+        return;
+    }
 
     memory::zero(gdt, 7);
 
