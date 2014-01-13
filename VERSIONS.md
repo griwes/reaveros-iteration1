@@ -8,11 +8,11 @@
   * 0.0.3 - AP booting, working inter-core synchronizations and communications, including at least a bit tested
 physical memory manager with inter-core balancing; *finished on 10.09.2013*
   * 0.0.4 - context switching, basic SMP scheduler; *finished on 12.01.2013*
-  * 0.0.6 - working user space
-  * 0.0.7 - IPC
-  * 0.0.8 - functioning virtual memory manager
-  * 0.0.9 - functioning process manager
-  * 0.0.10 - video service in userspace
+  * 0.0.5 - working user space
+  * 0.0.6 - IPC
+  * 0.0.7 - functioning virtual memory manager
+  * 0.0.8 - functioning process manager
+  * 0.0.9 - video service in userspace
   * some unspecified version: supporting FPU, SSE, AMX and similar with on-demand saving and restoring
   * some unspecified version: fix the design bug disallowing single core CPUs
  * 0.1.x alpha - Cotyledon alpha

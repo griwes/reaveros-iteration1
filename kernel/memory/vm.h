@@ -29,57 +29,79 @@ namespace memory
 {
     namespace vm
     {
+        struct attributes
+        {
+            bool user = false;
+            bool read_write = true;
+            bool foreign = false;
+        };
+
+        inline attributes user()
+        {
+            return { true, true };
+        }
+
+        inline attributes foreign_user()
+        {
+            return { true, true, true };
+        }
+
+        inline attributes user_read_only()
+        {
+            return { true, false };
+        }
+
+        inline attributes foreign_user_read_only()
+        {
+            return { true, false, true };
+        }
+
+        inline attributes system()
+        {
+            return {};
+        }
+
+        inline attributes foreign_system()
+        {
+            return { false, true, true };
+        }
+
+        inline attributes system_read_only()
+        {
+            return { false, false };
+        }
+
+        inline attributes foreign_system_read_only()
+        {
+            return { false, false, false };
+        }
+
         void initialize();
         uint64_t allocate_address_range(uint64_t size);
 
-        inline void map(uint64_t address)
+        inline void map(uint64_t address, attributes attrib = system())
         {
-            x64::map(address, address + 4096, memory::pmm::pop());
+            x64::map(address, address + 4096, memory::pmm::pop(), attrib);
         }
 
-        inline void map(uint64_t address, uint64_t physical)
+        inline void map(uint64_t address, uint64_t physical, attributes attrib = system())
         {
-            x64::map(address, address + 4096, physical);
+            x64::map(address, address + 4096, physical, attrib);
         }
 
-        inline void map_multiple(uint64_t base, uint64_t end)
+        inline void map_multiple(uint64_t base, uint64_t end, attributes attrib = system())
         {
             while (base < end)
             {
-                x64::map(base, base + 4096, memory::pmm::pop());
+                x64::map(base, base + 4096, memory::pmm::pop(), attrib);
 
                 base += 4096;
             }
         }
 
-        inline void map_multiple(uint64_t base, uint64_t end, uint64_t physical)
+        inline void map_multiple(uint64_t base, uint64_t end, uint64_t physical, attributes attrib = system())
         {
-            x64::map(base, end, physical);
-        }
-
-        inline void map_foreign(uint64_t address)
-        {
-            x64::map(address, address + 4096, memory::pmm::pop(), true);
-        }
-
-        inline void map_foreign(uint64_t address, uint64_t physical)
-        {
-            x64::map(address, address + 4096, physical, true);
-        }
-
-        inline void map_multiple_foreign(uint64_t base, uint64_t end)
-        {
-            while (base < end)
-            {
-                x64::map(base, base + 4096, memory::pmm::pop(), true);
-
-                base += 4096;
-            }
-        }
-
-        inline void map_multiple_foreign(uint64_t base, uint64_t end, uint64_t physical)
-        {
-            x64::map(base, end, physical, true);
+            x64::map(base, end, physical, attrib);
         }
 
         inline void unmap(uint64_t base, uint64_t end, bool push_frames = true, bool foreign = false)

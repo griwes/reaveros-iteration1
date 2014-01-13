@@ -56,16 +56,7 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
     scheduler::initialize();
     screen::done();
 
-    auto t = scheduler::create_thread((void *)+[](uint64_t)
-    {
-        screen::print("here\n");
-        processor::enter_userspace();
-        *(uint64_t volatile *)0xffffffff80000000 = 0;
-
-        for (;;);
-    });
-
-    scheduler::schedule(t);
+    
 
 /*    screen::print(tag::scheduler, "Starting init process...");
     scheduler::create_process(initrd["init.srv"]);

@@ -25,6 +25,7 @@
 #include <memory/pmm.h>
 #include <processor/processor.h>
 #include <screen/screen.h>
+#include <memory/vm.h>
 
 namespace
 {
@@ -71,12 +72,12 @@ void memory::x64::invlpg(uint64_t addr)
     // scheduler::invlpg(addr);
 }
 
-void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start, bool foreign)
+void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start, vm::attributes attrib)
 {
     screen::debug("\nMapping ", (void *)virtual_start, "-", (void *)virtual_end, " to ", (void *)physical_start,
-        foreign ? " for foreign VAS" : "");
+        attrib.foreign ? " for foreign VAS" : "");
 
-    address_generator gen{ foreign ? 257u : 256u };
+    address_generator gen{ attrib.foreign ? 257u : 256u };
 
     if (virtual_start >= 0xFFFF800000000000 && virtual_start < 0xFFFF800000000000 + 2ull * 512 * 1024 * 1024 * 1024)
     {
@@ -116,6 +117,8 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
             invlpg((uint64_t)table);
         }
 
+        gen.pml4()->entries[startpml4e].user = attrib.user;
+        gen.pml4()->entries[startpml4e].read_write = attrib.read_write;
 
         while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
             && startpdpte < 512)
@@ -132,6 +135,9 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 invlpg((uint64_t)pd);
             }
 
+            (*table)[startpdpte].user = attrib.user;
+            (*table)[startpdpte].read_write = attrib.read_write;
+
             while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                 && startpde < 512)
             {
@@ -147,6 +153,9 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                     invlpg((uint64_t)pt);
                 }
 
+                (*pd)[startpde].user = attrib.user;
+                (*pd)[startpde].read_write = attrib.user;
+
                 while (!(startpml4e == endpml4e && startpdpte == endpdpte && startpde == endpde && startpte == endpte)
                     && startpte < 512)
                 {
@@ -158,7 +167,11 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                         PANIC("Tried to map something at already mapped page");
                     }
 
-                    (*pt)[startpte++] = physical_start;
+                    (*pt)[startpte] = physical_start;
+                    (*pt)[startpte].user = attrib.user;
+                    (*pt)[startpte].read_write = attrib.read_write;
+                    ++startpte;
+
                     invlpg(virtual_start);
 
                     physical_start += 4096;

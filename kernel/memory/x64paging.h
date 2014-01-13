@@ -26,6 +26,11 @@
 
 namespace memory
 {
+    namespace vm
+    {
+        struct attributes;
+    }
+
     namespace x64
     {
         void invlpg(uint64_t addr);
@@ -35,7 +40,6 @@ namespace memory
             page_table_entry & operator=(uint64_t addr)
             {
                 present = 1;
-                read_write = 1;
                 address = addr >> 12;
 
                 return *this;
@@ -94,7 +98,6 @@ namespace memory
             page_directory_entry & operator=(uint64_t pt)
             {
                 present = 1;
-                read_write = 1;
                 address = pt >> 12;
 
                 return *this;
@@ -152,7 +155,6 @@ namespace memory
             pdpt_entry & operator=(uint64_t pd)
             {
                 present = 1;
-                read_write = 1;
                 address = pd >> 12;
 
                 return *this;
@@ -212,7 +214,6 @@ namespace memory
             pml4_entry & operator=(uint64_t table)
             {
                 present = 1;
-                read_write = 1;
                 address = table >> 12;
 
                 return *this;
@@ -268,7 +269,7 @@ namespace memory
 
         uint64_t get_physical_address(uint64_t, bool = false);
 
-        void map(uint64_t, uint64_t, uint64_t, bool = false);
+        void map(uint64_t,  uint64_t,  uint64_t, vm::attributes);
         void unmap(uint64_t, uint64_t, bool = false, bool = false);
 
         uint64_t clone_kernel();
