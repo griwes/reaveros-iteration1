@@ -20,6 +20,8 @@
  *
  **/
 
+#include <cstdint>
+
 #include <screen/screen.h>
 #include <memory/memory.h>
 #include <processor/processor.h>

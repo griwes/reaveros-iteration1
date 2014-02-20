@@ -226,6 +226,8 @@ void time::real_timer::_handle()
         {
             _list.top()->handler(_list.top()->handler_parameter);
             _list.update([=](timer_description & ref){ return true; }, [](timer_description & desc){ desc.time_point += desc.period; });
+
+            _update_now();
         }
 
         return;
@@ -248,6 +250,8 @@ void time::real_timer::_handle()
         {
             --_usage;
         }
+
+        _update_now();
     }
 
     if (_list.size() && (!scheduled || scheduled != _list.top()))
