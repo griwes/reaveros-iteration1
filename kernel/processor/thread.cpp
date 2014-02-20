@@ -39,6 +39,11 @@ void processor::set_current_thread(scheduler::thread * thread)
 
     else
     {
+        if (thread->id > processor::get_core_count())
+        {
+            PANIC("no previous thread after scheduler initialization.");
+        }
+
         core = processor::get_current_core();
     }
 
@@ -82,8 +87,6 @@ void processor::set_current_thread(scheduler::thread * thread)
 
         previous->save(ctx);
         thread->load(ctx);
-
-        dbg;
 
         asm volatile ("jmp isr_context_return; 1:");
     }
