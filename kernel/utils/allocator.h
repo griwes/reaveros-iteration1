@@ -124,22 +124,22 @@ namespace utils
         T * next = nullptr;
         T * prev = nullptr;
 
-        void * operator new(uint64_t)
+        void * operator new(uint64_t) noexcept
         {
             return _detail::_default_allocator<T>::allocate();
         }
 
-        void operator delete(void * ptr)
+        void operator delete(void * ptr) noexcept
         {
             return _detail::_default_allocator<T>::free((T *)ptr);
         }
 
-        void * operator new(uint64_t, allocator<T> & a)
+        void * operator new(uint64_t, allocator<T> & a) noexcept
         {
             return a.allocate();
         }
 
-        void operator delete(void * ptr, allocator<T> & a)
+        void operator delete(void * ptr, allocator<T> & a) noexcept
         {
             a.free((T *)ptr);
         }

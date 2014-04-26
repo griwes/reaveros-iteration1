@@ -23,6 +23,7 @@
 #pragma once
 
 #include <atomic>
+#include <utils/raf.h>
 
 namespace scheduler
 {
@@ -38,6 +39,13 @@ namespace scheduler
     inline thread * create_thread(void * start, process * parent = nullptr)
     {
         return create_thread(start, 0, parent);
+    }
+
+    void create_process(const uint8_t * image_begin, const uint8_t * image_end, process * parent = nullptr, bool start = true);
+
+    inline void create_process(utils::file file)
+    {
+        return create_process(file.begin, file.end);
     }
 
     bool ready();

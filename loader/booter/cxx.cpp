@@ -27,22 +27,22 @@
 #include <memory/memory.h>
 #include <memory/manager.h>
 
-void * operator new(uint32_t size)
+void * operator new(uint32_t size) noexcept
 {
     return memory::default_allocator.allocate(size);
 }
 
-void operator delete(void * ptr)
+void operator delete(void * ptr) noexcept
 {
     return memory::default_allocator.deallocate(ptr);
 }
 
-void * operator new(uint32_t, void * addr)
+void * operator new(uint32_t, void * addr) noexcept
 {
     return addr;
 }
 
-void * operator new[](uint32_t size)
+void * operator new[](uint32_t size) noexcept
 {
     return memory::default_allocator.allocate(size);
 }

@@ -357,9 +357,17 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
     }
 }
 
+namespace
+{
+    utils::spinlock _lock;
+}
+
 uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging structures
 {
     static uint8_t * temp;
+
+    INTL();
+    LOCK(_lock);
 
     if (!temp)
     {

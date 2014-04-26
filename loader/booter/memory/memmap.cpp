@@ -105,12 +105,9 @@ void memory::print_map()
     screen::printl("| Base address       | Length             | Type                        |");
     screen::printl("|--------------------|--------------------|-----------------------------|");
 
-    if (memory::map::_entries)
+    for (uint32_t i = 0; i < memory::map::_num_entries; ++i)
     {
-        for (uint32_t i = 0; i < memory::map::_num_entries; ++i)
-        {
-            ::print(memory::map::_entries[i]);
-        }
+        ::print(memory::map::_entries[i]);
     }
 
     screen::printl("|--------------------|--------------------|-----------------------------|");

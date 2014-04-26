@@ -73,8 +73,8 @@ namespace
         tss->ist2 = stacks + 4 * 4096;
         tss->ist3 = stacks + 6 * 4096;
 
-        tss->rsp0 = memory::vm::allocate_address_range(2 * 4096);
-        memory::vm::map(tss->rsp0 + 4096);
+        tss->rsp0 = memory::vm::allocate_address_range(2 * 4096) + 2 * 4096;
+        memory::vm::map(tss->rsp0 - 4096);
     }
 }
 

@@ -109,7 +109,7 @@ void scheduler::local::remove(scheduler::thread * t)
 
     if (t == current_thread())
     {
-        do_switch();
+        _do_switch();
     }
 }
 
@@ -128,7 +128,7 @@ void scheduler::local::_do_switch()
         return;
     }
 
-    if (_core == processor::id())
+    if (_core == processor::id() && processor::get_current_core()->in_interrupt_handler())
     {
         _timer.cancel();
 

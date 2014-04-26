@@ -102,8 +102,6 @@ void memory::install_kernel_stack(uint64_t & kernel_end)
 
 void memory::install_initrd(uint64_t kernel_end, uint32_t initrd_base, uint32_t initrd_length)
 {
-    initrd_length *= 512;
-
     memory::default_allocator.align(4096);
     uint8_t * initrd = new uint8_t[initrd_length];
 

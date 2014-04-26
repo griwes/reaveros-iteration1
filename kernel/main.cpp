@@ -25,10 +25,11 @@
 #include <memory/pmm.h>
 #include <screen/screen.h>
 #include <scheduler/scheduler.h>
-#include "scheduler/thread.h"
 #include <processor/processor.h>
+#include "processor/ipi.h"
+#include <utils/raf.h>
 
-extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, screen::mode * video, memory::map_entry *
+extern "C" void kernel_main(uint64_t initrd_start, uint64_t initrd_end, screen::mode * video, memory::map_entry *
     memory_map, uint64_t memory_map_size)
 {
     screen::initialize_console();
@@ -56,11 +57,10 @@ extern "C" void kernel_main(uint64_t /*initrd_start*/, uint64_t /*initrd_end*/, 
     scheduler::initialize();
     screen::done();
 
-    
+    utils::raf initrd{ initrd_start, initrd_end };
 
-/*    screen::print(tag::scheduler, "Starting init process...");
+    screen::print(tag::scheduler, "Starting init process...");
     scheduler::create_process(initrd["init.srv"]);
-    screen::done();*/
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);

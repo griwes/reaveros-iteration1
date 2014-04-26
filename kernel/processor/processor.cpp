@@ -36,6 +36,7 @@
 #include <processor/core.h>
 #include <memory/vm.h>
 #include <processor/ipi.h>
+#include <processor/syscalls.h>
 
 namespace
 {
@@ -119,6 +120,8 @@ void processor::initialize()
     time::real::initialize();
     time::lapic::initialize();
 
+    syscalls::initialize();
+
     smp::boot(_cores + 1, _num_cores - 1);
     memory::pmm::ap_initialize();
     smp::initialize_parallel();
@@ -141,6 +144,8 @@ void processor::ap_initialize()
     idt::ap_initialize();
     wrmsr(0xc0000101, (uint64_t)processor::get_current_core());
     time::lapic::ap_initialize();
+
+    syscalls::initialize();
 
     STI;
 

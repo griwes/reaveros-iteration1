@@ -30,7 +30,7 @@
 
 void * __dso_handle = 0;
 
-void operator delete(void *)
+void operator delete(void *) noexcept
 {
 }
 

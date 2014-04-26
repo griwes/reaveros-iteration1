@@ -29,8 +29,12 @@ hdd:
 	cd kernel; \
 	make -j12; \
 	mv builds/kernel.img ../builds/
+	cd services; \
+	make; \
+	mv init/init.srv init.srv; \
+	raf -c init.srv -o ../builds/initrd.img
 	cd builds; \
-	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img stage1.img; \
+	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img initrd.img; \
 	dd if=a.img of=hdd.img conv=notrunc
 
 uefi:

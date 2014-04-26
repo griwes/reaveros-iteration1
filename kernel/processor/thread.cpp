@@ -24,6 +24,7 @@
 #include <processor/core.h>
 #include <scheduler/thread.h>
 #include <processor/processor.h>
+#include "ipi.h"
 
 void processor::set_current_thread(scheduler::thread * thread)
 {
@@ -54,7 +55,6 @@ void processor::set_current_thread(scheduler::thread * thread)
 
     if (thread->address_space != processor::get_asid())
     {
-        screen::print((void *)thread->address_space, ", ", (void *)processor::get_asid());
         processor::set_asid(thread->address_space);
     }
 
@@ -68,40 +68,19 @@ void processor::set_current_thread(scheduler::thread * thread)
     core->thread = thread;
 
     screen::debug("\nCurrent thread on core #", processor::id(), ": ", thread->id);
-
-    if (thread->id > processor::get_core_count() && !processor::get_current_core()->in_interrupt_handler())
-    {
-        isr_context ctx{};
-
-        asm volatile (R"(
-            mov     %%rbp, %0
-            mov     %%rsp, %1
-            mov     %%cs, %%ax
-            mov     %%rax, %2
-            mov     %%ss, %%ax
-            mov     %%rax, %3
-            pushf
-            pop     %4
-            movq    $1f, %5
-        )" : "=m"(ctx.rbp), "=m"(ctx.rsp), "=m"(ctx.cs), "=m"(ctx.ss), "=m"(ctx.rflags), "=m"(ctx.rip) :: "rax");
-
-        previous->save(ctx);
-        thread->load(ctx);
-
-        asm volatile ("jmp isr_context_return; 1:");
-    }
 }
 
-void processor::enter_userspace()
+void processor::enter_userspace(uint64_t destination)
 {
+    memory::vm::map_multiple(0x10000, 0x20000, memory::vm::user());
+
     asm volatile(R"(
         push    $0x23
-        push    %rsp
+        push    $0x20000
         push    $0x200
         push    $0x1b
-        push    $1f
+        push    %%rax
 
         iretq
-    1:
-    )");
+    )" :: "a"(destination));
 }

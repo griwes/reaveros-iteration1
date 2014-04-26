@@ -27,6 +27,8 @@
 #include <screen/screen.h>
 #include <processor/core.h>
 
+#include "hpet.h"
+
 namespace
 {
     std::atomic<uint64_t> _id = { 0 };
@@ -227,7 +229,8 @@ void time::real_timer::_handle()
             _list.top()->handler(_list.top()->handler_parameter);
             _list.update([=](timer_description & ref){ return true; }, [](timer_description & desc){ desc.time_point += desc.period; });
 
-            _update_now();
+            // see TODO below
+            // _update_now();
         }
 
         return;
@@ -251,7 +254,9 @@ void time::real_timer::_handle()
             --_usage;
         }
 
-        _update_now();
+        // bochs spins for no reason when this is called in it
+        // TODO: investigate
+        // _update_now();
     }
 
     if (_list.size() && (!scheduled || scheduled != _list.top()))

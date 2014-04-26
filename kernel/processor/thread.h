@@ -38,5 +38,5 @@ namespace processor
         return ret;
     }
 
-    void enter_userspace();
+    void enter_userspace(uint64_t destination);
 }

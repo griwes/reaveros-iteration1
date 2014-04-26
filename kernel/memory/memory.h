@@ -51,7 +51,7 @@ namespace memory
     }
 
     template<typename T>
-    void copy(T * src, T * dest, uint64_t count = 1)
+    void copy(const T * src, T * dest, uint64_t count = 1)
     {
         while (count--)
         {
@@ -60,7 +60,7 @@ namespace memory
     }
 
     template<>
-    inline void copy<uint8_t>(uint8_t * src, uint8_t * dest, uint64_t count)
+    inline void copy<uint8_t>(const uint8_t * src, uint8_t * dest, uint64_t count)
     {
         uint64_t * srcl = (uint64_t *)src;
         uint64_t * destl = (uint64_t *)dest;

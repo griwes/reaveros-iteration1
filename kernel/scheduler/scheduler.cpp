@@ -126,7 +126,7 @@ scheduler::thread * scheduler::create_thread(void * start, uint64_t data, schedu
 {
     INTL();
 
-    thread * new_thread = _tcb_manager.allocate();
+    auto new_thread = _tcb_manager.allocate();
     new_thread->status = thread_status::init;
 
     if (parent)
@@ -171,4 +171,21 @@ scheduler::thread * scheduler::create_thread(void * start, uint64_t data, schedu
     new_thread->context->rip = (uint64_t)start;
 
     return new_thread;
+}
+
+void scheduler::create_process(const uint8_t * image_begin, const uint8_t * image_end, process * parent, bool start)
+{
+    auto new_process = _pcb_manager.allocate();
+    new_process->address_space = memory::vm::clone_kernel();
+
+    auto old_asid = processor::get_asid();
+
+    processor::set_asid(new_process->address_space);
+    memory::vm::map_multiple(0x100000, 0x100000 + (image_end - image_begin), memory::vm::user());
+
+    memory::copy(image_begin, (uint8_t *)0x100000, image_end - image_begin);
+
+    schedule(create_thread((void *)&processor::enter_userspace, 0x100000, new_process));
+
+    processor::set_asid(old_asid);
 }

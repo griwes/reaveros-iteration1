@@ -80,7 +80,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
     memory::default_allocator.save();
 
     screen::print("[MEM  ] Installing InitRD... ");
-    memory::install_initrd(kernel_end, kernel + kernel_size + 5 * 4096, initrd_size);
+    memory::install_initrd(kernel_end, kernel + kernel_size * 512, initrd_size * 512);
     screen::printl("done.");
 
     memory::default_allocator.save();
@@ -94,7 +94,7 @@ extern "C" void __attribute__((cdecl)) booter_main(memory::map_entry * memory_ma
 
     screen::print("[CPU  ] Calling kernel...");
     screen::clear();
-    processor::call_kernel(kernel_start, initrd_start, initrd_start + initrd_size, kernel_stack_end,
+    processor::call_kernel(kernel_start, initrd_start, initrd_start + initrd_size * 512, kernel_stack_end,
         (uint64_t)screen::get_video_mode(), (uint64_t)memory::map::get_entries(), memory::map::size());
 
     // we will never get here

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace rose
 {
     class thread
@@ -31,6 +33,11 @@ namespace rose
 
     class process
     {
-
+    public:
+        void send(uint64_t, uint64_t) const;
+//        template<typename T = void>
+//        std::future<T> send(uint64_t, uint64_t) const;
     };
+
+    uint64_t get_pid();
 }
