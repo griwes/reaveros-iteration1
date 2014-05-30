@@ -29,11 +29,12 @@
 
 #include <screen/screen.h>
 
+processor::gdt::tss _tss;
+
 namespace
 {
     processor::gdt::gdt_entry _gdt[7];
     processor::gdt::gdtr _gdtr;
-    processor::gdt::tss _tss;
 
     void _setup_gdte(uint64_t id, bool code, bool user, processor::gdt::gdt_entry * start = _gdt)
     {
@@ -75,6 +76,11 @@ namespace
 
         tss->rsp0 = memory::vm::allocate_address_range(2 * 4096) + 2 * 4096;
         memory::vm::map(tss->rsp0 - 4096);
+
+        if (processor::ready())
+        {
+            processor::get_current_core()->kernel_stack = tss->rsp0;
+        }
     }
 }
 

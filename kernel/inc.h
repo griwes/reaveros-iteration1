@@ -30,11 +30,25 @@
 #include <cstdint>
 #include <cstddef>
 
+using std::uint8_t;
+using std::uint16_t;
+using std::uint32_t;
+using std::uint64_t;
+using std::int8_t;
+using std::int16_t;
+using std::int32_t;
+using std::int64_t;
+
 #define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
 #define PANICEX(X, Y) ::_panic(X, Y, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
 #define DUMP(X) _dump_registers(X);
 #define TODO PANIC("TODO: implement me!")
+#define TODOEX(X) PANIC("TODO: implement me: " X)
 #define NEVER PANIC("This function was not supposed to be ever called; file a bug report.")
+
+#include <atomic>
+
+extern std::atomic<bool> panicing;
 
 void _panic(const char *, const char *, uint64_t, const char *, bool = false);
 

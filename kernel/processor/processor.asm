@@ -32,8 +32,10 @@ global  load_idt
 global  common_interrupt_stub
 global  x2apic_capable
 global  isr_context_return
+global  syscall_handler_entry
 
 extern  _common_interrupt_handler
+extern  _syscall_handler
 
 get_cr3:
     mov     rax, cr3
@@ -180,3 +182,51 @@ isr_context_return:
     add     rsp, 16
 
     iretq
+
+syscall_handler_entry:
+    swapgs
+
+    mov     rdx, rsp
+    mov     rsp, [gs:8]
+
+    push    rax
+    push    rbx
+    push    rcx
+    push    rdx
+    push    rsi
+    push    rdi
+    push    rbp
+    push    r8
+    push    r9
+    push    r10
+    push    r11
+    push    r12
+    push    r13
+    push    r14
+    push    r15
+
+    call    _syscall_handler
+
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    pop     r11
+    pop     r10
+    pop     r9
+    pop     r8
+    pop     rbp
+    pop     rdi
+    pop     rsi
+    pop     rdx
+    pop     rcx
+    pop     rbx
+    pop     rax
+
+    mov     rsp, rdx
+
+    swapgs
+    db 0x48, 0x0f, 0x07     ; what the fuck, yasm, no sysretq? what the fuck.
+                            ; oh wait, it's called "o64 sysret". let's say I don't know that.
+                            ; I want to keep those last scraps of sanity I have left.
+                            ; WTF is wrong with you, people http://youtu.be/eVSlE28hOgI

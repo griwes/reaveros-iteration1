@@ -33,7 +33,7 @@ namespace rose
     void __print(const char * string)
     {
         asm volatile (R"(
-            mov $0, %%rax
+            mov $100, %%rax
 
             syscall
         )" :: "b"(string) : "memory");
@@ -42,7 +42,7 @@ namespace rose
 
 extern "C" void initsrv_main()
 {
-    rose::__print("hello from userspace!");
+    for (;;) rose::__print("hello from userspace!");
 
     for (;;) ;
 

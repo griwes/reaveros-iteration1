@@ -24,8 +24,24 @@
 
 namespace processor
 {
+    struct syscall_context;
+
     namespace syscalls
     {
+        enum class syscalls : uint64_t
+        {
+            // service syscalls
+            service_kernel_console_print = 0,
+            service_get_initrd = 1,
+            service_spawn = 2,
+
+            // regular syscalls
+            exit = 100
+        };
+
         void initialize();
+
+        using handler = void (*)(uint64_t, processor::syscall_context &);
+        void register_syscall(syscalls syscall, handler hnd, uint64_t context = 0, bool service_only = false);
     }
 }

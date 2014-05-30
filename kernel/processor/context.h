@@ -33,7 +33,13 @@ namespace processor
         uint64_t number, error;
         uint64_t rip, cs, rflags, rsp, ss;
     } __attribute__((packed));
-    
+
+    struct syscall_context
+    {
+        uint64_t r15, r14, r13, r12, rflags, r10, r9, r8;
+        uint64_t rbp, rdi, rsi, user_rsp, user_rip, rbx, syscall_number;
+    };
+
     extern "C" void isr_context_return(isr_context &);
 
     struct context : public utils::chained<context>
@@ -47,5 +53,7 @@ namespace processor
 
         void load(isr_context &);
         void save(isr_context &);
+        void load(syscall_context &);
+        void save(syscall_context &);
     };
 }

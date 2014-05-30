@@ -83,8 +83,38 @@ void processor::initialize_exceptions()
     _handlers[14] = _page_fault;
 }
 
+namespace
+{
+    class _gs_swapper
+    {
+    public:
+        _gs_swapper(bool swap) : _swap{ swap }
+        {
+            _do();
+        }
+
+        ~_gs_swapper()
+        {
+            _do();
+        }
+
+    private:
+        void _do()
+        {
+            if (_swap)
+            {
+                asm volatile ("swapgs");
+            }
+        }
+
+        bool _swap;
+    };
+}
+
 void processor::handle(processor::isr_context & context)
 {
+    _gs_swapper swapper((context.cs & 3) == 3);
+
     processor::get_current_core()->_is_in_interrupt = true;
 
     uint64_t tid = 0;

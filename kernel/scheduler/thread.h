@@ -60,7 +60,8 @@ namespace scheduler
             delete context;
         }
 
-        void save(processor::isr_context & ctx)
+        template<typename ContextType>
+        void save(ContextType & ctx)
         {
             if (!context)
             {
@@ -70,7 +71,8 @@ namespace scheduler
             context->save(ctx);
         }
 
-        void load(processor::isr_context & ctx)
+        template<typename ContextType>
+        void load(ContextType & ctx)
         {
             if (!context)
             {

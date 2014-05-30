@@ -44,7 +44,7 @@ extern "C" void kernel_main(uint64_t initrd_start, uint64_t initrd_end, screen::
 
     screen::print("ReaverOS: Reaver Project Operating System, \"Rose\"\n");
     screen::print("Version: 0.0.4 dev; Release #1 \"Cotyledon\", built on ", __DATE__, " at ", __TIME__, "\n");
-    screen::print("Copyright © 2012-2013 Reaver Project Team\n\n");
+    screen::print("Copyright © 2012-2014 Reaver Project Team\n\n");
 
     screen::print(tag::memory, "Reporting memory manager status...\n");
     memory::pmm::boot_report();

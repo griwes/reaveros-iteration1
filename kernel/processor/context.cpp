@@ -69,3 +69,46 @@ void processor::context::load(processor::isr_context & ctx)
     ctx.rip = rip;
     ctx.rflags = rflags;
 }
+
+void processor::context::save(processor::syscall_context & ctx)
+{
+    rax = ctx.syscall_number;
+    rbx = ctx.rbx;
+    rcx = 0;
+    rdx = 0;
+    rsi = ctx.rsi;
+    rdi = ctx.rdi;
+    rsp = ctx.user_rsp;
+    rbp = ctx.rbp;
+    r8 = ctx.r8;
+    r9 = ctx.r9;
+    r10 = ctx.r10;
+    r11 = 0;
+    r12 = ctx.r12;
+    r13 = ctx.r13;
+    r14 = ctx.r14;
+    r15 = ctx.r15;
+    cs = 0x1b;
+    ss = 0x23;
+    rip = ctx.user_rip;
+    rflags = ctx.rflags;
+}
+
+void processor::context::load(processor::syscall_context & ctx)
+{
+    ctx.syscall_number = rax;
+    ctx.rbx = rbx;
+    ctx.rsi = rsi;
+    ctx.rdi = rdi;
+    ctx.user_rsp = rsp;
+    ctx.rbp = rbp;
+    ctx.r8 = r8;
+    ctx.r9 = r9;
+    ctx.r10 = r10;
+    ctx.r12 = r12;
+    ctx.r13 = r13;
+    ctx.r14 = r14;
+    ctx.r15 = r15;
+    ctx.user_rip = rip;
+    ctx.rflags = rflags;
+}

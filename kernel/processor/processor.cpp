@@ -143,6 +143,7 @@ void processor::ap_initialize()
     gdt::ap_initialize();
     idt::ap_initialize();
     wrmsr(0xc0000101, (uint64_t)processor::get_current_core());
+    wrmsr(0xc0000102, (uint64_t)processor::get_current_core());
     time::lapic::ap_initialize();
 
     syscalls::initialize();

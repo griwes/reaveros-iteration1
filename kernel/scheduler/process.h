@@ -50,10 +50,11 @@ namespace scheduler
         mailbox * box = nullptr;
 
         uint64_t address_space = 0;
+        uint64_t service:1;
         uint64_t per_thread_foreign:1;
         uint64_t zombie:1;
 
-        uint64_t exit_value;
+        uint64_t exit_value = 0;
 
         scheduling_policy policy = scheduling_policy::normal;
         uint8_t priority = 128;

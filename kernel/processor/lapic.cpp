@@ -25,6 +25,7 @@
 #include <processor/x2apic.h>
 #include <screen/screen.h>
 #include <processor/idt.h>
+#include "core.h"
 
 namespace
 {
@@ -34,6 +35,8 @@ namespace
     processor::lapic * _lapic = nullptr;
     bool _x2apic_enabled = false;
 }
+
+extern processor::gdt::tss _tss;
 
 void processor::lapic::initialize()
 {
@@ -58,6 +61,10 @@ void processor::lapic::initialize()
     }
 
     wrmsr(0xc0000101, (uint64_t)processor::get_current_core());
+    wrmsr(0xc0000102, (uint64_t)processor::get_current_core());
+
+    auto rsp = _tss.rsp0;
+    processor::get_current_core()->kernel_stack = rsp;
 }
 
 processor::lapic * processor::get_lapic()

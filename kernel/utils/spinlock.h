@@ -45,7 +45,7 @@ namespace utils
 
         void unlock()
         {
-            if (!_lock)
+            if (!_lock && !panicing)
             {
                 PANIC("tried to unlock unlocked spinlock!");
             }

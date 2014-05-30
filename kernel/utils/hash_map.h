@@ -27,6 +27,8 @@
 #include <memory/vm.h>
 #include <memory/memory.h>
 
+#include <type_traits>
+
 namespace utils
 {
     template<typename T>

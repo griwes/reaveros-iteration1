@@ -117,6 +117,7 @@ namespace processor
         friend void processor::smp::boot(core *, uint64_t);
         friend void processor::set_current_thread(scheduler::thread *);
         friend void processor::handle(processor::isr_context &);
+        friend class lapic;
 
         // DO NOT MOVE THIS AROUND
         // this member must be the first member of core, memory wise
@@ -124,6 +125,9 @@ namespace processor
         // (GS_BASE points to current core's `core`, so [gs:0] is used to get the pointer to the current thread,
         // hence the offset of this member must be 0)
         ::scheduler::thread * thread = nullptr;
+
+        // DO NOT MOVE THIS AROUND and kill every compiler breaking it with fire
+        uint64_t kernel_stack = 0;
 
     private:
         uint32_t _acpi_id;
