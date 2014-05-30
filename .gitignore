@@ -8,3 +8,5 @@ utils/tools/*
 .gcc/*
 *-swp
 *.d
+*.srv
+
