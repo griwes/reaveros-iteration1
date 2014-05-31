@@ -30,10 +30,12 @@ hdd:
 	make -j12; \
 	mv builds/kernel.img ../builds/
 	cd library/rose; \
-	make
+	make -j12; \
+	mv librose.a ../
+	cd services/init; \
+	make -j12; \
+	mv init.srv ../
 	cd services; \
-	make; \
-	mv init/init.srv init.srv; \
 	raf -c init.srv -o ../builds/initrd.img
 	cd builds; \
 	./mkrfloppy a.img stage1.img stage2.img booter.img kernel.img initrd.img; \

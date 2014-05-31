@@ -6,7 +6,7 @@ CFLAGS=$(CFL) -c -Wall -Wextra -pedantic -Werror -nostdlib -fno-exceptions -fno-
 		-target x86_64-none-elf -Wno-unused-function -integrated-as -Weffc++
 SOURCES=$(shell find . -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)
-LIBRARY=../librose.a
+LIBRARY=librose.a
 
 all: $(SOURCES) $(LIBRARY)
 
