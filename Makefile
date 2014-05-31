@@ -29,6 +29,8 @@ hdd:
 	cd kernel; \
 	make -j12; \
 	mv builds/kernel.img ../builds/
+	cd library/rose; \
+	make
 	cd services; \
 	make; \
 	mv init/init.srv init.srv; \

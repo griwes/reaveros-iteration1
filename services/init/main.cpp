@@ -1,5 +1,6 @@
 #include <rose/process.h>
 #include <rose/file.h>
+#include <rose/utils.h>
 
 namespace rose
 {
@@ -32,12 +33,7 @@ namespace rose
 {
     void __print(const char * string)
     {
-        asm volatile (R"(
-            mov $0, %%rax
-            mov %0, %%rsi
-
-            syscall
-        )" :: "r"(reinterpret_cast<uint64_t>(string)) : "memory", "%rax", "%rsi");
+        rose::syscall(0, reinterpret_cast<uint64_t>(string));
     }
 }
 
