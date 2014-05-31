@@ -1,6 +1,7 @@
 #include <rose/process.h>
 #include <rose/file.h>
 #include <rose/utils.h>
+#include <rose/service.h>
 
 namespace rose
 {
@@ -29,20 +30,12 @@ namespace rose
     }
 }
 
-namespace rose
-{
-    void __print(const char * string)
-    {
-        rose::syscall(0, reinterpret_cast<uint64_t>(string));
-    }
-}
-
 extern "C" void initsrv_main()
 {
-    rose::__print("\n\n");
-    rose::__print("\\{ffffff}[Init     ]\\{bbbbbb} Rose Init Server v0.0.1 dev\n");
-    rose::__print("\\{ffffff}[Init     ]\\{bbbbbb} Copyright © 2014 Reaver Project Team\n");
-    rose::__print("\\{ffffff}[Init     ]\\{bbbbbb} 1/1: Spawning process manager... ");
+    rose::service::print("\n\n");
+    rose::service::print("\\{ffffff}[Init     ]\\{bbbbbb} Rose Init Server v0.0.1 dev\n");
+    rose::service::print("\\{ffffff}[Init     ]\\{bbbbbb} Copyright © 2014 Reaver Project Team\n");
+    rose::service::print("\\{ffffff}[Init     ]\\{bbbbbb} 1/1: Spawning process manager... ");
 
     for (;;) ;
 

@@ -20,6 +20,10 @@
 *
 **/
 
+// Please never include anything in this file. Probably the enum class syscalls should be pulled out, I don't know, but currently this file is pulled by
+// librose, which uses it to extract that one enum. If this file for some unforeseen reason absolutely MUST include something else from the impure environment
+// of the kernel, please do factor the syscall list out and fix includes in librose.
+
 #pragma once
 
 namespace processor

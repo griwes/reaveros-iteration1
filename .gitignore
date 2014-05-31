@@ -9,4 +9,5 @@ utils/tools/*
 *-swp
 *.d
 *.srv
+*.a
 
