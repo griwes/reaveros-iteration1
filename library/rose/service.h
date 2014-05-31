@@ -38,6 +38,8 @@ namespace rose
 
         };
 
+        void print(const char *);
+
         void register_handler(exceptions, void (*)(const exception_description &));
         void register_handler(exceptions, rose::pool &&, void (*)(const exception_description &));
 

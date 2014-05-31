@@ -73,6 +73,48 @@ void screen::kernel_console::print(const char * str)
 {
     while (*str)
     {
+        if (*str == '\\' && *(str + 1) == '{')
+        {
+            auto old = str;
+            str += 2;
+
+            // XXRRGGBB
+            uint32_t color = 0;
+            uint8_t nibble = 0;
+
+            while (nibble != 6 && *str)
+            {
+                if (*str >= '0' && *str <= '9')
+                {
+                    color |= (*str - '0') << (nibble * 4);
+                }
+
+                else if (*str >= 'a' && *str <= 'f')
+                {
+                    color |= (*str - 'a' + 10) << (nibble * 4);
+                }
+
+                else if (*str >= 'A' && *str <= 'F')
+                {
+                    color |= (*str - 'A' + 10) << (nibble * 4);
+                }
+
+                ++str;
+                ++nibble;
+            }
+
+            if (nibble != 6 || *str != '}')
+            {
+                str = old;
+            }
+
+            else if (_terminal)
+            {
+                ++str;
+                _terminal->set_color(static_cast<color::colors>(color));
+            }
+        }
+
         if (_lpt_port != -1)
         {
             outb(_lpt_port, (unsigned char)*str);

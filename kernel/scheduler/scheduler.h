@@ -41,11 +41,11 @@ namespace scheduler
         return create_thread(start, 0, parent);
     }
 
-    void create_process(const uint8_t * image_begin, const uint8_t * image_end, process * parent = nullptr, bool start = true);
+    void create_process(const uint8_t * image_begin, const uint8_t * image_end, process * parent = nullptr, bool start = true, bool service = false);
 
-    inline void create_process(utils::file file)
+    inline void create_process(utils::file file, process * parent = nullptr, bool start = true, bool service = false)
     {
-        return create_process(file.begin, file.end);
+        return create_process(file.begin, file.end, parent, start, service);
     }
 
     bool ready();

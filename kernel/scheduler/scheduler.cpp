@@ -173,7 +173,7 @@ scheduler::thread * scheduler::create_thread(void * start, uint64_t data, schedu
     return new_thread;
 }
 
-void scheduler::create_process(const uint8_t * image_begin, const uint8_t * image_end, process * parent, bool start)
+void scheduler::create_process(const uint8_t * image_begin, const uint8_t * image_end, process * parent, bool start, bool service)
 {
     auto new_process = _pcb_manager.allocate();
     new_process->address_space = memory::vm::clone_kernel();
@@ -187,5 +187,6 @@ void scheduler::create_process(const uint8_t * image_begin, const uint8_t * imag
     memory::copy(image_begin, (uint8_t *)0x100000, image_end - image_begin);
 
     processor::set_asid(old_asid);
+    new_process->service = service;
     schedule(create_thread((void *)&processor::enter_userspace, 0x100000, new_process));
 }

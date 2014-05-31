@@ -60,7 +60,7 @@ extern "C" void kernel_main(uint64_t initrd_start, uint64_t initrd_end, screen::
     utils::raf initrd{ initrd_start, initrd_end };
 
     screen::print(tag::scheduler, "Starting init process...");
-    scheduler::create_process(initrd["init.srv"]);
+    scheduler::create_process(initrd["init.srv"], nullptr, true, true);
 
 /*    screen::print(tag::scheduler, "Initializing virtual memory manager...");
     scheduler::process vmm = scheduler::create_process(initrd["vmm.srv"]);

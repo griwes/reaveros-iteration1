@@ -98,8 +98,8 @@ namespace
             PANIC("syscall handler called before scheduler got initialized.");
         }
 
-        scheduler::thread * calling_thred = scheduler::current_thread();
-        uint64_t tid = calling_thred->id;
+        scheduler::thread * calling_thread = scheduler::current_thread();
+        uint64_t tid = calling_thread->id;
 
         auto syscall_number = static_cast<processor::syscalls::syscalls>(context.syscall_number);
 
@@ -110,7 +110,7 @@ namespace
 
         const auto & handler = _handlers[syscall_number];
 
-        if (handler.service_only && !calling_thred->parent->service)
+        if (handler.service_only && !calling_thread->parent->service)
         {
             TODOEX("a non-service attempted a call to a service-only syscall");
         }
@@ -119,9 +119,9 @@ namespace
 
         if (tid && scheduler::current_thread()->id != tid)
         {
-            if (scheduler::valid(calling_thred))
+            if (scheduler::valid(calling_thread))
             {
-                calling_thred->save(context);
+                calling_thread->save(context);
             }
 
             scheduler::current_thread()->load(context);
@@ -146,7 +146,10 @@ void processor::syscalls::initialize()
 
     new (&_handlers) utils::hash_map<processor::syscalls::syscalls, _handler_description, _syscall_hash, 23>{};
 
-    register_syscall(syscalls::exit, [](uint64_t, syscall_context &){ screen::print("foobar!"); });
+    register_syscall(syscalls::service_kernel_console_print, [](uint64_t, syscall_context & context)
+    {
+        screen::print(reinterpret_cast<const char *>(context.rsi));
+    }, 0, true);
 }
 
 void processor::syscalls::register_syscall(processor::syscalls::syscalls syscall, processor::syscalls::handler hnd, uint64_t context, bool service_only)
