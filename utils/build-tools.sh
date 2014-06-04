@@ -1,10 +1,10 @@
 set -e
 
+cd ..
+
 if [ -d utils/tools ] ; then
     exit 0
 fi
-
-cd ..
 
 rm -rf utils/tools
 rm -rf .binutils
