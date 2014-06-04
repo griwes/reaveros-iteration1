@@ -1,5 +1,9 @@
 set -e
 
+if [[ -f utils/tools ]] ; then
+    exit 0
+fi
+
 cd ..
 mkdir -p utils/tools
 mkdir -p .binutils
