@@ -1,3 +1,5 @@
+set -e
+
 cd ..
 mkdir -p utils/tools
 mkdir -p .binutils
