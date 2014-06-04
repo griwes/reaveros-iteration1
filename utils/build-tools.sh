@@ -1,6 +1,6 @@
 set -e
 
-if [ -f utils/tools ] ; then
+if [ -d utils/tools ] ; then
     exit 0
 fi
 
