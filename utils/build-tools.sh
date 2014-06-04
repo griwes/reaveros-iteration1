@@ -5,6 +5,10 @@ if [[ -f utils/tools ]] ; then
 fi
 
 cd ..
+
+rm -rf utils/tools
+rm -rf .binutils
+
 mkdir -p utils/tools
 mkdir -p .binutils
 export PREFIX=$(pwd)/utils/tools
