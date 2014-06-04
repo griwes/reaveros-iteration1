@@ -24,16 +24,16 @@ hdd:
 	cd loader/hdd/stage2; \
 	yasm stage2.asm -o ../../../builds/stage2.img
 	cd loader/booter; \
-	make -j12; \
+	make; \
 	mv builds/booter.img ../../builds/
 	cd kernel; \
-	make -j12; \
+	make; \
 	mv builds/kernel.img ../builds/
 	cd library/rose; \
-	make -j12; \
+	make; \
 	mv librose.a ../
 	cd services/init; \
-	make -j12; \
+	make; \
 	mv init.srv ../
 	cd services; \
 	raf -c init.srv -o ../builds/initrd.img
