@@ -225,7 +225,7 @@ void screen::kernel_console::print(pci_vendor_t vendor)
 
     for (uint64_t i = 16; i > 0; i -= 4)
     {
-        print("0123456789ABCDEF"[(vendor.vendor >> (i - 4)) & 0xF]);
+        print("0123456789ABCDEF"[(static_cast<uint16_t>(vendor) >> (i - 4)) & 0xF]);
     }
 }
 

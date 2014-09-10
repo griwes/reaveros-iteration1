@@ -39,6 +39,8 @@ using std::int16_t;
 using std::int32_t;
 using std::int64_t;
 
+#include <utils/types.h>
+
 #define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
 #define PANICEX(X, Y) ::_panic(X, Y, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
 #define DUMP(X) _dump_registers(X);
@@ -105,11 +107,6 @@ inline void wrmsr(uint32_t msr, uint64_t val)
 {
     wrmsr(msr, val & 0xFFFFFFFF, val >> 32);
 }
-
-struct pci_vendor_t
-{
-    uint16_t vendor;
-} __attribute__((packed));
 
 #include <memory/vm.h>
 #include <utils/aligner.h>
