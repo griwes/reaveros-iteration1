@@ -72,7 +72,7 @@ void processor::set_current_thread(scheduler::thread * thread)
 
 void processor::enter_userspace(uint64_t destination)
 {
-    memory::vm::map_multiple(0x10000, 0x20000, memory::vm::user());
+    memory::vm::map_multiple(0x10000, 0x20000, memory::vm::user);
 
     asm volatile(R"(
         push    $0x23

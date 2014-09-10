@@ -36,60 +36,29 @@ namespace memory
             bool foreign = false;
         };
 
-        inline attributes user()
-        {
-            return { true, true };
-        }
-
-        inline attributes foreign_user()
-        {
-            return { true, true, true };
-        }
-
-        inline attributes user_read_only()
-        {
-            return { true, false };
-        }
-
-        inline attributes foreign_user_read_only()
-        {
-            return { true, false, true };
-        }
-
-        inline attributes system()
-        {
-            return {};
-        }
-
-        inline attributes foreign_system()
-        {
-            return { false, true, true };
-        }
-
-        inline attributes system_read_only()
-        {
-            return { false, false };
-        }
-
-        inline attributes foreign_system_read_only()
-        {
-            return { false, false, false };
-        }
+        constexpr static attributes user = { true, true };
+        constexpr static attributes foreign_user = { true, true, true };
+        constexpr static attributes user_read_only = { true, false };
+        constexpr static attributes foreign_user_read_only = { true, false, true };
+        constexpr static attributes system = {};
+        constexpr static attributes foreign_system = { false, true, true };
+        constexpr static attributes system_read_only = { false, false };
+        constexpr static attributes foreign_system_read_only = { false, false, false };
 
         void initialize();
         uint64_t allocate_address_range(uint64_t size);
 
-        inline void map(uint64_t address, attributes attrib = system())
+        inline void map(uint64_t address, attributes attrib = system)
         {
             x64::map(address, address + 4096, memory::pmm::pop(), attrib);
         }
 
-        inline void map(uint64_t address, uint64_t physical, attributes attrib = system())
+        inline void map(uint64_t address, uint64_t physical, attributes attrib = system)
         {
             x64::map(address, address + 4096, physical, attrib);
         }
 
-        inline void map_multiple(uint64_t base, uint64_t end, attributes attrib = system())
+        inline void map_multiple(uint64_t base, uint64_t end, attributes attrib = system)
         {
             while (base < end)
             {
@@ -99,7 +68,7 @@ namespace memory
             }
         }
 
-        inline void map_multiple(uint64_t base, uint64_t end, uint64_t physical, attributes attrib = system())
+        inline void map_multiple(uint64_t base, uint64_t end, uint64_t physical, attributes attrib = system)
         {
             x64::map(base, end, physical, attrib);
         }
