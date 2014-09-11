@@ -65,28 +65,27 @@ namespace
     };
 }
 
-void memory::x64::invlpg(uint64_t addr)
+void memory::x64::invlpg(virt_addr_t addr)
 {
     asm volatile ("invlpg (%0)" :: "r"(addr) : "memory");
 
     // scheduler::invlpg(addr);
 }
 
-void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t physical_start, vm::attributes attrib)
+void memory::x64::map(virt_addr_t virtual_start, virt_addr_t virtual_end, phys_addr_t physical_start, vm::attributes attrib)
 {
-    screen::debug("\nMapping ", (void *)virtual_start, "-", (void *)virtual_end, " to ", (void *)physical_start,
-        attrib.foreign ? " for foreign VAS" : "");
+    screen::debug("\nMapping ", virtual_start, "-", virtual_end, " to ", physical_start, attrib.foreign ? " for foreign VAS" : "");
 
     address_generator gen{ attrib.foreign ? 257u : 256u };
 
-    if (virtual_start >= 0xFFFF800000000000 && virtual_start < 0xFFFF800000000000 + 2ull * 512 * 1024 * 1024 * 1024)
+    if (virtual_start >= virt_addr_t{ 0xFFFF800000000000 } && virtual_start < virt_addr_t{ 0xFFFF800000000000 } + 2ull * 512 * 1024 * 1024 * 1024)
     {
         PANIC("Trying to map something in paging structs area");
     }
 
-    virtual_start &= ~(uint64_t)4095;
+    virtual_start &= ~4095ull;
     virtual_end += 4095;
-    virtual_end &= ~(uint64_t)4095;
+    virtual_end &= ~4095ull;
 
     if (virtual_end <= virtual_start)
     {
@@ -114,7 +113,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
             gen.pml4()->entries[startpml4e] = memory::pmm::pop();
             new (gen.pdpt(startpml4e)) pdpt{};
 
-            invlpg((uint64_t)table);
+            invlpg(table);
         }
 
         gen.pml4()->entries[startpml4e].user = attrib.user;
@@ -132,7 +131,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                 (*table)[startpdpte] = memory::pmm::pop();
                 new (gen.pd(startpml4e, startpdpte)) page_directory{};
 
-                invlpg((uint64_t)pd);
+                invlpg(pd);
             }
 
             (*table)[startpdpte].user = attrib.user;
@@ -150,7 +149,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
                     (*pd)[startpde] = memory::pmm::pop();
                     new (gen.pt(startpml4e, startpdpte, startpde)) page_table{};
 
-                    invlpg((uint64_t)pt);
+                    invlpg(pt);
                 }
 
                 (*pd)[startpde].user = attrib.user;
@@ -215,7 +214,7 @@ void memory::x64::map(uint64_t virtual_start, uint64_t virtual_end, uint64_t phy
     }
 }
 
-uint64_t memory::x64::get_physical_address(uint64_t addr, bool foreign)
+phys_addr_t memory::x64::get_physical_address(virt_addr_t addr, bool foreign)
 {
     address_generator gen{ foreign ? 257u : 256u };
 
@@ -229,20 +228,18 @@ uint64_t memory::x64::get_physical_address(uint64_t addr, bool foreign)
             {
                 if (gen.pt((addr >> 39) & 511, (addr >> 30) & 511, (addr >> 21) & 511)->entries[(addr >> 12) & 511].present)
                 {
-                    return gen.pt((addr >> 39) & 511, (addr >> 30) & 511, (addr >> 21) & 511)->entries[(addr >> 12) & 511].address << 12;
+                    return phys_addr_t { gen.pt((addr >> 39) & 511, (addr >> 30) & 511, (addr >> 21) & 511)->entries[(addr >> 12) & 511].address << 12 };
                 }
             }
         }
     }
 
     PANIC("Tried to get physical address of not mapped page");
-
-    return 0;
 }
 
-void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push, bool foreign)
+void memory::x64::unmap(virt_addr_t virtual_start, virt_addr_t virtual_end, bool push, bool foreign)
 {
-    screen::debug("\nUnmapping ", (void *)virtual_start, "-", (void *)virtual_end, foreign ? " from foreign VAS" : "");
+    screen::debug("\nUnmapping ", virtual_start, "-", virtual_end, foreign ? " from foreign VAS" : "");
 
     address_generator gen{ foreign ? 257u : 256u };
 
@@ -303,7 +300,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
                     if (!(*pt)[startpte].present)
                     {
                         PANICEX("tried to unmap not mapped page", [=]{
-                            screen::print("At address ", (void *)virtual_start);
+                            screen::print("At address ", virtual_start);
                         });
                     }
 
@@ -312,7 +309,7 @@ void memory::x64::unmap(uint64_t virtual_start, uint64_t virtual_end, bool push,
 
                     if (push)
                     {
-                        memory::pmm::push((*pt)[startpte].address << 12);
+                        memory::pmm::push(phys_addr_t{ (*pt)[startpte].address << 12 });
                     }
 
                     ++startpte;
@@ -362,26 +359,26 @@ namespace
     utils::spinlock _lock;
 }
 
-uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging structures
+phys_addr_t memory::x64::clone_kernel() // kernel shall use only one set of paging structures
 {
-    static uint8_t * temp;
+    static virt_addr_t temp;
 
     INTL();
     LOCK(_lock);
 
     if (!temp)
     {
-        temp = (uint8_t *)vm::allocate_address_range(4096);
+        temp = vm::allocate_address_range(4096);
     }
 
     address_generator current{ 256 };
     address_generator gen{ 257 };
 
-    uint64_t pml4_frame = memory::pmm::pop();
+    auto pml4_frame = memory::pmm::pop();
 
-    vm::map((uint64_t)temp, pml4_frame);
-    memory::zero(temp, 4096);
-    vm::unmap((uint64_t)temp, (uint64_t)temp + 4096, false);
+    vm::map(temp, pml4_frame);
+    memory::zero(static_cast<uint8_t *>(temp), 4096);
+    vm::unmap(temp, temp + 4096, false);
 
     set_foreign(pml4_frame);
 
@@ -394,7 +391,7 @@ uint64_t memory::x64::clone_kernel() // kernel shall use only one set of paging 
     return pml4_frame;
 }
 
-void memory::x64::set_foreign(uint64_t frame)
+void memory::x64::set_foreign(phys_addr_t frame)
 {
     address_generator current{ 256 };
 
@@ -416,7 +413,7 @@ void memory::x64::release_foreign()
 {
     address_generator current{ 256 };
 
-    current.pml4()->entries[257] = 0;
+    current.pml4()->entries[257] = phys_addr_t{};
     current.pml4()->entries[257].present = 0;
 
     processor::reload_cr3();
@@ -476,15 +473,15 @@ void memory::x64::drop_bootloader_mapping(bool push)
                     continue;
                 }
 
-                pmm::push(gen.pd(pml4e, pdpte)->entries[pde].address << 12);
+                pmm::push(phys_addr_t{ gen.pd(pml4e, pdpte)->entries[pde].address << 12 });
                 gen.pd(pml4e, pdpte)->entries[pde].present = 0;
             }
 
-            pmm::push(gen.pdpt(pml4e)->entries[pdpte].address << 12);
+            pmm::push(phys_addr_t{ gen.pdpt(pml4e)->entries[pdpte].address << 12 });
             gen.pdpt(pml4e)->entries[pdpte].present = 0;
         }
 
-        pmm::push(gen.pml4()->entries[pml4e].address << 12);
+        pmm::push(phys_addr_t{ gen.pml4()->entries[pml4e].address << 12 });
         gen.pml4()->entries[pml4e].present = 0;
     }
 

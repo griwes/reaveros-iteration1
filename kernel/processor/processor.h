@@ -36,19 +36,19 @@ namespace processor
     extern "C" void reload_cr3();
     extern "C" void set_cr3(uint64_t asid);
 
-    inline uint64_t get_asid()
+    inline phys_addr_t get_asid()
     {
-        return (uint64_t)get_cr3();
+        return phys_addr_t{ reinterpret_cast<uint64_t>(get_cr3()) };
     }
 
-    inline void set_asid(uint64_t asid)
+    inline void set_asid(phys_addr_t asid)
     {
-        set_cr3(asid);
+        set_cr3(static_cast<uint64_t>(asid));
     }
 
     uint64_t id();
     extern "C" uint64_t initial_id();
-    uint64_t get_lapic_base();
+    virt_addr_t get_lapic_base();
     uint8_t translate_isa(uint8_t irq);
 
     ioapic * get_ioapic(uint8_t input);

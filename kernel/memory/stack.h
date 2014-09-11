@@ -38,7 +38,7 @@ namespace memory
             frame_stack_chunk * next;
             utils::recursive_spinlock lock;
             uint64_t size;
-            uint64_t stack[max];
+            phys_addr_t stack[max];
         };
 
         static_assert(sizeof(frame_stack_chunk) == 4096, "wrong size of frame stack chunk");
@@ -49,8 +49,8 @@ namespace memory
             frame_stack();
             frame_stack(map_entry *, uint64_t);
 
-            uint64_t pop();
-            void push(uint64_t);
+            phys_addr_t pop();
+            void push(phys_addr_t);
 
             frame_stack_chunk * pop_chunk();
             void push_chunk(frame_stack_chunk *);

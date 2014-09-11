@@ -80,6 +80,16 @@ namespace screen
         void print(void *);
         void print(pci_vendor_t);
 
+        void print(phys_addr_t addr)
+        {
+            print(reinterpret_cast<void *>(static_cast<uint64_t>(addr)));
+        }
+
+        void print(virt_addr_t addr)
+        {
+            print(static_cast<void *>(addr));
+        }
+
         template<typename T>
         void print(const T * ptr)
         {

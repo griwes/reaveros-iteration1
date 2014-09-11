@@ -35,7 +35,7 @@ namespace
 {
     uint8_t _boot_frames[8 * 4096] __attribute__((aligned(4096)));
     uint8_t _boot_frames_available = 8;
-    uint64_t _boot_frames_start = 0;
+    phys_addr_t _boot_frames_start;
 
     memory::map_entry * _map;
     uint64_t _map_size;
@@ -45,7 +45,7 @@ namespace
 
 void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 {
-    _boot_frames_start = vm::get_physical_address((uint64_t)_boot_frames);
+    _boot_frames_start = vm::get_physical_address(virt_addr_t{ reinterpret_cast<uint64_t>(_boot_frames) });
 
     new (&_global_stack) frame_stack{ map, map_size };
 
@@ -72,7 +72,7 @@ void memory::pmm::ap_initialize()
     }
 }
 
-uint64_t memory::pmm::pop()
+phys_addr_t memory::pmm::pop()
 {
     if (_boot_frames_available)
     {
@@ -88,17 +88,17 @@ uint64_t memory::pmm::pop()
     return processor::get_current_core()->frame_stack().pop();
 }
 
-void memory::pmm::push(uint64_t frame)
+void memory::pmm::push(phys_addr_t frame)
 {
     if (unlikely(!processor::smp::ready()))
     {
         _global_stack.push(frame);
-        screen::debug("\nPushed ", (void *)frame, " to global frame stack on #", processor::id());
+        screen::debug("\nPushed ", frame, " to global frame stack on #", processor::id());
         return;
     }
 
     processor::get_current_core()->frame_stack().push(frame);
-    screen::debug("\nPushed ", (void *)frame, " to local frame stack on #", processor::id());
+    screen::debug("\nPushed ", frame, " to local frame stack on #", processor::id());
 }
 
 void memory::pmm::boot_report()

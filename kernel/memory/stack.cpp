@@ -40,13 +40,13 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
             for (uint64_t frame = (map[i].base < 1024 * 1024) ? (1024 * 1024) : ((map[i].base + 4095) & ~(uint64_t)4095);
                 frame < map[i].base + map[i].length; frame += 4096)
             {
-                push(frame);
+                push(phys_addr_t{ frame });
             }
         }
     }
 }
 
-uint64_t memory::pmm::frame_stack::pop()
+phys_addr_t memory::pmm::frame_stack::pop()
 {
     if (!_size)
     {
@@ -55,8 +55,7 @@ uint64_t memory::pmm::frame_stack::pop()
             if (_global->size() <= frame_stack_chunk::max)
             {
                 processor::smp::parallel_execute(processor::smp::policies::others, [](uint64_t){
-                    for (uint64_t i = 0; i < 16 && processor::get_current_core()->frame_stack().size() > frame_stack_chunk::max * 128;
-                        ++i)
+                    for (uint64_t i = 0; i < 16 && processor::get_current_core()->frame_stack().size() > frame_stack_chunk::max * 128; ++i)
                     {
                         screen::debug("\nRebalancing: pushing frame stack chunk to global from #", processor::id());
                         _global_stack.push_chunk(processor::get_current_core()->frame_stack().pop_chunk());
@@ -87,7 +86,7 @@ uint64_t memory::pmm::frame_stack::pop()
 
     LOCK(_last->lock);
 
-    uint64_t ret = _last->stack[--_last->size];
+    auto ret = _last->stack[--_last->size];
     --_size;
 
     if (_last != _first && _last->size == frame_stack_chunk::max - 50)
@@ -101,7 +100,7 @@ uint64_t memory::pmm::frame_stack::pop()
         }
     }
 
-    screen::debug("\nPopped ", (void *)ret, " from ", (_global ? "local" : "global"), " frame stack on #", processor::id());
+    screen::debug("\nPopped ", ret, " from ", (_global ? "local" : "global"), " frame stack on #", processor::id());
 
     return ret;
 }
@@ -128,7 +127,7 @@ memory::pmm::frame_stack_chunk * memory::pmm::frame_stack::pop_chunk()
     return ret;
 }
 
-void memory::pmm::frame_stack::push(uint64_t frame)
+void memory::pmm::frame_stack::push(phys_addr_t frame)
 {
     {
         LOCK(_lock);

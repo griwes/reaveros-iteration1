@@ -33,11 +33,11 @@ namespace memory
 
     namespace x64
     {
-        void invlpg(uint64_t addr);
+        void invlpg(virt_addr_t addr);
 
         struct page_table_entry
         {
-            page_table_entry & operator=(uint64_t addr)
+            page_table_entry & operator=(phys_addr_t addr)
             {
                 present = 1;
                 address = addr >> 12;
@@ -95,7 +95,7 @@ namespace memory
 
         struct page_directory_entry
         {
-            page_directory_entry & operator=(uint64_t pt)
+            page_directory_entry & operator=(phys_addr_t pt)
             {
                 present = 1;
                 address = pt >> 12;
@@ -152,7 +152,7 @@ namespace memory
 
         struct pdpt_entry
         {
-            pdpt_entry & operator=(uint64_t pd)
+            pdpt_entry & operator=(phys_addr_t pd)
             {
                 present = 1;
                 address = pd >> 12;
@@ -211,7 +211,7 @@ namespace memory
 
         struct pml4_entry
         {
-            pml4_entry & operator=(uint64_t table)
+            pml4_entry & operator=(phys_addr_t table)
             {
                 present = 1;
                 address = table >> 12;
@@ -267,13 +267,13 @@ namespace memory
             pml4_entry entries[512];
         };
 
-        uint64_t get_physical_address(uint64_t, bool = false);
+        phys_addr_t get_physical_address(virt_addr_t, bool = false);
 
-        void map(uint64_t,  uint64_t,  uint64_t, vm::attributes);
-        void unmap(uint64_t, uint64_t, bool = false, bool = false);
+        void map(virt_addr_t begin, virt_addr_t end, phys_addr_t physical, vm::attributes attributes);
+        void unmap(virt_addr_t begin, virt_addr_t end, bool push = false, bool foreign = false);
 
-        uint64_t clone_kernel();
-        void set_foreign(uint64_t index);
+        phys_addr_t clone_kernel();
+        void set_foreign(phys_addr_t frame);
         void release_foreign();
 
         bool locked(uint64_t address);

@@ -39,6 +39,6 @@ namespace screen
 
         uint8_t * font;
 
-        uint64_t addr;
+        virt_addr_t addr;
     } __attribute__((packed));
 }

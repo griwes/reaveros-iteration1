@@ -94,7 +94,7 @@ namespace scheduler
         thread * prev_sibling = nullptr;
         thread * next_sibling = nullptr;
 
-        uint64_t address_space;
+        phys_addr_t address_space;
 
         processor::context * context = nullptr;
         processor::extended_context * ext_context = nullptr;

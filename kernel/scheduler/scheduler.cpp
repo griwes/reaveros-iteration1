@@ -182,7 +182,7 @@ void scheduler::create_process(const uint8_t * image_begin, const uint8_t * imag
     auto old_asid = processor::get_asid();
 
     processor::set_asid(new_process->address_space);
-    memory::vm::map_multiple(0x100000, 0x100000 + (image_end - image_begin), memory::vm::user);
+    memory::vm::map(virt_addr_t{ 0x100000 }, virt_addr_t{ 0x100000 } + (image_end - image_begin), memory::vm::user);
 
     memory::copy(image_begin, (uint8_t *)0x100000, image_end - image_begin);
 

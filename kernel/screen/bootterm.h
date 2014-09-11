@@ -53,7 +53,7 @@ namespace screen
         void _scroll();
 
         screen::mode * _mode;
-        uint64_t _backbuffer;
+        virt_addr_t _backbuffer;
 
         uint32_t _maxx, _maxy;
         uint32_t _x, _y;

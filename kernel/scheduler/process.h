@@ -49,7 +49,7 @@ namespace scheduler
 
         mailbox * box = nullptr;
 
-        uint64_t address_space = 0;
+        phys_addr_t address_space{};
         uint64_t service:1;
         uint64_t per_thread_foreign:1;
         uint64_t zombie:1;

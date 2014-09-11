@@ -73,6 +73,11 @@ inline void * operator new(uint64_t, void * addr)
     return addr;
 }
 
+inline void * operator new(uint64_t, virt_addr_t addr)
+{
+    return reinterpret_cast<void *>(static_cast<uint64_t>(addr));
+}
+
 inline void outb(uint16_t port, uint8_t value)
 {
     asm volatile ("outb %1, %0" :: "dN" (port), "a" (value));
@@ -117,7 +122,7 @@ constexpr bool is_power_of_two(uint64_t size)
 }
 
 template<typename T, typename... Args>
-typename utils::aligner<T>::type * allocate_chained(uint64_t physical = 0, const Args &... args = {})
+typename utils::aligner<T>::type * allocate_chained(phys_addr_t physical = {}, const Args &... args = {})
 {
     if (sizeof(typename utils::aligner<T>::type) >= 4096)
     {
@@ -125,29 +130,29 @@ typename utils::aligner<T>::type * allocate_chained(uint64_t physical = 0, const
 
         if (physical)
         {
-            memory::vm::map_multiple(address, address + sizeof(T), physical);
+            memory::vm::map(address, address + sizeof(T), physical);
         }
 
         else
         {
-            memory::vm::map_multiple(address, address + sizeof(T));
+            memory::vm::map(address, address + sizeof(T));
         }
 
-        return ::new ((void *)address) typename utils::aligner<T>::type{ args... };
+        return ::new (address) typename utils::aligner<T>::type{ args... };
     }
 
-    typename utils::aligner<T>::type * address = (typename utils::aligner<T>::type *)memory::vm::allocate_address_range(4096);
-    memory::vm::map((uint64_t)address, physical ? physical : memory::pmm::pop());
+    auto address = memory::vm::allocate_address_range(4096);
+    memory::vm::map(address, physical ? physical : memory::pmm::pop());
 
     for (uint64_t i = 0; i < 4096 / (sizeof(typename utils::aligner<T>::type) > 4096 ? 1 : sizeof(typename utils::aligner<T>
         ::type)); ++i)
     {
-        ::new (address + i) typename utils::aligner<T>::type{ args... };
-        address[i].prev = (i != 0 ? address + i - 1 : nullptr);
-        address[i].next = (i != 4096 / sizeof(T) - 1 ? address + i + 1 : nullptr);
+        auto ptr = ::new (address + i * sizeof(typename utils::aligner<T>::type)) typename utils::aligner<T>::type{ args... };
+        ptr->prev = (i != 0 ? ptr - 1 : nullptr);
+        ptr->next = (i != 4096 / sizeof(T) - 1 ? ptr + 1 : nullptr);
     }
 
-    return address;
+    return static_cast<typename utils::aligner<T>::type *>(address);
 }
 
 constexpr uint64_t operator "" _s(unsigned long long seconds)

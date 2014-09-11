@@ -40,7 +40,7 @@
 
 namespace
 {
-    uint64_t _lapic_base;
+    virt_addr_t _lapic_base;
 
     processor::core * _cores;
     processor::ioapic * _ioapics;
@@ -67,7 +67,7 @@ bool processor::ready()
     return _ready;
 }
 
-uint64_t processor::get_lapic_base()
+virt_addr_t processor::get_lapic_base()
 {
     return _lapic_base;
 }

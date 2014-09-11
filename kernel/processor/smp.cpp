@@ -71,14 +71,14 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
         {
             memory::copy(_trampoline_start, (uint8_t *)0x1000 + trampoline_size * (i - booted), trampoline_size);
 
-            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 12) = processor::get_asid();
+            *reinterpret_cast<uint64_t volatile *>(0x1000 + trampoline_size * (i - booted) + 12) = static_cast<uint64_t>(processor::get_asid());
 
             cores[i]._started = (uint8_t *)(0x1000 + trampoline_size * (i - booted) + 11);
 
-            uint64_t stack = memory::vm::allocate_address_range(8192);
+            auto stack = memory::vm::allocate_address_range(8192);
             memory::vm::map(stack + 4096);
 
-            *(uint64_t volatile *)(0x1000 + trampoline_size * (i - booted) + 20) = stack + 8192;
+            *reinterpret_cast<uint64_t volatile *>(0x1000 + trampoline_size * (i - booted) + 20) = static_cast<uint64_t>(stack + 8192);
         }
 
         // SIPI

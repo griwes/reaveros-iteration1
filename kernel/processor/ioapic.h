@@ -35,12 +35,12 @@ namespace processor
     public:
         ioapic() : _is_valid{}, _is_nmi_valid{} {}
 
-        ioapic(uint32_t apic_id, uint32_t base_vector, uint64_t base_address) : _apic_id{ apic_id }, _base_vector_number{ base_vector },
-            _base_address{ base_address }, _is_valid{ true }, _is_nmi_valid{ false }
+        ioapic(uint32_t apic_id, uint32_t base_vector, phys_addr_t base_address) : _apic_id{ apic_id }, _base_vector_number{ base_vector },
+            _is_valid{ true }, _is_nmi_valid{ false }
         {
-            uint64_t address = memory::vm::allocate_address_range(4096);
+            auto address = memory::vm::allocate_address_range(4096);
 
-            memory::vm::map(address, _base_address);
+            memory::vm::map(address, base_address);
             _base_address = address;
 
             _size = ((_read_register(1) >> 16) & (~(1 << 8) & 0xFF)) + 1;
@@ -134,7 +134,7 @@ namespace processor
         uint32_t _base_vector_number;
         uint32_t _size;
 
-        uint64_t _base_address;
+        virt_addr_t _base_address;
 
         uint32_t _global_nmi_vector;
         uint32_t _global_nmi_flags;
@@ -144,14 +144,14 @@ namespace processor
 
         uint32_t _read_register(uint8_t id)
         {
-            *(volatile uint32_t *)_base_address = id;
-            return *(volatile uint32_t *)(_base_address + 0x10);
+            *static_cast<volatile uint32_t *>(_base_address) = id;
+            return *static_cast<volatile uint32_t *>(_base_address + 0x10);
         }
 
         void _write_register(uint8_t id, uint32_t val)
         {
-            *(volatile uint32_t *)_base_address = id;
-            *(volatile uint32_t *)(_base_address + 0x10) = val;
+            *static_cast<volatile uint32_t *>(_base_address) = id;
+            *static_cast<volatile uint32_t *>(_base_address + 0x10) = val;
         }
     };
 }

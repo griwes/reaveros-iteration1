@@ -31,8 +31,8 @@ namespace memory
         void initialize(map_entry *, uint64_t);
         void ap_initialize();
 
-        uint64_t pop();
-        void push(uint64_t address);
+        phys_addr_t pop();
+        void push(phys_addr_t address);
 
         void boot_report();
     }

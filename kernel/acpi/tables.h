@@ -30,7 +30,7 @@ namespace acpi
         uint8_t register_bit_width;
         uint8_t register_bit_offset;
         uint8_t reserved;
-        uint64_t address;
+        phys_addr_t address;
     } __attribute__((packed));
 
     struct rsdp
@@ -39,9 +39,9 @@ namespace acpi
         uint8_t checksum;
         char oemid[6];
         uint8_t revision;
-        uint32_t rsdt_ptr;
+        phys_addr32_t rsdt_ptr;
         uint32_t length;
-        uint64_t xsdt_ptr;
+        phys_addr_t xsdt_ptr;
         uint8_t ext_checksum;
         uint8_t reserved[3];
 
@@ -54,7 +54,7 @@ namespace acpi
 
                 for (uint8_t i = 0; i < sizeof(rsdp); ++i)
                 {
-                    checksum += *((uint8_t *)this + i);
+                    checksum += *(reinterpret_cast<uint8_t *>(this) + i);
                 }
 
                 return !checksum;
@@ -96,12 +96,12 @@ namespace acpi
 
     struct rsdt : public description_table_header
     {
-        uint32_t entries[1];
+        phys_addr32_t entries[1];
     } __attribute__((packed));
 
     struct xsdt : public description_table_header
     {
-        uint64_t entries[1];
+        phys_addr_t entries[1];
     } __attribute__((packed));
 
     struct madt_lapic_entry
@@ -115,7 +115,7 @@ namespace acpi
     {
         uint8_t apic_id;
         uint8_t reserved;
-        uint32_t base_address;
+        phys_addr32_t base_address;
         uint32_t base_int;
     } __attribute__((packed));
 
@@ -143,7 +143,7 @@ namespace acpi
     struct madt_lapic_address_override_entry
     {
         uint16_t reserved;
-        uint64_t base_address;
+        phys_addr_t base_address;
     } __attribute__((packed));
 
     struct madt_x2apic_entry
@@ -171,7 +171,7 @@ namespace acpi
 
     struct madt : public description_table_header
     {
-        uint32_t lic_address;
+        phys_addr32_t lic_address;
         uint32_t flags;
         madt_entry entries[1];
     } __attribute__((packed));

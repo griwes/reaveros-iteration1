@@ -144,8 +144,8 @@ namespace utils
         void _allocate_table()
         {
             auto table = memory::vm::allocate_address_range(sizeof(_element *) * HashTableSize);
-            memory::vm::map_multiple(table, table + sizeof(_element *) * HashTableSize);
-            _hash_table = (_element **)table;
+            memory::vm::map(table, table + sizeof(_element *) * HashTableSize);
+            _hash_table = static_cast<_element **>(table);
             memory::zero(_hash_table, HashTableSize);
         }
 

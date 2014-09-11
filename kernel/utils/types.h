@@ -24,6 +24,8 @@
 
 #include <type_traits>
 
+class virtual_address_tag;
+
 namespace utils
 {
     template<typename T, typename Tag>
@@ -31,8 +33,22 @@ namespace utils
     {
     public:
         static_assert(std::is_integral<T>::value, "strong_integral_typedef only works on integrals");
+        template<typename, typename>
+        friend class strong_integral_typedef;
 
-        explicit strong_integral_typedef(T t = {}) : _value{ t }
+        strong_integral_typedef() = default;
+
+        explicit strong_integral_typedef(T t) : _value{ t }
+        {
+        }
+
+        template<typename U, typename std::enable_if<sizeof(T) >= sizeof(U), int>::type = 0>
+        strong_integral_typedef(const strong_integral_typedef<U, Tag> & other) : _value{ other._value }
+        {
+        }
+
+        template<typename U, typename std::enable_if<std::is_same<T, uint64_t>::value && std::is_same<::virtual_address_tag, Tag>::value, decltype(std::declval<U *>(), int{})>::type = 0>
+        strong_integral_typedef(U * ptr) : _value{ reinterpret_cast<uint64_t>(ptr) }
         {
         }
 
@@ -50,16 +66,82 @@ namespace utils
             return *this;
         }
 
+        template<typename Other>
+        auto operator + (const Other & other) const
+        {
+            return strong_integral_typedef{ _value + static_cast<T>(other) };
+        }
+
+        template<typename Other>
+        auto operator - (const Other & other) const
+        {
+            return strong_integral_typedef{ _value - static_cast<T>(other) };
+        }
+
+#define DEFINE_OPERATOR(op)                          \
+        template<typename Other>                     \
+        auto operator op (const Other & other) const \
+        {                                            \
+            return _value op static_cast<T>(other);  \
+        }
+
+        DEFINE_OPERATOR(==)
+        DEFINE_OPERATOR(!=)
+        DEFINE_OPERATOR(<)
+        DEFINE_OPERATOR(<=)
+        DEFINE_OPERATOR(>)
+        DEFINE_OPERATOR(>=)
+
+#undef DEFINE_OPERATOR
+
+#define DEFINE_OPERATOR(op)                          \
+        template<typename Other>                     \
+        auto operator op (const Other & other) const \
+        {                                            \
+            return _value op other;                  \
+        }
+
+        DEFINE_OPERATOR(>>)
+        DEFINE_OPERATOR(<<)
+
+#undef DEFINE_OPERATOR
+
+#define DEFINE_OPERATOR(op)                              \
+        template<typename Other>                         \
+        decltype(auto) operator op (const Other & other) \
+        {                                                \
+            _value op static_cast<T>(other);             \
+            return *this;                                \
+        }
+
+        DEFINE_OPERATOR(&=)
+        DEFINE_OPERATOR(|=)
+        DEFINE_OPERATOR(^=)
+
+#undef DEFINE_OPERATOR
+
         explicit operator T() const
         {
             return _value;
         }
 
+        explicit operator bool() const
+        {
+            return static_cast<bool>(_value);
+        }
+
+        template<typename U, typename std::enable_if<std::is_same<::virtual_address_tag, Tag>::value, decltype(std::declval<U *>(), int{})>::type = 0>
+        operator U *()
+        {
+            return reinterpret_cast<U *>(_value);
+        }
+
     private:
-        T _value;
+        T _value = 0;
     };
 }
 
 using phys_addr_t = utils::strong_integral_typedef<uint64_t, class physical_address_tag>;
+using phys_addr32_t = utils::strong_integral_typedef<uint32_t, class physical_address_tag>;
 using virt_addr_t = utils::strong_integral_typedef<uint64_t, class virtual_address_tag>;
 using pci_vendor_t = utils::strong_integral_typedef<uint16_t, class pci_vendor_tag>;

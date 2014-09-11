@@ -32,8 +32,8 @@
 
 namespace
 {
-    uint64_t _root_address;
-    uint64_t _table_address;
+    virt_addr_t _root_address;
+    virt_addr_t _table_address;
 
     acpi::rsdt * root = nullptr;
     acpi::xsdt * new_root = nullptr;
@@ -42,11 +42,11 @@ namespace
     {
         new_root = nullptr;
 
-        memory::vm::map_multiple(_root_address, _root_address + 8 * 4096, ptr->rsdt_ptr);
+        memory::vm::map(_root_address, _root_address + 8 * 4096, ptr->rsdt_ptr);
 
-        if (((acpi::rsdt *)(_root_address + ptr->rsdt_ptr % 4096))->validate("RSDT"))
+        if (((acpi::rsdt *)(_root_address + static_cast<uint32_t>(ptr->rsdt_ptr) % 4096))->validate("RSDT"))
         {
-            root = (acpi::rsdt *)(_root_address + ptr->rsdt_ptr % 4096);
+            root = (acpi::rsdt *)(_root_address + static_cast<uint32_t>(ptr->rsdt_ptr) % 4096);
 
             return;
         }
@@ -59,11 +59,11 @@ namespace
 
     void _install_xsdt(acpi::rsdp * ptr)
     {
-        memory::vm::map_multiple(_root_address, _root_address + 8 * 4096, ptr->xsdt_ptr);
+        memory::vm::map(_root_address, _root_address + 8 * 4096, ptr->xsdt_ptr);
 
-        if (((acpi::xsdt *)(_root_address + ptr->xsdt_ptr % 4096))->validate("XSDT"))
+        if (((acpi::xsdt *)(_root_address + static_cast<uint64_t>(ptr->xsdt_ptr) % 4096))->validate("XSDT"))
         {
-            new_root = (acpi::xsdt *)(_root_address + ptr->xsdt_ptr % 4096);
+            new_root = (acpi::xsdt *)(_root_address + static_cast<uint64_t>(ptr->xsdt_ptr) % 4096);
 
             return;
         }
@@ -143,9 +143,9 @@ namespace
         {
             for (uint64_t i = 0; i < (new_root->length - 36) / 8; ++i)
             {
-                table = (acpi::description_table_header *)(_table_address + new_root->entries[i] % 4096);
+                table = (acpi::description_table_header *)(_table_address + static_cast<uint64_t>(new_root->entries[i]) % 4096);
 
-                memory::vm::map_multiple(_table_address, _table_address + 8 * 4096, new_root->entries[i]);
+                memory::vm::map(_table_address, _table_address + 8 * 4096, new_root->entries[i]);
 
                 if (table->validate(sign))
                 {
@@ -160,9 +160,9 @@ namespace
         {
             for (uint64_t i = 0; i < (root->length - 36) / 4; ++i)
             {
-                table = (acpi::description_table_header *)(_table_address + root->entries[i] % 4096);
+                table = (acpi::description_table_header *)(_table_address + static_cast<uint32_t>(root->entries[i]) % 4096);
 
-                memory::vm::map_multiple(_table_address, _table_address + 8 * 4096, root->entries[i]);
+                memory::vm::map(_table_address, _table_address + 8 * 4096, root->entries[i]);
 
                 if (table->validate(sign))
                 {
@@ -201,7 +201,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
         return;
     }
 
-    uint64_t lic_address = table->lic_address;
+    phys_addr_t lic_address = table->lic_address;
 
     core_num = 0;
     ioapic_num = 0;
@@ -224,11 +224,11 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
     }
 
     {
-        uint64_t cores_address = memory::vm::allocate_address_range(core_num * sizeof(processor::core));
-        uint64_t ioapics_address = memory::vm::allocate_address_range(ioapic_num * sizeof(processor::ioapic));
+        auto cores_address = memory::vm::allocate_address_range(core_num * sizeof(processor::core));
+        auto ioapics_address = memory::vm::allocate_address_range(ioapic_num * sizeof(processor::ioapic));
 
-        memory::vm::map_multiple(cores_address, cores_address + core_num * sizeof(processor::core));
-        memory::vm::map_multiple(ioapics_address, ioapics_address + ioapic_num * sizeof(processor::ioapic));
+        memory::vm::map(cores_address, cores_address + core_num * sizeof(processor::core));
+        memory::vm::map(ioapics_address, ioapics_address + ioapic_num * sizeof(processor::ioapic));
 
         cores = (processor::core *)cores_address;
         ioapics = (processor::ioapic *)ioapics_address;
@@ -450,19 +450,19 @@ void acpi::parse_hpet(time::hpet::timer *& timers, uint64_t & timers_num)
     screen::debug("\nFound HPET.");
     screen::debug("\nNumber: ", table->hpet_number);
     screen::debug("\nPCI vendor ID: ", table->pci_vendor_id);
-    screen::debug("\nAddress: ", (void *)table->address.address);
+    screen::debug("\nAddress: ", table->address.address);
     screen::debug("\nCounter size: ", 32 + 32 * table->counter_size);
     screen::debug("\nNumber of comparators: ", table->comparator_count + 1);
     screen::debug("\nMinimum tick: ", table->minimum_tick);
 
-    uint64_t mmio = memory::vm::allocate_address_range(4096);
+    auto mmio = memory::vm::allocate_address_range(4096);
     memory::vm::map(mmio, table->address.address);
 
     timers_num = 1;
-    uint64_t address = memory::vm::allocate_address_range(sizeof(time::hpet::timer));
-    memory::vm::map_multiple(address, address + sizeof(time::hpet::timer));
-    timers = new ((void *)address) time::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio,
-        table->counter_size, (uint8_t)(table->comparator_count + 1), table->minimum_tick, table->page_protection };
+    auto address = memory::vm::allocate_address_range(sizeof(time::hpet::timer));
+    memory::vm::map(address, address + sizeof(time::hpet::timer));
+    timers = new (address) time::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio, table->counter_size, (uint8_t)(table->comparator_count + 1), table->minimum_tick,
+        table->page_protection };
 
     _free_table();
 }

@@ -68,7 +68,7 @@ namespace time
         public:
             friend class comparator;
 
-            timer(uint8_t number, pci_vendor_t pci_vendor, uint64_t address, uint8_t counter_size, uint8_t comparators,
+            timer(uint8_t number, pci_vendor_t pci_vendor, virt_addr_t address, uint8_t counter_size, uint8_t comparators,
                 uint16_t minimal_tick, uint8_t page_protection);
 
             virtual ~timer() {}

@@ -70,12 +70,12 @@ namespace
         memory::vm::map(stacks + 3 * 4096);
         memory::vm::map(stacks + 5 * 4096);
 
-        tss->ist1 = stacks + 2 * 4096;
-        tss->ist2 = stacks + 4 * 4096;
-        tss->ist3 = stacks + 6 * 4096;
+        tss->ist1 = static_cast<uint64_t>(stacks + 2 * 4096);
+        tss->ist2 = static_cast<uint64_t>(stacks + 4 * 4096);
+        tss->ist3 = static_cast<uint64_t>(stacks + 6 * 4096);
 
-        tss->rsp0 = memory::vm::allocate_address_range(2 * 4096) + 2 * 4096;
-        memory::vm::map(tss->rsp0 - 4096);
+        tss->rsp0 = static_cast<uint64_t>(memory::vm::allocate_address_range(2 * 4096) + 2 * 4096);
+        memory::vm::map(virt_addr_t{ tss->rsp0 } - 4096);
 
         if (processor::ready())
         {

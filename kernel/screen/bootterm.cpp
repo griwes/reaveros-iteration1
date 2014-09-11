@@ -29,20 +29,20 @@ namespace screen
     boot_terminal term;
 }
 
-uint64_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
+virt_addr_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)
 {
     for (uint64_t i = 0; i < map_size; ++i)
     {
         if (map[i].type == 4)
         {
-            uint64_t ret = memory::vm::allocate_address_range(map[i].length);
-            memory::vm::map_multiple(ret, ret + map[i].length, map[i].base);
+            auto ret = memory::vm::allocate_address_range(map[i].length);
+            memory::vm::map(virt_addr_t{ ret }, virt_addr_t{ ret } + map[i].length, phys_addr_t{ map[i].base });
 
             return ret;
         }
     }
 
-    return 0;
+    return {};
 }
 
 screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * map, uint64_t map_size) : _mode{ mode },
@@ -50,7 +50,7 @@ screen::boot_terminal::boot_terminal(screen::mode * mode, memory::map_entry * ma
     _maxy{ static_cast<uint16_t>(mode->resolution_y / 16) }, _x{}, _y{}
 {
     _mode->addr = memory::vm::allocate_address_range(_mode->resolution_y * mode->bytes_per_line);
-    memory::vm::map_multiple(_mode->addr, _mode->addr + mode->resolution_y * mode->bytes_per_line, mode->short_addr);
+    memory::vm::map(_mode->addr, _mode->addr + mode->resolution_y * mode->bytes_per_line, phys_addr_t{ mode->short_addr });
 
     clear();
 

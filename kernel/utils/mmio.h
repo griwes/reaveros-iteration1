@@ -26,21 +26,21 @@ namespace utils
     class mmio_helper
     {
     public:
-        mmio_helper(uint64_t base) : _base{ base }
+        mmio_helper(virt_addr_t base) : _base{ base }
         {
         }
 
         void operator()(uint64_t reg, T value)
         {
-            *(volatile T *)(_base + reg) = value;
+            *static_cast<volatile T *>(_base + reg) = value;
         }
 
         T operator()(uint64_t reg)
         {
-            return *(volatile T *)(_base + reg);
+            return *static_cast<volatile T *>(_base + reg);
         }
 
     private:
-        uint64_t _base;
+        virt_addr_t _base;
     };
 }

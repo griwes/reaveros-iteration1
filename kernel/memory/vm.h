@@ -46,19 +46,19 @@ namespace memory
         constexpr static attributes foreign_system_read_only = { false, false, false };
 
         void initialize();
-        uint64_t allocate_address_range(uint64_t size);
+        virt_addr_t allocate_address_range(uint64_t size);
 
-        inline void map(uint64_t address, attributes attrib = system)
+        inline void map(virt_addr_t address, attributes attrib = system)
         {
             x64::map(address, address + 4096, memory::pmm::pop(), attrib);
         }
 
-        inline void map(uint64_t address, uint64_t physical, attributes attrib = system)
+        inline void map(virt_addr_t address, phys_addr_t physical, attributes attrib = system)
         {
             x64::map(address, address + 4096, physical, attrib);
         }
 
-        inline void map_multiple(uint64_t base, uint64_t end, attributes attrib = system)
+        inline void map(virt_addr_t base, virt_addr_t end, attributes attrib = system)
         {
             while (base < end)
             {
@@ -68,27 +68,27 @@ namespace memory
             }
         }
 
-        inline void map_multiple(uint64_t base, uint64_t end, uint64_t physical, attributes attrib = system)
+        inline void map(virt_addr_t base, virt_addr_t end, phys_addr_t physical, attributes attrib = system)
         {
             x64::map(base, end, physical, attrib);
         }
 
-        inline void unmap(uint64_t base, uint64_t end, bool push_frames = true, bool foreign = false)
+        inline void unmap(virt_addr_t base, virt_addr_t end, bool push_frames = true, bool foreign = false)
         {
             x64::unmap(base, end, push_frames, foreign);
         }
 
-        inline uint64_t get_physical_address(uint64_t virtual_address)
+        inline phys_addr_t get_physical_address(virt_addr_t virtual_address)
         {
             return x64::get_physical_address(virtual_address);
         }
 
-        inline uint64_t clone_kernel()
+        inline phys_addr_t clone_kernel()
         {
             return x64::clone_kernel();
         }
 
-        inline void set_foreign(uint64_t foreign)
+        inline void set_foreign(phys_addr_t foreign)
         {
             x64::set_foreign(foreign);
         }
