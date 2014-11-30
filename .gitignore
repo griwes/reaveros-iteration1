@@ -10,4 +10,5 @@ utils/tools/*
 *.d
 *.srv
 *.a
-
+.bochs/*
+*kdev4*
