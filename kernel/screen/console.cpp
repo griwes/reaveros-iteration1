@@ -25,7 +25,7 @@
 
 namespace screen
 {
-    kernel_console console;
+    utils::lazy<kernel_console> console;
 }
 
 namespace
@@ -146,14 +146,14 @@ namespace
     {
         if (t == 0)
         {
-            screen::console.print('0');
+            screen::console->print('0');
 
             return;
         }
 
         if (!(t > 0 || t == 0)) // supress [T = unsigned] unsigned comparison t < 0 warning
         {
-            screen::console.print('-');
+            screen::console->print('-');
             t = -t;
         }
 
@@ -165,7 +165,7 @@ namespace
             _print_int(div);
         }
 
-        screen::console.print((char)('0' + mod));
+        screen::console->print((char)('0' + mod));
     }
 }
 

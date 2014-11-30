@@ -35,12 +35,13 @@ namespace
 
 void time::lapic::initialize()
 {
-    _bsp_timer = new (&processor::get_current_core()->preemption_timer()) time::lapic::timer{};
+    processor::get_current_core()->initialize_preemption_timer();
+    _bsp_timer = &processor::get_current_core()->preemption_timer();
 }
 
 void time::lapic::ap_initialize()
 {
-    new (&processor::get_current_core()->preemption_timer()) time::lapic::timer{ *_bsp_timer };
+    processor::get_current_core()->initialize_preemption_timer(*_bsp_timer);
 }
 
 time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period{ 0 }, _lapic{ processor::get_lapic() }
@@ -72,10 +73,6 @@ time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period
 
 time::lapic::timer::timer(const time::lapic::timer & rhs) : real_timer{ capabilities::dynamic, rhs._minimal_tick,
     rhs._maximal_tick }, _period{ rhs._period }, _lapic{ processor::get_lapic() }
-{
-}
-
-time::lapic::timer::timer(decltype(nullptr)) : real_timer{ capabilities::dynamic, 0, 0 }
 {
 }
 

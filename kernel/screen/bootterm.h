@@ -26,6 +26,7 @@
 #include <screen/mode.h>
 #include <screen/console.h>
 #include <screen/terminal.h>
+#include <utils/lazy.h>
 
 namespace memory
 {
@@ -34,7 +35,7 @@ namespace memory
 
 namespace screen
 {
-    extern class boot_terminal : public terminal
+    class boot_terminal : public terminal
     {
     public:
         boot_terminal() {}
@@ -61,5 +62,7 @@ namespace screen
         uint8_t _red, _green, _blue;
 
         utils::spinlock _lock;
-    } term;
+    };
+    
+    extern utils::lazy<boot_terminal> term;
 }

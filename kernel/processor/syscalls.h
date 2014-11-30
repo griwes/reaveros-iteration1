@@ -44,6 +44,7 @@ namespace processor
         };
 
         void initialize();
+        void ap_initialize();
 
         using handler = void (*)(uint64_t, processor::syscall_context &);
         void register_syscall(syscalls syscall, handler hnd, uint64_t context = 0, bool service_only = false);

@@ -76,7 +76,7 @@ namespace
         }
     };
 
-    utils::hash_map<processor::syscalls::syscalls, _handler_description, _syscall_hash, 23> _handlers{ nullptr };
+    utils::lazy<utils::hash_map<processor::syscalls::syscalls, _handler_description, _syscall_hash, 23>> _handlers;
 
     // so here goes the x86_64 syscall abi documentation
     // TODO: this should possibly be placed in some better place
@@ -103,12 +103,12 @@ namespace
 
         auto syscall_number = static_cast<processor::syscalls::syscalls>(context.syscall_number);
 
-        if (!_handlers.contains(syscall_number))
+        if (!_handlers->contains(syscall_number))
         {
             TODOEX("a process tried to call a non-existent syscall");
         }
 
-        const auto & handler = _handlers[syscall_number];
+        const auto & handler = (*_handlers)[syscall_number];
 
         if (handler.service_only && !calling_thread->parent->service)
         {
@@ -144,7 +144,7 @@ void processor::syscalls::initialize()
     wrmsr(_lstar, (uint64_t)&syscall_handler_entry);
     wrmsr(_star, (8ull << 32) | (8ull << 48));
 
-    new (&_handlers) utils::hash_map<processor::syscalls::syscalls, _handler_description, _syscall_hash, 23>{};
+    _handlers.initialize();
 
     register_syscall(syscalls::service_kernel_console_print, [](uint64_t, syscall_context & context)
     {
@@ -152,7 +152,14 @@ void processor::syscalls::initialize()
     }, 0, true);
 }
 
+void processor::syscalls::ap_initialize()
+{
+    wrmsr(_ia32_efer, rdmsr(_ia32_efer) | 1);
+    wrmsr(_lstar, (uint64_t)&syscall_handler_entry);
+    wrmsr(_star, (8ull << 32) | (8ull << 48));
+}
+
 void processor::syscalls::register_syscall(processor::syscalls::syscalls syscall, processor::syscalls::handler hnd, uint64_t context, bool service_only)
 {
-    _handlers.insert(syscall, { hnd, context, service_only });
+    _handlers->insert(syscall, { hnd, context, service_only });
 }

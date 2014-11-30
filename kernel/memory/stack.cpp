@@ -22,12 +22,11 @@
 
 #include <memory/stack.h>
 #include <memory/map.h>
+#include <memory/pmm.h>
 #include <processor/ipi.h>
 #include <processor/core.h>
 
-extern memory::pmm::frame_stack _global_stack;
-
-memory::pmm::frame_stack::frame_stack() : _first{}, _last{}, _size{}, _global{ &_global_stack }
+memory::pmm::frame_stack::frame_stack() : _first{}, _last{}, _size{}, _global{ &*global_stack }
 {
 }
 
@@ -58,7 +57,7 @@ phys_addr_t memory::pmm::frame_stack::pop()
                     for (uint64_t i = 0; i < 16 && processor::get_current_core()->frame_stack().size() > frame_stack_chunk::max * 128; ++i)
                     {
                         screen::debug("\nRebalancing: pushing frame stack chunk to global from #", processor::id());
-                        _global_stack.push_chunk(processor::get_current_core()->frame_stack().pop_chunk());
+                        global_stack->push_chunk(processor::get_current_core()->frame_stack().pop_chunk());
                     }
                 });
             }
@@ -169,7 +168,7 @@ void memory::pmm::frame_stack::push(phys_addr_t frame)
     if (_global && _size > _balance)
     {
         screen::debug("\nRebalancing: pushing frame stack chunk to global from #", processor::id());
-        _global_stack.push_chunk(pop_chunk());
+        global_stack->push_chunk(pop_chunk());
     }
 }
 

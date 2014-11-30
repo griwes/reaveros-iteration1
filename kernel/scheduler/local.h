@@ -32,10 +32,6 @@ namespace scheduler
     class local
     {
     public:
-        local(decltype(nullptr))
-        {
-        }
-
         local() : _core{ processor::id() }
         {
         }

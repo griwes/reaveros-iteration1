@@ -59,10 +59,6 @@ namespace utils
         };
 
     public:
-        hash_map(decltype(nullptr))
-        {
-        }
-
         hash_map() : _hasher{}
         {
             _allocate_table();

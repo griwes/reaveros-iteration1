@@ -146,7 +146,7 @@ void processor::ap_initialize()
     wrmsr(0xc0000102, (uint64_t)processor::get_current_core());
     time::lapic::ap_initialize();
 
-    syscalls::initialize();
+    syscalls::ap_initialize();
 
     STI;
 

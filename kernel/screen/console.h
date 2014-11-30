@@ -24,6 +24,7 @@
 
 #include <utils/spinlock.h>
 #include <utils/locks.h>
+#include <utils/lazy.h>
 
 namespace memory
 {
@@ -59,7 +60,7 @@ namespace screen
     struct mode;
     class terminal;
 
-    extern class kernel_console
+    class kernel_console
     {
     public:
         kernel_console() {}
@@ -114,5 +115,7 @@ namespace screen
     private:
         terminal * _terminal;
         utils::recursive_spinlock _semaphore;
-    } console;
+    };
+    
+    extern utils::lazy<kernel_console> console;
 }

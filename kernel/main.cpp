@@ -26,7 +26,6 @@
 #include <screen/screen.h>
 #include <scheduler/scheduler.h>
 #include <processor/processor.h>
-#include "processor/ipi.h"
 #include <utils/raf.h>
 
 extern "C" void kernel_main(uint64_t initrd_start, uint64_t initrd_end, screen::mode * video, memory::map_entry *
@@ -104,3 +103,4 @@ extern "C" void kernel_main(uint64_t initrd_start, uint64_t initrd_end, screen::
         HLT;
     }
 }
+

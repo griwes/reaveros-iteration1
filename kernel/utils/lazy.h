@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright © 2013 Michał "Griwes" Dominiak
+ * Copyright © 2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -23,54 +23,54 @@
 #pragma once
 
 #include <type_traits>
+#include <atomic>
+#include <utility>
 
-#include <utils/allocator.h>
-#include <scheduler/scheduler.h>
-#include <utils/hash_map.h>
+#include <utils/spinlock.h>
+#include <utils/locks.h>
 
-namespace scheduler
+namespace utils
 {
     template<typename T>
-    class manager
+    class lazy
     {
     public:
-        static_assert(std::is_same<T, process>::value || std::is_same<T, thread>::value, "manager only for thread and process");
+        lazy() = default;
 
-        manager()
+        template<typename... Args>
+        void initialize(Args &&... args)
         {
+            LOCK(_spinlock);
+            ASSERT(!_initialized);
+            new (static_cast<virt_addr_t>(&_storage)) T{ std::forward<Args>(args)... };
+            _initialized = true;
         }
 
-        T * allocate()
+        T * operator->()
         {
-            T * ptr = new T{};
-            ptr->id = utils::allocate_id<T>();
-            _map.insert(ptr->id, ptr);
-            return ptr;
+            ASSERT(_initialized);
+            return reinterpret_cast<T *>(&_storage);
         }
 
-        void free(uint64_t id)
+        const T * operator->() const
         {
-            if (!_map.contains())
-            {
-                return;
-            }
-
-            T * ptr = _map[id];
-            _map.remove(id);
-            delete ptr;
+            ASSERT(_initialized);
+            return reinterpret_cast<const T *>(&_storage);
         }
 
-        T * operator[](uint64_t id)
+        T & operator*()
         {
-            if (!_map.contains(id))
-            {
-                return nullptr;
-            }
+            return *operator->();
+        }
 
-            return _map[id];
+        const T & operator*() const
+        {
+            return *operator->();
         }
 
     private:
-        utils::hash_map<uint64_t, T *> _map;
+        std::atomic<bool> _initialized{ false };
+        spinlock _spinlock;
+        std::aligned_storage_t<sizeof(T), alignof(T)> _storage;
     };
 }

@@ -29,7 +29,7 @@
 #include <processor/smp.h>
 #include <processor/processor.h>
 
-memory::pmm::frame_stack _global_stack;
+utils::lazy<memory::pmm::frame_stack> memory::pmm::global_stack;
 
 namespace
 {
@@ -47,7 +47,7 @@ void memory::pmm::initialize(memory::map_entry * map, uint64_t map_size)
 {
     _boot_frames_start = vm::get_physical_address(virt_addr_t{ reinterpret_cast<uint64_t>(_boot_frames) });
 
-    new (&_global_stack) frame_stack{ map, map_size };
+    global_stack.initialize(map, map_size);
 
     _map = map;
     _map_size = map_size;
@@ -59,7 +59,7 @@ void memory::pmm::ap_initialize()
 
     if (!_amount)
     {
-        _amount = _global_stack.size() / (2 * processor::get_core_count() * frame_stack_chunk::max);
+        _amount = global_stack->size() / (2 * processor::get_core_count() * frame_stack_chunk::max);
     }
 
     uint64_t amount = _amount;
@@ -68,7 +68,7 @@ void memory::pmm::ap_initialize()
 
     while (amount--)
     {
-        core.frame_stack().push_chunk(_global_stack.pop_chunk());
+        core.frame_stack().push_chunk(global_stack->pop_chunk());
     }
 }
 
@@ -82,7 +82,7 @@ phys_addr_t memory::pmm::pop()
 
     if (unlikely(!processor::smp::ready()))
     {
-        return _global_stack.pop();
+        return global_stack->pop();
     }
 
     return processor::get_current_core()->frame_stack().pop();
@@ -92,7 +92,7 @@ void memory::pmm::push(phys_addr_t frame)
 {
     if (unlikely(!processor::smp::ready()))
     {
-        _global_stack.push(frame);
+        global_stack->push(frame);
         screen::debug("\nPushed ", frame, " to global frame stack on #", processor::id());
         return;
     }
@@ -103,8 +103,8 @@ void memory::pmm::push(phys_addr_t frame)
 
 void memory::pmm::boot_report()
 {
-    screen::print("Free memory: ", (_global_stack.size() * 4096) / (1024 * 1024 * 1024), " GiB ", ((_global_stack.size() * 4096) %
-        (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", ((_global_stack.size() * 4096) % (1024 * 1024)) / 1024, " KiB", '\n');
+    screen::print("Free memory: ", (global_stack->size() * 4096) / (1024 * 1024 * 1024), " GiB ", ((global_stack->size() * 4096) %
+        (1024 * 1024 * 1024)) / (1024 * 1024), " MiB ", ((global_stack->size() * 4096) % (1024 * 1024)) / 1024, " KiB", '\n');
     screen::print("Total usable memory detected at boot: ");
 
     uint64_t total = 0;

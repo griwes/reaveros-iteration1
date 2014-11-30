@@ -27,19 +27,18 @@
 
 void screen::initialize_console()
 {
-    new ((void *)&console) kernel_console{ nullptr };
+    console.initialize(nullptr);
 }
 
 void screen::initialize_terminal(screen::mode * video_mode, memory::map_entry * map, uint64_t map_size)
 {
-    new ((void *)&term) boot_terminal{ video_mode, map, map_size };
-
-    console.set_terminal(&term);
+    term.initialize(video_mode, map, map_size);
+    console->set_terminal(&*term);
 }
 
 void screen::print(tag::tags t)
 {
-    auto _ = console.lock();
+    auto _ = console->lock();
 
     screen::print(color::white);
 

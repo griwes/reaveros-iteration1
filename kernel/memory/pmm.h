@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include <memory/stack.h>
+#include <utils/lazy.h>
+
 namespace memory
 {
     struct map_entry;
@@ -35,5 +38,7 @@ namespace memory
         void push(phys_addr_t address);
 
         void boot_report();
+
+        extern utils::lazy<frame_stack> global_stack;
     }
 }

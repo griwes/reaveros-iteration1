@@ -97,14 +97,26 @@ namespace processor
             return _frame_stack;
         }
 
+        template<typename... Args>
+        void initialize_preemption_timer(Args &&... args)
+        {
+            _timer.initialize(std::forward<Args>(args)...);
+        }
+
         time::lapic::timer & preemption_timer()
         {
-            return _timer;
+            return *_timer;
+        }
+
+        template<typename... Args>
+        void initialize_scheduler(Args &&... args)
+        {
+            _scheduler.initialize(std::forward<Args>(args)...);
         }
 
         ::scheduler::local & scheduler()
         {
-            return _scheduler;
+            return *_scheduler;
         }
 
         bool in_interrupt_handler()
@@ -149,8 +161,8 @@ namespace processor
         volatile uint8_t * _started;
 
         memory::pmm::frame_stack _frame_stack;
-        time::lapic::timer _timer{ nullptr };
+        utils::lazy<time::lapic::timer> _timer;
 
-        ::scheduler::local _scheduler{ nullptr };
+        utils::lazy<::scheduler::local> _scheduler;
     };
 }

@@ -26,7 +26,7 @@
 
 namespace
 {
-    time::pit::timer _pit;
+    utils::lazy<time::pit::timer> _pit;
     bool _ready = false;
 }
 
@@ -37,10 +37,10 @@ void time::pit::timer::_pit_handler(processor::isr_context & isr, uint64_t conte
 
 void time::pit::initialize()
 {
-    new (&_pit) time::pit::timer();
+    _pit.initialize();
     _ready = true;
 
-    time::high_precision_timer(&_pit);
+    time::high_precision_timer(&*_pit);
 }
 
 bool time::pit::ready()

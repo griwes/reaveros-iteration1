@@ -46,6 +46,8 @@ using std::int64_t;
 
 #define PANIC(X) ::_panic(X, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
 #define PANICEX(X, Y) ::_panic(X, Y, __FILE__, __LINE__, __PRETTY_FUNCTION__); __builtin_unreachable()
+#define ASSERT(...) do { if (!(__VA_ARGS__)) { PANIC("assertion `" #__VA_ARGS__ "` failed"); } } while (false);
+
 #define DUMP(X) _dump_registers(X);
 #define TODO PANIC("TODO: implement me!")
 #define TODOEX(X) PANIC("TODO: implement me: " X)

@@ -41,7 +41,6 @@ namespace time
         public:
             timer();
             timer(const timer &);
-            timer(decltype(nullptr));
             virtual ~timer() {}
 
         protected:

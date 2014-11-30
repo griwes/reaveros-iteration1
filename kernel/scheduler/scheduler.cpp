@@ -28,11 +28,12 @@
 #include <scheduler/manager.h>
 #include <processor/thread.h>
 #include <processor/processor.h>
+#include <utils/lazy.h>
 
 namespace
 {
-    scheduler::manager<scheduler::process> _pcb_manager{ nullptr };
-    scheduler::manager<scheduler::thread> _tcb_manager{ nullptr };
+    utils::lazy<scheduler::manager<scheduler::process>> _pcb_manager;
+    utils::lazy<scheduler::manager<scheduler::thread>> _tcb_manager;
 
     int64_t _score(scheduler::thread * t, processor::core * c)
     {
@@ -65,10 +66,12 @@ void scheduler::initialize()
 {
     INTL();
 
-    screen::debug("\nInitializing PCB manager at ", &_pcb_manager);
-    new (&_pcb_manager) manager<process>{};
-    screen::debug("\nInitializing TCB manager at ", &_tcb_manager);
-    new (&_tcb_manager) manager<thread>{};
+    screen::debug("\nInitializing PCB manager");
+    _pcb_manager.initialize();
+    screen::debug("\nInitialized PCB manager at ", &*_pcb_manager);
+    screen::debug("\nInitializing TCB manager");
+    _tcb_manager.initialize();
+    screen::debug("\nInitialized TCB manager at ", &*_tcb_manager);
 
     processor::smp::parallel_execute([](uint64_t){ ap_initialize(); });
 
@@ -80,9 +83,9 @@ void scheduler::ap_initialize()
     INTL();
 
     screen::debug("\nInitializing local thread scheduler on core #", processor::id());
-    new (&processor::get_current_core()->scheduler()) local{};
+    processor::get_current_core()->initialize_scheduler();
 
-    thread * kernel_thread = _tcb_manager.allocate();
+    thread * kernel_thread = _tcb_manager->allocate();
     kernel_thread->last_core = processor::get_current_core();
     kernel_thread->address_space = processor::get_asid();
     kernel_thread->status = thread_status::running;
@@ -126,7 +129,7 @@ scheduler::thread * scheduler::create_thread(void * start, uint64_t data, schedu
 {
     INTL();
 
-    auto new_thread = _tcb_manager.allocate();
+    auto new_thread = _tcb_manager->allocate();
     new_thread->status = thread_status::init;
 
     if (parent)
@@ -175,7 +178,7 @@ scheduler::thread * scheduler::create_thread(void * start, uint64_t data, schedu
 
 void scheduler::create_process(const uint8_t * image_begin, const uint8_t * image_end, process * parent, bool start, bool service)
 {
-    auto new_process = _pcb_manager.allocate();
+    auto new_process = _pcb_manager->allocate();
     new_process->address_space = memory::vm::clone_kernel();
     memory::vm::release_foreign();
 

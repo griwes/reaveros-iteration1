@@ -49,8 +49,8 @@ namespace screen
 
     inline void clear()
     {
-        auto _ = console.lock();
-        screen::console.clear();
+        auto _ = console->lock();
+        console->clear();
     }
 
     inline void print()
@@ -59,49 +59,49 @@ namespace screen
 
     inline void print(char c)
     {
-        auto _ = console.lock();
-        console.print(c);
+        auto _ = console->lock();
+        console->print(c);
     }
 
     inline void print(const char * str)
     {
-        auto _ = console.lock();
-        console.print(str);
+        auto _ = console->lock();
+        console->print(str);
     }
 
     void print(tag::tags);
 
     inline void print(color::colors c)
     {
-        auto _ = console.lock();
-        console.set_color(c);
+        auto _ = console->lock();
+        console->set_color(c);
     }
 
     template<typename T>
     void print(const T & t)
     {
-        auto _ = console.lock();
-        console.print(t);
+        auto _ = console->lock();
+        console->print(t);
     }
 
     template<typename T>
     void print(const T * ptr)
     {
-        auto _ = console.lock();
-        console.print((void *)ptr);
+        auto _ = console->lock();
+        console->print((void *)ptr);
     }
 
     template<typename First, typename... Rest>
     void print(const First & first, const Rest &... rest)
     {
-        auto _ = console.lock();
+        auto _ = console->lock();
         print(first);
         print(rest...);
     }
 
     inline void done()
     {
-        auto _ = console.lock();
+        auto _ = console->lock();
         screen::print(color::green, " done.", color::gray);
         screen::print("\n");
     }

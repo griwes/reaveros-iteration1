@@ -26,7 +26,7 @@
 
 namespace screen
 {
-    boot_terminal term;
+    utils::lazy<boot_terminal> term;
 }
 
 virt_addr_t _find_backbuffer(memory::map_entry * map, uint64_t map_size)

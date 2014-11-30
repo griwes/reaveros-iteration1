@@ -25,12 +25,13 @@
 #include <processor/x2apic.h>
 #include <screen/screen.h>
 #include <processor/idt.h>
-#include "core.h"
+#include <processor/core.h>
+#include <utils/lazy.h>
 
 namespace
 {
-    processor::xapic _xapic;
-    processor::x2apic _x2apic;
+    utils::lazy<processor::xapic> _xapic;
+    utils::lazy<processor::x2apic> _x2apic;
 
     processor::lapic * _lapic = nullptr;
     bool _x2apic_enabled = false;
@@ -43,7 +44,8 @@ void processor::lapic::initialize()
     if (x2apic_capable() && (remapping::enabled() || initial_id() < 256))
     {
         screen::debug("\nInitializing x2APIC...");
-        _lapic = new (&_x2apic) x2apic;
+        _x2apic.initialize();
+        _lapic = &*_x2apic;
 
         _x2apic_enabled = true;
     }
@@ -51,7 +53,8 @@ void processor::lapic::initialize()
     else if (!x2apic_capable())
     {
         screen::debug("\nInitializing xAPIC...");
-        _lapic = new (&_xapic) xapic;
+        _xapic.initialize();
+        _lapic = &*_xapic;
     }
 
     else
