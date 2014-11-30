@@ -1,6 +1,6 @@
+#include <rose/utils.h>
 #include <rose/process.h>
 #include <rose/file.h>
-#include <rose/utils.h>
 #include <rose/service.h>
 
 namespace rose

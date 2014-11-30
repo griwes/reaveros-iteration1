@@ -22,6 +22,9 @@
 
 #pragma once
 
+// this is silly
+#define ELAST 0
+
 #include <cstdint>
 #include <cstddef>
 
