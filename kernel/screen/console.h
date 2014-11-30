@@ -1,7 +1,7 @@
 /**
  * Reaver Project OS, Rose License
  *
- * Copyright © 2011-2013 Michał "Griwes" Dominiak
+ * Copyright © 2011-2014 Michał "Griwes" Dominiak
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -116,6 +116,6 @@ namespace screen
         terminal * _terminal;
         utils::recursive_spinlock _semaphore;
     };
-    
+
     extern utils::lazy<kernel_console> console;
 }
