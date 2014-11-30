@@ -20,6 +20,7 @@
  *
  **/
 
+#define ELAST 0
 #include <cstdint>
 
 namespace __kernel

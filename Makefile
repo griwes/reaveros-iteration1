@@ -60,6 +60,10 @@ clean:
 	make clean
 	cd kernel; \
 	make clean
+	cd library/rose; \
+	make clean
+	cd services/init; \
+	make clean
 
 uefi-clean: clean
 	cd loader/uefi; \
