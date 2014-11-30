@@ -82,7 +82,7 @@ namespace processor
             bool low = false;
             bool level = false;
 
-            auto sources = processor::get_sources();
+            auto sources = processor::sources();
 
             if (sources[input])
             {

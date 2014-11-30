@@ -31,7 +31,7 @@
 namespace processor
 {
     extern "C" void ap_initialize();
-    void set_current_thread(scheduler::thread *);
+    void current_thread(scheduler::thread *);
     void handle(processor::isr_context &);
 
     namespace gdt
@@ -127,7 +127,7 @@ namespace processor
         friend void processor::ap_initialize();
         friend void processor::gdt::ap_initialize();
         friend void processor::smp::boot(core *, uint64_t);
-        friend void processor::set_current_thread(scheduler::thread *);
+        friend void processor::current_thread(scheduler::thread *);
         friend void processor::handle(processor::isr_context &);
         friend class lapic;
 

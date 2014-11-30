@@ -128,7 +128,7 @@ void scheduler::local::_do_switch()
         return;
     }
 
-    if (_core == processor::id() && processor::get_current_core()->in_interrupt_handler())
+    if (_core == processor::id() && processor::current_core()->in_interrupt_handler())
     {
         _timer.cancel();
 
@@ -143,7 +143,7 @@ void scheduler::local::_do_switch()
             }, (uint64_t)this);
         }
 
-        processor::set_current_thread(_pop());
+        processor::current_thread(_pop());
     }
 
     else

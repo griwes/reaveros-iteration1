@@ -53,7 +53,7 @@ time::timer * time::high_precision_timer()
 
 time::timer * time::preemption_timer()
 {
-    return &processor::get_current_core()->preemption_timer();
+    return &processor::current_core()->preemption_timer();
 }
 
 time::real_timer::real_timer(capabilities caps, uint64_t minimal_tick, uint64_t maximal_tick) : _cap{ caps },

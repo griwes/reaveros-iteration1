@@ -115,7 +115,7 @@ void processor::handle(processor::isr_context & context)
 {
     _gs_swapper swapper((context.cs & 3) == 3);
 
-    processor::get_current_core()->_is_in_interrupt = true;
+    processor::current_core()->_is_in_interrupt = true;
 
     uint64_t tid = 0;
     scheduler::thread * interrupted_thread = nullptr;
@@ -165,7 +165,7 @@ void processor::handle(processor::isr_context & context)
         scheduler::current_thread()->load(context);
     }
 
-    processor::get_current_core()->_is_in_interrupt = false;
+    processor::current_core()->_is_in_interrupt = false;
 }
 
 uint8_t processor::allocate_isr(uint8_t priority, devices::device * owner)

@@ -79,7 +79,7 @@ namespace
     };
 }
 
-processor::xapic::xapic() : _register{ processor::get_lapic_base() }
+processor::xapic::xapic() : _register{ processor::lapic_base() }
 {
     _register(_destination_format, _register(_destination_format) & 0xF0000000);
     _register(_logical_destination, 0xFF000000);

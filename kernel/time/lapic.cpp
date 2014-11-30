@@ -35,13 +35,13 @@ namespace
 
 void time::lapic::initialize()
 {
-    processor::get_current_core()->initialize_preemption_timer();
-    _bsp_timer = &processor::get_current_core()->preemption_timer();
+    processor::current_core()->initialize_preemption_timer();
+    _bsp_timer = &processor::current_core()->preemption_timer();
 }
 
 void time::lapic::ap_initialize()
 {
-    processor::get_current_core()->initialize_preemption_timer(*_bsp_timer);
+    processor::current_core()->initialize_preemption_timer(*_bsp_timer);
 }
 
 time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period{ 0 }, _lapic{ processor::get_lapic() }

@@ -429,7 +429,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
         entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
     }
 
-    memory::vm::map(processor::get_lapic_base(), lic_address);
+    memory::vm::map(processor::lapic_base(), lic_address);
 
     _free_table();
 }

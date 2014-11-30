@@ -46,7 +46,7 @@ namespace
 
         score -= c->scheduler().load();
 
-        if (c == processor::get_current_core())
+        if (c == processor::current_core())
         {
             score -= 128;
         }
@@ -83,15 +83,15 @@ void scheduler::ap_initialize()
     INTL();
 
     screen::debug("\nInitializing local thread scheduler on core #", processor::id());
-    processor::get_current_core()->initialize_scheduler();
+    processor::current_core()->initialize_scheduler();
 
     thread * kernel_thread = _tcb_manager->allocate();
-    kernel_thread->last_core = processor::get_current_core();
+    kernel_thread->last_core = processor::current_core();
     kernel_thread->address_space = processor::get_asid();
     kernel_thread->status = thread_status::running;
     kernel_thread->policy = scheduling_policy::idle;
-    processor::get_current_core()->scheduler().push(kernel_thread);
-    processor::set_current_thread(kernel_thread);
+    processor::current_core()->scheduler().push(kernel_thread);
+    processor::current_thread(kernel_thread);
 
     screen::debug("\nLocal kernel thread ID on core #", processor::id(), ": ", kernel_thread->id);
 }
@@ -108,16 +108,16 @@ scheduler::thread * scheduler::current_thread()
 
 void scheduler::schedule(scheduler::thread * t)
 {
-    processor::core * best_core = processor::get_cores();
+    processor::core * best_core = processor::cores();
     int64_t best_score = _score(t, best_core);
 
-    for (uint64_t i = 1; i < processor::get_core_count(); ++i)
+    for (uint64_t i = 1; i < processor::core_count(); ++i)
     {
-        int64_t score = _score(t, processor::get_cores() + i);
+        int64_t score = _score(t, processor::cores() + i);
 
         if (score > best_score)
         {
-            best_core = processor::get_cores() + i;
+            best_core = processor::cores() + i;
             best_score = score;
         }
     }

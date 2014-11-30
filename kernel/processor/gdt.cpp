@@ -79,7 +79,7 @@ namespace
 
         if (processor::ready())
         {
-            processor::get_current_core()->kernel_stack = tss->rsp0;
+            processor::current_core()->kernel_stack = tss->rsp0;
         }
     }
 }

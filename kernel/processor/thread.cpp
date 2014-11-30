@@ -26,7 +26,7 @@
 #include <processor/processor.h>
 #include "ipi.h"
 
-void processor::set_current_thread(scheduler::thread * thread)
+void processor::current_thread(scheduler::thread * thread)
 {
     auto previous = processor::current_thread();
     processor::core * core = nullptr;
@@ -40,12 +40,12 @@ void processor::set_current_thread(scheduler::thread * thread)
 
     else
     {
-        if (thread->id > processor::get_core_count())
+        if (thread->id > processor::core_count())
         {
             PANIC("no previous thread after scheduler initialization.");
         }
 
-        core = processor::get_current_core();
+        core = processor::current_core();
     }
 
     if (!core)

@@ -67,7 +67,7 @@ bool processor::ready()
     return _ready;
 }
 
-virt_addr_t processor::get_lapic_base()
+virt_addr_t processor::lapic_base()
 {
     return _lapic_base;
 }
@@ -142,8 +142,8 @@ void processor::ap_initialize()
     memory::pmm::ap_initialize();
     gdt::ap_initialize();
     idt::ap_initialize();
-    wrmsr(0xc0000101, (uint64_t)processor::get_current_core());
-    wrmsr(0xc0000102, (uint64_t)processor::get_current_core());
+    wrmsr(0xc0000101, (uint64_t)processor::current_core());
+    wrmsr(0xc0000102, (uint64_t)processor::current_core());
     time::lapic::ap_initialize();
 
     syscalls::ap_initialize();
@@ -169,7 +169,7 @@ processor::ioapic * processor::get_ioapic(uint8_t input)
     return nullptr;
 }
 
-processor::interrupt_entry * processor::get_sources()
+processor::interrupt_entry * processor::sources()
 {
     return _sources;
 }
@@ -202,17 +202,17 @@ uint64_t processor::id()
     return initial_id();
 }
 
-uint64_t processor::get_core_count()
+uint64_t processor::core_count()
 {
     return _num_cores;
 }
 
-processor::core * processor::get_cores()
+processor::core * processor::cores()
 {
     return _cores;
 }
 
-processor::core * processor::get_current_core()
+processor::core * processor::current_core()
 {
     if (unlikely(!scheduler::ready()))
     {

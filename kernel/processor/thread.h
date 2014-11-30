@@ -29,7 +29,7 @@ namespace scheduler
 
 namespace processor
 {
-    void set_current_thread(scheduler::thread *);
+    void current_thread(scheduler::thread *);
 
     inline scheduler::thread * current_thread()
     {

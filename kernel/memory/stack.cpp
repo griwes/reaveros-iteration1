@@ -54,10 +54,10 @@ phys_addr_t memory::pmm::frame_stack::pop()
             if (_global->size() <= frame_stack_chunk::max)
             {
                 processor::smp::parallel_execute(processor::smp::policies::others, [](uint64_t){
-                    for (uint64_t i = 0; i < 16 && processor::get_current_core()->frame_stack().size() > frame_stack_chunk::max * 128; ++i)
+                    for (uint64_t i = 0; i < 16 && processor::current_core()->frame_stack().size() > frame_stack_chunk::max * 128; ++i)
                     {
                         screen::debug("\nRebalancing: pushing frame stack chunk to global from #", processor::id());
-                        global_stack->push_chunk(processor::get_current_core()->frame_stack().pop_chunk());
+                        global_stack->push_chunk(processor::current_core()->frame_stack().pop_chunk());
                     }
                 });
             }

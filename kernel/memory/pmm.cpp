@@ -59,11 +59,11 @@ void memory::pmm::ap_initialize()
 
     if (!_amount)
     {
-        _amount = global_stack->size() / (2 * processor::get_core_count() * frame_stack_chunk::max);
+        _amount = global_stack->size() / (2 * processor::core_count() * frame_stack_chunk::max);
     }
 
     uint64_t amount = _amount;
-    auto & core = *processor::get_current_core();
+    auto & core = *processor::current_core();
     core.frame_stack().set_balancing(amount * 3 / 2);
 
     while (amount--)
@@ -85,7 +85,7 @@ phys_addr_t memory::pmm::pop()
         return global_stack->pop();
     }
 
-    return processor::get_current_core()->frame_stack().pop();
+    return processor::current_core()->frame_stack().pop();
 }
 
 void memory::pmm::push(phys_addr_t frame)
@@ -97,7 +97,7 @@ void memory::pmm::push(phys_addr_t frame)
         return;
     }
 
-    processor::get_current_core()->frame_stack().push(frame);
+    processor::current_core()->frame_stack().push(frame);
     screen::debug("\nPushed ", frame, " to local frame stack on #", processor::id());
 }
 

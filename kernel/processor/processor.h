@@ -48,19 +48,19 @@ namespace processor
 
     uint64_t id();
     extern "C" uint64_t initial_id();
-    virt_addr_t get_lapic_base();
+    virt_addr_t lapic_base();
     uint8_t translate_isa(uint8_t irq);
 
     ioapic * get_ioapic(uint8_t input);
     uint8_t max_ioapic_input();
-    interrupt_entry * get_sources();
+    interrupt_entry * sources();
     core * get_core(uint64_t apic_id);
-    core * get_cores();
+    core * cores();
 
-    core * get_current_core();
+    core * current_core();
     uint64_t bsp();
 
-    uint64_t get_core_count();
+    uint64_t core_count();
 
     void initialize();
     extern "C" void ap_initialize();
