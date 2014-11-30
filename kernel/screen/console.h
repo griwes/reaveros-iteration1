@@ -94,7 +94,7 @@ namespace screen
         template<typename T>
         void print(const T * ptr)
         {
-            print((void *)ptr);
+            print(static_cast<void *>(ptr));
         }
 
         void clear();

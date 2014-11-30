@@ -63,8 +63,8 @@ void processor::lapic::initialize()
             " specification of your machine.");
     }
 
-    wrmsr(0xc0000101, (uint64_t)processor::current_core());
-    wrmsr(0xc0000102, (uint64_t)processor::current_core());
+    wrmsr(0xc0000101, reinterpret_cast<uint64_t>(processor::current_core()));
+    wrmsr(0xc0000102, reinterpret_cast<uint64_t>(processor::current_core()));
 
     auto rsp = _tss.rsp0;
     processor::current_core()->kernel_stack = rsp;

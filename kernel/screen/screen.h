@@ -88,7 +88,7 @@ namespace screen
     void print(const T * ptr)
     {
         auto _ = console->lock();
-        console->print((void *)ptr);
+        console->print(static_cast<void *>(ptr));
     }
 
     template<typename First, typename... Rest>

@@ -84,7 +84,7 @@ namespace acpi
 
                 for (uint32_t i = 0; i < length; ++i)
                 {
-                    checksum += *((uint8_t *)this + i);
+                    checksum += *(reinterpret_cast<uint8_t *>(this) + i);
                 }
 
                 return !checksum;

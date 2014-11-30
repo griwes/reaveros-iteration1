@@ -47,7 +47,7 @@ namespace memory
 
             utils::bit_lock lock()
             {
-                return { (uint64_t *)this, 9 };
+                return { reinterpret_cast<uint64_t *>(this), 9 };
             }
 
             uint64_t present:1;
@@ -85,8 +85,7 @@ namespace memory
                 else
                 {
                     PANIC("PT entry access out of bounds");
-
-                    return *(page_table_entry *)0;
+                    __builtin_unreachable();
                 }
             }
 
@@ -105,7 +104,7 @@ namespace memory
 
             utils::bit_lock lock()
             {
-                return { (uint64_t *)this, 9 };
+                return { reinterpret_cast<uint64_t *>(this), 9 };
             }
 
             uint64_t present:1;
@@ -142,8 +141,7 @@ namespace memory
                 else
                 {
                     PANIC("PD entry access out of bounds");
-
-                    return *(page_directory_entry *)0;
+                    __builtin_unreachable();
                 }
             }
 
@@ -162,7 +160,7 @@ namespace memory
 
             utils::bit_lock lock()
             {
-                return { (uint64_t *)this, 9 };
+                return { reinterpret_cast<uint64_t *>(this), 9 };
             }
 
             uint64_t present:1;
@@ -199,8 +197,7 @@ namespace memory
                 else
                 {
                     PANIC("PDPT entry access out of bounds");
-
-                    return *(pdpt_entry *)0;
+                    __builtin_unreachable();
                 }
             }
 
@@ -222,7 +219,7 @@ namespace memory
             // "standard" lock on 9th bit for modification
             utils::bit_lock lock()
             {
-                return { (uint64_t *)this, 9 };
+                return { reinterpret_cast<uint64_t *>(this), 9 };
             }
 
             uint64_t present:1;
@@ -259,8 +256,7 @@ namespace memory
                 else
                 {
                     PANIC("PML4 entry access out of bounds");
-
-                    return *(pml4_entry *)0;
+                    __builtin_unreachable();
                 }
             }
 

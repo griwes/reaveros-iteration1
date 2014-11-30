@@ -32,7 +32,7 @@ namespace
 
 void time::pit::timer::_pit_handler(processor::isr_context & isr, uint64_t context)
 {
-    ((time::pit::timer *)context)->_handle();
+    reinterpret_cast<time::pit::timer *>(context)->_handle();
 }
 
 void time::pit::initialize()
@@ -51,7 +51,7 @@ bool time::pit::ready()
 time::pit::timer::timer() : real_timer{ capabilities::dynamic, 200_us, 1_s / 19 }, _int_vector{}
 {
     _int_vector = processor::allocate_isr(0);
-    processor::register_handler(_int_vector, _pit_handler, (uint64_t)this);
+    processor::register_handler(_int_vector, _pit_handler, reinterpret_cast<uint64_t>(this));
 
     _one_shot(200_us);
     processor::set_isa_irq_int_vector(0, _int_vector);
@@ -75,8 +75,8 @@ void time::pit::timer::_one_shot(uint64_t time)
 
     outb(0x43, 0x30);
 
-    outb(0x40, (uint8_t)(divisor & 0xFF));
-    outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
+    outb(0x40, static_cast<uint8_t>(divisor & 0xFF));
+    outb(0x40, static_cast<uint8_t>((divisor >> 8) & 0xFF));
 }
 
 void time::pit::timer::_periodic(uint64_t period)
@@ -90,8 +90,8 @@ void time::pit::timer::_periodic(uint64_t period)
     uint16_t divisor = 1193180 / hz;
 
     outb(0x43, 0x34);
-    outb(0x40, (uint8_t)(divisor & 0xFF));
-    outb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
+    outb(0x40, static_cast<uint8_t>(divisor & 0xFF));
+    outb(0x40, static_cast<uint8_t>((divisor >> 8) & 0xFF));
 }
 
 void time::pit::timer::_update_now()

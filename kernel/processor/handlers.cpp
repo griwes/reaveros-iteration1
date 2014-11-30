@@ -44,14 +44,14 @@ namespace
     void _print_registers(processor::isr_context & ctx)
     {
         screen::print("Registers:\n");
-        screen::print("rax: ", (void *)ctx.rax, ", rbx: ", (void *)ctx.rbx, "\n");
-        screen::print("rcx: ", (void *)ctx.rcx, ", rdx: ", (void *)ctx.rdx, "\n");
-        screen::print("rsi: ", (void *)ctx.rsi, ", rdi: ", (void *)ctx.rdi, "\n");
-        screen::print("rsp: ", (void *)ctx.rsp, ", rbp: ", (void *)ctx.rbp, "\n");
-        screen::print("r8:  ", (void *)ctx.r8, ", r9:  ", (void *)ctx.r9, "\n");
-        screen::print("r10: ", (void *)ctx.r10, ", r11: ", (void *)ctx.r11, "\n");
-        screen::print("r12: ", (void *)ctx.r12, ", r13: ", (void *)ctx.r13, "\n");
-        screen::print("r14: ", (void *)ctx.r14, ", r15: ", (void *)ctx.r15, "\n");
+        screen::print("rax: ", reinterpret_cast<void *>(ctx.rax), ", rbx: ", reinterpret_cast<void *>(ctx.rbx), "\n");
+        screen::print("rcx: ", reinterpret_cast<void *>(ctx.rcx), ", rdx: ", reinterpret_cast<void *>(ctx.rdx), "\n");
+        screen::print("rsi: ", reinterpret_cast<void *>(ctx.rsi), ", rdi: ", reinterpret_cast<void *>(ctx.rdi), "\n");
+        screen::print("rsp: ", reinterpret_cast<void *>(ctx.rsp), ", rbp: ", reinterpret_cast<void *>(ctx.rbp), "\n");
+        screen::print("r8:  ", reinterpret_cast<void *>(ctx.r8), ", r9:  ", reinterpret_cast<void *>(ctx.r9), "\n");
+        screen::print("r10: ", reinterpret_cast<void *>(ctx.r10), ", r11: ", reinterpret_cast<void *>(ctx.r11), "\n");
+        screen::print("r12: ", reinterpret_cast<void *>(ctx.r12), ", r13: ", reinterpret_cast<void *>(ctx.r13), "\n");
+        screen::print("r14: ", reinterpret_cast<void *>(ctx.r14), ", r15: ", reinterpret_cast<void *>(ctx.r15), "\n");
     }
 
     void _page_fault(processor::isr_context & context, uint64_t)
@@ -67,8 +67,8 @@ namespace
 
         PANICEX("Page fault in kernel code.", [&]
         {
-            screen::print("Fault address: ", (void *)cr2, "\n");
-            screen::print("Instruction pointer: ", (void *)context.rip, "\n");
+            screen::print("Fault address: ", reinterpret_cast<void *>(cr2), "\n");
+            screen::print("Instruction pointer: ", reinterpret_cast<void *>(context.rip), "\n");
             screen::print("Error cause: ", context.error & 1 ? "present" : "non-present", ", ");
             screen::print(context.error & 2 ? "write" : "read", "");
             screen::print(context.error & (1 << 3) ? ", reserved bit violation" : "");
@@ -150,7 +150,7 @@ void processor::handle(processor::isr_context & context)
         {
             screen::print("Exception vector: ", context.number, "\n");
             screen::print("Error code: ", context.error, "\n");
-            screen::print("Instruction pointer: ", (void *)context.rip, "\n");
+            screen::print("Instruction pointer: ", reinterpret_cast<void *>(context.rip), "\n");
             _print_registers(context);
         });
     }

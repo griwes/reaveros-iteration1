@@ -131,7 +131,7 @@ namespace utils
 
         void operator delete(void * ptr) noexcept
         {
-            return _detail::_default_allocator<T>::free((T *)ptr);
+            return _detail::_default_allocator<T>::free(static_cast<T *>(ptr));
         }
 
         void * operator new(uint64_t, allocator<T> & a) noexcept
@@ -141,7 +141,7 @@ namespace utils
 
         void operator delete(void * ptr, allocator<T> & a) noexcept
         {
-            a.free((T *)ptr);
+            a.free(static_cast<T *>(ptr));
         }
 
         void * operator new[](uint64_t) = delete;

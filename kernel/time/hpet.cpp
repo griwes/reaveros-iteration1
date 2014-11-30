@@ -81,7 +81,7 @@ bool time::hpet::ready()
 }
 
 time::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, virt_addr_t address, uint8_t counter_size,
-    uint8_t comparators, uint16_t minimal_tick, uint8_t page_protection) : _number{ number }, _size{ (uint8_t)(32 + 32 * counter_size) },
+    uint8_t comparators, uint16_t minimal_tick, uint8_t page_protection) : _number{ number }, _size{ static_cast<uint8_t>(32 + 32 * counter_size) },
     _comparator_count{ comparators }, _page_protection{ page_protection }, _pci_vendor{ pci_vendor }, _minimal_tick{
     minimal_tick }, _register{ address }
 {
@@ -92,7 +92,7 @@ time::hpet::timer::timer(uint8_t number, pci_vendor_t pci_vendor, virt_addr_t ad
 
     if (_size == 32)
     {
-        _maximal_tick = (~(uint32_t)0 / 1000000) * _period;
+        _maximal_tick = (~0u / 1000000) * _period;
 
         if (!_maximal_tick)
         {
@@ -167,13 +167,13 @@ uint64_t time::hpet::timer::now()
 
 void time::hpet::comparator::_hpet_handler(processor::isr_context & isrc, uint64_t context)
 {
-    ((time::hpet::comparator *)context)->_handle();
+    reinterpret_cast<time::hpet::comparator *>(context)->_handle();
 
     static uint8_t i = 0;
 
     if (++i == 0)
     {
-        ((time::hpet::comparator *)context)->_update_now();
+        reinterpret_cast<time::hpet::comparator *>(context)->_update_now();
     }
 }
 
@@ -192,7 +192,7 @@ time::hpet::comparator::comparator(time::hpet::timer * parent, uint8_t index) : 
     if (_index < 2)
     {
         _int_vector = processor::allocate_isr(0);
-        processor::register_handler(_int_vector, _hpet_handler, (uint64_t)this);
+        processor::register_handler(_int_vector, _hpet_handler, reinterpret_cast<uint64_t>(this));
         processor::set_isa_irq_int_vector(_index * 8, _int_vector);
 
         screen::debug("\nInstalled interrupt for HPET comparator #", _index, " at IOAPIC input #",
@@ -219,12 +219,12 @@ time::hpet::comparator::comparator(time::hpet::timer * parent, uint8_t index) : 
         }
     }
 
-    for (uint8_t i = 0; i < 32 && i < processor::max_ioapic_input() && possible_routes != ~(uint32_t)0; ++i)
+    for (uint8_t i = 0; i < 32 && i < processor::max_ioapic_input() && possible_routes != ~0u; ++i)
     {
         if ((possible_routes & (1 << i)) && !(_used_interrupts & (1 << i)))
         {
             _int_vector = processor::allocate_isr(0);
-            processor::register_handler(_int_vector, _hpet_handler, (uint64_t)this);
+            processor::register_handler(_int_vector, _hpet_handler, reinterpret_cast<uint64_t>(this));
             processor::set_isa_irq_int_vector(i, _int_vector);
 
             _used_interrupts |= 1 << i;

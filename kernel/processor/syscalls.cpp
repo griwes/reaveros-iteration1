@@ -141,7 +141,7 @@ extern "C" void syscall_handler_entry();
 void processor::syscalls::initialize()
 {
     wrmsr(_ia32_efer, rdmsr(_ia32_efer) | 1);
-    wrmsr(_lstar, (uint64_t)&syscall_handler_entry);
+    wrmsr(_lstar, reinterpret_cast<uint64_t>(&syscall_handler_entry));
     wrmsr(_star, (8ull << 32) | (8ull << 48));
 
     _handlers.initialize();
@@ -155,7 +155,7 @@ void processor::syscalls::initialize()
 void processor::syscalls::ap_initialize()
 {
     wrmsr(_ia32_efer, rdmsr(_ia32_efer) | 1);
-    wrmsr(_lstar, (uint64_t)&syscall_handler_entry);
+    wrmsr(_lstar, reinterpret_cast<uint64_t>(&syscall_handler_entry));
     wrmsr(_star, (8ull << 32) | (8ull << 48));
 }
 

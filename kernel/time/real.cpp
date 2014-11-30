@@ -112,7 +112,7 @@ void time::real::initialize()
 
     else
     {
-        _hpet_last_ns = ((hpet::timer *)high_precision_timer())->now();
+        _hpet_last_ns = reinterpret_cast<hpet::timer *>(high_precision_timer())->now();
     }
 
     STI;
@@ -158,7 +158,7 @@ time::point time::real::now()
 
     if (hpet::ready())
     {
-        uint64_t hpet_now = ((hpet::timer *)high_precision_timer())->now();
+        uint64_t hpet_now = reinterpret_cast<hpet::timer *>(high_precision_timer())->now();
         uint64_t nanoseconds = hpet_now - _hpet_last_ns;
         _hpet_last_ns = hpet_now;
         _time.seconds += nanoseconds / 1000000000;

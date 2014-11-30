@@ -171,7 +171,7 @@ scheduler::thread * scheduler::create_thread(void * start, uint64_t data, schedu
     new_thread->context->cs = 0x8;
     new_thread->context->ss = 0x10;
     new_thread->context->rdi = data;
-    new_thread->context->rip = (uint64_t)start;
+    new_thread->context->rip = reinterpret_cast<uint64_t>(start);
 
     return new_thread;
 }
@@ -187,9 +187,9 @@ void scheduler::create_process(const uint8_t * image_begin, const uint8_t * imag
     processor::set_asid(new_process->address_space);
     memory::vm::map(virt_addr_t{ 0x100000 }, virt_addr_t{ 0x100000 } + (image_end - image_begin), memory::vm::user);
 
-    memory::copy(image_begin, (uint8_t *)0x100000, image_end - image_begin);
+    memory::copy(image_begin, reinterpret_cast<uint8_t *>(0x100000), image_end - image_begin);
 
     processor::set_asid(old_asid);
     new_process->service = service;
-    schedule(create_thread((void *)&processor::enter_userspace, 0x100000, new_process));
+    schedule(create_thread(reinterpret_cast<void *>(&processor::enter_userspace), 0x100000, new_process));
 }

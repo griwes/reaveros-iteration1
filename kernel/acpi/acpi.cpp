@@ -44,9 +44,9 @@ namespace
 
         memory::vm::map(_root_address, _root_address + 8 * 4096, ptr->rsdt_ptr);
 
-        if (((acpi::rsdt *)(_root_address + static_cast<uint32_t>(ptr->rsdt_ptr) % 4096))->validate("RSDT"))
+        if ((static_cast<acpi::rsdt *>(_root_address + static_cast<uint32_t>(ptr->rsdt_ptr) % 4096))->validate("RSDT"))
         {
-            root = (acpi::rsdt *)(_root_address + static_cast<uint32_t>(ptr->rsdt_ptr) % 4096);
+            root = static_cast<acpi::rsdt *>(_root_address + static_cast<uint32_t>(ptr->rsdt_ptr) % 4096);
 
             return;
         }
@@ -61,9 +61,9 @@ namespace
     {
         memory::vm::map(_root_address, _root_address + 8 * 4096, ptr->xsdt_ptr);
 
-        if (((acpi::xsdt *)(_root_address + static_cast<uint64_t>(ptr->xsdt_ptr) % 4096))->validate("XSDT"))
+        if ((static_cast<acpi::xsdt *>(_root_address + static_cast<uint64_t>(ptr->xsdt_ptr) % 4096))->validate("XSDT"))
         {
-            new_root = (acpi::xsdt *)(_root_address + static_cast<uint64_t>(ptr->xsdt_ptr) % 4096);
+            new_root = static_cast<acpi::xsdt *>(_root_address + static_cast<uint64_t>(ptr->xsdt_ptr) % 4096);
 
             return;
         }
@@ -94,11 +94,10 @@ namespace
     // TODO: external (bootloader) version of this function
     acpi::rsdp * _find_rsdp()
     {
-        uint64_t ebda = *(uint16_t *)0x40E << 4;
+        virt_addr_t ebda{ static_cast<uint64_t>(*reinterpret_cast<uint16_t *>(0x40E) << 4) };
+        acpi::rsdp * ptr = static_cast<acpi::rsdp *>(ebda);
 
-        acpi::rsdp * ptr = (acpi::rsdp *)ebda;
-
-        while (ptr < (acpi::rsdp *)(ebda + 1024))
+        while (ptr < static_cast<acpi::rsdp *>(ebda + 1024))
         {
             if (ptr->validate())
             {
@@ -109,13 +108,13 @@ namespace
 
             else
             {
-                ptr = (acpi::rsdp *)((uint64_t)ptr + 16);
+                ptr = static_cast<acpi::rsdp *>(static_cast<virt_addr_t>(ptr) + 16);
             }
         }
 
-        ptr = (acpi::rsdp *)0xe0000;
+        ptr = reinterpret_cast<acpi::rsdp *>(0xe0000);
 
-        while (ptr < (acpi::rsdp *)0x100000)
+        while (ptr < reinterpret_cast<acpi::rsdp *>(0x100000))
         {
             if (ptr->validate())
             {
@@ -126,7 +125,7 @@ namespace
 
             else
             {
-                ptr = (acpi::rsdp *)((uint64_t)ptr + 16);
+                ptr = static_cast<acpi::rsdp *>(static_cast<virt_addr_t>(ptr) + 16);
             }
         }
 
@@ -143,7 +142,7 @@ namespace
         {
             for (uint64_t i = 0; i < (new_root->length - 36) / 8; ++i)
             {
-                table = (acpi::description_table_header *)(_table_address + static_cast<uint64_t>(new_root->entries[i]) % 4096);
+                table = static_cast<acpi::description_table_header *>(_table_address + static_cast<uint64_t>(new_root->entries[i]) % 4096);
 
                 memory::vm::map(_table_address, _table_address + 8 * 4096, new_root->entries[i]);
 
@@ -160,7 +159,7 @@ namespace
         {
             for (uint64_t i = 0; i < (root->length - 36) / 4; ++i)
             {
-                table = (acpi::description_table_header *)(_table_address + static_cast<uint32_t>(root->entries[i]) % 4096);
+                table = static_cast<acpi::description_table_header *>(_table_address + static_cast<uint32_t>(root->entries[i]) % 4096);
 
                 memory::vm::map(_table_address, _table_address + 8 * 4096, root->entries[i]);
 
@@ -194,7 +193,7 @@ void acpi::initialize()
 void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::ioapic *& ioapics, uint64_t & ioapic_num,
     processor::interrupt_entry * ints)
 {
-    madt * table = (madt *)_find_table("APIC");
+    auto table = static_cast<madt *>(_find_table("APIC"));
 
     if (!table)
     {
@@ -206,9 +205,9 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
     core_num = 0;
     ioapic_num = 0;
 
-    madt_entry * entry = table->entries;
+    auto entry = table->entries;
 
-    while ((uint64_t)entry - (uint64_t)table < table->length)
+    while (reinterpret_cast<uint64_t>(entry) - reinterpret_cast<uint64_t>(table) < table->length)
     {
         if (entry->type == 0 || entry->type == 9)
         {
@@ -220,7 +219,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
             ++ioapic_num;
         }
 
-        entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
+        entry = reinterpret_cast<acpi::madt_entry *>(reinterpret_cast<uint64_t>(entry) + entry->length);
     }
 
     {
@@ -230,8 +229,8 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
         memory::vm::map(cores_address, cores_address + core_num * sizeof(processor::core));
         memory::vm::map(ioapics_address, ioapics_address + ioapic_num * sizeof(processor::ioapic));
 
-        cores = (processor::core *)cores_address;
-        ioapics = (processor::ioapic *)ioapics_address;
+        cores = static_cast<processor::core *>(cores_address);
+        ioapics = static_cast<processor::ioapic *>(ioapics_address);
     }
 
     core_num = 0;
@@ -239,17 +238,17 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
     entry = table->entries;
 
-    while ((uint64_t)entry - (uint64_t)table < table->length)
+    while (reinterpret_cast<uint64_t>(entry) - reinterpret_cast<uint64_t>(table) < table->length)
     {
         switch (entry->type)
         {
             case 0:
             {
-                auto lapic = (acpi::madt_lapic_entry *)((entry + 1));
+                auto lapic = reinterpret_cast<acpi::madt_lapic_entry *>(entry + 1);
 
                 if (lapic->flags & 1)
                 {
-                    new ((void *)(cores + core_num++)) processor::core{ lapic->apic_id, lapic->acpi_id };
+                    new (static_cast<void *>(cores + core_num++)) processor::core{ lapic->apic_id, lapic->acpi_id };
 
                     screen::debug("\nFound LAPIC entry: ", lapic->apic_id);
                 }
@@ -259,9 +258,9 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
             case 1:
             {
-                auto ioapic = (acpi::madt_ioapic_entry *)((entry + 1));
+                auto ioapic = reinterpret_cast<acpi::madt_ioapic_entry *>(entry + 1);
 
-                new ((void *)(ioapics + ioapic_num++)) processor::ioapic{ ioapic->apic_id, ioapic->base_int, ioapic->base_address };
+                new (static_cast<void *>(ioapics + ioapic_num++)) processor::ioapic{ ioapic->apic_id, ioapic->base_int, ioapic->base_address };
 
                 screen::debug("\nFound I/O APIC entry: ", ioapic->apic_id, ", handling vectors from ", ioapic->base_int, " to ", ioapics[ioapic_num - 1].end());
 
@@ -270,7 +269,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
             case 2:
             {
-                auto iso = (acpi::madt_int_override_entry *)(entry + 1);
+                auto iso = reinterpret_cast<acpi::madt_int_override_entry *>(entry + 1);
 
                 ints[iso->source].set(iso->source, iso->int_number, iso->flags);
 
@@ -311,7 +310,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
             case 3:
             {
-                auto nmi = (acpi::madt_nmi_source_entry *)((entry + 1));
+                auto nmi = reinterpret_cast<acpi::madt_nmi_source_entry *>(entry + 1);
 
                 for (uint64_t i = 0; i < ioapic_num; ++i)
                 {
@@ -326,7 +325,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
             case 5:
             {
-                auto override = (acpi::madt_lapic_address_override_entry *)((entry + 1));
+                auto override = reinterpret_cast<acpi::madt_lapic_address_override_entry *>(entry + 1);
 
                 lic_address = override->base_address;
 
@@ -335,11 +334,11 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
             case 9:
             {
-                auto x2apic = (acpi::madt_x2apic_entry *)((entry + 1));
+                auto x2apic = reinterpret_cast<acpi::madt_x2apic_entry *>(entry + 1);
 
                 if (x2apic->flags & 1)
                 {
-                    new ((void *)(cores + core_num++)) processor::core{ x2apic->x2apic_id, x2apic->acpi_uuid, false };
+                    new (static_cast<void *>(cores + core_num++)) processor::core{ x2apic->x2apic_id, x2apic->acpi_uuid, false };
 
                     screen::debug("\nFound x2APIC entry: ", x2apic->x2apic_id);
                 }
@@ -348,18 +347,18 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
             }
         }
 
-        entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
+        entry = reinterpret_cast<acpi::madt_entry *>(reinterpret_cast<uint64_t>(entry) + entry->length);
     }
 
     entry = table->entries;
 
-    while ((uint64_t)entry - (uint64_t)table < table->length)
+    while (reinterpret_cast<uint64_t>(entry) - reinterpret_cast<uint64_t>(table) < table->length)
     {
         switch (entry->type)
         {
             case 4:
             {
-                auto lapic_nmi = (acpi::madt_lapic_nmi_entry *)((entry + 1));
+                auto lapic_nmi = reinterpret_cast<acpi::madt_lapic_nmi_entry *>(entry + 1);
 
                 if (lapic_nmi->acpi_id == 0xff)
                 {
@@ -395,7 +394,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
             case 10:
             {
-                auto x2apic_nmi = (acpi::madt_x2apic_nmi_entry *)((entry + 1));
+                auto x2apic_nmi = reinterpret_cast<acpi::madt_x2apic_nmi_entry *>(entry + 1);
 
                 if (x2apic_nmi->acpi_uuid == 0xffffffff)
                 {
@@ -426,7 +425,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
             }
         }
 
-        entry = (acpi::madt_entry *)((uint64_t)entry + entry->length);
+        entry = reinterpret_cast<acpi::madt_entry *>(reinterpret_cast<uint64_t>(entry) + entry->length);
     }
 
     memory::vm::map(processor::lapic_base(), lic_address);
@@ -436,7 +435,7 @@ void acpi::parse_madt(processor::core *& cores, uint64_t & core_num, processor::
 
 void acpi::parse_hpet(time::hpet::timer *& timers, uint64_t & timers_num)
 {
-    hpet * table = (hpet *)_find_table("HPET");
+    hpet * table = static_cast<hpet *>(_find_table("HPET"));
 
     timers_num = 0;
     timers = nullptr;
@@ -461,8 +460,8 @@ void acpi::parse_hpet(time::hpet::timer *& timers, uint64_t & timers_num)
     timers_num = 1;
     auto address = memory::vm::allocate_address_range(sizeof(time::hpet::timer));
     memory::vm::map(address, address + sizeof(time::hpet::timer));
-    timers = new (address) time::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio, table->counter_size, (uint8_t)(table->comparator_count + 1), table->minimum_tick,
-        table->page_protection };
+    timers = new (address) time::hpet::timer{ table->hpet_number, table->pci_vendor_id, mmio, table->counter_size, static_cast<uint8_t>(table->comparator_count + 1),
+        table->minimum_tick, table->page_protection };
 
     _free_table();
 }

@@ -43,10 +43,10 @@ namespace
 
 void processor::smp::boot(processor::core * cores, uint64_t num_cores)
 {
-    uint64_t trampoline_size = (uint64_t)(_trampoline_end - _trampoline_start);
+    auto trampoline_size = static_cast<uint64_t>(_trampoline_end - _trampoline_start);
 
     trampoline_size += 4095;
-    trampoline_size &= ~(uint64_t)4095;
+    trampoline_size &= ~4095ull;
 
     uint64_t boot_at_once = 0x7F000 / trampoline_size;
 
@@ -69,11 +69,11 @@ void processor::smp::boot(processor::core * cores, uint64_t num_cores)
     {
         for (uint64_t i = booted; i < booted + boot_at_once && i < num_cores; ++i)
         {
-            memory::copy(_trampoline_start, (uint8_t *)0x1000 + trampoline_size * (i - booted), trampoline_size);
+            memory::copy(_trampoline_start, reinterpret_cast<uint8_t *>(0x1000) + trampoline_size * (i - booted), trampoline_size);
 
             *reinterpret_cast<uint64_t volatile *>(0x1000 + trampoline_size * (i - booted) + 12) = static_cast<uint64_t>(processor::get_asid());
 
-            cores[i]._started = (uint8_t *)(0x1000 + trampoline_size * (i - booted) + 11);
+            cores[i]._started = reinterpret_cast<uint8_t *>(0x1000 + trampoline_size * (i - booted) + 11);
 
             auto stack = memory::vm::allocate_address_range(8192);
             memory::vm::map(stack + 4096);

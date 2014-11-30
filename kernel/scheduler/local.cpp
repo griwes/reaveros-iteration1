@@ -138,9 +138,9 @@ void scheduler::local::_do_switch()
         {
             _timer = time::preemption_timer()->one_shot(5_ms, [](uint64_t scheduler)
             {
-                ((local *)scheduler)->_timer.device = nullptr;
-                ((local *)scheduler)->do_switch();
-            }, (uint64_t)this);
+                (reinterpret_cast<local *>(scheduler))->_timer.device = nullptr;
+                (reinterpret_cast<local *>(scheduler))->do_switch();
+            }, reinterpret_cast<uint64_t>(this));
         }
 
         processor::current_thread(_pop());
@@ -150,7 +150,7 @@ void scheduler::local::_do_switch()
     {
         processor::smp::parallel_execute(processor::smp::policies::specific_no_wait, [](uint64_t scheduler)
         {
-            ((local *)scheduler)->do_switch();
-        }, (uint64_t)this, _core);
+            (reinterpret_cast<local *>(scheduler))->do_switch();
+        }, reinterpret_cast<uint64_t>(this), _core);
     }
 }

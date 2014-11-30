@@ -105,7 +105,7 @@ inline uint64_t rdmsr(uint32_t msr)
     uint32_t low, high;
     rdmsr(msr, low, high);
 
-    return ((uint64_t)high << 32) | low;
+    return (static_cast<uint64_t>(high) << 32) | low;
 }
 
 inline void wrmsr(uint32_t msr, uint32_t low, uint32_t high)

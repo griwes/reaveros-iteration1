@@ -68,7 +68,7 @@ namespace
     void _setup_idte(uint8_t id, void (*fun)(), uint16_t selector, bool present, uint8_t dpl, uint8_t type,
         processor::idt::idt_entry * table, uint8_t ist = 0)
     {
-        uint64_t address = (uint64_t)fun;
+        auto address = reinterpret_cast<uint64_t>(fun);
 
         table[id].zero = 0;
         table[id].zero1 = 0;

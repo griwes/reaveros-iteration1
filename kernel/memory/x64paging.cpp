@@ -42,22 +42,22 @@ namespace
 
         memory::x64::pml4 * pml4()
         {
-            return (memory::x64::pml4 *)pt(256, 256, 256);
+            return reinterpret_cast<memory::x64::pml4 *>(pt(256, 256, 256));
         }
 
         memory::x64::pdpt * pdpt(uint64_t pml4e)
         {
-            return (memory::x64::pdpt *)pt(256, 256, pml4e);
+            return reinterpret_cast<memory::x64::pdpt *>(pt(256, 256, pml4e));
         }
 
         memory::x64::page_directory * pd(uint64_t pml4e, uint64_t pdpte)
         {
-            return (memory::x64::page_directory *)pt(256, pml4e, pdpte);
+            return reinterpret_cast<memory::x64::page_directory *>(pt(256, pml4e, pdpte));
         }
 
         memory::x64::page_table * pt(uint64_t pml4e, uint64_t pdpte, uint64_t pde)
         {
-            return (memory::x64::page_table *)(0xFFFF000000000000 + (_id << 39) + (pml4e << 30) + (pdpte << 21) + (pde << 12));
+            return reinterpret_cast<memory::x64::page_table *>(0xFFFF000000000000 + (_id << 39) + (pml4e << 30) + (pdpte << 21) + (pde << 12));
         }
 
     private:
@@ -162,7 +162,7 @@ void memory::x64::map(virt_addr_t virtual_start, virt_addr_t virtual_end, phys_a
 
                     if ((*pt)[startpte].present && physical_start != (*pt)[startpte].address << 12)
                     {
-                        screen::print("\nAddress: ", (void *)virtual_start);
+                        screen::print("\nAddress: ", virtual_start);
                         PANIC("Tried to map something at already mapped page");
                     }
 
@@ -243,9 +243,9 @@ void memory::x64::unmap(virt_addr_t virtual_start, virt_addr_t virtual_end, bool
 
     address_generator gen{ foreign ? 257u : 256u };
 
-    virtual_start &= ~(uint64_t)4095;
+    virtual_start &= ~4095ull;
     virtual_end += 4095;
-    virtual_end &= ~(uint64_t)4095;
+    virtual_end &= ~4095ull;
 
     uint64_t startpml4e = (virtual_start >> 39) & 511;
     uint64_t startpdpte = (virtual_start >> 30) & 511;
@@ -395,7 +395,7 @@ void memory::x64::set_foreign(phys_addr_t frame)
 {
     address_generator current{ 256 };
 
-    while (__sync_fetch_and_or((uint64_t *)&current.pml4()->entries[257], 1) & 1)
+    while (__sync_fetch_and_or(reinterpret_cast<uint64_t *>(&current.pml4()->entries[257]), 1) & 1)
     {
         asm volatile ("pause");
     }

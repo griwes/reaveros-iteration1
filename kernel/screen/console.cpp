@@ -37,7 +37,7 @@ screen::kernel_console::kernel_console(terminal * term) : _terminal{ term }
 {
     if (_lpt_port == 0)
     {
-        _lpt_port = *(uint16_t *)0x408;
+        _lpt_port = *reinterpret_cast<uint16_t *>(0x408);
 
         if (!_lpt_port)
         {
@@ -63,7 +63,7 @@ void screen::kernel_console::print(char c)
 
     if (c != '\0' && _lpt_port != -1)
     {
-        outb(_lpt_port, (unsigned char)c);
+        outb(_lpt_port, static_cast<unsigned char>(c));
         outb(_lpt_port + 2, 0x0c);
         outb(_lpt_port + 2, 0x0d);
     }
@@ -117,7 +117,7 @@ void screen::kernel_console::print(const char * str)
 
         if (_lpt_port != -1)
         {
-            outb(_lpt_port, (unsigned char)*str);
+            outb(_lpt_port, static_cast<unsigned char>(*str));
             outb(_lpt_port + 2, 0x0c);
             outb(_lpt_port + 2, 0x0d);
         }
@@ -165,7 +165,7 @@ namespace
             _print_int(div);
         }
 
-        screen::console->print((char)('0' + mod));
+        screen::console->print(static_cast<char>('0' + mod));
     }
 }
 
@@ -215,7 +215,7 @@ void screen::kernel_console::print(void * ptr)
 
     for (uint64_t i = 64; i > 0; i -= 4)
     {
-        print("0123456789ABCDEF"[(((uint64_t)ptr) >> (i - 4)) & 0xF]);
+        print("0123456789ABCDEF"[(reinterpret_cast<uint64_t>(ptr) >> (i - 4)) & 0xF]);
     }
 }
 

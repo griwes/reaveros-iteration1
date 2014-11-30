@@ -209,7 +209,7 @@ void processor::xapic::ipi(uint64_t apic_id, processor::ipis ipi_type, uint8_t d
         default:
             PANICEX("Issued unimplemented IPI.", [&]()
             {
-                screen::print("\nIPI type: ", (uint64_t)ipi_type);
+                screen::print("\nIPI type: ", static_cast<uint64_t>(ipi_type));
             });
     }
 }
@@ -219,13 +219,13 @@ void processor::xapic::broadcast(processor::broadcasts btype, processor::ipis ip
     switch (ipi_type)
     {
         case ipis::generic:
-            _register(_interrupt_command_0, ((uint64_t)btype << 18) | data);
+            _register(_interrupt_command_0, (static_cast<uint64_t>(btype) << 18) | data);
             break;
 
         default:
             PANICEX("Issued unimplemented broadcast.", [&]()
             {
-                screen::print("\nIPI type: ", (uint64_t)ipi_type);
+                screen::print("\nIPI type: ", static_cast<uint64_t>(ipi_type));
             });
     }
 }

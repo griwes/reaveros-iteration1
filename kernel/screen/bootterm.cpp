@@ -68,10 +68,10 @@ void screen::boot_terminal::clear()
 
     if (_backbuffer)
     {
-        memory::zero((uint8_t *)_backbuffer, _mode->resolution_y * _mode->bytes_per_line);
+        memory::zero(static_cast<uint8_t *>(_backbuffer), _mode->resolution_y * _mode->bytes_per_line);
     }
 
-    memory::zero((uint8_t *)(uint64_t)_mode->addr, _mode->resolution_y * _mode->bytes_per_line);
+    memory::zero(static_cast<uint8_t *>(_mode->addr), _mode->resolution_y * _mode->bytes_per_line);
 
     _x = 0;
     _y = 0;
@@ -122,13 +122,13 @@ void screen::boot_terminal::put_char(char c)
 
 void screen::boot_terminal::_put_16(char c)
 {
-    uint8_t * character = &(_mode->font[c * 16]);
-    uint16_t * dest = (uint16_t *)((uint64_t)_mode->addr + _y * _mode->bytes_per_line * 16 + _x * 16);
+    auto character = &(_mode->font[c * 16]);
+    auto dest = static_cast<uint16_t *>(_mode->addr + _y * _mode->bytes_per_line * 16 + _x * 16);
 
     uint16_t * backdest;
     if (_backbuffer)
     {
-        backdest = (uint16_t *)(_backbuffer + _y * _mode->bytes_per_line * 16 + _x * 16);
+        backdest = static_cast<uint16_t *>(_backbuffer + _y * _mode->bytes_per_line * 16 + _x * 16);
     }
     else
     {
@@ -148,25 +148,25 @@ void screen::boot_terminal::_put_16(char c)
             dest[i] = backdest[i];
         }
 
-        uint64_t _ = (uint64_t)dest;
+        auto _ = reinterpret_cast<uint64_t>(dest);
         _ += _mode->bytes_per_line;
-        dest = (uint16_t *)_;
+        dest = reinterpret_cast<uint16_t *>(_);
 
-        _ = (uint64_t)backdest;
+        _ = reinterpret_cast<uint64_t>(backdest);
         _ += _mode->bytes_per_line;
-        backdest = (uint16_t *)_;
+        backdest = reinterpret_cast<uint16_t *>(_);
     }
 }
 
 void screen::boot_terminal::_put_32(char c)
 {
-    uint8_t * character = &(_mode->font[c * 16]);
-    uint32_t * dest = (uint32_t *)((uint64_t)_mode->addr + _y * _mode->bytes_per_line * 16 + _x * 32);
+    auto character = &(_mode->font[c * 16]);
+    auto dest = static_cast<uint32_t *>(_mode->addr + _y * _mode->bytes_per_line * 16 + _x * 32);
 
     uint32_t * backdest;
     if (_backbuffer)
     {
-        backdest = (uint32_t *)(_backbuffer + _y * _mode->bytes_per_line * 16 + _x * 32);
+        backdest = static_cast<uint32_t *>(_backbuffer + _y * _mode->bytes_per_line * 16 + _x * 32);
     }
     else
     {
@@ -186,23 +186,23 @@ void screen::boot_terminal::_put_32(char c)
             dest[i] = backdest[i];
         }
 
-        uint64_t _ = (uint64_t)dest;
+        auto _ = reinterpret_cast<uint64_t>(dest);
         _ += _mode->bytes_per_line;
-        dest = (uint32_t *)_;
+        dest = reinterpret_cast<uint32_t *>(_);
 
-        _ = (uint64_t)backdest;
+        _ = reinterpret_cast<uint64_t>(backdest);
         _ += _mode->bytes_per_line;
-        backdest = (uint32_t *)_;
+        backdest = reinterpret_cast<uint32_t *>(_);
     }
 }
 
 void screen::boot_terminal::_scroll()
 {
-    memory::copy((uint8_t *)_backbuffer + _mode->bytes_per_line * 16, (uint8_t *)_backbuffer, (_mode->resolution_y - 16
+    memory::copy(static_cast<uint8_t *>(_backbuffer) + _mode->bytes_per_line * 16, static_cast<uint8_t *>(_backbuffer), (_mode->resolution_y - 16
         - _mode->resolution_y % 16) * _mode->bytes_per_line);
-    memory::zero((uint8_t *)_backbuffer + _mode->bytes_per_line * (_mode->resolution_y - 16 - _mode->resolution_y % 16),
+    memory::zero(static_cast<uint8_t *>(_backbuffer) + _mode->bytes_per_line * (_mode->resolution_y - 16 - _mode->resolution_y % 16),
         _mode->bytes_per_line * 16);
-    memory::copy((uint8_t *)_backbuffer, (uint8_t *)(uint64_t)_mode->addr, _mode->bytes_per_line * _mode->resolution_y);
+    memory::copy(static_cast<uint8_t *>(_backbuffer), static_cast<uint8_t *>(_mode->addr), _mode->bytes_per_line * _mode->resolution_y);
 
     --_y;
 }

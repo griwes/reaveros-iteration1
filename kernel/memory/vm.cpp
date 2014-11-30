@@ -45,7 +45,7 @@ void memory::vm::initialize()
 virt_addr_t memory::vm::allocate_address_range(uint64_t size)
 {
     auto real_size = size + 4095;
-    real_size &= ~(uint64_t)4095;
+    real_size &= ~4095ull;
 
     auto ret = _lowest.fetch_sub(real_size) - real_size;
 
@@ -54,7 +54,7 @@ virt_addr_t memory::vm::allocate_address_range(uint64_t size)
         PANIC("virtual memory exhausted!");
     }
 
-    screen::debug("\nRequested ", size, " bytes of address space, allocating ", real_size, " bytes at ", (void *)ret);
+    screen::debug("\nRequested ", size, " bytes of address space, allocating ", real_size, " bytes at ", reinterpret_cast<void *>(ret));
 
     return virt_addr_t{ ret };
 }

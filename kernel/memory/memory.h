@@ -37,7 +37,7 @@ namespace memory
     template<>
     inline void zero<uint8_t>(uint8_t * src, uint64_t count)
     {
-        uint64_t * srcl = (uint64_t *)src;
+        auto srcl = reinterpret_cast<uint64_t *>(src);
 
         for (uint64_t i = 0; i < count / 8; ++i)
         {
@@ -62,8 +62,8 @@ namespace memory
     template<>
     inline void copy<uint8_t>(const uint8_t * src, uint8_t * dest, uint64_t count)
     {
-        uint64_t * srcl = (uint64_t *)src;
-        uint64_t * destl = (uint64_t *)dest;
+        auto srcl = reinterpret_cast<const uint64_t *>(src);
+        auto destl = reinterpret_cast<uint64_t *>(dest);
 
         for (uint64_t i = 0; i < count / 8; ++i)
         {

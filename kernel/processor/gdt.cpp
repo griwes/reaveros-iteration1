@@ -53,9 +53,9 @@ namespace
 
         tss->iomap = sizeof(processor::gdt::tss);
 
-        start[id].base_low = (uint64_t)tss & 0xFFFFFF;
-        start[id].base_high = ((uint64_t)tss >> 24) & 0xFF;
-        *(uint32_t *)&start[id + 1] = ((uint64_t)tss >> 32) & 0xFFFFFFFF;
+        start[id].base_low = reinterpret_cast<uint64_t>(tss) & 0xFFFFFF;
+        start[id].base_high = (reinterpret_cast<uint64_t>(tss) >> 24) & 0xFF;
+        *reinterpret_cast<uint32_t *>(&start[id + 1]) = (reinterpret_cast<uint64_t>(tss) >> 32) & 0xFFFFFFFF;
 
         start[id].limit_low = (sizeof(processor::gdt::tss) & 0xFFFF) - 1;
         start[id].limit_high = sizeof(processor::gdt::tss) >> 16;

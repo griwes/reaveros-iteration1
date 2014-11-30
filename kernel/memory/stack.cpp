@@ -36,7 +36,7 @@ memory::pmm::frame_stack::frame_stack(memory::map_entry * map, uint64_t map_size
     {
         if (map[i].type == 1 && (map[i].base >= 1024 * 1024 || map[i].base + map[i].length > 1024 * 1024))
         {
-            for (uint64_t frame = (map[i].base < 1024 * 1024) ? (1024 * 1024) : ((map[i].base + 4095) & ~(uint64_t)4095);
+            for (uint64_t frame = (map[i].base < 1024 * 1024) ? (1024 * 1024) : ((map[i].base + 4095) & ~4095ull);
                 frame < map[i].base + map[i].length; frame += 4096)
             {
                 push(phys_addr_t{ frame });

@@ -47,7 +47,7 @@ void time::lapic::ap_initialize()
 time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period{ 0 }, _lapic{ processor::get_lapic() }
 {
     _lapic->divisor(1);
-    _lapic->initial_count(~(uint32_t)0);
+    _lapic->initial_count(~0u);
     high_precision_timer()->one_shot(1_ms, [](uint64_t)
     {
         _fired = true;
@@ -58,12 +58,12 @@ time::lapic::timer::timer() : real_timer{ capabilities::dynamic, 0, 0 }, _period
         HLT;
     }
 
-    uint64_t ticks = ~(uint32_t)0 - _lapic->current_count();
+    uint64_t ticks = ~0u - _lapic->current_count();
     _stop();
 
     _period = (1_ms * 1000000) / ticks;
 
-    _maximal_tick = (~(uint32_t)0 / 1000000) * _period * 128;
+    _maximal_tick = (~0u / 1000000) * _period * 128;
     _minimal_tick = _period / 1000000;
 
     screen::debug("\nLAPIC timer tick period: ", _period, "fs, ticks in 1ms: ", ticks);
@@ -91,15 +91,15 @@ void time::lapic::timer::_lapic_handler(processor::isr_context & isrc, uint64_t 
 void time::lapic::timer::_one_shot(uint64_t time)
 {
     uint8_t divisor = 1;
-    while (((time * 1000000) / (divisor * _period)) > ~(uint32_t)0 && divisor != 128)
+    while (((time * 1000000) / (divisor * _period)) > ~0u && divisor != 128)
     {
         divisor *= 2;
     }
 
     time = (time * 1000000) / (divisor * _period);
-    if (time > ~(uint32_t)0)
+    if (time > ~0u)
     {
-        time = ~(uint32_t)0;
+        time = ~0u;
     }
 
     _lapic->divisor(divisor);
@@ -110,15 +110,15 @@ void time::lapic::timer::_one_shot(uint64_t time)
 void time::lapic::timer::_periodic(uint64_t period)
 {
     uint8_t divisor = 1;
-    while (((period * 1000000) / (divisor * _period)) > ~(uint32_t)0 && divisor != 128)
+    while (((period * 1000000) / (divisor * _period)) > ~0u && divisor != 128)
     {
         divisor *= 2;
     }
 
     period = (period * 1000000) / (divisor * _period);
-    if (period > ~(uint32_t)0)
+    if (period > ~0u)
     {
-        period = ~(uint32_t)0;
+        period = ~0u;
     }
 
     _lapic->divisor(divisor);
@@ -137,9 +137,9 @@ void time::lapic::timer::_update_now()
 
     uint64_t time = _list.top()->time_point - _now;
     time = (time * 1000000) / (divisor * _period);
-    if (time > ~(uint32_t)0)
+    if (time > ~0u)
     {
-        time = ~(uint32_t)0;
+        time = ~0u;
     }
 
     time -= _lapic->current_count();;

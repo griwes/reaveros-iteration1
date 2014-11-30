@@ -76,14 +76,14 @@ void _panic(const char * message, const char * file, uint64_t line, const char *
 
 extern "C" void * memcpy(void * dest, void * src, uint64_t count)
 {
-    memory::copy((uint8_t *)src, (uint8_t *)dest, count);
+    memory::copy(static_cast<uint8_t *>(src), static_cast<uint8_t *>(dest), count);
 
     return dest;
 }
 
 extern "C" void * memset(void * dest, int ch, uint64_t count)
 {
-    memory::set((uint8_t *)dest, (uint8_t)ch, count);
+    memory::set(static_cast<uint8_t *>(dest), static_cast<uint8_t>(ch), count);
 
     return dest;
 }
