@@ -16,6 +16,12 @@ preemption timer
 
 ## Build instructions
 
+**Please do note: the Reaver Archive tools have been abandoned.** That basically means that currently there's no way to
+fully build ReaverOS to boot. The InitRD format will soon be replaced with something else, probably with tar (although
+there's a slight possibility that I'll go back to the Reaver archive format, although this time with an implementation
+that actually makes sense). *I'm sorry for the inconvenience* of not being able to get a full Rose build from this branch.
+If you want to see if the system builds for you, please use one of the past tags.
+
 To build ReaverOS, you will need following tools installed on your system:
 
   * POSIX shell (d'oh)
@@ -27,7 +33,6 @@ not)
   * clang++, libc++ for building the kernel, binutils and other tools (I have **no plans** of supporting GCC at any point
 in the future)
   * [ReaverLib](http://github.com/griwes/ReaverLib)
-  * [Reaver Archive Format tool](http://github.com/griwes/ReaverApps)
 
 If any of those required tools doesn't cooperate during build, feel free to contact me (Griwes @ #reaver on Freenode,
 @Guriwesu on Twitter), but be prepared to get an answer saying "upgrade your tools". I usually Clang's HEAD every month
